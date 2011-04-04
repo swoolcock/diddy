@@ -18,4 +18,14 @@ class diddy
 			app->input->keyStates[i]&=0x100;
 		}
 	}
+	
+	static void showMouse()
+	{
+		ShowCursor(true);
+	}
+	static void hideMouse()
+	{
+		ShowCursor(false);
+	}
+	
 };

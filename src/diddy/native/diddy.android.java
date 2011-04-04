@@ -13,4 +13,14 @@ class diddy
 			MonkeyGame.app.input.keyStates[i] = 0;
 		}
 	}
+	
+	// empty function
+	static void showMouse()
+	{
+	}
+
+	// empty function
+	static void hideMouse()
+	{
+	}	
 }
