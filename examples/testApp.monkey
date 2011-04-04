@@ -17,17 +17,30 @@ End
 Class MyGame Extends App
 	' save the starting seed
 	Field startingSeed:Int
+	Field mouseOn:Bool = false
 	
 	Method OnCreate:Int()
 		' set the seed to use the system time
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
+		HideMouse()
+		
 		' 60 FPS please
 		SetUpdateRate 60
 		Return 0
 	End
 	
 	Method OnUpdate:Int()
+		If KeyHit(KEY_ENTER)
+			If mouseOn
+				HideMouse()
+				mouseOn = False
+			Else
+				ShowMouse()
+				mouseOn = True
+			End
+		End	
+
 		' this will print "No FlushKeys 3 times
 		For Local i:Int = 1 To 3
 			If KeyHit(KEY_SPACE)
@@ -44,6 +57,7 @@ Class MyGame Extends App
 			' clear the key hits
 			FlushKeys()
 		Next
+		
 		Return 0
 	End
 
@@ -53,10 +67,15 @@ Class MyGame Extends App
 		DrawText "Seed          = "+Seed, 10, 20
 		DrawText "RealMillisecs = "+RealMillisecs(), 10, 30
 		DrawText "Millisecs     = "+Millisecs(), 10, 40
-		
+		If mouseOn
+			DrawText "Mouse On      = true (press enter to toggle)", 10, 50	
+		Else
+			DrawText "Mouse On      = false (press enter to toggle)", 10, 50	
+		End
 		Return 0
 	End
 		
 End
+
 
 
