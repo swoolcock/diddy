@@ -40,7 +40,11 @@ Class MyGame Extends App
 				mouseOn = True
 			End
 		End	
-
+		
+		If KeyHit(KEY_ESCAPE)
+			ExitApp()
+		End
+		
 		' this will print "No FlushKeys 3 times
 		For Local i:Int = 1 To 3
 			If KeyHit(KEY_SPACE)
@@ -76,6 +80,7 @@ Class MyGame Extends App
 	End
 		
 End
+
 
 
 
