@@ -11,7 +11,7 @@ class diddy
 
 		return millisecs;
 	}
-    
+
 	public static void flushKeys()
 	{
 		// this only works if you change the mojo.xna.cs:
@@ -19,7 +19,7 @@ class diddy
 		//        public static gxtkInput input; <---- ADD STATIC KEYWORD HERE (LINE 282 - Monkey V34b)
 	
 		for( int i=0;i<512;++i ){
-			gxtkApp.input.keyStates[i]&=0x100;
+			gxtkApp.game.app.input.keyStates[i]&=0x100;
 		}
 	}
 	
