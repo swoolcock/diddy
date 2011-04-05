@@ -14,10 +14,6 @@ class diddy
 
 	public static void flushKeys()
 	{
-		// this only works if you change the mojo.xna.cs:
-		// public class gxtkApp{
-		//        public static gxtkInput input; <---- ADD STATIC KEYWORD HERE (LINE 282 - Monkey V34b)
-	
 		for( int i=0;i<512;++i ){
 			gxtkApp.game.app.input.keyStates[i]&=0x100;
 		}
