@@ -276,8 +276,8 @@ Class GameImage
 	
 	Method LoadAnim:Void(file$, w%, h%, total%, tmpImage:Image, midhandle:Bool=true)
 		name = StripAll(file.ToUpper())
-		image = loadAnimBitmap(file, w, h, total, tmpImage)	
-		calcSize()
+		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
+		CalcSize()
 		MidHandle(midhandle)
 	End
 	
@@ -419,12 +419,12 @@ Class Sprite
 				if not reverse
 					frame+=1
 					If frame > frameEnd
-						resetAnim()
+						ResetAnim()
 					End
 				else
 					frame-=1
 					If frame < frameEnd
-						resetAnim()
+						ResetAnim()
 					End			
 				End
 				frameTimer = Millisecs()
@@ -605,5 +605,6 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
