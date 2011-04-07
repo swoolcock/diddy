@@ -53,9 +53,7 @@ Class DiddyApp Extends App
 		SetUpdateRate FPS
 		
 		'create all the particles
-		For Local i% = 0 to Particle.MAX_PARTICLES - 1
-			Particle.particles[i] = New Particle()
-		Next
+		Particle.Cache()
 		
 		Return 0
 	End
@@ -464,6 +462,7 @@ Class Sprite
 	End
 	
 	Method Draw:Void(offsetx#=0, offsety#=0)
+		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		SetAlpha self.alpha
 		SetColor red, green, blue ' doesnt work with images!?!??!
 		DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
@@ -490,37 +489,50 @@ Class Sprite
 End
 
 Class Particle Extends Sprite
-	Global MAX_PARTICLES% = 500
+	Global MAX_PARTICLES% = 800
 	Global particles:Particle[MAX_PARTICLES]
+	Global lastDeath% = 0
+	Global maxIndex% = -1
+	Global minIndex% = -1
+	Global particleCount% = 0
 	Field lifeCounter# = 0
 	Field fadeIn# = 0
 	Field fadeCounter#
 	Field fadeInLength# = 0
 	Field fadeLength#=0
 	Field active% = 0
-		
-	Function Create:Void(gi:GameImage, x#, y#, dx#=0, dy#=0, gravity#=0, fadeLength#=0, lifeCounter%=0)
-
-		For Local i%=0 to MAX_PARTICLES - 1
-			If particles[i] <> null
-				If not particles[i].active Then
-				
-					particles[i].SetImage(gi)
-					particles[i].x = x
-					particles[i].y = y
-					particles[i].dx = dx
-					particles[i].dy = dy
-					
-					particles[i].ygravity = gravity
-					particles[i].fadeLength = fadeLength / 10
-					particles[i].fadeCounter = particles[i].fadeLength
-					If lifeCounter>0 Then particles[i].lifeCounter = lifeCounter / 10
-					particles[i].active = 1		
-					Exit
-				End
-			End
-		Next
 	
+	Function Cache:Void()
+		For Local i% = 0 to MAX_PARTICLES - 1
+			particles[i] = New Particle()
+		Next
+	End
+	
+	Function Create:Particle(gi:GameImage, x#, y#, dx#=0, dy#=0, gravity#=0, fadeLength#=0, lifeCounter%=0)
+		Local i%=lastDeath
+		Repeat
+			If particles[i] = Null Then particles[i] = New Particle()
+			If Not particles[i].active Then
+				particles[i].SetImage(gi)
+				particles[i].x = x
+				particles[i].y = y
+				particles[i].dx = dx
+				particles[i].dy = dy
+
+				particles[i].ygravity = gravity
+				particles[i].fadeLength = fadeLength / 10
+				particles[i].fadeCounter = particles[i].fadeLength
+				If lifeCounter>0 Then particles[i].lifeCounter = lifeCounter / 10
+				particles[i].active = 1
+				If maxIndex < 0 Or i > maxIndex Then maxIndex = i
+				If minIndex < 0 Or i < minIndex Then minIndex = i
+				particleCount += 1
+				Return particles[i]
+			End
+			i += 1
+			If i >= MAX_PARTICLES Then i = 0
+		Until i = lastDeath
+		Return Null
 	End
 	
 	Function Clear:Void()
@@ -528,10 +540,15 @@ Class Particle Extends Sprite
 			particles[i].alpha = 0
 			particles[i].active = False
 		Next
+		minIndex = -1
+		maxIndex = -1
+		particleCount = 0
+		lastDeath = 0
 	End
 	
 	Function DrawAll:Void()
-		For Local i% = 0 to MAX_PARTICLES - 1
+		If minIndex < 0 Or maxIndex < 0 Then Return
+		For Local i% = minIndex to maxIndex
 			if particles[i] <> null And particles[i].image <> null
 				If particles[i].fadeCounter > 0 and particles[i].active Then
 					If particles[i].fadeIn Then
@@ -546,13 +563,25 @@ Class Particle Extends Sprite
 	End
 	
 	Function UpdateAll:Void()
-		For Local i% = 0 to MAX_PARTICLES - 1
+		If minIndex < 0 Or maxIndex < 0 Then Return
+		Local newMinIndex% = -1
+		Local newMaxIndex% = -1
+		For Local i% = minIndex to maxIndex
 			if particles[i] <> null And particles[i].image <> null
 				If particles[i].active
 					particles[i].Update()
+					If particles[i].active Then
+						If newMinIndex < 0 Then newMinIndex = i
+						newMaxIndex = i
+					Else
+						lastDeath = i
+						particleCount -= 1
+					End
 				End
 			End
 		Next
+		minIndex = newMinIndex
+		maxIndex = newMaxIndex
 	End	
 	
 	Method Update:Void()
@@ -576,3 +605,5 @@ Class Particle Extends Sprite
 	End
 	
 End
+
+
