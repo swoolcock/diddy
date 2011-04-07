@@ -190,9 +190,5 @@ Class Player Extends Sprite
 		If y < 0 y = SCREEN_HEIGHT
 		If y > SCREEN_HEIGHT y = 0
 	End
-
-	Method draw:Void()
-		Super.draw()
-	End
 	
 End
