@@ -34,6 +34,8 @@ Class DiddyApp Extends App
 	
 	' Store the images here
 	Global images:ImageBank = New ImageBank
+	' Store the sounds here
+	Global sounds:SoundBank = New SoundBank
 	
 	Method OnCreate:Int()
 		' Store the device width and height
@@ -305,6 +307,74 @@ Class GameImage
 	End
 	
 End Class
+
+
+Class SoundBank Extends StringMap<GameSound>
+	
+	Global path$ = "sounds/"
+	
+	Method Load:Void(name:String, nameoverride:String = "")
+		Local i:GameSound = New GameSound
+		i.Load(name)
+				
+		If nameoverride <> "" Then i.name = nameoverride.ToUpper()
+		Self.Set(i.name , i)
+	End
+	   
+	Method Find:GameSound(name:String)
+		name = name.ToUpper()
+
+		' debug: print all keys in the map
+	'	For Local key:String = EachIn self.Keys()
+	'		Print key + " is stored in the map."
+	'	Next
+
+		Local i:GameSound =  Self.Get(name)
+
+		If i = Null Then Error("Sound '" + name + "' not found in the SoundBank")
+		Return i
+	End
+End
+
+Class GameSound
+	Field name$
+	Field sound:Sound
+	Field rate# = 1
+	Field pan# = 0
+	Field volume# = 1
+	Field loop% = 0
+	
+	Method Load:Void(file$)
+		#if TARGET="flash"
+			sound = LoadSoundSample(SoundBank.path + file +".mp3")
+		#else If TARGET="android"
+			sound = LoadSoundSample(SoundBank.path + file +".ogg")
+		#else
+			sound = LoadSoundSample(SoundBank.path + file +".wav")
+		#endif
+		
+		name = StripAll(file.ToUpper())	
+	End Method
+	
+	Method Play:Void()
+		SoundPlayer.PlayFx(sound, pan, rate, volume, loop)
+	End Method
+End Class
+
+Class SoundPlayer
+	Global channel:Int
+	Const MAX_CHANNELS:Int = 31
+	Function PlayFx:Void(s:Sound, pan#=0, rate#=1, volume#=1, loop% = 0)
+		channel += 1
+		If (channel > MAX_CHANNELS) Then channel = 0
+
+		StopChannel(channel)
+		PlaySound(s, channel, loop)
+		SetChannelPan(channel, pan)
+		SetChannelRate(channel, rate)
+		SetChannelVolume(channel, volume)
+	End
+End
 
 Class Sprite
 	Field name$
@@ -605,6 +675,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
