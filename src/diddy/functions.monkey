@@ -8,11 +8,13 @@ Extern
 		Function FlushKeys:Void() = "diddy::flushKeys"
 		Function HideMouse:Void() = "diddy::hideMouse"
 		Function ShowMouse:Void() = "diddy::showMouse"
+		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
 		Function HideMouse:Void() = "diddy.hideMouse"
 		Function ShowMouse:Void() = "diddy.showMouse"
+		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 	#End
 	
 Public
@@ -149,4 +151,5 @@ Function PointInSpot:Int(x1:Float, y1:Float, x2:Float, y2:Float, radius:Float)
 	Local dy:Float = y2 - y1
 	Return Sqrt(dx * dx + dy * dy) <= radius
 End
+
 
