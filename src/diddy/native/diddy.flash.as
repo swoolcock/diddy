@@ -23,4 +23,9 @@ class diddy
 	{
 		Mouse.hide();
 	}
+	
+	static public function getUpdateRate():Number
+	{
+		return app.updateRate;
+	}
 }

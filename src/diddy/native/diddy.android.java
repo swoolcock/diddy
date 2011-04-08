@@ -14,6 +14,11 @@ class diddy
 		}
 	}
 	
+	public static int getUpdateRate()
+	{
+		return MonkeyGame.app.updateRate;
+	}
+	
 	// empty function
 	static void showMouse()
 	{
