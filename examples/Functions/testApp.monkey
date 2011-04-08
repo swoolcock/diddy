@@ -14,7 +14,7 @@ Function Main:Int()
 End
 
 ' MyGame
-Class MyGame Extends App
+Class MyGame Extends DiddyApp
 	' save the starting seed
 	Field startingSeed:Int
 	Field mouseOn:Bool = false
@@ -27,6 +27,7 @@ Class MyGame Extends App
 		
 		' 60 FPS please
 		SetUpdateRate 60
+		
 		Return 0
 	End
 	
@@ -76,10 +77,13 @@ Class MyGame Extends App
 		Else
 			DrawText "Mouse On      = false (press enter to toggle)", 10, 50	
 		End
+		DrawText "UpdateRate    = "+GetUpdateRate(), 10, 60
 		Return 0
 	End
 		
 End
+
+
 
 
 
