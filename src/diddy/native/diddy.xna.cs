@@ -19,6 +19,11 @@ class diddy
 		}
 	}
 	
+	public static int getUpdateRate()
+	{
+		return gxtkApp.game.app.updateRate;
+	}
+	
 	public static void showMouse()
 	{
 		gxtkApp.game.IsMouseVisible=true;

@@ -17,6 +17,10 @@ class diddy
 		}
 	}
 	
+	static int getUpdateRate() {
+		return app->updateRate;
+	}
+	
 	static void showMouse()
 	{
 		ShowCursor(true);

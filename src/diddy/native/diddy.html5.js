@@ -11,6 +11,10 @@ diddy.flushKeys=function(){
 	}
 };
 
+diddy.getUpdateRate=function(){
+	return bb_app_device.updateRate;
+};
+
 diddy.showMouse=function()
 {
 	document.getElementById("GameCanvas").style.cursor='default';
