@@ -406,6 +406,7 @@ Class Sprite
 	Field scaleXSpeed# = 0.1
 	Field scaleYSpeed# = 0.1
 	Field ygravity#
+	Field maxFrame:Int
 	
 	Method New(img:GameImage,x#, y#)
 		Self.image = img
@@ -675,6 +676,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
