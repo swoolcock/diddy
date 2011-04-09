@@ -39,7 +39,7 @@ Public
 	Method InsertAll:Bool(index:Int, c:AbstractCollection<E>) Abstract
 	Method IndexOf:Int(o:E) Abstract
 	Method LastIndexOf:Int(o:E) Abstract
-	Method RemoveAt:E(index:Int) Abstract ' can't overload Remove since it's an inherited method
+	Method RemoveAt:E(index:Int) Abstract ' Can't overload Remove since it's an inherited method, and Monkey doesn't support that.
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int) Abstract
 	Method Set:E(index:Int, o:E) Abstract
 End
@@ -110,6 +110,7 @@ End
 #rem
 	ArrayList
 	Concrete implementation of AbstractList that uses a dynamically sized array to store elements.
+	Has best performance when it is initialised with a capacity large enough to hold the expected number of elements.
 #End
 Class ArrayList<E> Extends AbstractList<E>
 Private
@@ -117,7 +118,7 @@ Private
 	Field elements:Object[]
 	Field size:Int = 0
 
-	' resizes the elements array If necessary To ensure it can fit minCapacity elements
+	' resizes the elements array if necessary to ensure it can fit minCapacity elements
 	Method EnsureCapacity:Void(minCapacity:Int)
 		Local oldCapacity:Int = elements.Length
 		If minCapacity > oldCapacity Then
@@ -132,7 +133,7 @@ Private
 		If index >= size Or index < 0 Then Error("Index out of bounds: Index: "+index+", Size: "+size)
 	End
 
-	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray
+	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
 	
 Public
 	' constructors
@@ -213,6 +214,10 @@ Public
 		Return size = 0
 	End
 	
+	Method ObjectEnumerator:AbstractEnumerator<E>()
+		Return New ArrayListEnumerator<E>(Self)
+	End
+	
 	Method Remove:Bool(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then
@@ -255,9 +260,10 @@ Public
 		Return size
 	End
 	
-	Method Sort:Void(comp:AbstractComparator<E> = Null, reverse:Bool = False)
+	Method Sort:Void(reverse:Bool = False, comp:AbstractComparator = Null)
 		If comp = Null Then comp = Self.Comparator
-		' TODO: sort arraylist
+		If comp = Null Then comp = DEFAULT_COMPARATOR
+		QuickSort(elements, 0, size-1, comp, reverse)
 	End
 	
 	Method ToArray:Object[]()
@@ -348,6 +354,66 @@ Public
 	End
 End
 
+
+
+#Rem
+	ListEnumerator
+	Extends AbstractEnumerator to provide support for EachIn.  Blocks concurrent modification, but allows elements to be removed on the fly.
+#End
+Class ArrayListEnumerator<E> Extends AbstractEnumerator<E>
+Private
+	Field lst:ArrayList<E>
+	Field lastIndex:Int = 0
+	Field index:Int = 0
+	Field expectedModCount:Int = 0
+Public
+	Method New(lst:ArrayList<E>)
+		Self.lst = lst
+		expectedModCount = lst.modCount
+	End
+	
+	Method HasNext:Bool()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		Return index < lst.size
+	End
+	
+	Method HasPrevious:Bool()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		Return index > 0
+	End
+	
+	Method NextObject:E()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		lastIndex = index		
+		index += 1		
+		Return lst.elements[lastIndex]
+	End
+	
+	Method PreviousObject:E()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		index -= 1
+		lastIndex = index
+		Return lst.elements[lastIndex]
+	End
+	
+	Method Remove:Void()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		lst.RemoveAt(lastIndex)
+		If lastIndex < index Then index -= 1
+		lastIndex = -1
+		expectedModCount = lst.modCount
+	End
+	
+	Method First:Void()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		index = 0
+	End
+	
+	Method Last:Void()
+		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		index = lst.size
+	End
+End
 
 
 ' TODO: complete wrapper classes
@@ -455,6 +521,36 @@ Public
 		Next
 		Return False
 	End
+End
+
+
+
+Function QuickSort:Void(arr:Object[], left:Int, right:Int, comp:AbstractComparator, reverse:Bool = False)
+	If right > left Then
+		Local pivotIndex:Int = left + (right-left)/2
+		Local pivotNewIndex:Int = QuickSortPartition(arr, left, right, pivotIndex, comp, reverse)
+		QuickSort(arr, left, pivotNewIndex - 1, comp, reverse)
+		QuickSort(arr, pivotNewIndex + 1, right, comp, reverse)
+	End
+End
+
+Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:Int, comp:AbstractComparator, reverse:Bool = False)
+	Local pivotValue:Object = arr[pivotIndex]
+	arr[pivotIndex] = arr[right]
+	arr[right] = pivotValue
+	Local storeIndex:Int = left, val:Object
+	For Local i:Int = left Until right
+		If Not reverse And comp.Compare(arr[i], pivotValue) <= 0 Or reverse And comp.Compare(arr[i], pivotValue) >= 0 Then
+			val = arr[i]
+			arr[i] = arr[storeIndex]
+			arr[storeIndex] = val
+			storeIndex += 1
+		End
+	Next
+	val = arr[storeIndex]
+	arr[storeIndex] = arr[right]
+	arr[right] = val
+	Return storeIndex
 End
 
 
