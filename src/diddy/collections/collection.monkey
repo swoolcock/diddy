@@ -55,6 +55,7 @@ Public
 End
 
 
+
 #Rem
 	AbstractComparator
 	This is a way For developers to provide a custom comparison method for sorting lists.
@@ -62,8 +63,14 @@ End
 #End
 Class AbstractComparator Abstract
 	Method Compare:Int(o1:Object, o2:Object) Abstract
-	Method CompareBool:Bool(o1:Object, o2:Object) Abstract
-	Method HashCode:Int(o:Object) Abstract
+	
+	Method CompareBool:Bool(o1:Object, o2:Object)
+		Return o1 = o2 Or Compare(o1, o2) = 0
+	End
+	
+	Method HashCode:Int(o:Object)
+		Return 0
+	End
 End
 
 
@@ -98,10 +105,6 @@ Class DefaultComparator Extends AbstractComparator
 			Return StringObject(o1).value = StringObject(o2).value
 		End
 		Return o1 = o2
-	End
-	
-	Method HashCode:Int(o:Object)
-		Return 0 ' TODO: hashcodes
 	End
 End
 
