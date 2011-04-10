@@ -1,7 +1,6 @@
 Strict
 
 Import diddy
-Import diddy.collections
 Import monkey.list
 
 Function Main:Int()
@@ -290,4 +289,5 @@ Function ArrayListSortingSpeed:Void(numToTest:Int=1000)
 		Print(fal.Get(i).value)
 	Next
 End
+
 
