@@ -1,5 +1,6 @@
 Import "native/diddy.${TARGET}.${LANG}"
 Import mojo
+Import assert
 
 Extern
 
@@ -41,9 +42,7 @@ End
 Function LoadBitmap:Image(path$, flags%=0)
 	Local pointer:Image = LoadImage(path, 1, flags)
 
-	If pointer = null
-		Error "Error loading bitmap "+path
-	End
+	AssertNotNull(pointer, "Error loading bitmap "+path)
 	
    	Return pointer
 End
@@ -52,9 +51,7 @@ Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image)
 	'tmpImage = loadBitmap(path) <-- This creates another image, decided to just copy the code here
 	tmpImage = LoadImage(path)
 	
-	If tmpImage = null Then
-		Error "Error loading bitmap "+path
-	End
+	AssertNotNull(tmpImage, "Error loading bitmap "+path)
 
 	local pointer:Image = tmpImage.GrabImage( 0, 0, w, h, count, Image.MidHandle)
 	
@@ -63,9 +60,7 @@ End
 
 Function LoadSoundSample:Sound(path$)
 	local pointer:Sound = LoadSound(path)
-	if pointer = null
-		Error "Error loading sound "+path
-	End
+	AssertNotNull(pointer, "Error loading sound "+path)
 	Return pointer
 End
 
@@ -149,7 +144,8 @@ End
 Function PointInSpot:Int(x1:Float, y1:Float, x2:Float, y2:Float, radius:Float)
 	Local dx:Float = x2 - x1
 	Local dy:Float = y2 - y1
-	Return Sqrt(dx * dx + dy * dy) <= radius
+	Return dx * dx + dy * dy <= radius * radius
 End
+
 
 

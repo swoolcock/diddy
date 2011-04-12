@@ -2,6 +2,12 @@ Strict
 
 Const ASSERT_MESSAGE$ = "Assertion failed!"
 
+#Rem
+	Assertion functions.
+	Call the corresponding Assert function with the check that you expect to pass.  If it fails, the
+	error message will be thrown.
+#End
+
 Function Assert:Void(val?, msg$=ASSERT_MESSAGE)
 	If Not val Then Error(msg)
 End
