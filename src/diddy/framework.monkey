@@ -254,8 +254,7 @@ Class ImageBank Extends StringMap<GameImage>
 	'	Next
 	   	
 		Local i:GameImage =  self.Get(name)
-      
-		If i = Null Then Error("Image '" + name + "' not found in the ImageBank")
+		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
 End Class
@@ -330,8 +329,7 @@ Class SoundBank Extends StringMap<GameSound>
 	'	Next
 
 		Local i:GameSound =  Self.Get(name)
-
-		If i = Null Then Error("Sound '" + name + "' not found in the SoundBank")
+		AssertNotNull(i, "Sound '" + name + "' not found in the SoundBank")
 		Return i
 	End
 End
@@ -421,7 +419,7 @@ Class Sprite
 		GetSize()
 	End
 	
-	Method  GetSize:Void()
+	Method GetSize:Void()
 		'Sets w and h based on the current image.
 		If image <> Null Then
 			image.w = image.image.Width()
@@ -676,6 +674,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
