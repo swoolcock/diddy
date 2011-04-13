@@ -1,21 +1,15 @@
 Strict
 
-Import diddy
+Import diddy.collections
 Import monkey.list
 
 Function Main:Int()
-	game = New MyGame()
+	TestArrayList()
+	'TestArrayListSorting()
+	'SpeedComparison()
+	'ArrayListSortingSpeed(10000)
 	Return 0
-End
-
-Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		TestArrayList()
-		'TestArrayListSorting()
-		'SpeedComparison()
-		'ArrayListSortingSpeed(10000)
-		Return 0
-	End
+	Return 0
 End
 
 Function TestArrayList:Void()
@@ -296,6 +290,7 @@ Function ArrayListSortingSpeed:Void(numToTest:Int=1000)
 		Print(fal.Get(i).value)
 	Next
 End
+
 
 
 
