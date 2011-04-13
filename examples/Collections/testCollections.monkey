@@ -9,7 +9,6 @@ Function Main:Int()
 	'SpeedComparison()
 	'ArrayListSortingSpeed(10000)
 	Return 0
-	Return 0
 End
 
 Function TestArrayList:Void()
