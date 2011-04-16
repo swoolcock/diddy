@@ -18,6 +18,8 @@ Global dt:DeltaTimer
 
 Class DiddyApp Extends App
 
+	Field debugOn:Bool = False
+
 	Field FPS% = 60
 	
 	' current Screen
@@ -31,6 +33,7 @@ Class DiddyApp Extends App
 	
 	' mouse
 	Field mouseX:Int, mouseY:Int
+	Field mouseHit:Int
 	
 	' Store the images here
 	Global images:ImageBank = New ImageBank
@@ -64,6 +67,9 @@ Class DiddyApp Extends App
 		FPSCounter.Update()
 		currentScreen.Render()
 		If screenFade.active then screenFade.Render()
+		If debugOn
+			DrawDebug()
+		End
 		Return 0
 	End
 	
@@ -77,12 +83,23 @@ Class DiddyApp Extends App
 	Method ScreenLogic:Int()
 		mouseX = MouseX()
 		mouseY = MouseY()
-
+		mouseHit = MouseHit()
+ 
 		If screenFade.active then screenFade.Update()
 		currentScreen.Update()
-	'	FlushKeys()
 	End
 
+	Method DrawDebug:Void()
+		SetAlpha 0.2
+		SetColor 0, 0, 0
+		DrawRect 0, 0, 200, 200
+		SetColor 255, 255, 255
+		SetAlpha 1
+		FPSCounter.Draw(0,0)
+		DrawText "Delta = "+dt.delta, 0, 10
+		DrawText "Screen = "+currentScreen.name,0, 20
+	End
+	
 End
 
 Class ScreenFade
@@ -383,7 +400,7 @@ Class Sprite
 	Field maxXSpeed#, maxYSpeed#
 	Field image:GameImage
 	Field scaleX# = 1, scaleY# = 1
-	Field rotation#, rotationSpeed#
+
 	Field red% = 255, green% = 255, blue% = 255, alpha# = 1
 	Field hitBoxX:Int = 0
 	Field hitBoxY:Int = 0
@@ -400,11 +417,19 @@ Class Sprite
 	Field pingPong:Bool = false
 	Field loop:Bool = true
 	Field ping%
+	
+	' Scale
 	Field scaleCounter#=0
 	Field scaleXSpeed# = 0.1
 	Field scaleYSpeed# = 0.1
 	Field ygravity#
 	Field maxFrame:Int
+	
+	' Rotation
+	Field rotationCounter#=0
+	Field rotationLength%=1000
+	Field rotationLoop% = 0
+	Field rotation#, rotationSpeed# = 1
 	
 	Method New(img:GameImage,x#, y#)
 		Self.image = img
@@ -453,10 +478,23 @@ Class Sprite
 	
 	Method ManageScale:Void()
 		If scaleCounter>0 Then
-			scaleCounter-=1*Delta
-			scaleX+=scaleXSpeed*Delta
-			scaleY+=scaleYSpeed*Delta
+			scaleCounter-=1*dt.delta
+			scaleX+=scaleXSpeed*dt.delta
+			scaleY+=scaleYSpeed*dt.delta
 		End
+	End
+	
+	Method ManageRotation:Void()
+		If rotationLoop Then
+			rotation+=rotationSpeed*dt.delta
+			If rotation >= 360 Then rotation-=360
+			If rotation <0 Then rotation+=360
+		Else
+			If rotationCounter>0 Then		
+				rotationCounter-=1 * dt.delta
+				rotation+=rotationSpeed * dt.delta
+			End
+		End				
 	End
 	
 	Method MoveForward:Void()
@@ -674,6 +712,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
