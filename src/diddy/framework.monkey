@@ -9,6 +9,9 @@ Global SCREEN_HEIGHT%
 ' Half of SCREEN_WIDTH and HEIGHT
 Global SCREEN_WIDTH2%
 Global SCREEN_HEIGHT2%
+' Used for Virtual Res
+Global SCREENX_RATIO# = 1
+Global SCREENY_RATIO# = 1
 
 ' THE GAME!!
 Global game:DiddyApp
@@ -19,7 +22,8 @@ Global dt:DeltaTimer
 Class DiddyApp Extends App
 
 	Field debugOn:Bool = False
-
+	Field drawFPSOn:Bool = False
+	
 	Field FPS% = 60
 	
 	' current Screen
@@ -48,8 +52,8 @@ Class DiddyApp Extends App
 		SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
 		
 		' set the mouse x,y
-		mouseX = MouseX()
-		mouseY = MouseY()
+		mouseX = MouseX() / SCREENX_RATIO
+		mouseY = MouseY() / SCREENY_RATIO
 		
 		' Set the Random seed
 		Seed = RealMillisecs()
@@ -70,6 +74,9 @@ Class DiddyApp Extends App
 		If debugOn
 			DrawDebug()
 		End
+		If drawFPSOn
+			DrawFPS()
+		End
 		Return 0
 	End
 	
@@ -81,8 +88,8 @@ Class DiddyApp Extends App
 	End
 	
 	Method ScreenLogic:Int()
-		mouseX = MouseX()
-		mouseY = MouseY()
+		mouseX = MouseX() / SCREENX_RATIO
+		mouseY = MouseY() / SCREENY_RATIO
 		mouseHit = MouseHit()
  
 		If screenFade.active then screenFade.Update()
@@ -90,16 +97,18 @@ Class DiddyApp Extends App
 	End
 
 	Method DrawDebug:Void()
-		SetAlpha 0.2
-		SetColor 0, 0, 0
-		DrawRect 0, 0, 200, 200
-		SetColor 255, 255, 255
-		SetAlpha 1
 		FPSCounter.Draw(0,0)
-		DrawText "Delta = "+dt.delta, 0, 10
-		DrawText "Screen = "+currentScreen.name,0, 20
+		DrawText "Delta   = "+dt.delta, 0, 10
+		DrawText "Screen  = "+currentScreen.name,0, 20
+		DrawText "VMouseX = "+Self.mouseX,0, 30
+		DrawText "VMouseY = "+Self.mouseY,0, 40
+		DrawText "MouseX  = "+MouseX(),0, 50
+		DrawText "MouseY  = "+MouseY(),0, 60
 	End
 	
+	Method DrawFPS:Void()
+		DrawText FPSCounter.totalFPS, 0, 0
+	End
 End
 
 Class ScreenFade
@@ -490,11 +499,11 @@ Class Sprite
 			If rotation >= 360 Then rotation-=360
 			If rotation <0 Then rotation+=360
 		Else
-			If rotationCounter>0 Then		
+			If rotationCounter>0 Then
 				rotationCounter-=1 * dt.delta
 				rotation+=rotationSpeed * dt.delta
 			End
-		End				
+		End
 	End
 	
 	Method MoveForward:Void()
