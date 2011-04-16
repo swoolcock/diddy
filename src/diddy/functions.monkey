@@ -147,5 +147,9 @@ Function PointInSpot:Int(x1:Float, y1:Float, x2:Float, y2:Float, radius:Float)
 	Return dx * dx + dy * dy <= radius * radius
 End
 
-
-
+Function AnyInputPressed:Bool()
+	For Local i:Int = 0 To 511
+		If KeyHit(i) Then Return True
+	Next
+	Return False
+End
