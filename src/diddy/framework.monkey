@@ -402,6 +402,7 @@ End
 
 Class Sprite
 	Field name$
+	Field visible?
 	Field x#, y#
 	Field ox#, oy#
 	Field dx#, dy#
@@ -446,6 +447,7 @@ Class Sprite
 		Self.y = y
 		self.alpha = 1
 		self.SetHitBox(-img.w2, -img.h2, img.w, img.h)
+		Self.visible = True
 	End
 	
 	Method SetImage:Void(gi:GameImage)
@@ -579,7 +581,9 @@ Class Sprite
 	
 	Method Draw:Void(offsetx#=0, offsety#=0)
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
-		SetAlpha self.alpha
+		If Self.alpha > 1 Then Self.alpha = 1
+		If Self.alpha < 0 Then Self.alpha = 0
+		SetAlpha Self.alpha
 		SetColor red, green, blue ' doesnt work with images!?!??!
 		DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
 		SetColor 255, 255, 255
@@ -589,7 +593,17 @@ Class Sprite
 	'		drawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
 	'	End
 	End
-		
+
+	Method SetupRotation:Void(rotationSpeed:Float, length:Int, loop:Bool = False, rndPosition:Bool = False)	
+		Self.rotationSpeed = rotationSpeed
+		If loop Then
+			rotationLoop = 1
+			If rndPosition Then rotation = Rnd(0,360)
+		Else
+			rotationLength = length
+			rotationCounter = rotationLength 	
+		End
+	End
 	
 	Method Collide:Int(sprite:Sprite)
 		Return RectsOverlap(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight, 
@@ -721,6 +735,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
