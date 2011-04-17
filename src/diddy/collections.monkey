@@ -1,9 +1,13 @@
 Strict
 
+Import assert
+
 #Rem
 Monkey Collections Framework
 Based loosely on the Java Collections Framework
 #End
+
+'''' Top level Collection stuff ''''
 
 #Rem
 	AbstractCollection
@@ -29,16 +33,19 @@ Public
 	Method Clear:Void() Abstract
 	Method Contains:Bool(o:E) Abstract
 	Method ContainsAll:Bool(c:AbstractCollection<E>) Abstract
-	'Method Equals:Bool(c:AbstractCollection<E>) Abstract
+	Method Enumerator:AbstractEnumerator<E>() Abstract
 	Method FillArray:Int(arr:Object[]) Abstract ' populates the passed array and returns the number of items filled. best used for android
 	Method IsEmpty:Bool() Abstract
-	Method ObjectEnumerator:AbstractEnumerator<E>() Abstract
 	Method Remove:Bool(o:E) Abstract
 	Method RemoveAll:Bool(c:AbstractCollection<E>) Abstract
 	Method RetainAll:Bool(c:AbstractCollection<E>) Abstract
 	Method Size:Int() Property Abstract
 	Method Sort:Void(reverse:Bool = False, comp:AbstractComparator = Null) Abstract
 	Method ToArray:Object[]() Abstract ' creates a new array of the correct size and returns it
+	
+	Method ObjectEnumerator:AbstractEnumerator<E>()
+		Return Enumerator()
+	End
 End
 
 
@@ -78,8 +85,10 @@ Class AbstractComparator Abstract
 	End
 End
 
-
-
+#Rem
+	DefaultComparator
+	Implements an AbstractComparator to handle primitive wrappers and strings.
+#End
 Global DEFAULT_COMPARATOR:DefaultComparator = New DefaultComparator
 Class DefaultComparator Extends AbstractComparator
 	Method Compare:Int(o1:Object, o2:Object)
@@ -98,7 +107,9 @@ Class DefaultComparator Extends AbstractComparator
 			Return 0
 		End
 		If o1 = o2 Then Return 0
-		Return 1 ' don't know what to do!
+		If o1 = Null Then Return -1
+		If o2 = Null Then Return 1
+		Return 0 ' don't know what to do!
 	End
 	
 	Method CompareBool:Bool(o1:Object, o2:Object)
@@ -115,7 +126,10 @@ End
 
 
 
-#rem
+
+'''' List stuff ''''
+
+#Rem
 	AbstractList
 	Extends AbstractCollection to implement some of the abstract methods that apply to any kind of list.
 #End
@@ -130,7 +144,7 @@ Private
 	' Performs a range check.
 	Method RangeCheck:Void(index:Int)
 		Local size:Int = Self.Size()
-		If index < 0 Or index >= size Then Error("Index out of bounds: Index: " + index + ", Size: " + size)
+		AssertRange(index, 0, size, "AbstractList.RangeCheck: Index out of bounds: Index: " + index + ", Size: " + size)
 	End
 	
 Public
@@ -143,7 +157,7 @@ Public
 		Self.rangeChecking = rangeChecking
 	End
 	
-	Method ObjectEnumerator:AbstractEnumerator<E>()
+	Method Enumerator:AbstractEnumerator<E>()
 		Return New ListEnumerator<E>(Self)
 	End
 	
@@ -175,32 +189,36 @@ Public
 		expectedModCount = lst.modCount
 	End
 	
+	Method CheckConcurrency:Void()
+		AssertEquals(lst.modCount, expectedModCount, "ListEnumerator.CheckConcurrency: Concurrent list modification")
+	End
+	
 	Method HasNext:Bool()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		Return index < lst.Size
 	End
 	
 	Method HasPrevious:Bool()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		Return index > 0
 	End
 	
 	Method NextObject:E()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		lastIndex = index		
 		index += 1		
 		Return lst.Get(lastIndex)
 	End
 	
 	Method PreviousObject:E()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		index -= 1
 		lastIndex = index
 		Return lst.Get(lastIndex)
 	End
 	
 	Method Remove:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		lst.RemoveAt(lastIndex)
 		If lastIndex < index Then index -= 1
 		lastIndex = -1
@@ -208,19 +226,80 @@ Public
 	End
 	
 	Method First:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		index = 0
 	End
 	
 	Method Last:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
+		CheckConcurrency()
 		index = lst.Size
 	End
 End
 
+Class IntListEnumerator Extends ListEnumerator<IntObject>
+Public
+	Method New(lst:AbstractList<IntObject>)
+		Super.New(lst)
+	End
 
+	Method NextInt:Int()
+		CheckConcurrency()
+		lastIndex = index
+		index += 1
+		Return lst.Get(lastIndex).value
+	End
 
-#rem
+	Method PreviousInt:Int()
+		CheckConcurrency()
+		index -= 1
+		lastIndex = index
+		Return lst.Get(lastIndex).value
+	End
+End
+
+Class FloatListEnumerator Extends ListEnumerator<FloatObject>
+Public
+	Method New(lst:AbstractList<FloatObject>)
+		Super.New(lst)
+	End
+	
+	Method NextFloat:Float()
+		CheckConcurrency()
+		lastIndex = index
+		index += 1
+		Return lst.Get(lastIndex).value
+	End
+	
+	Method PreviousFloat:Float()
+		CheckConcurrency()
+		index -= 1
+		lastIndex = index
+		Return lst.Get(lastIndex).value
+	End
+End
+
+Class StringListEnumerator Extends ListEnumerator<StringObject>
+Public
+	Method New(lst:AbstractList<IntObject>)
+		Super.New(lst)
+	End
+	
+	Method NextString:String()
+		CheckConcurrency()
+		lastIndex = index
+		index += 1
+		Return lst.Get(lastIndex).value
+	End
+	
+	Method PreviousString:String()
+		CheckConcurrency()
+		index -= 1
+		lastIndex = index
+		Return lst.Get(lastIndex).value
+	End
+End
+
+#Rem
 	ArrayList
 	Concrete implementation of AbstractList that uses a dynamically sized array to store elements.
 	Has best performance when it is initialised with a capacity large enough to hold the expected number of elements.
@@ -243,7 +322,7 @@ Private
 	End
 	
 	Method RangeCheck:Void(index:Int)
-		If index >= size Or index < 0 Then Error("Index out of bounds: Index: "+index+", Size: "+size)
+		AssertRange(index, 0, size, "ArrayList.RangeCheck: Index out of bounds: Index: " + index + ", Size: " + size)
 	End
 
 	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
@@ -255,7 +334,7 @@ Public
 	End
 
 	Method New(initialCapacity:Int)
-		If initialCapacity < 0 Then Error("Illegal Capacity: "+initialCapacity)
+		AssertGreaterThanOrEqual(initialCapacity, 0, "ArrayList.New: Illegal Capacity: "+initialCapacity)
 		Self.elements = New Object[initialCapacity]
 	End
 
@@ -275,6 +354,7 @@ Public
 	End
 	
 	Method AddAll:Bool(c:AbstractCollection<E>)
+		If c.IsEmpty() Then Return False
 		Local newItemCount:Int = c.Size
 		If size + newItemCount > elements.Length Then EnsureCapacity(size+newItemCount)
 		If tempArr.Length < newItemCount Then tempArr = tempArr.Resize(newItemCount)
@@ -303,6 +383,7 @@ Public
 	End
 	
 	Method ContainsAll:Bool(c:AbstractCollection<E>)
+		If c.IsEmpty() Then Return True
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
 		Local len:Int = c.FillArray(tempArr)
 		For Local i:Int = 0 Until len
@@ -311,12 +392,8 @@ Public
 		Return True
 	End
 	
-	'Method Equals:Bool(c:AbstractCollection<E>)
-	'	Return c.Size = size And Self.ContainsAll(c)
-	'End
-	
 	Method FillArray:Int(arr:Object[])
-		If arr.Length < size Then Error("Array too small")
+		AssertGreaterThanOrEqual(arr.Length, size, "ArrayList.FillArray: Array too small")
 		For Local i:Int = 0 Until size
 			arr[i] = elements[i]
 		Next
@@ -325,10 +402,6 @@ Public
 	
 	Method IsEmpty:Bool()
 		Return size = 0
-	End
-	
-	Method ObjectEnumerator:AbstractEnumerator<E>()
-		Return New ArrayListEnumerator<E>(Self)
 	End
 	
 	Method Remove:Bool(o:E)
@@ -343,6 +416,7 @@ Public
 	End
 	
 	Method RemoveAll:Bool(c:AbstractCollection<E>)
+		If c.IsEmpty() Then Return False
 		Local modified:Bool = False
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
 		Local len:Int = c.FillArray(tempArr)
@@ -374,9 +448,11 @@ Public
 	End
 	
 	Method Sort:Void(reverse:Bool = False, comp:AbstractComparator = Null)
+		If size <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
 		If comp = Null Then comp = DEFAULT_COMPARATOR
 		QuickSort(elements, 0, size-1, comp, reverse)
+		modCount += 1
 	End
 	
 	Method ToArray:Object[]()
@@ -407,6 +483,7 @@ Public
 	
 	Method InsertAll:Bool(index:Int, c:AbstractCollection<E>)
 		Local newItemCount:Int = c.Size
+		If newItemCount = 0 Then Return False
 		If size + newItemCount > elements.Length Then EnsureCapacity(size+newItemCount)
 		If tempArr.Length < newItemCount Then tempArr = tempArr.Resize(newItemCount)
 		Local len:Int = c.FillArray(tempArr)
@@ -448,7 +525,7 @@ Public
 	End
 
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
-		If fromIndex > toIndex Then Error("fromIndex > toIndex")
+		AssertLessThanOrEqual(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex")
 		If rangeChecking Then
 			RangeCheck(fromIndex)
 			RangeCheck(toIndex)
@@ -469,69 +546,41 @@ End
 
 
 
-#Rem
-	ListEnumerator
-	Extends AbstractEnumerator to provide support for EachIn.  Blocks concurrent modification, but allows elements to be removed on the fly.
-#End
-Class ArrayListEnumerator<E> Extends AbstractEnumerator<E>
-Private
-	Field lst:ArrayList<E>
-	Field lastIndex:Int = 0
-	Field index:Int = 0
-	Field expectedModCount:Int = 0
-Public
-	Method New(lst:ArrayList<E>)
-		Self.lst = lst
-		expectedModCount = lst.modCount
-	End
-	
-	Method HasNext:Bool()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		Return index < lst.size
-	End
-	
-	Method HasPrevious:Bool()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		Return index > 0
-	End
-	
-	Method NextObject:E()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		lastIndex = index		
-		index += 1		
-		Return lst.elements[lastIndex]
-	End
-	
-	Method PreviousObject:E()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		index -= 1
-		lastIndex = index
-		Return lst.elements[lastIndex]
-	End
-	
-	Method Remove:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		lst.RemoveAt(lastIndex)
-		If lastIndex < index Then index -= 1
-		lastIndex = -1
-		expectedModCount = lst.modCount
-	End
-	
-	Method First:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		index = 0
-	End
-	
-	Method Last:Void()
-		If lst.modCount <> expectedModCount Then Error("Concurrent list modification")
-		index = lst.size
-	End
-End
+' ArrayList wrapper classes
 
 
-' TODO: complete wrapper classes
 Class IntArrayList Extends ArrayList<IntObject>
 Public
+	Method AddInt:Bool(o:Int)
+		If size+1 > elements.Length Then EnsureCapacity(size+1)
+		elements[size] = New IntObject(o)
+		size+=1
+		modCount += 1
+		Return True
+	End
+	
+	Method ContainsInt:Bool(o:Int)
+		For Local i:Int = 0 Until size
+			If IntObject(elements[i]).value = o Then Return True
+		Next
+		Return False
+	End
+	
+	Method Enumerator:AbstractEnumerator<IntObject>()
+		Return New IntArrayListEnumerator(Self)
+	End
+	
+	Method RemoveInt:Bool(o:Int)
+		For Local i:Int = 0 Until size
+			If IntObject(elements[i]).value = o Then
+				RemoveAt(i)
+				modCount += 1
+				Return True
+			End
+		Next
+		Return False
+	End
+	
 	Method ToIntArray:Int[]()
 		Local arr:Int[] = New Int[size]
 		For Local i:Int = 0 Until size
@@ -540,47 +589,93 @@ Public
 		Return arr
 	End
 	
-	Method AddInt:Bool(val:Int)
-		If size + 1 > elements.Length Then EnsureCapacity(size + 1)
-		elements[size] = New IntObject(val)
-		size += 1
-		modCount += 1
-		Return True
-	End
-	
 	Method GetInt:Int(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Return IntObject(elements[index]).value
 	End
 	
-	Method RemoveInt:Bool(value:Int)
+	Method InsertInt:Void(index:Int, o:Int)
+		If rangeChecking Then RangeCheck(index)
+		If size+1 > elements.Length Then EnsureCapacity(size+1)
+		For Local i:Int = size Until index Step -1
+			elements[i] = elements[i-1]
+		Next
+		elements[index] = New IntObject(o)
+		size+=1
+		modCount += 1
+	End
+	
+	Method IndexOfInt:Int(o:Int)
 		For Local i:Int = 0 Until size
-			If IntObject(elements[i]).value = value Then
-				Remove(elements[i])
+			If IntObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+	
+	Method LastIndexOfInt:Int(o:E)
+		For Local i:Int = size-1 To 0 Step -1
+			If IntObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+
+	Method SetInt:Int(index:Int, o:Int)
+		If rangeChecking Then RangeCheck(index)
+		Local oldValue:Int = IntObject(elements[index]).value
+		If elements[index] <> Null Then
+			IntObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
+		End
+		modCount += 1
+		Return oldValue
+	End
+
+	Method FillIntArray:Int(arr:Int[])
+		AssertLessThan(arr.Length, size, "IntArrayList.FillIntArray: Array too small")
+		For Local i:Int = 0 Until size
+			arr[i] = IntObject(elements[i]).value
+		Next
+		Return size
+	End
+End
+	
+Class FloatArrayList Extends ArrayList<FloatObject>
+Public
+	Method AddFloat:Bool(o:Float)
+		If size + 1 > elements.Length Then EnsureCapacity(size + 1)
+		elements[size] = New FloatObject(o)
+		size += 1
+		modCount += 1
+		Return True
+	End
+	
+	Method ContainsFloat:Bool(o:Float)
+		For Local i:Int = 0 Until size
+			If FloatObject(elements[i]).value = o Then Return True
+		Next
+		Return False
+	End
+	
+	Method Enumerator:AbstractEnumerator<FloatObject>()
+		Return New FloatArrayListEnumerator(Self)
+	End
+	
+	Method RemoveFloat:Bool(o:Float)
+		For Local i:Int = 0 Until size
+			If FloatObject(elements[i]).value = o Then
+				RemoveAt(i)
 				modCount += 1
 				Return True
 			End
 		Next
 		Return False
 	End
-End
 
-Class FloatArrayList Extends ArrayList<FloatObject>
-Public
 	Method ToFloatArray:Float[]()
 		Local arr:Float[] = New Float[size]
-		For Local i:Float = 0 Until size
+		For Local i:Int = 0 Until size
 			arr[i] = FloatObject(elements[i]).value
 		Next
 		Return arr
-	End
-	
-	Method AddFloat:Bool(val:Float)
-		If size+1 > elements.Length Then EnsureCapacity(size+1)
-		elements[size] = New FloatObject(val)
-		size+=1
-		modCount += 1
-		Return True
 	End
 	
 	Method GetFloat:Float(index:Int)
@@ -588,20 +683,82 @@ Public
 		Return FloatObject(elements[index]).value
 	End
 	
-	Method RemoveFloat:Bool(value:Float)
+	Method InsertFloat:Void(index:Int, o:Float)
+		If rangeChecking Then RangeCheck(index)
+		If size+1 > elements.Length Then EnsureCapacity(size+1)
+		For Local i:Int = size Until index Step -1
+			elements[i] = elements[i-1]
+		Next
+		elements[index] = New FloatObject(o)
+		size+=1
+		modCount += 1
+	End
+	
+	Method IndexOfFloat:Int(o:Float)
 		For Local i:Int = 0 Until size
-			If FloatObject(elements[i]).value = value Then
-				Remove(elements[i])
+			If FloatObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+	
+	Method LastIndexOfFloat:Int(o:Float)
+		For Local i:Int = size-1 To 0 Step -1
+			If FloatObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+  
+	Method SetFloat:Float(index:Int, o:Float)
+		If rangeChecking Then RangeCheck(index)
+		Local oldValue:Float = FloatObject(elements[index]).value
+		If elements[index] <> Null Then
+			FloatObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
+		End
+		modCount += 1
+		Return oldValue
+	End
+	
+	Method FillFloatArray:Int(arr:Float[])
+		AssertLessThan(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small")
+		For Local i:Int = 0 Until size
+			arr[i] = FloatObject(elements[i]).value
+		Next
+		Return size
+	End
+End
+
+Class StringArrayList Extends ArrayList<StringObject>
+Public
+	Method AddString:Bool(o:String)
+		If size+1 > elements.Length Then EnsureCapacity(size+1)
+		elements[size] = New StringObject(o)
+		size+=1
+				modCount += 1
+				Return True
+			End
+  
+	Method ContainsString:Bool(o:String)
+		For Local i:Int = 0 Until size
+			If StringObject(elements[i]).value = o Then Return True
+		Next
+		Return False
+	End
+
+	Method Enumerator:AbstractEnumerator<StringObject>()
+		Return New StringArrayListEnumerator(Self)
+	End
+	
+	Method RemoveString:Bool(o:String)
+		For Local i:Int = 0 Until size
+			If StringObject(elements[i]).value = o Then
+				RemoveAt(i)
 				modCount += 1
 				Return True
 			End
 		Next
 		Return False
 	End
-End
 
-Class StringArrayList Extends ArrayList<StringObject>
-Public
 	Method ToStringArray:String[]()
 		Local arr:String[] = New String[size]
 		For Local i:Int = 0 Until size
@@ -610,21 +767,48 @@ Public
 		Return arr
 	End
 	
-	Method AddString:Bool(val:String)
-		If size+1 > elements.Length Then EnsureCapacity(size+1)
-		elements[size] = New StringObject(val)
-		size+=1
-		modCount += 1
-		Return True
-	End
-	
 	Method GetString:String(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Return StringObject(elements[index]).value
 	End
 	
-	Method RemoveString:Bool(value:String)
+	Method InsertString:Void(index:Int, o:String)
 		If rangeChecking Then RangeCheck(index)
+		If size+1 > elements.Length Then EnsureCapacity(size+1)
+		For Local i:Int = size Until index Step -1
+			elements[i] = elements[i-1]
+		Next
+		elements[index] = New StringObject(o)
+		size+=1
+		modCount += 1
+	End
+	
+	Method IndexOfString:Int(o:String)
+		For Local i:Int = 0 Until size
+			If StringObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+	
+	Method LastIndexOfString:Int(o:String)
+		For Local i:Int = size-1 To 0 Step -1
+			If StringObject(elements[i]).value = o Then Return i
+		Next
+		Return -1
+	End
+  
+	Method SetString:String(index:Int, o:String)
+		If rangeChecking Then RangeCheck(index)
+		Local oldValue:String = StringObject(elements[index]).value
+		If elements[index] <> Null Then
+			StringObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
+		End
+		modCount += 1
+		Return oldValue
+	End
+
+	Method FillStringArray:Int(arr:String[])
+		AssertLessThan(arr.Length, size, "StringArrayList.FillStringArray: Array too small")
 		For Local i:Int = 0 Until size
 			If StringObject(elements[i]).value = value Then
 				Remove(elements[i])
@@ -665,6 +849,7 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
+
 
 
 
