@@ -153,3 +153,27 @@ Function AnyInputPressed:Bool()
 	Next
 	Return False
 End
+
+Function FormatNumber:String(number:Float, decimal:Int=4, comma:Int=0, padleft:Int=0 )
+	Assert(decimal > -1 And comma > -1 And padleft > -1, "Negative numbers not allowed in FormatNumber()")
+
+	Local str:String = number
+	Local dl:Int = str.Find(".")
+	If decimal = 0 Then decimal = -1
+	str = str[..dl+decimal+1]
+	
+	If comma
+		While dl>comma
+			str = str[..dl-comma] + "," + str[dl-comma..]
+			dl -= comma
+		Wend
+	End
+	
+	If padleft
+		Local paddedLength:Int = padleft+decimal+1
+		If paddedLength < str.Length Then str = "Error"
+		str = RSet(str,paddedLength)
+	End
+	Return str
+End
+
