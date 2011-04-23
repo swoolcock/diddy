@@ -3,12 +3,18 @@ Strict
 Import mojo
 Import functions
 
-' Store the device width and height
-Global SCREEN_WIDTH%
-Global SCREEN_HEIGHT%
+'Device width and height
+Global DEVICE_WIDTH%
+Global DEVICE_HEIGHT%
+
+' Screen width and height
+Global SCREEN_WIDTH#
+Global SCREEN_HEIGHT#
+
 ' Half of SCREEN_WIDTH and HEIGHT
-Global SCREEN_WIDTH2%
-Global SCREEN_HEIGHT2%
+Global SCREEN_WIDTH2#
+Global SCREEN_HEIGHT2#
+
 ' Used for Virtual Res
 Global SCREENX_RATIO# = 1
 Global SCREENY_RATIO# = 1
@@ -23,6 +29,8 @@ Class DiddyApp Extends App
 
 	Field debugOn:Bool = False
 	Field drawFPSOn:Bool = False
+	
+	Field virtualResOn:Bool = True
 	
 	Field FPS% = 60
 	
@@ -46,10 +54,10 @@ Class DiddyApp Extends App
 	
 	Method OnCreate:Int()
 		' Store the device width and height
-		SCREEN_WIDTH = DeviceWidth()
-		SCREEN_HEIGHT = DeviceHeight()
-		SCREEN_WIDTH2 = SCREEN_WIDTH / 2
-		SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
+		DEVICE_WIDTH = DeviceWidth()
+		DEVICE_HEIGHT = DeviceHeight()
+		
+		SetScreenSize(DEVICE_WIDTH, DEVICE_HEIGHT)
 		
 		' set the mouse x,y
 		mouseX = MouseX() / SCREENX_RATIO
@@ -66,11 +74,33 @@ Class DiddyApp Extends App
 		
 		Return 0
 	End
+	
+	Method SetScreenSize:Void(w:Int, h:Int)
+		SCREEN_WIDTH = w
+		SCREEN_HEIGHT = h
+		SCREEN_WIDTH2 = SCREEN_WIDTH / 2
+		SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
+		
+		SCREENX_RATIO = DEVICE_WIDTH/SCREEN_WIDTH
+		SCREENY_RATIO = DEVICE_HEIGHT/SCREEN_HEIGHT
+		
+		If SCREENX_RATIO <> 1 Or SCREENY_RATIO <> 1
+			virtualResOn = True
+		End
+	End
 		
 	Method OnRender:Int()
 		FPSCounter.Update()
-		currentScreen.Render()
-		If screenFade.active then screenFade.Render()
+		If virtualResOn
+			PushMatrix 
+			Scale SCREENX_RATIO, SCREENY_RATIO
+		End
+			currentScreen.Render()
+			If screenFade.active then screenFade.Render()
+		if virtualResOn
+			PopMatrix
+		End
+		currentScreen.ExtraRender()
 		If debugOn
 			DrawDebug()
 		End
@@ -166,27 +196,23 @@ Class ScreenFade
 		SetColor 255, 255, 255
 	End
 	
-End Class
+End
 
 Class ExitScreen Extends Screen
 	Method New()
 		name = "exit"
 	End
 	
-	method Start:Void()
+	Method Start:Void()
 		ExitApp()
 	End
-
-	method Render:Void()
-		
+	
+	Method Render:Void()
 	End 
 	
-	method Update:Void()
-		
-	End 
-
+	Method Update:Void()
+	End
 End
-
 
 Class Screen Abstract
 	Field name$ = ""
@@ -207,8 +233,11 @@ Class Screen Abstract
 	End
 	
 	Method PostFadeIn:Void()
-	
 	End
+	
+	Method ExtraRender:Void()
+	End
+	
 End Class
 
 Class FPSCounter Abstract
@@ -229,7 +258,7 @@ Class FPSCounter Abstract
 	Function Draw:Void(x% = 0, y% = 0, ax# = 0, ay# = 0)
 		DrawText("FPS: " + totalFPS, x, y, ax, ay)
 	End
-End Class
+End
 
 ' From James Boyd
 Class DeltaTimer
@@ -283,7 +312,7 @@ Class ImageBank Extends StringMap<GameImage>
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
-End Class
+End
 
 Class GameImage
 	Field name$
@@ -331,7 +360,7 @@ Class GameImage
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
-End Class
+End
 
 
 Class SoundBank Extends StringMap<GameSound>
@@ -378,12 +407,12 @@ Class GameSound
 		#endif
 		
 		name = StripAll(file.ToUpper())	
-	End Method
+	End
 	
 	Method Play:Void()
 		SoundPlayer.PlayFx(sound, pan, rate, volume, loop)
-	End Method
-End Class
+	End
+End
 
 Class SoundPlayer
 	Global channel:Int
@@ -735,6 +764,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
