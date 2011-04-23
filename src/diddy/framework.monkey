@@ -75,7 +75,7 @@ Class DiddyApp Extends App
 		Return 0
 	End
 	
-	Method SetScreenSize:Void(w:Int, h:Int)
+	Method SetScreenSize:Void(w:Float, h:Float)
 		SCREEN_WIDTH = w
 		SCREEN_HEIGHT = h
 		SCREEN_WIDTH2 = SCREEN_WIDTH / 2
@@ -127,13 +127,18 @@ Class DiddyApp Extends App
 	End
 
 	Method DrawDebug:Void()
+		SetColor 0, 0, 0
+		DrawRect 0, 0, 200, 100
+		SetColor 255, 255, 255
 		FPSCounter.Draw(0,0)
-		DrawText "Delta   = "+dt.delta, 0, 10
-		DrawText "Screen  = "+currentScreen.name,0, 20
-		DrawText "VMouseX = "+Self.mouseX,0, 30
-		DrawText "VMouseY = "+Self.mouseY,0, 40
-		DrawText "MouseX  = "+MouseX(),0, 50
-		DrawText "MouseY  = "+MouseY(),0, 60
+		DrawText "Screen         = "+currentScreen.name,0, 10
+		DrawText "Delta          = "+FormatNumber(dt.delta, 2) , 0, 20
+		DrawText "Screen Width   = "+SCREEN_WIDTH,0, 30
+		DrawText "Screen Height  = "+SCREEN_HEIGHT,0, 40
+		DrawText "VMouseX        = "+Self.mouseX,0, 50
+		DrawText "VMouseY        = "+Self.mouseY,0, 60
+		DrawText "MouseX         = "+MouseX(),0, 70
+		DrawText "MouseY         = "+MouseY(),0, 80
 	End
 	
 	Method DrawFPS:Void()
@@ -764,6 +769,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
