@@ -317,6 +317,15 @@ Class ImageBank Extends StringMap<GameImage>
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
+	
+	Method PreCache:Void()
+		Local gi:GameImage
+		For Local key:String = EachIn self.Keys()
+			gi = Self.Get(key)
+			gi.PreCache()
+		Next
+	End
+	
 End
 
 Class GameImage
@@ -365,6 +374,9 @@ Class GameImage
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
+	Method PreCache:Void()
+		DrawImage self.image, -self.w-50, -self.h-50
+	End
 End
 
 
@@ -769,6 +781,9 @@ Class Particle Extends Sprite
 	End
 	
 End
+
+
+
 
 
 
