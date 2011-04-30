@@ -2,8 +2,10 @@
 Strict
 
 ' The modules
-Import diddy
 Import mojo
+
+Import diddy
+
 
 ' Starting Point
 Function Main:Int()
