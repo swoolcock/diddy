@@ -1,7 +1,7 @@
 Strict
 
-import diddy
 Import mojo
+import diddy
 
 Function Main:Int()
 	game = new MyGame()
