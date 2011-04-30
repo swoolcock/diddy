@@ -1,6 +1,6 @@
 #include <time.h>
 
-// NOT TESTED!!!!!!
+// flushkeys and getUpdateRate does not work, due to the ordering of the imports in monkey
 
 class diddy
 {
@@ -15,21 +15,20 @@ class diddy
 
 	static void flushKeys() {
 		for( int i=0;i<512;++i ){
-			app->input->keyStates[i]&=0x100;
+			//app->input->keyStates[i]&=0x100;
 		}
 	}
 	
 	static int getUpdateRate() {
-		return app->updateRate;
+		return 0;
+		//return app->updateRate;
 	}
 	
 	static void showMouse()
 	{
-		ShowCursor(true);
 	}
 	static void hideMouse()
 	{
-		ShowCursor(false);
 	}
 	
 };
