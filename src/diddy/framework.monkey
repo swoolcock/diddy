@@ -51,6 +51,9 @@ Class DiddyApp Extends App
 	Global images:ImageBank = New ImageBank
 	' Store the sounds here
 	Global sounds:SoundBank = New SoundBank
+	' volume control
+	Field soundVolume:Int = 100
+	Field musicVolume:Int = 100
 	
 	Method OnCreate:Int()
 		' Store the device width and height
@@ -149,16 +152,19 @@ End
 Class ScreenFade
 	Field fadeTime:Float
 	Field fadeOut:Bool
-	Field ratio# = 0
+	Field ratio:Float = 0
 	Field active:Bool
 	Field counter:Float
+	Field fadeMusic:Bool
+	Field fadeSound:Bool
 	
-	Method Start:Void(fadeTime:Float, fadeOut:Bool)
+	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False)
 		If active Then Return
-		active = true
-		self.fadeTime = fadeTime	
-		self.fadeOut = fadeOut
-
+		active = True
+		Self.fadeTime = fadeTime	
+		Self.fadeOut = fadeOut
+		Self.fadeMusic = fadeMusic
+		Self.fadeSound = fadeSound
 		If fadeOut Then
 			ratio = 1
 		Else
@@ -168,10 +174,17 @@ Class ScreenFade
 	End
 
 	Method Update:Void()
-		if not active return
+		If Not active Return
 		counter += dt.delta
 		CalcRatio()
-				
+		If fadeSound Then
+			For Local i% = 0 To SoundPlayer.MAX_CHANNELS
+				SetChannelVolume(i, (ratio) * (game.soundVolume / 100))
+			Next
+		End
+		If fadeMusic Then
+			SetMusicVolume((ratio) * (game.musicVolume / 100))
+		End
 		if counter > fadeTime
 			active = false
 			if fadeOut			
@@ -181,7 +194,7 @@ Class ScreenFade
 			End
 		End
 	End
-	
+		
 	Method CalcRatio:Void()
 		ratio = counter/fadeTime
 		If ratio < 0 Then ratio = 0
@@ -192,7 +205,7 @@ Class ScreenFade
 	End
 	
 	Method Render:Void()
-		if not active return
+		If Not active Return
 		
 		SetAlpha 1 - ratio
 		SetColor 0, 0, 0
@@ -415,25 +428,31 @@ Class GameSound
 	Field loop% = 0
 	
 	Method Load:Void(file$)
-		#if TARGET="flash"
-			sound = LoadSoundSample(SoundBank.path + file +".mp3")
-		#else If TARGET="android"
-			sound = LoadSoundSample(SoundBank.path + file +".ogg")
-		#else
-			sound = LoadSoundSample(SoundBank.path + file +".wav")
-		#endif
+	
+		If file.Contains(".wav") Or file.Contains(".ogg") Or file.Contains(".mp3") Then
+			sound = LoadSoundSample(SoundBank.path + file)
+		Else
+			#if TARGET="flash"
+				sound = LoadSoundSample(SoundBank.path + file +".mp3")
+			#else If TARGET="android"
+				sound = LoadSoundSample(SoundBank.path + file +".ogg")
+			#else
+				sound = LoadSoundSample(SoundBank.path + file +".wav")
+			#endif
+		End
 		
 		name = StripAll(file.ToUpper())	
 	End
 	
 	Method Play:Void()
-		SoundPlayer.PlayFx(sound, pan, rate, volume, loop)
+		SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100), loop)
 	End
 End
 
 Class SoundPlayer
 	Global channel:Int
 	Const MAX_CHANNELS:Int = 31
+	
 	Function PlayFx:Void(s:Sound, pan#=0, rate#=1, volume#=1, loop% = 0)
 		channel += 1
 		If (channel > MAX_CHANNELS) Then channel = 0
@@ -781,6 +800,9 @@ Class Particle Extends Sprite
 	End
 	
 End
+
+
+
 
 
 
