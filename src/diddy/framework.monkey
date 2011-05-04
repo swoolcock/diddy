@@ -54,6 +54,7 @@ Class DiddyApp Extends App
 	' volume control
 	Field soundVolume:Int = 100
 	Field musicVolume:Int = 100
+	Field musicOkay:Int
 	
 	Method OnCreate:Int()
 		' Store the device width and height
@@ -130,22 +131,29 @@ Class DiddyApp Extends App
 	End
 
 	Method DrawDebug:Void()
-		SetColor 0, 0, 0
-		DrawRect 0, 0, 200, 100
 		SetColor 255, 255, 255
 		FPSCounter.Draw(0,0)
-		DrawText "Screen         = "+currentScreen.name,0, 10
+		DrawText "Screen         = "+currentScreen.name, 0, 10
 		DrawText "Delta          = "+FormatNumber(dt.delta, 2) , 0, 20
-		DrawText "Screen Width   = "+SCREEN_WIDTH,0, 30
-		DrawText "Screen Height  = "+SCREEN_HEIGHT,0, 40
-		DrawText "VMouseX        = "+Self.mouseX,0, 50
-		DrawText "VMouseY        = "+Self.mouseY,0, 60
-		DrawText "MouseX         = "+MouseX(),0, 70
-		DrawText "MouseY         = "+MouseY(),0, 80
+		DrawText "Screen Width   = "+SCREEN_WIDTH, 0, 30
+		DrawText "Screen Height  = "+SCREEN_HEIGHT, 0, 40
+		DrawText "VMouseX        = "+Self.mouseX, 0, 50
+		DrawText "VMouseY        = "+Self.mouseY, 0, 60
+		DrawText "MouseX         = "+MouseX(), 0, 70
+		DrawText "MouseY         = "+MouseY(), 0, 80
+		DrawText "MusicOkay      = "+musicOkay, 0, 90
+		DrawText "Music State    = "+MusicState(), 0, 100
+		DrawText "Music Volume   = "+Self.musicVolume, 0, 110
+		DrawText "Sound Volume   = "+Self.soundVolume, 0, 120
 	End
 	
 	Method DrawFPS:Void()
 		DrawText FPSCounter.totalFPS, 0, 0
+	End
+	
+	Method MusicPlay:Void(file:String, flags:Int=1)
+		SetMusicVolume(musicVolume/100)
+		musicOkay = PlayMusic("music/"+file, flags)
 	End
 End
 
@@ -853,6 +861,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
