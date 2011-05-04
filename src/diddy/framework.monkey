@@ -350,6 +350,11 @@ Class GameImage
 	Field h2#
 	Field midhandled%=0
 	
+	Field leftMargin%=0
+	Field rightMargin%=0
+	Field topMargin%=0
+	Field bottomMargin%=0
+	
 	Method Load:Void(file$, midhandle:bool=true)
 		name = StripAll(file.ToUpper())		
 		image = LoadBitmap(file)	
@@ -385,6 +390,54 @@ Class GameImage
 	
 	Method Draw:Void(x#, y#, rotation# = 0, scaleX# = 1, scaleY# = 1, frame% = 0)
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
+	End
+	
+	Method DrawTiled:Void(x#, y#, w#, h#, scaleX# = 1, scaleY# = 1, frame% = 0)
+	End
+	
+	Method DrawStretched:Void(x#, y#, rw#, rh#, frame% = 0)
+	End
+	
+	Method DrawGrid:Void(x#, y#, rw#, rh#, frame% = 0)
+		' draw top left corner
+		DrawImageRect(self.image, x, y, 0, 0, leftMargin, topMargin, frame)
+		' draw top right corner
+		DrawImageRect(self.image, x+rw-rightMargin, y, w-rightMargin, 0, rightMargin, topMargin, frame)
+		' draw bottom left corner
+		DrawImageRect(self.image, x, y+rh-bottomMargin, 0, h-bottomMargin, leftMargin, bottomMargin, frame)
+		' draw bottom right corner
+		DrawImageRect(self.image, x+rw-rightMargin, y+rh-bottomMargin, w-rightMargin, h-bottomMargin, rightMargin, bottomMargin, frame)
+		
+		' work out how many horizontal and vertical tiles
+		Local tileWidth% = (w-leftMargin-rightMargin)
+		Local tileHeight% = (h-topMargin-bottomMargin)
+		Local tileXCount% = (rw-leftMargin-rightMargin) / tileWidth
+		Local tileYCount% = (rh-topMargin-bottomMargin) / tileHeight
+		Local tileXOverflow% = (rw-leftMargin-rightMargin) Mod tileWidth
+		Local tileYOverflow% = (rh-topMargin-bottomMargin) Mod tileHeight
+		
+		' tile top and bottom edges
+		For Local i% = 0 Until tileXCount
+			DrawImageRect(self.image, leftMargin+i*tileWidth,0,leftMargin,0,tileWidth,topMargin,frame)
+			DrawImageRect(self.image, leftMargin+i*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileWidth,bottomMargin,frame)
+		Next
+		If tileXOverflow > 0 Then
+			DrawImageRect(self.image, leftMargin+tileXCount*tileWidth,0,leftMargin,0,tileXOverflow,topMargin,frame)
+			DrawImageRect(self.image, leftMargin+tileXCount*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileXOverflow,bottomMargin,frame)
+		End
+		
+		' tile left and right edges
+		For Local i% = 0 Until tileYCount
+			DrawImageRect(self.image, 0, topMargin+i*tileHeight,0,topMargin,leftMargin,tileHeight,frame)
+			DrawImageRect(self.image, rw-rightMargin,topMargin+i*tileHeight,w-rightMargin,topMargin,rightMargin,tileHeight,frame)
+		Next
+		If tileYOverflow > 0 Then
+			DrawImageRect(self.image, 0, topMargin+tileYCount*tileHeight,0,topMargin,leftMargin,tileYOverflow,frame)
+			DrawImageRect(self.image, rw-rightMargin,topMargin+tileYCount*tileHeight,w-rightMargin,topMargin,rightMargin,tileYOverflow,frame)
+		End
+		
+		' tile centre
+		' TODO
 	End
 	
 	Method PreCache:Void()
@@ -800,6 +853,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
