@@ -1,5 +1,5 @@
-Import diddy
 Import mojo
+Import diddy
 
 Class Rectangle
 	Field x#, y#, w#, h#
@@ -768,5 +768,6 @@ Class ButtonMouseAdapter Extends AbstractMouseAdapter
 		Self.button.ActionPerformed(Self.button)
 	End
 End
+
 
 
