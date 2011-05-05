@@ -74,7 +74,8 @@ Class GUI
 	End
 	
 	Method PushScissor:Void(x#, y#, w#, h#)
-		AssertLessThan(scissorDepth, scissors.Length, "GUI.PushScissor: Out of space for scissors.")
+		' don't use assert, for speed on android (one less method call)
+		If scissorDepth >= scissors.Length Then Error("GUI.PushScissor: Out of space for scissors.")
 		If scissorDepth = 0 Then
 			scissors[0].Set(x, y, w, h)
 		Else
@@ -213,35 +214,6 @@ Class GUI
 				End
 			End
 		End
-	End
-	
-	Method DoMouseHit:Void()
-		' stop if it's already down
-		If mouseDown Then Return
-		' find the button, die if we couldn't
-		If MouseDown(MOUSE_LEFT) Then
-			mouseButton = MOUSE_LEFT
-		ElseIf MouseDown(MOUSE_MIDDLE) Then
-			mouseButton = MOUSE_MIDDLE
-		ElseIf MouseDown(MOUSE_RIGHT) Then
-			mouseButton = MOUSE_RIGHT
-		Else
-			Return
-		End
-		' get the location
-		mouseDownX = MouseX()
-		mouseDownY = MouseY()
-		Local c:Component = ComponentAtPoint(mouseDownX, mouseDownY)
-		If c = Null Then Return
-		mouseDown = True
-		' TODO: fire pressed
-	End
-	
-	Method DoMouseMove:Void()
-	End
-	
-	Method DoMouseDown:Void()
-		If mouseDown Then Return
 	End
 	
 	Method ActionPerformed:Void(source:Component)
@@ -768,6 +740,8 @@ Class ButtonMouseAdapter Extends AbstractMouseAdapter
 		Self.button.ActionPerformed(Self.button)
 	End
 End
+
+
 
 
 
