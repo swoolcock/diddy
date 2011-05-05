@@ -136,7 +136,7 @@ End
 Class AbstractList<E> Extends AbstractCollection<E> Abstract
 Private
 	' If true, bounds checking should be performed.
-#if TARGET="debug"
+#if CONFIG="debug"
 	Field rangeChecking:Bool = True
 #else
 	Field rangeChecking:Bool = False
@@ -898,6 +898,7 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
+
 
 
 
