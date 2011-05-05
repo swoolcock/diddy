@@ -136,7 +136,11 @@ End
 Class AbstractList<E> Extends AbstractCollection<E> Abstract
 Private
 	' If true, bounds checking should be performed.
+#if TARGET="debug"
 	Field rangeChecking:Bool = True
+#else
+	Field rangeChecking:Bool = False
+#end
 	
 	' A counter for modifications to the list.  Used for concurrency checks.
 	Field modCount:Int = 0
@@ -144,7 +148,8 @@ Private
 	' Performs a range check.
 	Method RangeCheck:Void(index:Int)
 		Local size:Int = Self.Size()
-		AssertRange(index, 0, size, "AbstractList.RangeCheck: Index out of bounds: Index: " + index + ", Size: " + size)
+		' range check doesn't use assert, for speed
+		If index < 0 Or index >= size Then Error("AbstractList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 	
 Public
@@ -190,7 +195,8 @@ Public
 	End
 	
 	Method CheckConcurrency:Void()
-		AssertEquals(lst.modCount, expectedModCount, "ListEnumerator.CheckConcurrency: Concurrent list modification")
+		' for speed we don't use assert
+		If lst.modCount <> expectedModCount Then Error("ListEnumerator.CheckConcurrency: Concurrent list modification")
 	End
 	
 	Method HasNext:Bool()
@@ -233,6 +239,44 @@ Public
 	Method Last:Void()
 		CheckConcurrency()
 		index = lst.Size
+	End
+End
+
+#Rem
+	ArrayListEnumerator
+	Extends ListEnumerator to avoid some method calls.
+#End
+Class ArrayListEnumerator<E> Extends ListEnumerator<E>
+	Field alst:ArrayList<E>
+	
+	Method New(lst:ArrayList<E>)
+		Super.New(lst)
+		Self.alst = lst
+		expectedModCount = alst.modCount
+	End
+	
+	Method HasNext:Bool()
+		CheckConcurrency()
+		Return index < alst.size
+	End
+	
+	Method NextObject:E()
+		CheckConcurrency()
+		lastIndex = index		
+		index += 1		
+		Return alst.elements[lastIndex]
+	End
+	
+	Method PreviousObject:E()
+		CheckConcurrency()
+		index -= 1
+		lastIndex = index
+		Return alst.elements[lastIndex]
+	End
+	
+	Method Last:Void()
+		CheckConcurrency()
+		index = alst.size
 	End
 End
 
@@ -322,7 +366,8 @@ Private
 	End
 	
 	Method RangeCheck:Void(index:Int)
-		AssertRange(index, 0, size, "ArrayList.RangeCheck: Index out of bounds: Index: " + index + ", Size: " + size)
+		' range check doesn't use assert, for speed
+		If index < 0 Or index >= size Then Error("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 
 	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
@@ -334,7 +379,7 @@ Public
 	End
 
 	Method New(initialCapacity:Int)
-		AssertGreaterThanOrEqual(initialCapacity, 0, "ArrayList.New: Illegal Capacity: "+initialCapacity)
+		AssertGreaterThanOrEqual(initialCapacity, 0, "ArrayList.New: Illegal Capacity:")
 		Self.elements = New Object[initialCapacity]
 	End
 
@@ -393,7 +438,7 @@ Public
 	End
 	
 	Method FillArray:Int(arr:Object[])
-		AssertGreaterThanOrEqual(arr.Length, size, "ArrayList.FillArray: Array too small")
+		AssertGreaterThanOrEqual(arr.Length, size, "ArrayList.FillArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = elements[i]
 		Next
@@ -525,7 +570,7 @@ Public
 	End
 
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
-		AssertLessThanOrEqual(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex")
+		AssertLessThanOrEqual(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
 		If rangeChecking Then
 			RangeCheck(fromIndex)
 			RangeCheck(toIndex)
@@ -541,6 +586,10 @@ Public
 		elements[index] = o
 		modCount += 1
 		Return oldValue
+	End
+	
+	Method Enumerator:AbstractEnumerator<E>()
+		Return New ArrayListEnumerator<E>(Self)
 	End
 End
 
@@ -630,7 +679,7 @@ Public
 	End
 
 	Method FillIntArray:Int(arr:Int[])
-		AssertLessThan(arr.Length, size, "IntArrayList.FillIntArray: Array too small")
+		AssertLessThan(arr.Length, size, "IntArrayList.FillIntArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = IntObject(elements[i]).value
 		Next
@@ -719,7 +768,7 @@ Public
 	End
 	
 	Method FillFloatArray:Int(arr:Float[])
-		AssertLessThan(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small")
+		AssertLessThan(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = FloatObject(elements[i]).value
 		Next
@@ -808,7 +857,7 @@ Public
 	End
 
 	Method FillStringArray:Int(arr:String[])
-		AssertLessThan(arr.Length, size, "StringArrayList.FillStringArray: Array too small")
+		AssertLessThan(arr.Length, size, "StringArrayList.FillStringArray: Array too small:")
 		For Local i:Int = 0 Until size
 			If StringObject(elements[i]).value = value Then
 				Remove(elements[i])
@@ -849,6 +898,9 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
+
+
+
 
 
 
