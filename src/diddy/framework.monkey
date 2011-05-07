@@ -145,6 +145,7 @@ Class DiddyApp Extends App
 		DrawText "Music State    = "+MusicState(), 0, 100
 		DrawText "Music Volume   = "+Self.musicVolume, 0, 110
 		DrawText "Sound Volume   = "+Self.soundVolume, 0, 120
+		DrawText "Sound Channel  = "+SoundPlayer.channel, 0, 130
 	End
 	
 	Method DrawFPS:Void()
@@ -152,9 +153,26 @@ Class DiddyApp Extends App
 	End
 	
 	Method MusicPlay:Void(file:String, flags:Int=1)
-		SetMusicVolume(musicVolume/100)
+		SetMusicVolume(musicVolume/100.0)
 		musicOkay = PlayMusic("music/"+file, flags)
 	End
+	
+	Method MusicSetVolume:Void(volume:Int)
+		If volume < 0 Then volume = 0
+		If volume > 100 Then volume = 100
+		Self.musicVolume = volume
+		SetMusicVolume(musicVolume/100.0)
+	End
+	
+	Method SoundSetVolume:Void(volume:Int)
+		If volume < 0 Then volume = 0
+		If volume > 100 Then volume = 100
+		Self.soundVolume = volume
+		For Local i% = 0 To SoundPlayer.MAX_CHANNELS
+			SetChannelVolume(i, game.soundVolume / 100.0)
+		Next
+	End
+	
 End
 
 Class ScreenFade
@@ -187,11 +205,11 @@ Class ScreenFade
 		CalcRatio()
 		If fadeSound Then
 			For Local i% = 0 To SoundPlayer.MAX_CHANNELS
-				SetChannelVolume(i, (ratio) * (game.soundVolume / 100))
+				SetChannelVolume(i, (ratio) * (game.soundVolume / 100.0))
 			Next
 		End
 		If fadeMusic Then
-			SetMusicVolume((ratio) * (game.musicVolume / 100))
+			SetMusicVolume((ratio) * (game.musicVolume / 100.0))
 		End
 		if counter > fadeTime
 			active = false
@@ -506,7 +524,7 @@ Class GameSound
 	End
 	
 	Method Play:Void()
-		SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100), loop)
+		SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop)
 	End
 End
 
@@ -861,6 +879,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
