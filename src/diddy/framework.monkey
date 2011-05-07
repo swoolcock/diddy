@@ -56,6 +56,8 @@ Class DiddyApp Extends App
 	Field musicVolume:Int = 100
 	Field musicOkay:Int
 	
+	Field clickSound:GameSound
+	
 	Method OnCreate:Int()
 		' Store the device width and height
 		DEVICE_WIDTH = DeviceWidth()
@@ -879,6 +881,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
