@@ -534,6 +534,12 @@ Class SoundPlayer
 	Global channel:Int
 	Const MAX_CHANNELS:Int = 31
 	
+	Function StopChannels:Void()
+		For Local i:Int = 0 to MAX_CHANNELS
+			StopChannel(i)
+		Next
+	End
+	
 	Function PlayFx:Void(s:Sound, pan#=0, rate#=1, volume#=1, loop% = 0)
 		channel += 1
 		If (channel > MAX_CHANNELS) Then channel = 0
@@ -881,6 +887,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
