@@ -126,18 +126,15 @@ Class DiddyApp Extends App
 				debugOn = Not debugOn
 			End
 		End
-		ScreenLogic()
-
-		Return 0
-	End
-	
-	Method ScreenLogic:Int()
+		
 		mouseX = MouseX() / SCREENX_RATIO
 		mouseY = MouseY() / SCREENY_RATIO
 		mouseHit = MouseHit()
  
 		If screenFade.active then screenFade.Update()
 		currentScreen.Update()
+
+		Return 0
 	End
 
 	Method DrawDebug:Void()
