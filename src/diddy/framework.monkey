@@ -27,8 +27,10 @@ Global dt:DeltaTimer
 
 Class DiddyApp Extends App
 
+	Field debugKeyOn:Bool = False
 	Field debugOn:Bool = False
 	Field drawFPSOn:Bool = False
+	Field debugKey:Int = KEY_F1
 	
 	Field virtualResOn:Bool = True
 	
@@ -54,6 +56,7 @@ Class DiddyApp Extends App
 	' volume control
 	Field soundVolume:Int = 100
 	Field musicVolume:Int = 100
+	Field mojoMusicVolume:Float = 1.0
 	Field musicOkay:Int
 	
 	Field clickSound:GameSound
@@ -118,6 +121,11 @@ Class DiddyApp Extends App
 	
 	Method OnUpdate:Int()
 		dt.UpdateDelta()
+		If debugKeyOn
+			If KeyHit(debugKey)
+				debugOn = Not debugOn
+			End
+		End
 		ScreenLogic()
 
 		Return 0
@@ -135,19 +143,20 @@ Class DiddyApp Extends App
 	Method DrawDebug:Void()
 		SetColor 255, 255, 255
 		FPSCounter.Draw(0,0)
-		DrawText "Screen         = "+currentScreen.name, 0, 10
-		DrawText "Delta          = "+FormatNumber(dt.delta, 2) , 0, 20
-		DrawText "Screen Width   = "+SCREEN_WIDTH, 0, 30
-		DrawText "Screen Height  = "+SCREEN_HEIGHT, 0, 40
-		DrawText "VMouseX        = "+Self.mouseX, 0, 50
-		DrawText "VMouseY        = "+Self.mouseY, 0, 60
-		DrawText "MouseX         = "+MouseX(), 0, 70
-		DrawText "MouseY         = "+MouseY(), 0, 80
-		DrawText "MusicOkay      = "+musicOkay, 0, 90
-		DrawText "Music State    = "+MusicState(), 0, 100
-		DrawText "Music Volume   = "+Self.musicVolume, 0, 110
-		DrawText "Sound Volume   = "+Self.soundVolume, 0, 120
-		DrawText "Sound Channel  = "+SoundPlayer.channel, 0, 130
+		DrawText "Screen             = "+currentScreen.name, 0, 10
+		DrawText "Delta              = "+FormatNumber(dt.delta, 2) , 0, 20
+		DrawText "Screen Width       = "+SCREEN_WIDTH, 0, 30
+		DrawText "Screen Height      = "+SCREEN_HEIGHT, 0, 40
+		DrawText "VMouseX            = "+Self.mouseX, 0, 50
+		DrawText "VMouseY            = "+Self.mouseY, 0, 60
+		DrawText "MouseX             = "+MouseX(), 0, 70
+		DrawText "MouseY             = "+MouseY(), 0, 80
+		DrawText "MusicOkay          = "+musicOkay, 0, 90
+		DrawText "Music State        = "+MusicState(), 0, 100
+		DrawText "Music Volume       = "+Self.musicVolume, 0, 110
+		DrawText "Mojo Music Volume  = "+Self.mojoMusicVolume, 0, 120
+		DrawText "Sound Volume       = "+Self.soundVolume, 0, 130
+		DrawText "Sound Channel      = "+SoundPlayer.channel, 0, 140
 	End
 	
 	Method DrawFPS:Void()
@@ -155,7 +164,7 @@ Class DiddyApp Extends App
 	End
 	
 	Method MusicPlay:Void(file:String, flags:Int=1)
-		SetMusicVolume(musicVolume/100.0)
+		SetMojoMusicVolume(musicVolume/100.0)
 		musicOkay = PlayMusic("music/"+file, flags)
 	End
 	
@@ -163,7 +172,14 @@ Class DiddyApp Extends App
 		If volume < 0 Then volume = 0
 		If volume > 100 Then volume = 100
 		Self.musicVolume = volume
-		SetMusicVolume(musicVolume/100.0)
+		SetMojoMusicVolume(musicVolume/100.0)
+	End
+	
+	Method SetMojoMusicVolume:Void(volume:Float)
+		If volume < 0 Then volume = 0
+		If volume > 1 Then volume = 1
+		mojoMusicVolume = volume
+		SetMusicVolume(mojoMusicVolume)
 	End
 	
 	Method SoundSetVolume:Void(volume:Int)
@@ -211,7 +227,7 @@ Class ScreenFade
 			Next
 		End
 		If fadeMusic Then
-			SetMusicVolume((ratio) * (game.musicVolume / 100.0))
+			game.SetMojoMusicVolume((ratio) * (game.musicVolume / 100.0))
 		End
 		if counter > fadeTime
 			active = false
@@ -887,6 +903,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
