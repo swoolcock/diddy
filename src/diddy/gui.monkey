@@ -1,6 +1,9 @@
 Import mojo
 Import diddy
 
+Const ACTION_CLICKED$ = "clicked"
+Const ACTION_VALUE_CHANGED$ = "changed"
+
 Class Rectangle
 	Field x#, y#, w#, h#
 	Field empty? = False
@@ -131,6 +134,24 @@ Class GUI
 		Return parent
 	End
 	
+	Method GetAbsoluteX:Float(comp:Component)
+		Local rv# = comp.x
+		While comp.parent <> Null
+			comp = comp.parent
+			rv += comp.x
+		Wend
+		Return rv
+	End
+	
+	Method GetAbsoluteY:Float(comp:Component)
+		Local rv# = comp.y
+		While comp.parent <> Null
+			comp = comp.parent
+			rv += comp.y
+		Wend
+		Return rv
+	End
+	
 	Method Update:Void()
 		mouseLastX = mouseThisX
 		mouseLastY = mouseThisY
@@ -144,6 +165,7 @@ Class GUI
 	End
 	
 	Method DoMouse:Void(button%)
+		Local absX#, absY#
 		If MouseHit(button) Then
 			mouseDown[button] = True
 			mouseDownX[button] = mouseThisX
@@ -151,7 +173,11 @@ Class GUI
 			mouseDownComponent[button] = mouseThisComponent
 			
 			' fire pressed on mouseThisComponent
-			If mouseThisComponent.mouseAdapter <> Null Then mouseThisComponent.mouseAdapter.MousePressed(mouseThisX, mouseThisY, button)
+			If mouseThisComponent.mouseAdapter <> Null Then
+				absX = GetAbsoluteX(mouseThisComponent)
+				absY = GetAbsoluteY(mouseThisComponent)
+				mouseThisComponent.mouseAdapter.MousePressed(mouseThisX-absX, mouseThisY-absY, button)
+			End
 			
 			' set mouseDown
 			mouseThisComponent.mouseDown = True
@@ -164,30 +190,46 @@ Class GUI
 				mouseDownComponent[button] = Null 
 				
 				' fire mouse released on comp
-				If comp.mouseAdapter <> Null Then comp.mouseAdapter.MouseReleased(mouseThisX, mouseThisY, button)
+				If comp.mouseAdapter <> Null Then
+					absX = GetAbsoluteX(comp)
+					absY = GetAbsoluteY(comp)
+					comp.mouseAdapter.MouseReleased(mouseThisX-absX, mouseThisY-absY, button)
+				End
 				
 				' clear mouseDown
 				comp.mouseDown = False
 				
 				' if we released on the same component, fire mouse clicked
 				If mouseThisComponent = comp Then
-					If comp.mouseAdapter <> Null Then comp.mouseAdapter.MouseClicked(mouseThisX, mouseThisY, button)
+					If comp.mouseAdapter <> Null Then comp.mouseAdapter.MouseClicked(mouseThisX-absX, mouseThisY-absY, button)
 				End
 				
 			ElseIf mouseLastX <> mouseThisX Or mouseLastY <> mouseThisY Then
 				' fire mouse dragged on mouseDownComponent
-				If mouseDownComponent[button].mouseMotionAdapter <> Null Then mouseDownComponent[button].mouseMotionAdapter.MouseDragged(mouseThisX, mouseThisY, button)
+				If mouseDownComponent[button].mouseMotionAdapter <> Null Then
+					absX = GetAbsoluteX(mouseDownComponent[button])
+					absY = GetAbsoluteY(mouseDownComponent[button])
+					mouseDownComponent[button].mouseMotionAdapter.MouseDragged(mouseThisX-absX, mouseThisY-absY, button)
+				End
 				
 				' if the component changed, fire exit/enter
 				If mouseThisComponent <> mouseLastComponent Then
 					' fire mouse exited on mouseLastComponent
-					If mouseLastComponent.mouseAdapter <> Null Then mouseLastComponent.mouseAdapter.MouseExited(mouseThisX, mouseThisY, mouseThisComponent)
+					If mouseLastComponent.mouseAdapter <> Null Then
+						absX = GetAbsoluteX(mouseLastComponent)
+						absY = GetAbsoluteY(mouseLastComponent)
+						mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent)
+					End
 					
 					' clear mouseHover
 					mouseLastComponent.mouseHover = False
 					
 					' fire mouse entered on mouseThisComponent
-					If mouseThisComponent.mouseAdapter <> Null Then mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX, mouseThisY, mouseLastComponent)
+					If mouseThisComponent.mouseAdapter <> Null Then
+						absX = GetAbsoluteX(mouseThisComponent)
+						absY = GetAbsoluteY(mouseThisComponent)
+						mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent)
+					End
 					
 					' set the STATE_HOVER bit
 					mouseThisComponent.mouseHover = True
@@ -196,27 +238,42 @@ Class GUI
 		Else
 			If mouseLastX <> mouseThisX Or mouseLastY <> mouseThisY Then
 				' fire mouse moved on mouseThisComponent
-				If mouseThisComponent.mouseMotionAdapter <> Null Then mouseThisComponent.mouseMotionAdapter.MouseMoved(mouseThisX, mouseThisY)
+				If mouseThisComponent <> Null And mouseThisComponent.mouseMotionAdapter <> Null Then
+					absX = GetAbsoluteX(mouseThisComponent)
+					absY = GetAbsoluteY(mouseThisComponent)
+					mouseThisComponent.mouseMotionAdapter.MouseMoved(mouseThisX-absX, mouseThisY-absY)
+				End
 				
 				' if the component changed, fire exit/enter
 				If mouseThisComponent <> mouseLastComponent Then
 					' fire mouse exited on mouseLastComponent
-					If mouseLastComponent.mouseAdapter <> Null Then mouseLastComponent.mouseAdapter.MouseExited(mouseThisX, mouseThisY, mouseThisComponent)
-					
-					' clear mouseHover
-					mouseLastComponent.mouseHover = False
+					If mouseLastComponent <> Null Then
+						If mouseLastComponent.mouseAdapter <> Null Then
+							absX = GetAbsoluteX(mouseLastComponent)
+							absY = GetAbsoluteY(mouseLastComponent)
+							mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent)
+						End
+						
+						' clear mouseHover
+						mouseLastComponent.mouseHover = False
+					End
 					
 					' fire mouse entered on mouseThisComponent
-					If mouseThisComponent.mouseAdapter <> Null Then mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX, mouseThisY, mouseLastComponent)
-					
-					' set mouseHover
-					mouseThisComponent.mouseHover = True
+					If mouseThisComponent <> Null Then
+						If mouseThisComponent.mouseAdapter <> Null Then
+							absX = GetAbsoluteX(mouseThisComponent)
+							absY = GetAbsoluteY(mouseThisComponent)
+							mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent)
+						End
+						' set mouseHover
+						mouseThisComponent.mouseHover = True
+					End
 				End
 			End
 		End
 	End
 	
-	Method ActionPerformed:Void(source:Component)
+	Method ActionPerformed:Void(source:Component, action:String)
 	End
 End
 
@@ -248,8 +305,8 @@ Class Desktop Extends Component
 		Self.parentGUI = parentGUI
 	End
 	
-	Method ActionPerformed:Void(source:Component)
-		parentGUI.ActionPerformed(source)
+	Method ActionPerformed:Void(source:Component, action:String)
+		parentGUI.ActionPerformed(source, action)
 	End
 End
 
@@ -447,9 +504,9 @@ Public
 	Method Layout:Void()
 	End
 	
-	Method ActionPerformed:Void(source:Component)
+	Method ActionPerformed:Void(source:Component, action:String)
 		If forwardAction <> Null Then
-			forwardAction.ActionPerformed(source)
+			forwardAction.ActionPerformed(source, action)
 		End
 	End
 	
@@ -696,13 +753,33 @@ Class WindowButtonPanelButton Extends Button
 	End
 End
 
-Class Button Extends Component
+Class Label Extends Component
+	Field text:String
+	Field textRed%, textGreen%, textBlue%
+	Field textXOffset# = 0
+	Field textYOffset# = 0
+	Field textXAlign# = 0
+	Field textYAlign# = 0
+	
+	Method New(parent:Component)
+		Super.New(parent)
+	End
+	
+	Method DrawComponent:Void()
+		Super.DrawComponent()
+		' TODO: draw text
+	End
+End
+
+Class Button Extends Label
 Private
 	Field styleSelected:ComponentStyle = Null
 	
 Public
 	Field selected:Bool
 	Field toggle:Bool
+	Field radioGroup:RadioGroup
+	Field radioValue$
 	
 	Method New(parent:Component)
 		Super.New(parent)
@@ -736,12 +813,289 @@ Class ButtonMouseAdapter Extends AbstractMouseAdapter
 		Self.button = button
 	End
 	Method MouseClicked:Void(x#, y#, button%)
-		If Self.button.toggle Then Self.button.selected = Not Self.button.selected
-		Self.button.ActionPerformed(Self.button)
+		' is it a radio button?
+		If Self.button.radioGroup <> Null Then
+			Self.button.radioGroup.SelectButton(Self.button)
+		' is it a toggle button?
+		ElseIf Self.button.toggle Then
+			Self.button.selected = Not Self.button.selected
+		End
+		Self.button.ActionPerformed(Self.button, ACTION_CLICKED)
 	End
 End
 
+Class RadioGroup
+	Field buttons:ArrayList<Button> = New ArrayList<Button>
+	Field currentValue$
+	
+	Method SelectButton:String(button:Button)
+		For Local b:Button = EachIn buttons
+			b.selected = (b = button)
+			If b.selected Then
+				currentValue = b.radioValue
+			End
+		Next
+		Return currentValue
+	End
+	
+	Method SelectValue:Button(value$)
+		Local rv:Button = Null
+		For Local b:Button = EachIn buttons
+			b.selected = (b.radioValue = value)
+			If b.selected Then
+				currentValue = value
+				rv = b
+			End
+		Next
+		Return rv
+	End
+	
+	Method AddButton:Void(button:Button, value$)
+		button.radioValue = value
+		button.radioGroup = Self
+		buttons.Add(button)
+	End
+	
+	Method RemoveButton:Void(button:Button)
+		button.radioValue = ""
+		button.radioGroup = Null
+		buttons.Remove(button)
+	End
+End
 
+Class Slider Extends Component
+	Const SLIDER_HORIZONTAL% = 0
+	Const SLIDER_VERTICAL% = 1
+	Const SLIDER_DIRECTION_TL_TO_BR% = 0 ' min is top or left, max is bottom or right
+	Const SLIDER_DIRECTION_BR_TO_TL% = 1 ' min is bottom or right, max is top or left
+Private
+	Field buttonUpLeft:Button ' the button used for up and left
+	Field buttonDownRight:Button ' the button used for down and right
+	Field handle:Label
+	Field showButtons:Bool
+	Field orientation:Int = SLIDER_HORIZONTAL
+	Field direction:Int = SLIDER_DIRECTION_TL_TO_BR
+	
+	Field dragX%, dragY%, originalX%, originalY%
+	Field dragging:Bool = False
+	
+Public
+	Field minValue% = 0
+	Field maxValue% = 100
+	Field value% = 50
+	Field tickInterval% = 10
+	Field handleMargin% = 10
+	Field handleSize% = 10
+	Field buttonSize% = 15
+	Field snapToTicks:Bool = True
+	
+	Method New(parent:Component)
+		Super.New(parent)
+		buttonUpLeft = New Button(Self, Self)
+		buttonDownRight = New Button(Self, Self)
+		handle = New Label(Self)
+		handle.mouseAdapter = New SliderHandleMouseAdapter(Self)
+		handle.mouseMotionAdapter = New SliderHandleMouseMotionAdapter(Self)
+		buttonUpLeft.visible = False
+		buttonDownRight.visible = False
+	End
+	
+	Method ShowButtons:Bool() Property
+		Return showButtons
+	End
+	
+	Method ShowButtons:Void(showButtons:Bool) Property
+		If showButtons <> Self.showButtons Then
+			Self.showButtons = showButtons
+			Layout()
+		End
+		Self.showButtons = showButtons
+	End
+	
+	Method Orientation:Int() Property
+		Return orientation
+	End
+	
+	Method Orientation:Void(orientation:Int) Property
+		If Self.orientation <> orientation Then
+			Self.orientation = orientation
+			Layout()
+		End
+		Self.orientation = orientation
+	End
+	
+	Method Direction:Int() Property
+		Return direction
+	End
+	
+	Method Direction:Void(direction:Int) Property
+		If Self.direction <> direction Then
+			Self.direction = direction
+			Layout()
+		End
+		Self.direction = direction
+	End
+	
+	Method DrawComponent:Void()
+		Super.DrawComponent()
+		' TODO: render groove and ticks, etc.
+	End
+	
+	' TODO: adjust layout using xml offsets rather than hardcoded
+	Method Layout:Void()
+		If showButtons Then
+			If orientation = SLIDER_HORIZONTAL Then
+				buttonUpLeft.SetBounds(0, 0, buttonSize, Self.h)
+				buttonDownRight.SetBounds(Self.w - buttonSize, 0, buttonSize, Self.h)
+			Else
+				buttonUpLeft.SetBounds(0, 0, Self.w, buttonSize)
+				buttonDownRight.SetBounds(0, Self.h - buttonSize, Self.w, buttonSize)
+			End
+			buttonUpLeft.visible = True
+			buttonDownRight.visible = True
+		Else
+			buttonUpLeft.visible = False
+			buttonDownRight.visible = False
+		End
+		Local startVal% = buttonSize+handleMargin
+		Local endVal% = -buttonSize-handleMargin
+		Local fraction# = Float(value-minValue)/Float(maxValue-minValue)
+		Local currentVal%
+		If orientation = SLIDER_HORIZONTAL Then
+			endVal += Self.w
+			currentVal = startVal + (endVal - startVal) * fraction
+			handle.SetBounds(currentVal-handleSize/2, 0, handleSize, Self.h)
+		Else
+			endVal += Self.h
+			currentVal = startVal + (endVal - startVal) * fraction
+			handle.SetBounds(0, currentVal-handleSize/2, Self.w, handleSize)
+		End
+	End
+	
+	Method HandleDrag:Int(mx%, my%)
+		Local pos%, topLeft% = handleMargin, bottomRight% = -handleMargin
+		If showButtons Then
+			topLeft += buttonSize
+			bottomRight -= buttonSize
+		End
+		If orientation = SLIDER_HORIZONTAL Then
+			bottomRight += w
+			pos = Min(Max(topLeft, mx), bottomRight)
+		Else
+			bottomRight += h
+			pos = Min(Max(topLeft, my), bottomRight)
+		End
+		Local fraction# = Float(pos-topLeft) / Float(bottomRight-topLeft)
+		If direction = SLIDER_DIRECTION_BR_TO_TL Then fraction = 1-fraction
+		
+		Local oldValue% = value
+		value = SnapToValue(minValue + (maxValue - minValue)*fraction)
+		
+		' if it changed, update the layout and fire an event
+		If value <> oldValue Then
+			Local target:Component = forwardAction
+			If target = Null Then target = FindActionTarget()
+			If target <> Null Then
+				Layout()
+				target.ActionPerformed(Self, ACTION_VALUE_CHANGED)
+			EndIf
+		End
+	End
+	
+	Method ActionPerformed:Void(source:Component, action:String)
+		If source = buttonUpLeft And action = ACTION_CLICKED Then
+			If direction = SLIDER_DIRECTION_TL_TO_BR Then
+				AdjustValue(-1)
+			Else
+				AdjustValue(1)
+			End
+		ElseIf source = buttonDownRight And action = ACTION_CLICKED Then
+			If direction = SLIDER_DIRECTION_TL_TO_BR Then
+				AdjustValue(1)
+			Else
+				AdjustValue(-1)
+			End
+		End
+	End
+	
+	Method SnapToValue:Int(val%)
+		If val < minValue Then
+			val = minValue
+			Return val
+		End
+		If val > maxValue Then
+			val = maxValue
+			Return val
+		End
+		If val Mod tickInterval = 0 Then Return val
+		If val Mod tickInterval < tickInterval / 2 Then
+			val -= val Mod tickInterval
+		Else
+			val -= val Mod tickInterval
+			val += tickInterval
+		End
+		Return val
+	End
+	
+	Method AdjustValue:Bool(amount%)
+		If amount = 0 Then Return
+		Local oldValue% = value
+		
+		' snap if we must
+		If value Mod tickInterval > 0 Then
+			If amount < 0 Then
+				value += tickInterval - (value Mod tickInterval)
+			Else
+				value -= value Mod tickInterval
+			End
+		End
+		
+		' adjust it
+		value += amount * tickInterval
+
+		' check that it's in range
+		If value < minValue Then value = minValue
+		If value > maxValue Then value = maxValue
+		
+		' if it changed, update the layout and fire an event
+		If value <> oldValue Then
+			Local target:Component = forwardAction
+			If target = Null Then target = FindActionTarget()
+			If target <> Null Then
+				Layout()
+				target.ActionPerformed(Self, ACTION_VALUE_CHANGED)
+			EndIf
+		End
+		Return value <> oldValue
+	End
+End
+
+Class SliderHandleMouseAdapter Extends AbstractMouseAdapter
+	Field slider:Slider
+	Method New(slider:Slider)
+		Self.slider = slider
+	End
+	Method MousePressed:Void(x#, y#, button%)
+		If slider.dragging Then Return
+		slider.dragging = True
+		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+	End
+	Method MouseReleased:Void(x#, y#, button%)
+		slider.dragging = False
+		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+	End
+End
+
+Class SliderHandleMouseMotionAdapter Extends AbstractMouseMotionAdapter
+	Field slider:Slider
+	Method New(slider:Slider)
+		Self.slider = slider
+	End
+	Method MouseDragged:Void(x#, y#, button%)
+		If Not slider.dragging Then Return
+		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+	End
+End
 
 
 
