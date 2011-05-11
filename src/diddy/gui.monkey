@@ -156,8 +156,8 @@ Class GUI
 		mouseLastX = mouseThisX
 		mouseLastY = mouseThisY
 		mouseLastComponent = mouseThisComponent
-		mouseThisX = MouseX()
-		mouseThisY = MouseY()
+		mouseThisX = game.mouseX
+		mouseThisY = game.mouseY
 		mouseThisComponent = ComponentAtPoint(mouseThisX, mouseThisY)
 		DoMouse(MOUSE_LEFT)
 		DoMouse(MOUSE_MIDDLE)
