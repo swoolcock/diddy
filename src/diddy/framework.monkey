@@ -50,9 +50,9 @@ Class DiddyApp Extends App
 	Field mouseHit:Int
 	
 	' Store the images here
-	Global images:ImageBank = New ImageBank
+	Field images:ImageBank = New ImageBank
 	' Store the sounds here
-	Global sounds:SoundBank = New SoundBank
+	Field sounds:SoundBank = New SoundBank
 	' volume control
 	Field soundVolume:Int = 100
 	Field musicVolume:Int = 100
@@ -900,6 +900,7 @@ Class Particle Extends Sprite
 	End
 	
 End
+
 
 
 
