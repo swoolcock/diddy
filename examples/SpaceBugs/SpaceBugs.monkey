@@ -37,7 +37,7 @@ Class MyGame Extends DiddyApp
 	'***********************
 	'* Load Images
 	'***********************
-	Function LoadImages:Void()
+	Method LoadImages:Void()
 		' create tmpImage for animations
 		Local tmpImage:Image
 		
@@ -49,7 +49,7 @@ Class MyGame Extends DiddyApp
 	'***********************
 	'* Load Sounds
 	'***********************
-	Function LoadSounds:Void()
+	Method LoadSounds:Void()
 		sounds.Load("lazer")
 		sounds.Load("boom3")
 	End
@@ -353,4 +353,5 @@ Class GameOverScreen Extends Screen
 	Method Update:Void()
 	End
 End
+
 
