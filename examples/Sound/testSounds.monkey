@@ -26,7 +26,7 @@ Class MyGame Extends DiddyApp
 	'***********************
 	'* Load Sounds
 	'***********************
-	Function LoadSounds:Void()
+	Method LoadSounds:Void()
 		sounds.Load("lazer")
 		sounds.Load("boom3")
 	End
@@ -68,3 +68,4 @@ Class GameScreen Extends Screen
 		End
 	End
 End
+

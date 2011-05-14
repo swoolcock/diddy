@@ -37,7 +37,7 @@ Class MyApp Extends App
 	
 	Method OnUpdate:Int()
 		lastTime = thisTime
-		thisTime = RealMillisecs()
+		thisTime = Millisecs()
 		If lastTime < 0 Then lastTime = thisTime
 		deltaTime = thisTime - lastTime
 		
@@ -112,6 +112,7 @@ Class MyApp Extends App
 		End
 	End
 End
+
 
 
 

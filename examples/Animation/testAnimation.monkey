@@ -29,7 +29,7 @@ Class MyGame Extends DiddyApp
 	'***********************
 	'* Load Images
 	'***********************
-	Function LoadImages:Void()
+	Method LoadImages:Void()
 		' create tmpImage for animations
 		local tmpImage:Image
 		
@@ -192,3 +192,4 @@ Class Player Extends Sprite
 	End
 	
 End
+
