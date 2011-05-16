@@ -101,9 +101,8 @@ Class DefaultComparator Extends AbstractComparator
 			If FloatObject(o1).value > FloatObject(o2).value Then Return 1
 			Return 0
 		ElseIf StringObject(o1) <> Null And StringObject(o2) <> Null Then
-			' TODO: string comparison
-			'If StringObject(o1).value < StringObject(o2).value Then Return -1
-			'If StringObject(o1).value > StringObject(o2).value Then Return 1
+			If StringObject(o1).value < StringObject(o2).value Then Return -1
+			If StringObject(o1).value > StringObject(o2).value Then Return 1
 			Return 0
 		End
 		If o1 = o2 Then Return 0
@@ -898,6 +897,8 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
+
+
 
 
 
