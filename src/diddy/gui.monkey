@@ -176,7 +176,7 @@ Class GUI
 			If mouseThisComponent.mouseAdapter <> Null Then
 				absX = GetAbsoluteX(mouseThisComponent)
 				absY = GetAbsoluteY(mouseThisComponent)
-				mouseThisComponent.mouseAdapter.MousePressed(mouseThisX-absX, mouseThisY-absY, button)
+				mouseThisComponent.mouseAdapter.MousePressed(mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 			End
 			
 			' set mouseDown
@@ -193,7 +193,7 @@ Class GUI
 				If comp.mouseAdapter <> Null Then
 					absX = GetAbsoluteX(comp)
 					absY = GetAbsoluteY(comp)
-					comp.mouseAdapter.MouseReleased(mouseThisX-absX, mouseThisY-absY, button)
+					comp.mouseAdapter.MouseReleased(mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 				End
 				
 				' clear mouseDown
@@ -201,7 +201,7 @@ Class GUI
 				
 				' if we released on the same component, fire mouse clicked
 				If mouseThisComponent = comp Then
-					If comp.mouseAdapter <> Null Then comp.mouseAdapter.MouseClicked(mouseThisX-absX, mouseThisY-absY, button)
+					If comp.mouseAdapter <> Null Then comp.mouseAdapter.MouseClicked(mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 				End
 				
 			ElseIf mouseLastX <> mouseThisX Or mouseLastY <> mouseThisY Then
@@ -209,7 +209,7 @@ Class GUI
 				If mouseDownComponent[button].mouseMotionAdapter <> Null Then
 					absX = GetAbsoluteX(mouseDownComponent[button])
 					absY = GetAbsoluteY(mouseDownComponent[button])
-					mouseDownComponent[button].mouseMotionAdapter.MouseDragged(mouseThisX-absX, mouseThisY-absY, button)
+					mouseDownComponent[button].mouseMotionAdapter.MouseDragged(mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 				End
 				
 				' if the component changed, fire exit/enter
@@ -218,7 +218,7 @@ Class GUI
 					If mouseLastComponent.mouseAdapter <> Null Then
 						absX = GetAbsoluteX(mouseLastComponent)
 						absY = GetAbsoluteY(mouseLastComponent)
-						mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent)
+						mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 					End
 					
 					' clear mouseHover
@@ -228,7 +228,7 @@ Class GUI
 					If mouseThisComponent.mouseAdapter <> Null Then
 						absX = GetAbsoluteX(mouseThisComponent)
 						absY = GetAbsoluteY(mouseThisComponent)
-						mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent)
+						mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 					End
 					
 					' set the STATE_HOVER bit
@@ -241,7 +241,7 @@ Class GUI
 				If mouseThisComponent <> Null And mouseThisComponent.mouseMotionAdapter <> Null Then
 					absX = GetAbsoluteX(mouseThisComponent)
 					absY = GetAbsoluteY(mouseThisComponent)
-					mouseThisComponent.mouseMotionAdapter.MouseMoved(mouseThisX-absX, mouseThisY-absY)
+					mouseThisComponent.mouseMotionAdapter.MouseMoved(mouseThisX-absX, mouseThisY-absY, mouseThisX, absY)
 				End
 				
 				' if the component changed, fire exit/enter
@@ -251,7 +251,7 @@ Class GUI
 						If mouseLastComponent.mouseAdapter <> Null Then
 							absX = GetAbsoluteX(mouseLastComponent)
 							absY = GetAbsoluteY(mouseLastComponent)
-							mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent)
+							mouseLastComponent.mouseAdapter.MouseExited(mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 						End
 						
 						' clear mouseHover
@@ -263,7 +263,7 @@ Class GUI
 						If mouseThisComponent.mouseAdapter <> Null Then
 							absX = GetAbsoluteX(mouseThisComponent)
 							absY = GetAbsoluteY(mouseThisComponent)
-							mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent)
+							mouseThisComponent.mouseAdapter.MouseEntered(mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 						End
 						' set mouseHover
 						mouseThisComponent.mouseHover = True
@@ -278,22 +278,22 @@ Class GUI
 End
 
 Class AbstractMouseAdapter Abstract
-	Method MousePressed:Void(x#, y#, button%)
+	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
 	End
-	Method MouseReleased:Void(x#, y#, button%)
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
 	End
-	Method MouseClicked:Void(x#, y#, button%)
+	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
 	End
-	Method MouseEntered:Void(x#, y#, exitedComp:Component)
+	Method MouseEntered:Void(x#, y#, exitedComp:Component, absoluteX#, absoluteY#)
 	End
-	Method MouseExited:Void(x#, y#, enteredComp:Component)
+	Method MouseExited:Void(x#, y#, enteredComp:Component, absoluteX#, absoluteY#)
 	End
 End
 
 Class AbstractMouseMotionAdapter Abstract
-	Method MouseMoved:Void(x#, y#)
+	Method MouseMoved:Void(x#, y#, absoluteX#, absoluteY#)
 	End
-	Method MouseDragged:Void(x#, y#, button%)
+	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
 	End
 End
 
@@ -349,6 +349,15 @@ Public
 	Method StyleNormal:Void(style:ComponentStyle) Property
 		AssertNotNull(style, "StyleNormal may not be null.")
 		styleNormal = style
+	End
+	
+	Method GetStyle:ComponentStyle(name$)
+		If name = "normal" Then Return styleNormal
+		Return Null
+	End
+	
+	Method SetStyle:Void(name$, style:ComponentStyle)
+		If name = "normal" Then styleNormal = style
 	End
 	
 	Method New(parent:Component)
@@ -696,16 +705,16 @@ Class WindowTitlePaneMouseAdapter Extends AbstractMouseAdapter
 	Method New(window:Window)
 		Self.window = window
 	End
-	Method MousePressed:Void(x#, y#, button%)
+	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		If window.dragging Then Return
 		If window.maximised Or window.minimised Then Return
 		window.dragging = True
-		window.dragX = x
-		window.dragY = y
+		window.dragX = absoluteX
+		window.dragY = absoluteY
 		window.originalX = window.x
 		window.originalY = window.y
 	End
-	Method MouseReleased:Void(x#, y#, button%)
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		window.dragging = False
 	End
 End
@@ -715,10 +724,10 @@ Class WindowTitlePaneMouseMotionAdapter Extends AbstractMouseMotionAdapter
 	Method New(window:Window)
 		Self.window = window
 	End
-	Method MouseDragged:Void(x#, y#, button%)
+	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		If window.maximised Or window.minimised Then window.dragging = False
 		If Not window.dragging Then Return
-		Local dx# = x-window.dragX, dy# = y-window.dragY
+		Local dx# = absoluteX-window.dragX, dy# = absoluteY-window.dragY
 		Local newX# = window.originalX + dx, newY# = window.originalY + dy
 		
 		If Desktop(window.parent) <> Null And Desktop(window.parent).restrictWindows Then
@@ -801,6 +810,19 @@ Public
 		styleSelected = style
 	End
 	
+	Method GetStyle:ComponentStyle(name$)
+		If name = "selected" Then Return styleSelected
+		Return Super.GetStyle(name)
+	End
+	
+	Method SetStyle:Void(name$, style:ComponentStyle)
+		If name = "selected" Then
+			styleSelected = style
+		Else
+			Super.GetStyle(name)
+		End
+	End
+	
 	Method GetCurrentStyle:ComponentStyle()
 		If selected And styleSelected <> Null Then Return styleSelected
 		Return Super.GetCurrentStyle()
@@ -812,7 +834,7 @@ Class ButtonMouseAdapter Extends AbstractMouseAdapter
 	Method New(button:Button)
 		Self.button = button
 	End
-	Method MouseClicked:Void(x#, y#, button%)
+	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		' is it a radio button?
 		If Self.button.radioGroup <> Null Then
 			Self.button.radioGroup.SelectButton(Self.button)
@@ -879,6 +901,13 @@ Private
 	Field dragX%, dragY%, originalX%, originalY%
 	Field dragging:Bool = False
 	
+	Field styleLeftButton:ComponentStyle
+	Field styleRightButton:ComponentStyle
+	Field styleTopButton:ComponentStyle
+	Field styleBottomButton:ComponentStyle
+	Field styleHorizontalHandle:ComponentStyle
+	Field styleVerticalHandle:ComponentStyle
+	
 Public
 	Field minValue% = 0
 	Field maxValue% = 100
@@ -900,6 +929,42 @@ Public
 		buttonDownRight.visible = False
 	End
 	
+	Method GetStyle:ComponentStyle(name$)
+		If name = "leftButton" Then
+			Return styleLeftButton
+		ElseIf name = "rightButton" Then
+			Return styleRightButton
+		ElseIf name = "topButton" Then
+			Return styleTopButton
+		ElseIf name = "bottomButton" Then
+			Return styleBottomButton
+		ElseIf name = "horizontalHandle" Then
+			Return styleHorizontalHandle
+		ElseIf name = "verticalHandle" Then
+			Return styleVerticalHandle
+		End
+		Return Super.GetStyle(name)
+	End
+	
+	Method SetStyle:Void(name$, style:ComponentStyle)
+		If name = "leftButton" Then
+			styleLeftButton = style
+		ElseIf name = "rightButton" Then
+			styleRightButton = style
+		ElseIf name = "topButton" Then
+			styleTopButton = style
+		ElseIf name = "bottomButton" Then
+			styleBottomButton = style
+		ElseIf name = "horizontalHandle" Then
+			styleHorizontalHandle = style
+		ElseIf name = "verticalHandle" Then
+			styleVerticalHandle = style
+		Else
+			Super.SetStyle(name, style)
+		End
+		UpdateStyles()
+	End
+	
 	Method ShowButtons:Bool() Property
 		Return showButtons
 	End
@@ -919,6 +984,7 @@ Public
 	Method Orientation:Void(orientation:Int) Property
 		If Self.orientation <> orientation Then
 			Self.orientation = orientation
+			UpdateStyles()
 			Layout()
 		End
 		Self.orientation = orientation
@@ -939,6 +1005,18 @@ Public
 	Method DrawComponent:Void()
 		Super.DrawComponent()
 		' TODO: render groove and ticks, etc.
+	End
+	
+	Method UpdateStyles:Void()
+		If orientation = SLIDER_HORIZONTAL Then
+			buttonUpLeft.StyleNormal = styleLeftButton
+			buttonDownRight.StyleNormal = styleRightButton
+			handle.StyleNormal = styleHorizontalHandle
+		Else
+			buttonUpLeft.StyleNormal = styleTopButton
+			buttonDownRight.StyleNormal = styleBottomButton
+			handle.StyleNormal = styleVerticalHandle
+		End
 	End
 	
 	' TODO: adjust layout using xml offsets rather than hardcoded
@@ -1075,12 +1153,12 @@ Class SliderHandleMouseAdapter Extends AbstractMouseAdapter
 	Method New(slider:Slider)
 		Self.slider = slider
 	End
-	Method MousePressed:Void(x#, y#, button%)
+	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		If slider.dragging Then Return
 		slider.dragging = True
 		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
 	End
-	Method MouseReleased:Void(x#, y#, button%)
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		slider.dragging = False
 		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
 	End
@@ -1091,11 +1169,13 @@ Class SliderHandleMouseMotionAdapter Extends AbstractMouseMotionAdapter
 	Method New(slider:Slider)
 		Self.slider = slider
 	End
-	Method MouseDragged:Void(x#, y#, button%)
+	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		If Not slider.dragging Then Return
 		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
 	End
 End
+
+
 
 
 
