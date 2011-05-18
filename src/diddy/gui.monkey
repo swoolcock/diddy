@@ -327,6 +327,7 @@ Public
 	
 	Field x#, y#
 	Field w#, h#
+	Field w2#, h2#
 	Field visible:Bool = True
 	
 	Method MouseAdapter:Void(mouseAdapter:AbstractMouseAdapter) Property
@@ -409,6 +410,8 @@ Public
 	Method SetSize:Void(w#, h#)
 		Self.w = w
 		Self.h = h
+		Self.w2 = w / 2
+		Self.h2 = h / 2
 		Layout()
 	End
 	
@@ -776,7 +779,9 @@ Class Label Extends Component
 	
 	Method DrawComponent:Void()
 		Super.DrawComponent()
-		' TODO: draw text
+		If text.Length > 0
+			DrawText text, w2, h2, .5, .5
+		End
 	End
 End
 
@@ -794,6 +799,25 @@ Public
 		Super.New(parent)
 		Self.forwardAction = FindActionTarget()
 		mouseAdapter = New ButtonMouseAdapter(Self)
+	End
+	
+	Method New(parent:Component, image:GameImage)
+		Super.New(parent)
+		Self.forwardAction = FindActionTarget()
+		mouseAdapter = New ButtonMouseAdapter(Self)
+		Self.StyleNormal.image = image
+		Self.StyleNormal.drawBackground = False
+		Self.SetSize(image.w, image.h)
+	End
+	
+	Method New(parent:Component, image:GameImage, clickImage:GameImage)
+		Super.New(parent)
+		Self.forwardAction = FindActionTarget()
+		mouseAdapter = New ButtonMouseAdapter(Self)
+		Self.StyleNormal.image = image
+		Self.styleNormal.downImage = clickImage
+		Self.StyleNormal.drawBackground = False
+		Self.SetSize(image.w, image.h)
 	End
 	
 	Method New(parent:Component, forwardAction:Component)
@@ -1174,6 +1198,7 @@ Class SliderHandleMouseMotionAdapter Extends AbstractMouseMotionAdapter
 		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
 	End
 End
+
 
 
 
