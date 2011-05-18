@@ -9,4 +9,5 @@ Import tween
 Import collections
 Import assert
 Import gui
+Import config
 
