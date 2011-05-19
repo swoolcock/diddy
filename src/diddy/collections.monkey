@@ -64,6 +64,7 @@ Public
 	Method Remove:Void() Abstract
 	Method First:Void() Abstract
 	Method Last:Void() Abstract
+	Method Reset:Void() Abstract
 End
 
 
@@ -238,6 +239,11 @@ Public
 	Method Last:Void()
 		CheckConcurrency()
 		index = lst.Size
+	End
+	
+	Method Reset:Void()
+		index = 0
+		expectedModCount = lst.modCount
 	End
 End
 
