@@ -70,7 +70,7 @@ Class GUI
 	
 	Method New()
 		desktop = New Desktop(Self)
-		desktop.SetBounds(0, 0, DeviceWidth(), DeviceHeight())
+		desktop.SetBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 		For Local i% = 0 Until scissors.Length
 			scissors[i] = New Rectangle
 		Next
@@ -100,10 +100,10 @@ Class GUI
 	Method UpdateScissor:Void()
 		If scissorDepth > 0 Then
 			If Not EmptyScissor() Then
-				SetScissor(scissors[scissorDepth-1].x, scissors[scissorDepth-1].y, scissors[scissorDepth-1].w, scissors[scissorDepth-1].h)
+				SetScissor(scissors[scissorDepth-1].x * SCREENX_RATIO, scissors[scissorDepth-1].y * SCREENY_RATIO, scissors[scissorDepth-1].w * SCREENX_RATIO, scissors[scissorDepth-1].h * SCREENY_RATIO)
 			End
 		Else
-			SetScissor(0, 0, DeviceWidth(), DeviceHeight())
+			SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
 		End
 	End
 	
@@ -115,7 +115,7 @@ Class GUI
 	Method Draw()
 		desktop.Draw(Self)
 		scissorDepth = 0
-		SetScissor(0, 0, DeviceWidth(), DeviceHeight())
+		SetScissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 	End
 	
 	Method ComponentAtPoint:Component(x#, y#, parent:Component=Null)
@@ -1198,6 +1198,7 @@ Class SliderHandleMouseMotionAdapter Extends AbstractMouseMotionAdapter
 		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
 	End
 End
+
 
 
 
