@@ -70,8 +70,20 @@ End
 
 
 #Rem
+	Comparable
+	Allows developers to sort a collection without using a Comparator.  Each class is responsible
+	for providing its own logic to determine how it should be sorted.
+#End
+Interface Comparable
+	Method Compare:Int(o1:Object, o2:Object)
+	Method CompareBool:Bool(o1:Object, o2:Object)
+End
+
+
+
+#Rem
 	AbstractComparator
-	This is a way For developers to provide a custom comparison method for sorting lists.
+	This is a way for developers to provide a custom comparison method for sorting lists.
 	It's sort of like a function pointer.
 #End
 Class AbstractComparator Abstract
@@ -891,11 +903,20 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = pivotValue
 	Local storeIndex:Int = left, val:Object
 	For Local i:Int = left Until right
-		If Not reverse And comp.Compare(arr[i], pivotValue) <= 0 Or reverse And comp.Compare(arr[i], pivotValue) >= 0 Then
-			val = arr[i]
-			arr[i] = arr[storeIndex]
-			arr[storeIndex] = val
-			storeIndex += 1
+		If Comparable(arr[i]) <> Null Then
+			If Not reverse And Comparable(arr[i]).Compare(arr[i], pivotValue) <= 0 Or reverse And Comparable(arr[i]).Compare(arr[i], pivotValue) >= 0 Then
+				val = arr[i]
+				arr[i] = arr[storeIndex]
+				arr[storeIndex] = val
+				storeIndex += 1
+			End
+		Else
+			If Not reverse And comp.Compare(arr[i], pivotValue) <= 0 Or reverse And comp.Compare(arr[i], pivotValue) >= 0 Then
+				val = arr[i]
+				arr[i] = arr[storeIndex]
+				arr[storeIndex] = val
+				storeIndex += 1
+			End
 		End
 	Next
 	val = arr[storeIndex]
@@ -903,13 +924,4 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
-
-
-
-
-
-
-
-
-
 
