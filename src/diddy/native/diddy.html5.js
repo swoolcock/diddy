@@ -7,12 +7,12 @@ diddy.systemMillisecs=function(){
 diddy.flushKeys=function(){
 	for( var i = 0; i < 512; ++i )
 	{
-		bbinputdevice.keyStates[i]=0;
+		bb_input_device.keyStates[i]=0;
 	}
 };
 
 diddy.getUpdateRate=function(){
-	return bbappdevice.updateRate;
+	return bb_app_device.updateRate;
 };
 
 diddy.showMouse=function()
