@@ -220,6 +220,7 @@ Class XMLDocument
 	End
 	
 	Method SaveFile:Void(filename:String)
+		' TODO when file IO is ready!
 	End
 End
 
@@ -355,6 +356,18 @@ Public
 		Return rv
 	End
 	
+	Method Children:ArrayList<XMLElement>() Property
+		Return children
+	End
+	
+	Method Parent:XMLElement() Property
+		Return parent
+	End
+	
+	Method Name:String() Property
+		Return name
+	End
+	
 	Method GetElementsByName:ArrayList<XMLElement>(findName:String)
 		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
 		For Local element:XMLElement = EachIn children
@@ -381,6 +394,7 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&amp;", "&")
 	Return str
 End
+
 
 
 
