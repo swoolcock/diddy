@@ -75,8 +75,8 @@ End
 	for providing its own logic to determine how it should be sorted.
 #End
 Interface Comparable
-	Method Compare:Int(o1:Object, o2:Object)
-	Method CompareBool:Bool(o1:Object, o2:Object)
+	Method Compare:Int(o:Object)
+	Method CompareBool:Bool(o:Object)
 End
 
 
@@ -904,7 +904,7 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	Local storeIndex:Int = left, val:Object
 	For Local i:Int = left Until right
 		If Comparable(arr[i]) <> Null Then
-			If Not reverse And Comparable(arr[i]).Compare(arr[i], pivotValue) <= 0 Or reverse And Comparable(arr[i]).Compare(arr[i], pivotValue) >= 0 Then
+			If Not reverse And Comparable(arr[i]).Compare(pivotValue) <= 0 Or reverse And Comparable(arr[i]).Compare(pivotValue) >= 0 Then
 				val = arr[i]
 				arr[i] = arr[storeIndex]
 				arr[storeIndex] = val
