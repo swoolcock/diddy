@@ -9,8 +9,8 @@ Import tween
 Import collections
 Import assert
 Import gui
-Import config
 Import serialization
 Import xml
 Import io
+
 
