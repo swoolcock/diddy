@@ -176,17 +176,20 @@ Class GameScreen Extends Screen
 		Local e:Enemy
 		Local hit:Bool = False
 		
-		For Local i% = 0 Until Enemy.list.Size
-			e = Enemy.list.Get(i)
-			For Local j% = 0 Until Bullet.list.Size
-				b = Bullet.list.Get(j)
-				if b.Collide(e)
+		Enemy.enum.Reset()
+		While Enemy.enum.HasNext()
+			e = Enemy.enum.NextObject()
+			Bullet.enum.Reset()
+			While Bullet.enum.HasNext()
+				b = Bullet.enum.NextObject()
+				If b.Collide(e)
 					player.score+=e.score
-					Bullet.list.Remove(b)
-					Enemy.list.Remove(e)
+					Bullet.enum.Remove()
+					Enemy.enum.Remove()
+					Exit
 				End
-			Next
-		Next
+			End
+		End
 	End
 End
 
@@ -285,9 +288,9 @@ Class Alien Extends Enemy
 	
 	Method New(img:GameImage, x#, y#)
 		Super.New(img, x, y)
-		Self.frame = 0
-		Self.dy = Rnd(1, 3)
-		Self.list.Add(Self)
+		'Self.frame = 0
+		'Self.dy = Rnd(1, 3)
+		'Self.list.Add(Self)
 	End Method
 	
 	Method Update:Void()
@@ -318,6 +321,8 @@ End
 
 Class Enemy Extends Sprite
 	Global list:ArrayList<Enemy> = New ArrayList<Enemy>
+	Global enum:AbstractEnumerator<Enemy> = list.Enumerator()
+	
 	Field movement:Int
 	Field moveCounter:Float
 	Field type:Int
@@ -331,18 +336,21 @@ Class Enemy Extends Sprite
 	End
 	
 	Function UpdateAll:Void()
-		For Local i% = 0 Until list.Size
-			Local e:Enemy = list.Get(i)
+		enum.Reset()
+		While enum.HasNext()
+			Local e:Enemy = enum.NextObject()
 			e.Update()
-		Next
+			If e.OutOfBounds() Then enum.Remove()
+		End
 	End
 	
 	Method Update:Void()
 		UpdateAnimation()
 		Move()
-		if y > SCREEN_HEIGHT + image.h
-			list.Remove(self)
-		EndIf
+	End
+	
+	Method OutOfBounds:Bool()
+		Return y > SCREEN_HEIGHT + image.h
 	End
 	
 	Function DrawAll:Void()
@@ -355,6 +363,7 @@ End
 
 Class Bullet Extends Sprite
 	Global list:ArrayList<Bullet> = New ArrayList<Bullet>
+	Global enum:AbstractEnumerator<Bullet> = list.Enumerator()
 	
 	Method New(img:GameImage, x#, y#)
 		Super.New(img, x, y)
@@ -363,19 +372,22 @@ Class Bullet Extends Sprite
 	End
 	
 	Function UpdateAll:Void()
-		For Local i% = 0 Until list.Size
-			Local b:Bullet = list.Get(i)
+		enum.Reset()
+		While enum.HasNext()
+			Local b:Bullet = enum.NextObject()
 			b.Update()
-		Next
+			If b.OutOfBounds() Then enum.Remove()
+		End
 	End
 	
 	Method Update:Void()
 		Self.UpdateAnimation()
 		dy = Self.speedY
 		Move()
-		if y < -image.h then
-			list.Remove(Self)
-		End
+	End
+	
+	Method OutOfBounds:Bool()
+		Return y < -image.h
 	End
 	
 	Function DrawAll:Void()
@@ -421,6 +433,4 @@ Class GameOverScreen Extends Screen
 	Method Update:Void()
 	End
 End
-
-
 
