@@ -3,9 +3,7 @@ Strict
 
 ' The modules
 Import mojo
-
 Import diddy
-
 
 ' Starting Point
 Function Main:Int()
@@ -44,6 +42,8 @@ Class MyGame Extends DiddyApp
 		images.Load("galaxy2.png", "", False)
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
 		images.LoadAnim("rusher.png", 64, 32, 24, tmpImage)
+		images.LoadAnim("missile.png", 16, 16, 2, tmpImage)
+		
 	End
 	
 	'***********************
@@ -64,8 +64,8 @@ Class TitleScreen Extends Screen
 
 	Method Start:Void()
 		background = game.images.Find("galaxy2")
-	
-		game.screenFade.Start(25, false)
+		game.MusicPlay("ShowYourMoves.ogg", True)
+		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -75,16 +75,17 @@ Class TitleScreen Extends Screen
 		DrawText "SPACE-BUGS", SCREEN_WIDTH2 / 2, (SCREEN_HEIGHT2) / 2, 0.5, 0.5
 		Scale .5, .5
 		DrawText "SPACE TO PLAY!", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 60, 0.5, 0.5
-		DrawText "GRAPHICS FROM XENON 2000: PROJECT PCF", SCREEN_WIDTH2, SCREEN_HEIGHT - 20, 0.5, 0.5
+		DrawText "GRAPHICS FROM XENON 2000: PROJECT PCF", SCREEN_WIDTH2, SCREEN_HEIGHT - 40, 0.5, 0.5
+		DrawText "MUSIC BY KEVIN MACLEOD", SCREEN_WIDTH2, SCREEN_HEIGHT - 20, 0.5, 0.5
 	End
 
 	Method Update:Void()
 		If KeyHit(KEY_SPACE) or MouseHit(0)
-			game.screenFade.Start(25, true)
+			game.screenFade.Start(50, True, True, True)
 			game.nextScreen = gameScreen
 		End
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(25, true)
+			game.screenFade.Start(50, True, True, True)
 			game.nextScreen = game.exitScreen
 		End
 	End
@@ -93,7 +94,8 @@ End
 Class GameScreen Extends Screen
 	Field background:GameImage
 	Field player:Player
-	Field lIfeImage:GameImage
+	Field lifeImage:GameImage
+	Field missileImage:GameImage
 	
 	Method New()
 		name = "Game Screen"
@@ -102,16 +104,16 @@ Class GameScreen Extends Screen
 	Method Start:Void()
 		background = game.images.Find("galaxy2")
 		Local gi:GameImage = game.images.Find("Ship1")
-		player = New Player(gi, SCREEN_WIDTH2, SCREEN_HEIGHT - gi.h)
+		player = New Player(gi, SCREEN_WIDTH2, SCREEN_HEIGHT - gi.h, game.images.Find("missile"))
 		
 		StartLevel()
-		
+		game.MusicPlay("SpaceFighterLoop.ogg", True)
 		'start fade
-		game.screenFade.Start(25, false)
+		game.screenFade.Start(50, False, True, True)
 	End
 	
 	Method ClearLevel:Void()
-		If Alien.list <> Null Alien.list.Clear()
+		Enemy.list.Clear()
 	End
 	
 	Method StartLevel:Void(level% = 1)
@@ -137,9 +139,10 @@ Class GameScreen Extends Screen
 				e.frame = 0
 				e.maxFrame = 23
 				e.dy = 0
-				e.dx = 1 + (level/5) 
+				e.dx = 0.2 + (level/5) 
 				e.movement = 1
 				e.SetFrame(0, 23, 80, True)
+				e.score = 10
 			next
 		next
 	End
@@ -147,16 +150,43 @@ Class GameScreen Extends Screen
 	Method Render:Void()
 		DrawImage background.image, 0, 0
 		Alien.DrawAll()
+		Bullet.DrawAll()
 		player.Draw()
+		DrawGUI()
 	End
+	
+	Method DrawGUI:Void()
+		DrawText "SCORE: "+ player.score, 0, 0
+	End
+	
 
 	Method Update:Void()
 		player.Update()
 		Alien.UpdateAll()
+		Bullet.UpdateAll()
+		CheckCollisions()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(25, true)
+			game.screenFade.Start(50, True, True, True)
 			game.nextScreen = titleScreen
 		End
+	End
+	
+	Method CheckCollisions:Void()
+		Local b:Bullet
+		Local e:Enemy
+		Local hit:Bool = False
+		
+		For Local i% = 0 Until Enemy.list.Size
+			e = Enemy.list.Get(i)
+			For Local j% = 0 Until Bullet.list.Size
+				b = Bullet.list.Get(j)
+				if b.Collide(e)
+					player.score+=e.score
+					Bullet.list.Remove(b)
+					Enemy.list.Remove(e)
+				End
+			Next
+		Next
 	End
 End
 
@@ -167,9 +197,9 @@ Class Player Extends Sprite
 	Field frame:Int
 	Field frameDelay:Int
 	Field maxFrameDelay:Int = 3
-
+	Field missileImage:GameImage
 	
-	Method New(img:GameImage, x#, y#)
+	Method New(img:GameImage, x#, y#, missileImage:GameImage)
 		Super.New(img, x, y)
 		score = 0
 		lives = 3
@@ -177,7 +207,8 @@ Class Player Extends Sprite
 		frame = 3
 		speedX = 1
 		maxXSpeed = 5
-	End Method
+		Self.missileImage = missileImage
+	End
 	
 	Method Update:Void()
 		If KeyDown(KEY_LEFT)
@@ -188,6 +219,9 @@ Class Player Extends Sprite
 			RollRight()
 		Else
 			SlowShip()
+		End
+		If KeyHit(KEY_SPACE)
+			New Bullet(missileImage, x, y)
 		End
 		If dx > Self.maxXSpeed
 			dx = Self.maxXSpeed
@@ -248,12 +282,12 @@ Class Player Extends Sprite
 End
 
 Class Alien Extends Enemy
+	
 	Method New(img:GameImage, x#, y#)
 		Super.New(img, x, y)
-		if list = null then list = new List<Enemy>
-		self.frame = 0
-		self.dy = Rnd(1, 3)
-		list.AddLast self
+		Self.frame = 0
+		Self.dy = Rnd(1, 3)
+		Self.list.Add(Self)
 	End Method
 	
 	Method Update:Void()
@@ -262,12 +296,12 @@ Class Alien Extends Enemy
 			Case 1
 				if x > SCREEN_WIDTH
 					dx = -dx
-					x = SCREEN_WIDTH
+					x = SCREEN_WIDTH - 1
 					moveCounter = 50
 					
 				else if x < 0
 					dx = -dx
-					x = 0
+					x = 0 + 1
 					moveCounter = 50
 					
 				EndIf
@@ -283,25 +317,25 @@ Class Alien Extends Enemy
 End
 
 Class Enemy Extends Sprite
-	Global list:List<Enemy>
+	Global list:ArrayList<Enemy> = New ArrayList<Enemy>
 	Field movement:Int
-	Field moveCounter#
-	field type%
+	Field moveCounter:Float
+	Field type:Int
+	Field score:Int
 	
 	Method New(img:GameImage, x#, y#)
 		Super.New(img, x, y)
-		if list = null then list = new List<Enemy>
-		self.frame = 0
-		self.dy = Rnd(1, 3)
-		list.AddLast self
-	End Method
+		Self.frame = 0
+		Self.dy = Rnd(1, 3)
+		list.Add(Self)
+	End
 	
 	Function UpdateAll:Void()
-		If not list Return
-		For Local b:Enemy = Eachin list
-			b.Update()
+		For Local i% = 0 Until list.Size
+			Local e:Enemy = list.Get(i)
+			e.Update()
 		Next
-	End Function
+	End
 	
 	Method Update:Void()
 		UpdateAnimation()
@@ -309,15 +343,49 @@ Class Enemy Extends Sprite
 		if y > SCREEN_HEIGHT + image.h
 			list.Remove(self)
 		EndIf
-	End Method
+	End
 	
 	Function DrawAll:Void()
-		If not list Return
-		For Local b:Enemy = Eachin list
+		For Local i% = 0 Until list.Size
+			Local e:Enemy = list.Get(i)
+			e.Draw()
+		Next		
+	End
+End
+
+Class Bullet Extends Sprite
+	Global list:ArrayList<Bullet> = New ArrayList<Bullet>
+	
+	Method New(img:GameImage, x#, y#)
+		Super.New(img, x, y)
+		Self.speedY = -6
+		list.Add(Self)
+	End
+	
+	Function UpdateAll:Void()
+		For Local i% = 0 Until list.Size
+			Local b:Bullet = list.Get(i)
+			b.Update()
+		Next
+	End
+	
+	Method Update:Void()
+		Self.UpdateAnimation()
+		dy = Self.speedY
+		Move()
+		if y < -image.h then
+			list.Remove(Self)
+		End
+	End
+	
+	Function DrawAll:Void()
+		For Local i% = 0 Until list.Size
+			Local b:Bullet = list.Get(i)
 			b.Draw()
 		Next		
-	End Function
-End Class
+	End
+	
+End
 
 Class NextLevelScreen Extends Screen
 	Method New()
@@ -353,5 +421,6 @@ Class GameOverScreen Extends Screen
 	Method Update:Void()
 	End
 End
+
 
 
