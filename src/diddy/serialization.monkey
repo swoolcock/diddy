@@ -1,6 +1,6 @@
 Strict
 
-Import config
+Import xml
 Import assert
 
 Interface Serializable
@@ -11,54 +11,57 @@ End
 
 Class Serializer Abstract
 Private
-	Field currentNode:ConfigNode
+	Field currentElement:XMLElement
 
 Public
+' Abstract
+	Method CreateSerializable:Serializable(className:String) Abstract
+
+' Methods
 	Method Write:Void(name:String, value:Int)
-		Local node:ConfigNode = New ConfigNode("field")
-		node.SetAttribute("name", name)
-		node.SetAttribute("value", value)
-		node.SetAttribute("type", "int")
-		currentNode.AddChild(node)
+		Local element:XMLElement = New XMLElement("field")
+		element.SetAttribute("name", name)
+		element.SetAttribute("value", value)
+		element.SetAttribute("type", "int")
+		currentElement.AddChild(element)
 	End
 	
 	Method Write:Void(name:String, value:Float)
-		Local node:ConfigNode = New ConfigNode("field")
-		node.SetAttribute("name", name)
-		node.SetAttribute("value", value)
-		node.SetAttribute("type", "float")
-		currentNode.AddChild(node)
+		Local element:XMLElement = New XMLElement("field")
+		element.SetAttribute("name", name)
+		element.SetAttribute("value", value)
+		element.SetAttribute("type", "float")
+		currentElement.AddChild(element)
 	End
 	
 	Method Write:Void(name:String, value:String)
-		'TODO: escape the string
-		Local node:ConfigNode = New ConfigNode("field")
-		node.SetAttribute("name", name)
-		node.SetAttribute("value", value)
-		node.SetAttribute("type", "string")
-		currentNode.AddChild(node)
+		Local element:XMLElement = New XMLElement("field")
+		element.SetAttribute("name", name)
+		element.SetAttribute("value", value)
+		element.SetAttribute("type", "string")
+		currentElement.AddChild(element)
 	End
 	
 	Method Write:Void(name:String, value:Serializable)
-		Local lastCurrent:ConfigNode = currentNode
-		Local fieldNode:ConfigNode = New ConfigNode("field")
-		fieldNode.SetAttribute("name", name)
-		fieldNode.SetAttribute("type", "serializable")
-		currentNode.AddChild(fieldNode)
-		Local objectNode:ConfigNode = New ConfigNode("object")
-		objectNode.SetAttribute("class", value.GetClassName())
-		fieldNode.AddChild(objectNode)
+		Local lastCurrent:XMLElement = currentElement
+		Local fieldElement:XMLElement = New XMLElement("field")
+		fieldElement.SetAttribute("name", name)
+		fieldElement.SetAttribute("type", "serializable")
+		currentElement.AddChild(fieldElement)
+		Local objectElement:XMLElement = New XMLElement("object")
+		objectElement.SetAttribute("class", value.GetClassName())
+		fieldElement.AddChild(objectElement)
 		' TODO: generics
-		currentNode = objectNode
+		currentElement = objectElement
 		value.Serialize(Self)
-		currentNode = lastCurrent
+		currentElement = lastCurrent
 	End
 	
 	Method ReadInt:Int(name:String)
 		' find the named field
-		For Local node:ConfigNode = EachIn currentNode.FindNodesByName("field")
-			If node.GetAttribute("name") = name Then
-				Return Int(node.GetAttribute("value", "0"))
+		For Local element:XMLElement = EachIn currentElement.GetChildrenByName("field")
+			If element.GetAttribute("name") = name Then
+				Return Int(element.GetAttribute("value", "0"))
 			End
 		Next
 		Error("Couldn't find field" + name)
@@ -66,9 +69,9 @@ Public
 	
 	Method ReadFloat:Float(name:String)
 		' find the named field
-		For Local node:ConfigNode = EachIn currentNode.FindNodesByName("field")
-			If node.GetAttribute("name") = name Then
-				Return Float(node.GetAttribute("value", "0"))
+		For Local element:XMLElement = EachIn currentElement.GetChildrenByName("field")
+			If element.GetAttribute("name") = name Then
+				Return Float(element.GetAttribute("value", "0"))
 			End
 		Next
 		Error("Couldn't find field" + name)
@@ -76,9 +79,9 @@ Public
 	
 	Method ReadString:String(name:String)
 		' find the named field
-		For Local node:ConfigNode = EachIn currentNode.FindNodesByName("field")
-			If node.GetAttribute("name") = name Then
-				Return node.GetAttribute("value")
+		For Local element:XMLElement = EachIn currentElement.GetChildrenByName("field")
+			If element.GetAttribute("name") = name Then
+				Return element.GetAttribute("value")
 			End
 		Next
 		Error("Couldn't find field" + name)
@@ -86,21 +89,21 @@ Public
 	
 	Method ReadSerializable:Serializable(name:String)
 		' find the named field
-		For Local node:ConfigNode = EachIn currentNode.FindNodesByName("field")
-			If node.GetAttribute("name") = name Then
-				' store the last currentNode
-				Local lastCurrent:ConfigNode = currentNode
+		For Local element:XMLElement = EachIn currentElement.GetChildrenByName("field")
+			If element.GetAttribute("name") = name Then
+				' store the last currentElement
+				Local lastCurrent:XMLElement = currentElement
 				
-				' get the object node and assert it's not null
-				For Local objectNode:ConfigNode = EachIn node.FindNodesByName("object")
-					' set the current node to be our object node
-					currentNode = objectNode
+				' get the object element and assert it's not null
+				For Local objectElement:XMLElement = EachIn element.GetChildrenByName("object")
+					' set the current element to be our object element
+					currentElement = objectElement
 					
 					' make that object serialize itself
-					Local rv:Serializable = CreateSerializable(objectNode.GetAttribute("class"))
+					Local rv:Serializable = CreateSerializable(objectElement.GetAttribute("class"))
 					
-					' reset the current node
-					currentNode = lastCurrent
+					' reset the current element
+					currentElement = lastCurrent
 					
 					Return rv
 				Next
@@ -109,26 +112,21 @@ Public
 		Error("Couldn't find field" + name)
 	End
 	
-	Method SerializeObject:ConfigNode(name:String, value:Serializable)
-		Local objectNode:ConfigNode = New ConfigNode("object")
-		objectNode.SetAttribute("name", name)
-		objectNode.SetAttribute("class", value.GetClassName())
-		currentNode = objectNode
+	Method SerializeObject:XMLElement(name:String, value:Serializable)
+		Local objectElement:XMLElement = New XMLElement("object")
+		objectElement.SetAttribute("name", name)
+		objectElement.SetAttribute("class", value.GetClassName())
+		currentElement = objectElement
 		value.Serialize(Self)
-		Return objectNode
+		Return objectElement
 	End
 	
-	Method DeserializeObject:Serializable(node:ConfigNode)
-		AssertEquals(node.GetName(), "object", "Wasn't an object node!")
-		currentNode = node
-		Local rv:Serializable = CreateSerializable(node.GetAttribute("class"))
+	Method DeserializeObject:Serializable(element:XMLElement)
+		AssertEquals(element.Name, "object", "Wasn't an object element!")
+		currentElement = element
+		Local rv:Serializable = CreateSerializable(element.GetAttribute("class"))
 		Return rv
 	End
-	
-	Method CreateSerializable:Serializable(className:String) Abstract
 End
-
-
-
 
 

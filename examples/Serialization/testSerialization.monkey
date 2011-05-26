@@ -11,27 +11,30 @@ Function Main:Int()
 	
 	' serialize it
 	Print "Serializing"
-	Local tcNode:ConfigNode = s.SerializeObject("tc", tc)
+	Local tcSer:XMLElement = s.SerializeObject("tc", tc)
 	
 	Print "Checking xml structure"
-	For Local node:ConfigNode = EachIn tcNode.GetChildren()
-		Print node.GetName()
+	#Rem
+	For Local node:XMLElement = EachIn tcSer.Children
+		Print node.Name
 		Print "name="+node.GetAttribute("name")
 		Print "value="+node.GetAttribute("value")
 		Print "type="+node.GetAttribute("type")
 		If node.GetAttribute("type") = "serializable" Then
-			Local objNode:ConfigNode = node.GetChildren().First()
-			Print("child="+objNode.GetName())
-			For Local c:ConfigNode = EachIn objNode.FindNodesByName("field")
+			Local objNode:XMLElement = node.Children.Get(0)
+			Print("child="+objNode.Name)
+			For Local c:XMLElement = EachIn objNode.GetChildrenByName("field")
 				Print c.GetAttribute("name")+"="+c.GetAttribute("value")
 			Next
 		End
 	Next
+	#End
+	Print tcSer.ToString()
 	
 	' deserialize it
 	Print "Deserializing"
-	Local tc2:TestClass = TestClass(s.DeserializeObject(tcNode))
-	tcNode.Free()
+	Local tc2:TestClass = TestClass(s.DeserializeObject(tcSer))
+	tcSer.Dispose()
 	
 	Print "tc2.intField="+tc2.intField
 	Print "tc2.floatField="+tc2.floatField
@@ -118,5 +121,50 @@ End
 
 
 
+#Rem
+Class MyClass Implements Serializable
+  Field intField:Int
+
+  Method New()
+    intField = 3
+  End
+
+  Method New(serializer:Serializer)
+    intField = serializer.ReadInt("intField")
+  End
+
+  Method Serialize:Void(serializer:Serializer)
+    serializer.Write("intField", intField)
+  End
+
+  Method GetClassName:String()
+    Return "MyClass"
+  End
+
+  Method GetGenericNames:String[]()
+    Return []
+  End
+End
+
+Class MySerializer Extends Serializer
+  Method CreateSerializable:Serializable(className:String)
+    If className = "MyClass" Then Return New MyClass(Self)
+    Return Null
+  End
+End
+
+Function Main:Int()
+  ' create a serializer
+  Local ser:MySerializer = New MySerializer
+  ' create a test object
+  Local testobj:MyClass = New MyClass
+  ' serialize the object to a ConfigNode
+  Local node:ConfigNode = ser.SerializeObject("testobj", testobj)
+  ' deserialize the object back to a new instance of MyClass with the same fields as the original
+  Local newobj:MyClass = MyClass(ser.DeserializeObject(node))
+  Return 0
+End
+
+#End
 
 

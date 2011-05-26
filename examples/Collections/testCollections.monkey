@@ -1,26 +1,78 @@
 Strict
 
-Import diddy.collections
+Import diddy
 Import monkey.list
 
+Class Test Implements Comparable
+	Field a:Int
+	
+	Method New(a:Int)
+		Self.a = a
+	End
+	
+	Method Compare:Int(o:Object)
+		Return a - Test(o).a
+	End
+	
+	Method CompareBool:Bool(o:Object)
+		Return Self = o Or a = Test(o).a
+	End
+End
+
 Function Main:Int()
-	TestArrayList()
+	Local lst:ArrayList<Test> = New ArrayList<Test>
+	lst.Add(New Test(5))
+	lst.Add(New Test(1))
+	lst.Add(New Test(3))
+	lst.Add(New Test(4))
+	lst.Add(New Test(2))
+	
+	'Local lst:ArrayList<StringObject> = New ArrayList<StringObject>
+	'lst.Add("banana")
+	'lst.Add("egg")
+	'lst.Add("cat")
+	'lst.Add("apple")
+	'lst.Add("dog")
+	
+	For Local t:Test = EachIn lst
+		Print(t.a)
+	Next
+	
+	Print("-")
+	
+	lst.Sort()
+	For Local t:Test = EachIn lst
+		Print(t.a)
+	Next
+	
+	Print("-")
+	
+	lst.Sort(True)
+	For Local t:Test = EachIn lst
+		Print(t.a)
+	Next
+	
+	'Print(lst.Size)
+	'Print("Testing AbstractList using ArrayList")
+	'TestLists(New ArrayList<StringObject>, New ArrayList<StringObject>)
+	'Print("Testing AbstractList using LinkedList")
+	'TestLists(New LinkedList<StringObject>, New LinkedList<StringObject>)
+	'Print("Testing AbstractDeque using LinkedList")
+	'TestLinkedList()
 	'TestArrayListSorting()
 	'SpeedComparison()
 	'ArrayListSortingSpeed(10000)
 	Return 0
 End
 
-Function TestArrayList:Void()
+Function TestLists:Void(l1:ArrayList<StringObject>, l2:ArrayList<StringObject>)
 	Print("Adding 3 elements to l1...")
-	Local l1:ArrayList<StringObject> = New ArrayList<StringObject>
 	l1.Add("test3")
 	l1.Add("test2")
 	l1.Add("test1")
 	Print("l1.Size="+l1.Size)
 	
 	Print("Adding 3 elements to l2...")
-	Local l2:ArrayList<StringObject> = New ArrayList<StringObject>
 	l2.Add("test6")
 	l2.Add("test5")
 	l2.Add("test4")
@@ -52,14 +104,14 @@ Function TestArrayList:Void()
 	Next
 	
 	Print("Looping on l1 manually with AbstractEnumerator...")
-	Local oe:AbstractEnumerator<StringObject> = l1.ObjectEnumerator()
+	Local oe:AbstractEnumerator<StringObject> = l1.Enumerator()
 	While oe.HasNext()
 		Local val:StringObject = oe.NextObject()
 		Print("value="+val.value)
 	End
 	
 	Print("Jumping to end of AbstractEnumerator and looping in reverse...")
-	oe = l1.ObjectEnumerator()
+	oe = l1.Enumerator()
 	oe.Last()
 	While oe.HasPrevious()
 		Local val:StringObject = oe.PreviousObject()
@@ -73,7 +125,7 @@ Function TestArrayList:Void()
 	
 	Print("Testing removing items with AbstractEnumerator (forward)...")
 	Print("We'll remove the item 'test1'")
-	oe = l1.ObjectEnumerator()
+	oe = l1.Enumerator()
 	While oe.HasNext()
 		Local val:StringObject = oe.NextObject()
 		Print("value="+val.value)
@@ -91,14 +143,36 @@ Function TestArrayList:Void()
 	End
 	
 	Print("Testing concurrency checks by removing within an EachIn loop (uncomment to test)...")
-	#Rem
+	
 	For Local so:StringObject = EachIn l1
 		Print("value="+so.value)
 		Print("Manually removing it...")
 		l1.RemoveAt(0)
 		Print("Next call to HasNext should fail.")
 	End
-	#End
+
+End	
+
+Function TestLinkedList:Void()
+	Local ad:LinkedList<StringObject> = New LinkedList<StringObject>
+	ad.AddLast(New StringObject("test1"))
+	ad.AddLast(New StringObject("test2"))
+	ad.AddLast(New StringObject("test3"))
+	ad.AddLast(New StringObject("test4"))
+	ad.AddLast(New StringObject("test5"))
+	Print("size="+ad.Size)
+	ad.RemoveFirst()
+	Print("size="+ad.Size)
+	
+	Local enum:AbstractEnumerator<StringObject> = ad.ObjectEnumerator()
+	While enum.HasNext()
+		Local so:StringObject = enum.NextObject()
+		Print(so.value)
+	End
+	
+	'For Local so:StringObject = EachIn ad
+	'	Print(so.value)
+	'Next
 End
 
 Function TestArrayListSorting:Void()
@@ -133,6 +207,7 @@ Function TestArrayListSorting:Void()
 	Next
 End
 
+
 Function SpeedComparison:Void()
 	Local al:ArrayList<StringObject> = New ArrayList<StringObject>(1000000)
 	Local lst:List<StringObject> = New List<StringObject>()
@@ -145,6 +220,7 @@ Function SpeedComparison:Void()
 		al.Add("test")'+i)
 	Next
 	Print("Took: "+(RealMillisecs()-startTime))
+	
 	
 	Print("Testing adding 1000000 items to a List")
 	startTime = RealMillisecs()
@@ -178,6 +254,11 @@ Function SpeedComparison:Void()
 	Print("Testing ToArray")
 	startTime = RealMillisecs()
 	Local arr:Object[] = al.ToArray()
+	Print("Took: "+(RealMillisecs()-startTime))
+	
+	Print("Testing FillArray")
+	startTime = RealMillisecs()
+	al.FillArray(arr)
 	Print("Took: "+(RealMillisecs()-startTime))
 	
 	Print("Testing looping through an ArrayList ToArray ("+arr.Length+" elements)")
@@ -289,6 +370,12 @@ Function ArrayListSortingSpeed:Void(numToTest:Int=1000)
 		Print(fal.Get(i).value)
 	Next
 End
+
+
+
+
+
+
 
 
 

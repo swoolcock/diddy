@@ -88,6 +88,7 @@ Private
 	End
 	
 Public
+' Methods
 	Method ParseString:XMLDocument(xmlString:String)
 		Return ParseReader(New StringReader(xmlString))
 	End
@@ -201,14 +202,18 @@ Public
 End
 
 Class XMLDocument
+Private
 	Field root:XMLElement
 	Field xmlVersion:String = "1.0"
 	Field xmlEncoding:String = "UTF-8"
-	
+
+Public
+' Constructors
 	Method New(rootName:String="")
 		If rootName <> "" Then root = New XMLElement(rootName)
 	End
-	
+
+' Methods
 	Method ExportString:String(formatXML:Bool = True)
 		' we start with the xml instruction
 		Local output:String = "<?xml version=~q"+xmlVersion+"~q encoding=~q"+xmlEncoding+"~q?>"
@@ -218,16 +223,31 @@ Class XMLDocument
 		' done!
 		Return output
 	End
-	
+
 	Method SaveFile:Void(filename:String)
 		' TODO when file IO is ready!
+	End
+
+' Properties
+	Method Root:XMLElement() Property
+		Return root
+	End
+	
+	Method Version:String() Property
+		Return xmlVersion
+	End
+	
+	Method Encoding:String() Property
+		Return xmlEncoding
 	End
 End
 
 Class XMLAttribute
+Private
 	Field name:String
 	Field value:String
-	
+
+' Constructors
 	Method New(name:String, value:String)
 		Self.name = name
 		Self.value = value
@@ -249,12 +269,14 @@ Private
 	Field parent:XMLElement
 
 Public
+' Constructors
 	Method New(name:String, parent:XMLElement = Null)
 		Self.parent = parent
 		Self.name = name
 		If parent <> Null Then parent.children.Add(Self)
 	End
-	
+
+' Methods
 	' avoid using this method if you can, because you should try not to have "floating" elements
 	Method AddChild:Void(child:XMLElement)
 		If children.Contains(child) Return
@@ -262,12 +284,12 @@ Public
 		child.parent = Self
 	End
 	
-	Method GetAttribute:String(name:String)
+	Method GetAttribute:String(name:String, defaultValue:String = "")
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then Return att.value
 		Next
-		Return ""
+		Return defaultValue
 	End
 	
 	Method SetAttribute:String(name:String, value:String)
@@ -343,10 +365,12 @@ Public
 					rv += esc
 				Else
 					rv += "~n" + esc + "~n"
-					For Local i% = 0 Until indentation
-						rv += "  "
-					Next
 				End
+			End
+			If formatXML Then
+				For Local i% = 0 Until indentation
+					rv += "  "
+				Next
 			End
 			rv += closeTagStart + name + closeTagEnd
 		End
@@ -356,6 +380,15 @@ Public
 		Return rv
 	End
 	
+	Method GetChildrenByName:ArrayList<XMLElement>(findName:String)
+		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
+		For Local element:XMLElement = EachIn children
+			If element.name = findName Then rv.Add(element)
+		Next
+		Return rv
+	End
+	
+' Properties
 	Method Children:ArrayList<XMLElement>() Property
 		Return children
 	End
@@ -368,12 +401,8 @@ Public
 		Return name
 	End
 	
-	Method GetElementsByName:ArrayList<XMLElement>(findName:String)
-		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
-		For Local element:XMLElement = EachIn children
-			If element.name = findName Then rv.Add(element)
-		Next
-		Return rv
+	Method Value:String() Property
+		Return value
 	End
 End
 
@@ -394,6 +423,8 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&amp;", "&")
 	Return str
 End
+
+
 
 
 

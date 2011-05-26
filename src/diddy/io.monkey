@@ -8,6 +8,13 @@ Private
 	Field skipBuffer:Int[] = New Int[128]
 
 Public
+' Abstract
+	Method Read:Int() Abstract
+	Method ReadArray:Int(arr:Int[], offset:Int, length:Int) Abstract
+	Method IsReady:Bool() Abstract
+	Method Close:Void() Abstract
+
+' Methods
 	Method Mark:Void()
 		Error("Mark not supported.")
 	End
@@ -76,40 +83,43 @@ Public
 		Next
 		Return rv
 	End
-	
-	Method Read:Int() Abstract
-	Method ReadArray:Int(arr:Int[], offset:Int, length:Int) Abstract
-	Method Ready:Bool() Abstract
-	Method Close:Void() Abstract
 End
 
 Class StringReader Extends Reader
+Private
 	Field index:Int = 0
 	Field mark:Int = 0
 	Field str:String
-	
+
+Public
+' Constructors
 	Method New(str:String)
 		Self.str = str
 	End
-	
+
+' Methods
+	' Overrides Reader
 	Method Mark:Void()
 		mark = index
 	End
 	
+	' Overrides Reader
 	Method Reset:Void()
 		index = mark
 	End
 	
+	' Overrides Reader
 	Method Read:Int()
-		If Not Ready() Then Error("Reader is not ready!")
+		If Not IsReady() Then Error("Reader is not ready!")
 		Local oldIndex:Int = index
 		index += 1
 		Return str[oldIndex]
 	End
 	
 	' ReadArray should take the Val of each character in the string
+	' Overrides Reader
 	Method ReadArray:Int(arr:Int[], offset:Int, length:Int)
-		If Not Ready() Then Return -1
+		If Not IsReady() Then Return -1
 		Local oldIndex:Int = index
 		Local numRead:Int = 0
 		For Local i% = 0 Until length
@@ -122,16 +132,18 @@ Class StringReader Extends Reader
 	End
 	
 	' ReadChar doesn't need any conversion, it can just slice the string
+	' Overrides Reader
 	Method ReadChar:String()
-		If Not Ready() Then Error("Reader is not ready!")
+		If Not IsReady() Then Error("Reader is not ready!")
 		Local oldIndex:Int = index
 		index += 1
 		Return str[oldIndex..oldIndex+1]
 	End
 	
 	' ReadString doesn't need any conversion, it can just slice the string
+	' Overrides Reader
 	Method ReadString:String(length:Int)
-		If Not Ready() Then Return ""
+		If Not IsReady() Then Return ""
 		Local rv:String = ""
 		If index + length >= str.Length Then
 			rv = str[index..]
@@ -143,12 +155,14 @@ Class StringReader Extends Reader
 		Return rv
 	End
 
-	' Ready simply checks whether the index is within the string bounds
-	Method Ready:Bool()
+	' IsReady simply checks whether the index is within the string bounds
+	' Overrides Reader
+	Method IsReady:Bool()
 		Return index >= 0 And index < str.Length
 	End
 	
 	' Skip doesn't need to read anything since it can just update the index
+	' Overrides Reader
 	Method Skip:Int(count:Int)
 		If index + count >= str.Length Then
 			Local rv:Int = str.Length - index
