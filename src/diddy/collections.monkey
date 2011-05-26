@@ -19,15 +19,7 @@ Private
 	Field comparator:AbstractComparator = Null
 	
 Public
-	' Property to read comparator
-	Method Comparator:AbstractComparator() Property
-		Return comparator
-	End
-	' Property to write comparator
-	Method Comparator:Void(comparator:AbstractComparator) Property
-		Self.comparator = comparator
-	End
-	
+' Abstract
 	Method Add:Bool(o:E) Abstract
 	Method AddAll:Bool(c:AbstractCollection<E>) Abstract
 	Method Clear:Void() Abstract
@@ -42,9 +34,21 @@ Public
 	Method Size:Int() Property Abstract
 	Method Sort:Void(reverse:Bool = False, comp:AbstractComparator = Null) Abstract
 	Method ToArray:Object[]() Abstract ' creates a new array of the correct size and returns it
-	
+
+' Methods
 	Method ObjectEnumerator:AbstractEnumerator<E>()
 		Return Enumerator()
+	End
+	
+' Properties
+	' Property to read comparator
+	Method Comparator:AbstractComparator() Property
+		Return comparator
+	End
+	
+	' Property to write comparator
+	Method Comparator:Void(comparator:AbstractComparator) Property
+		Self.comparator = comparator
 	End
 End
 
@@ -56,7 +60,7 @@ End
 	If retrieved and used manually, the HasPrevious/PreviousObject/Remove/First/Last methods can be called.
 #End
 Class AbstractEnumerator<E>
-Public
+' Abstract
 	Method HasNext:Bool() Abstract
 	Method HasPrevious:Bool() Abstract
 	Method NextObject:E() Abstract
@@ -87,8 +91,10 @@ End
 	It's sort of like a function pointer.
 #End
 Class AbstractComparator Abstract
+' Abstract
 	Method Compare:Int(o1:Object, o2:Object) Abstract
 	
+' Methods
 	Method CompareBool:Bool(o1:Object, o2:Object)
 		Return o1 = o2 Or Compare(o1, o2) = 0
 	End
@@ -104,6 +110,8 @@ End
 #End
 Global DEFAULT_COMPARATOR:DefaultComparator = New DefaultComparator
 Class DefaultComparator Extends AbstractComparator
+' Methods
+	' Overrides AbstractComparator
 	Method Compare:Int(o1:Object, o2:Object)
 		If IntObject(o1) <> Null And IntObject(o2) <> Null Then
 			If IntObject(o1).value < IntObject(o2).value Then Return -1
@@ -124,6 +132,7 @@ Class DefaultComparator Extends AbstractComparator
 		Return 0 ' don't know what to do!
 	End
 	
+	' Overrides AbstractComparator
 	Method CompareBool:Bool(o1:Object, o2:Object)
 		If IntObject(o1) <> Null And IntObject(o2) <> Null Then
 			Return IntObject(o1).value = IntObject(o2).value
@@ -165,19 +174,7 @@ Private
 	End
 	
 Public
-	' Property to read rangeChecking
-	Method RangeChecking:Bool() Property
-		Return rangeChecking
-	End
-	' Property to write rangeChecking
-	Method RangeChecking:Void(rangeChecking:Bool) Property
-		Self.rangeChecking = rangeChecking
-	End
-	
-	Method Enumerator:AbstractEnumerator<E>()
-		Return New ListEnumerator<E>(Self)
-	End
-	
+' Abstract
 	Method Get:E(index:Int) Abstract
 	Method Insert:Void(index:Int, o:E) Abstract
 	Method InsertAll:Bool(index:Int, c:AbstractCollection<E>) Abstract
@@ -186,6 +183,23 @@ Public
 	Method RemoveAt:E(index:Int) Abstract ' Can't overload Remove since it's an inherited method, and Monkey doesn't support that.
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int) Abstract
 	Method Set:E(index:Int, o:E) Abstract
+	
+' Methods
+	' Overrides AbstractCollection
+	Method Enumerator:AbstractEnumerator<E>()
+		Return New ListEnumerator<E>(Self)
+	End
+	
+' Properties
+	' Property to read rangeChecking
+	Method RangeChecking:Bool() Property
+		Return rangeChecking
+	End
+	
+	' Property to write rangeChecking
+	Method RangeChecking:Void(rangeChecking:Bool) Property
+		Self.rangeChecking = rangeChecking
+	End
 End
 
 
@@ -200,27 +214,33 @@ Private
 	Field lastIndex:Int = 0
 	Field index:Int = 0
 	Field expectedModCount:Int = 0
-Public
-	Method New(lst:AbstractList<E>)
-		Self.lst = lst
-		expectedModCount = lst.modCount
-	End
 	
 	Method CheckConcurrency:Void()
 		' for speed we don't use assert
 		If lst.modCount <> expectedModCount Then Error("ListEnumerator.CheckConcurrency: Concurrent list modification")
 	End
-	
+
+Public
+' Constructors
+	Method New(lst:AbstractList<E>)
+		Self.lst = lst
+		expectedModCount = lst.modCount
+	End
+
+' Methods
+	' Overrides AbstractEnumerator
 	Method HasNext:Bool()
 		CheckConcurrency()
 		Return index < lst.Size
 	End
 	
+	' Overrides AbstractEnumerator
 	Method HasPrevious:Bool()
 		CheckConcurrency()
 		Return index > 0
 	End
 	
+	' Overrides AbstractEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
 		lastIndex = index		
@@ -228,6 +248,7 @@ Public
 		Return lst.Get(lastIndex)
 	End
 	
+	' Overrides AbstractEnumerator
 	Method PreviousObject:E()
 		CheckConcurrency()
 		index -= 1
@@ -235,6 +256,7 @@ Public
 		Return lst.Get(lastIndex)
 	End
 	
+	' Overrides AbstractEnumerator
 	Method Remove:Void()
 		CheckConcurrency()
 		lst.RemoveAt(lastIndex)
@@ -243,16 +265,19 @@ Public
 		expectedModCount = lst.modCount
 	End
 	
+	' Overrides AbstractEnumerator
 	Method First:Void()
 		CheckConcurrency()
 		index = 0
 	End
 	
+	' Overrides AbstractEnumerator
 	Method Last:Void()
 		CheckConcurrency()
 		index = lst.Size
 	End
 	
+	' Overrides AbstractEnumerator
 	Method Reset:Void()
 		index = 0
 		expectedModCount = lst.modCount
@@ -264,19 +289,25 @@ End
 	Extends ListEnumerator to avoid some method calls.
 #End
 Class ArrayListEnumerator<E> Extends ListEnumerator<E>
+Private
 	Field alst:ArrayList<E>
-	
+
+Public
+' Constructors
 	Method New(lst:ArrayList<E>)
 		Super.New(lst)
 		Self.alst = lst
 		expectedModCount = alst.modCount
 	End
 	
+' Methods
+	' Overrides ListEnumerator
 	Method HasNext:Bool()
 		CheckConcurrency()
 		Return index < alst.size
 	End
 	
+	' Overrides ListEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
 		lastIndex = index		
@@ -284,25 +315,22 @@ Class ArrayListEnumerator<E> Extends ListEnumerator<E>
 		Return alst.elements[lastIndex]
 	End
 	
+	' Overrides ListEnumerator
 	Method PreviousObject:E()
 		CheckConcurrency()
 		index -= 1
 		lastIndex = index
 		Return alst.elements[lastIndex]
 	End
-	
-	Method Last:Void()
-		CheckConcurrency()
-		index = alst.size
-	End
 End
 
 Class IntListEnumerator Extends ListEnumerator<IntObject>
-Public
+' Constructors
 	Method New(lst:AbstractList<IntObject>)
 		Super.New(lst)
 	End
 
+' Methods
 	Method NextInt:Int()
 		CheckConcurrency()
 		lastIndex = index
@@ -319,11 +347,12 @@ Public
 End
 
 Class FloatListEnumerator Extends ListEnumerator<FloatObject>
-Public
+' Constructors
 	Method New(lst:AbstractList<FloatObject>)
 		Super.New(lst)
 	End
-	
+
+' Methods
 	Method NextFloat:Float()
 		CheckConcurrency()
 		lastIndex = index
@@ -340,11 +369,12 @@ Public
 End
 
 Class StringListEnumerator Extends ListEnumerator<StringObject>
-Public
+' Constructors
 	Method New(lst:AbstractList<IntObject>)
 		Super.New(lst)
 	End
-	
+
+' Methods
 	Method NextString:String()
 		CheckConcurrency()
 		lastIndex = index
@@ -390,7 +420,7 @@ Private
 	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
 	
 Public
-	' constructors
+' Constructors
 	Method New()
 		Self.elements = New Object[10]
 	End
@@ -405,8 +435,8 @@ Public
 		size = elements.Length
 	End
 
-	'implements AbstractCollection
-	
+' Methods
+	' Overrides AbstractCollection
 	Method Add:Bool(o:E)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		elements[size] = o
@@ -415,6 +445,7 @@ Public
 		Return True
 	End
 	
+	' Overrides AbstractCollection
 	Method AddAll:Bool(c:AbstractCollection<E>)
 		If c.IsEmpty() Then Return False
 		Local newItemCount:Int = c.Size
@@ -429,6 +460,7 @@ Public
 		Return newItemCount <> 0
 	End
 	
+	' Overrides AbstractCollection
 	Method Clear:Void()
 		For Local i:Int = 0 Until size
 			elements[i] = Null
@@ -437,6 +469,7 @@ Public
 		size = 0
 	End
 	
+	' Overrides AbstractCollection
 	Method Contains:Bool(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then Return True
@@ -444,6 +477,7 @@ Public
 		Return False
 	End
 	
+	' Overrides AbstractCollection
 	Method ContainsAll:Bool(c:AbstractCollection<E>)
 		If c.IsEmpty() Then Return True
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
@@ -454,6 +488,12 @@ Public
 		Return True
 	End
 	
+	' Overrides AbstractCollection
+	Method Enumerator:AbstractEnumerator<E>()
+		Return New ArrayListEnumerator<E>(Self)
+	End
+	
+	' Overrides AbstractCollection
 	Method FillArray:Int(arr:Object[])
 		AssertGreaterThanOrEqual(arr.Length, size, "ArrayList.FillArray: Array too small:")
 		For Local i:Int = 0 Until size
@@ -462,10 +502,12 @@ Public
 		Return size
 	End
 	
+	' Overrides AbstractCollection
 	Method IsEmpty:Bool()
 		Return size = 0
 	End
 	
+	' Overrides AbstractCollection
 	Method Remove:Bool(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then
@@ -477,6 +519,7 @@ Public
 		Return False
 	End
 	
+	' Overrides AbstractCollection
 	Method RemoveAll:Bool(c:AbstractCollection<E>)
 		If c.IsEmpty() Then Return False
 		Local modified:Bool = False
@@ -491,6 +534,7 @@ Public
 		Return modified
 	End
 	
+	' Overrides AbstractCollection
 	Method RetainAll:Bool(c:AbstractCollection<E>)
 		Local modified:Bool = False
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
@@ -505,10 +549,12 @@ Public
 		Return modified
 	End
 	
+	' Overrides AbstractCollection
 	Method Size:Int() Property
 		Return size
 	End
 	
+	' Overrides AbstractCollection
 	Method Sort:Void(reverse:Bool = False, comp:AbstractComparator = Null)
 		If size <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
@@ -517,6 +563,7 @@ Public
 		modCount += 1
 	End
 	
+	' Overrides AbstractCollection
 	Method ToArray:Object[]()
 		Local arr:Object[] = New Object[size]
 		For Local i:Int = 0 Until size
@@ -525,13 +572,13 @@ Public
 		Return arr
 	End
 	
-	' implements AbstractList
-	
+	' Overrides AbstractList
 	Method Get:E(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Return E(elements[index])
 	End
 	
+	' Overrides AbstractList
 	Method Insert:Void(index:Int, o:E)
 		If rangeChecking Then RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
@@ -543,6 +590,7 @@ Public
 		modCount += 1
 	End
 	
+	' Overrides AbstractList
 	Method InsertAll:Bool(index:Int, c:AbstractCollection<E>)
 		Local newItemCount:Int = c.Size
 		If newItemCount = 0 Then Return False
@@ -560,6 +608,7 @@ Public
 		Return newItemCount <> 0
 	End
 	
+	' Overrides AbstractList
 	Method IndexOf:Int(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then Return i
@@ -567,6 +616,7 @@ Public
 		Return -1
 	End
 	
+	' Overrides AbstractList
 	Method LastIndexOf:Int(o:E)
 		For Local i:Int = size-1 To 0 Step -1
 			If elements[i] = o Then Return i
@@ -574,6 +624,7 @@ Public
 		Return -1
 	End
 	
+	' Overrides AbstractList
 	Method RemoveAt:E(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Local oldValue:E = E(elements[index])
@@ -586,6 +637,7 @@ Public
 		Return oldValue
 	End
 
+	' Overrides AbstractList
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
 		AssertLessThanOrEqual(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
 		If rangeChecking Then
@@ -597,6 +649,7 @@ Public
 		Next
 	End
 	
+	' Overrides AbstractList
 	Method Set:E(index:Int, o:E)
 		If rangeChecking Then RangeCheck(index)
 		Local oldValue:E = E(elements[index])
@@ -604,19 +657,15 @@ Public
 		modCount += 1
 		Return oldValue
 	End
-	
-	Method Enumerator:AbstractEnumerator<E>()
-		Return New ArrayListEnumerator<E>(Self)
-	End
 End
+
 
 
 
 ' ArrayList wrapper classes
 
-
 Class IntArrayList Extends ArrayList<IntObject>
-Public
+' Methods
 	Method AddInt:Bool(o:Int)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		elements[size] = New IntObject(o)
@@ -632,6 +681,7 @@ Public
 		Return False
 	End
 	
+	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<IntObject>()
 		Return New IntArrayListEnumerator(Self)
 	End
@@ -705,7 +755,7 @@ Public
 End
 	
 Class FloatArrayList Extends ArrayList<FloatObject>
-Public
+' Methods
 	Method AddFloat:Bool(o:Float)
 		If size + 1 > elements.Length Then EnsureCapacity(size + 1)
 		elements[size] = New FloatObject(o)
@@ -721,6 +771,7 @@ Public
 		Return False
 	End
 	
+	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<FloatObject>()
 		Return New FloatArrayListEnumerator(Self)
 	End
@@ -794,14 +845,14 @@ Public
 End
 
 Class StringArrayList Extends ArrayList<StringObject>
-Public
+' Methods
 	Method AddString:Bool(o:String)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		elements[size] = New StringObject(o)
 		size+=1
-				modCount += 1
-				Return True
-			End
+		modCount += 1
+		Return True
+	End
   
 	Method ContainsString:Bool(o:String)
 		For Local i:Int = 0 Until size
@@ -810,6 +861,7 @@ Public
 		Return False
 	End
 
+	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<StringObject>()
 		Return New StringArrayListEnumerator(Self)
 	End
@@ -924,4 +976,6 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
+
+
 
