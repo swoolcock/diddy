@@ -1,7 +1,7 @@
 '
 ' Module diddy.diddy
 '
-
+Import mojo
 Import functions
 Import framework
 Import inputcache
@@ -12,5 +12,6 @@ Import gui
 Import serialization
 Import xml
 Import io
+
 
 
