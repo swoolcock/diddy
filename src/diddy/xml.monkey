@@ -17,7 +17,7 @@ Private
 	Field currentElement:XMLElement = Null
 	
 	Method SkipWhitespace:Void()
-		While reader.Ready()
+		While reader.IsReady()
 			reader.Mark()
 			If Not IsWhitespace(reader.Read())
 				reader.Reset()
@@ -35,7 +35,7 @@ Private
 			If type = ASC_QUESTION Then
 				str = reader.ReadString(2)
 				If str.Length < 2 Or str = "?>" Then Exit
-			ElseIf type = ASC_EXCLAMATION Then
+			Elseif type = ASC_EXCLAMATION Then
 				str = reader.ReadString(3)
 				If str.Length < 3 Or str = "-->" Then Exit
 			End
@@ -203,11 +203,11 @@ End
 
 Class XMLDocument
 Private
-	Field root:XMLElement
 	Field xmlVersion:String = "1.0"
 	Field xmlEncoding:String = "UTF-8"
-
+	Field root:XMLElement
 Public
+	
 ' Constructors
 	Method New(rootName:String="")
 		If rootName <> "" Then root = New XMLElement(rootName)
@@ -423,6 +423,9 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&amp;", "&")
 	Return str
 End
+
+
+
 
 
 
