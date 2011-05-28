@@ -1,4 +1,8 @@
-Import "native/diddy.${TARGET}.${LANG}"
+#if HOST="macos" And TARGET="glfw"
+	Import "native/diddy.${TARGET}.mac.${LANG}"
+#else
+	Import "native/diddy.${TARGET}.${LANG}"
+#end
 Import mojo
 Import assert
 
@@ -53,13 +57,13 @@ Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image)
 	
 	AssertNotNull(tmpImage, "Error loading bitmap "+path)
 
-	local pointer:Image = tmpImage.GrabImage( 0, 0, w, h, count, Image.MidHandle)
+	Local pointer:Image = tmpImage.GrabImage( 0, 0, w, h, count, Image.MidHandle)
 	
    	Return pointer
 End
 
 Function LoadSoundSample:Sound(path$)
-	local pointer:Sound = LoadSound(path)
+	Local pointer:Sound = LoadSound(path)
 	AssertNotNull(pointer, "Error loading sound "+path)
 	Return pointer
 End
