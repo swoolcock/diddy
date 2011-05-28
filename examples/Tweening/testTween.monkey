@@ -1,6 +1,5 @@
 Strict
 
-Import mojo
 Import diddy
 
 Const TWEEN_X% = 10
@@ -112,6 +111,7 @@ Class MyApp Extends App
 		End
 	End
 End
+
 
 
 

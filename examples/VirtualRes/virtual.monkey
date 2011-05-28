@@ -1,6 +1,5 @@
 Strict
 
-Import mojo
 Import diddy
 
 Function Main:Int()
@@ -81,6 +80,7 @@ Class GameScreen Extends Screen
 		End
 	End
 End
+
 
 
 
