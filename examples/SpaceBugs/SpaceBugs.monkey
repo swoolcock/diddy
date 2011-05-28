@@ -2,7 +2,6 @@
 Strict
 
 ' The modules
-Import mojo
 Import diddy
 
 ' Starting Point
@@ -139,7 +138,7 @@ Class GameScreen Extends Screen
 				e.frame = 0
 				e.maxFrame = 23
 				e.dy = 0
-				e.dx = 0.2 + (level/5) 
+				e.dx = 1 + (level/5) 
 				e.movement = 1
 				e.SetFrame(0, 23, 80, True)
 				e.score = 10
@@ -197,7 +196,6 @@ Class Player Extends Sprite
 	Field score:Int
 	Field lives:Int
 	Field level:Int
-	Field frame:Int
 	Field frameDelay:Int
 	Field maxFrameDelay:Int = 3
 	Field missileImage:GameImage
@@ -433,4 +431,6 @@ Class GameOverScreen Extends Screen
 	Method Update:Void()
 	End
 End
+
+
 

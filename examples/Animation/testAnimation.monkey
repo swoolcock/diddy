@@ -1,6 +1,5 @@
 Strict
 
-Import mojo
 import diddy
 
 Function Main:Int()
@@ -192,4 +191,6 @@ Class Player Extends Sprite
 	End
 	
 End
+
+
 

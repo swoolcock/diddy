@@ -1,8 +1,6 @@
 ' force strict coding standard
 Strict
 
-' import the mojo module
-Import mojo
 ' import the diddy module
 Import diddy
 
@@ -82,6 +80,7 @@ Class MyGame Extends DiddyApp
 	End
 		
 End
+
 
 
 

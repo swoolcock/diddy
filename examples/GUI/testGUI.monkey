@@ -1,6 +1,5 @@
 Strict
 
-Import mojo
 Import diddy
 
 Function Main:Int()
@@ -101,6 +100,7 @@ Class MyGUI Extends GUI
 		End
 	End
 End
+
 
 
 
