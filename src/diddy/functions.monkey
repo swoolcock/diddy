@@ -14,12 +14,14 @@ Extern
 		Function HideMouse:Void() = "diddy::hideMouse"
 		Function ShowMouse:Void() = "diddy::showMouse"
 		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
+		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
 		Function HideMouse:Void() = "diddy.hideMouse"
 		Function ShowMouse:Void() = "diddy.showMouse"
 		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
+		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
 	#End
 	
 Public
