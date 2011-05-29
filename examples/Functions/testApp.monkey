@@ -15,16 +15,14 @@ End
 Class MyGame Extends DiddyApp
 	' save the starting seed
 	Field startingSeed:Int
-	Field mouseOn:Bool = false
+	Field mouseOn:Bool = true
 	
 	Method OnCreate:Int()
+		Super.OnCreate()
 		' set the seed to use the system time
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
-		HideMouse()
-		
-		' 60 FPS please
-		SetUpdateRate 60
+		ShowMouse()
 		
 		Return 0
 	End
@@ -56,11 +54,19 @@ Class MyGame Extends DiddyApp
 				Print "FlushKeys"
 				' force the seed to change
 				Rnd(0,1000)
+				SetMouse(100, 100)
 			End
 			' clear the key hits
 			FlushKeys()
 		Next
-		
+		If Not mouseOn
+			if (MouseX() < 0 or MouseX() > DEVICE_WIDTH or MouseY()< 0 or MouseY() > DEVICE_HEIGHT)
+				ShowMouse()
+				SetMouse(MouseX(), MouseY())
+			Else
+				HideMouse()
+			End
+		End
 		Return 0
 	End
 
@@ -76,10 +82,16 @@ Class MyGame Extends DiddyApp
 			DrawText "Mouse On      = false (press enter to toggle)", 10, 50	
 		End
 		DrawText "UpdateRate    = "+GetUpdateRate(), 10, 60
+		DrawText "MouseX        = "+MouseX(), 10, 70
+		DrawText "MouseY        = "+MouseY(), 10, 80
+		DrawText "DEVICE_WIDTH  = "+DEVICE_WIDTH, 10, 90
+		DrawText "DEVICE_HEIGHT = "+DEVICE_HEIGHT, 10, 100
+		
 		Return 0
 	End
 		
 End
+
 
 
 
