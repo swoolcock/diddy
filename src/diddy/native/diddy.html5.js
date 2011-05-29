@@ -20,7 +20,7 @@ diddy.showMouse=function()
 	document.getElementById("GameCanvas").style.cursor='default';
 }
 
-diddy.showMouse=function(x, y)
+diddy.setMouse=function(x, y)
 {
 	
 }
