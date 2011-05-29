@@ -23,11 +23,18 @@ class diddy
 	
 	static void showMouse()
 	{
-		ShowCursor(true);
-	}
-	static void hideMouse()
-	{
-		ShowCursor(false);
+		//ShowCursor(true);
+		glfwEnable( GLFW_MOUSE_CURSOR );
 	}
 	
+	static void hideMouse()
+	{
+		//ShowCursor(false);
+		glfwDisable( GLFW_MOUSE_CURSOR );
+	}
+	
+	static void setMouse(int x, int y)
+	{
+		glfwSetMousePos(x, y);
+	}
 };

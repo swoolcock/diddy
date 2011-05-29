@@ -32,4 +32,7 @@ class diddy
 	{
 		gxtkApp.game.IsMouseVisible=false;
 	}
+	public static void setMouse(int x, int y)
+	{
+	}
 }
