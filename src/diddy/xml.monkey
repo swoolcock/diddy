@@ -35,7 +35,7 @@ Private
 			If type = ASC_QUESTION Then
 				str = reader.ReadString(2)
 				If str.Length < 2 Or str = "?>" Then Exit
-			Elseif type = ASC_EXCLAMATION Then
+			ElseIf type = ASC_EXCLAMATION Then
 				str = reader.ReadString(3)
 				If str.Length < 3 Or str = "-->" Then Exit
 			End
@@ -213,6 +213,10 @@ Public
 		If rootName <> "" Then root = New XMLElement(rootName)
 	End
 
+	Method New(root:XMLElement)
+		Self.root = root
+	End
+	
 ' Methods
 	Method ExportString:String(formatXML:Bool = True)
 		' we start with the xml instruction
