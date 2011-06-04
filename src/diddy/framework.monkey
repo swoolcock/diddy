@@ -345,20 +345,55 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Field path$ = "graphics/"
 	
-	Method Load:Void(name:String, nameoverride:String = "", midhandle:bool=true)
+	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=true, ignoreCache:Bool=False)
+		' check if we already have the image in the bank!
+		Local storeKey:String = nameoverride.ToUpper()
+		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
+		
+		' discard the old image if it's there
+		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
+		
 		Local i:GameImage = New GameImage
 		i.Load(path + name, midhandle)
-		
-		If nameoverride <> "" Then i.name = nameoverride.ToUpper()
-		Self.Set(i.name , i)
+		i.name = storeKey
+		Self.Set(i.name, i)
+		Return i
 	End
 	
-	Method LoadAnim:Void(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=true)
+	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=true, ignoreCache:Bool=False, nameoverride:String = "")
+		' check if we already have the image in the bank!
+		Local storeKey:String = nameoverride.ToUpper()
+		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
+		
+		' discard the old image if it's there
+		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
+		
 		Local i:GameImage = New GameImage
 		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle)
+		i.name = storeKey
 		Self.Set(i.name, i)
+		Return i
 	End
    
+	Method LoadTileset:GameImage(name:String, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, nameoverride:String = "", midhandle:Bool=False, ignoreCache:Bool=False)
+		' check if we already have the image in the bank!
+		Local storeKey:String = nameoverride.ToUpper()
+		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
+		
+		' discard the old image if it's there
+		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
+		
+		' load the new one
+		Local i:GameImage = New GameImage
+		i.LoadTileset(path + name, tileWidth, tileHeight, tileMargin, tileSpacing, midhandle)
+		i.name = storeKey
+		Self.Set(i.name, i)
+		Return i
+	End
+	
 	Method Find:GameImage(name:String)
 		name = name.ToUpper()
 
@@ -367,7 +402,7 @@ Class ImageBank Extends StringMap<GameImage>
 	'		Print key + " is stored in the map."
 	'	Next
 	   	
-		Local i:GameImage =  self.Get(name)
+		Local i:GameImage = Self.Get(name)
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
@@ -396,8 +431,13 @@ Class GameImage
 	Field topMargin%=0
 	Field bottomMargin%=0
 	
+	Field tileWidth%, tileHeight%
+	Field tileCountX%, tileCountY%
+	Field tileCount%
+	Field tileSpacing%, tileMargin%
+	
 	Method Load:Void(file$, midhandle:bool=true)
-		name = StripAll(file.ToUpper())		
+		name = StripAll(file.ToUpper())
 		image = LoadBitmap(file)	
 		CalcSize()
 		MidHandle(midhandle)
@@ -408,6 +448,17 @@ Class GameImage
 		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
 		CalcSize()
 		MidHandle(midhandle)
+	End
+	
+	Method LoadTileset:Void(file$, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, midhandle:Bool=False)
+		Load(file, midhandle)
+		Self.tileWidth = tileWidth
+		Self.tileHeight = tileHeight
+		Self.tileMargin = tileMargin
+		Self.tileSpacing = tileSpacing
+		tileCountX = (w - tileMargin) / (tileWidth + tileSpacing)
+		tileCountY = (h - tileMargin) / (tileHeight + tileSpacing)
+		tileCount = tileCountX * tileCountY
 	End
 	
 	Method CalcSize:Void()
@@ -433,10 +484,14 @@ Class GameImage
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
-	Method DrawTiled:Void(x#, y#, w#, h#, scaleX# = 1, scaleY# = 1, frame% = 0)
+	Method DrawSubImage:Void(destX#, destY#, srcX#, srcY#, srcWidth#, srcHeight#, rotation# = 0, scaleX# = 1, scaleY# = 1, frame% = 0)
+		DrawImageRect(Self.image, destX, destY, srcX, srcY, srcWidth, srcHeight, rotation, scaleX, scaleY, frame)
 	End
 	
-	Method DrawStretched:Void(x#, y#, rw#, rh#, frame% = 0)
+	Method DrawTile:Void(x#, y#, tile% = 0, rotation# = 0, scaleX# = 1, scaleY# = 1)
+		Local srcX% = tileMargin + (tileWidth + tileSpacing) * (tile Mod tileCountX)
+		Local srcY% = tileMargin + (tileHeight + tileSpacing) * (tile / tileCountX)
+		DrawImageRect(Self.image, x, y, srcX, srcY, tileWidth, tileHeight, rotation, scaleX, scaleY)
 	End
 	
 	Method DrawGrid:Void(x#, y#, rw#, rh#, frame% = 0)
@@ -491,12 +546,20 @@ Class SoundBank Extends StringMap<GameSound>
 	
 	Global path$ = "sounds/"
 	
-	Method Load:Void(name:String, nameoverride:String = "")
-		Local i:GameSound = New GameSound
-		i.Load(name)
-				
-		If nameoverride <> "" Then i.name = nameoverride.ToUpper()
-		Self.Set(i.name , i)
+	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False)
+		' check if we already have the sound in the bank!
+		Local storeKey:String = nameoverride.ToUpper()
+		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
+		
+		' discard the old sound if it's there
+		If Self.Contains(storeKey) Then Self.Get(storeKey).sound.Discard()
+		
+		Local s:GameSound = New GameSound
+		s.Load(name)
+		s.name = storeKey
+		Self.Set(s.name, s)
+		Return s
 	End
 	   
 	Method Find:GameSound(name:String)
@@ -900,26 +963,4 @@ Class Particle Extends Sprite
 	End
 	
 End
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

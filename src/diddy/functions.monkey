@@ -242,7 +242,40 @@ Function DecodeBase64:String(src:String)
 	Return rv
 End
 
-
+Function DecodeBase64Bytes:Int[](src:String)
+	Local a:Int, b:Int, c:Int, d:Int, i:Int, j:Int
+	Local src2:String = ""
+	' remove any non-base64 characters
+	For i = 0 Until src.Length
+		If BASE64_CHARS.Find(src[i..i+1]) >= 0 Then src2 += src[i..i+1]
+	Next
+	If src2.Length = 0 Then Return []
+	
+	' get the length and create the array
+	Local len:Int = 3*src2.Length/4
+	If src2.Length Mod 4 = 2 Then
+		len += 1
+	ElseIf src2.Length Mod 4 = 3 Then
+		len += 2
+	End
+	Local rv:Int[] = New Int[len]
+	
+	i = 0
+	j = 0
+	Repeat
+		a = BASE64_CHARS.Find(src2[i..i+1])
+		If i+1 > src2.Length Then Exit ' This shouldn't happen with base64, so something's wrong!
+		b = BASE64_CHARS.Find(src2[i+1..i+2])
+		If i+2 < src2.Length Then c = BASE64_CHARS.Find(src2[i+2..i+3]) Else c = 64
+		If i+3 < src2.Length Then d = BASE64_CHARS.Find(src2[i+3..i+4]) Else d = 64
+		rv[j] = (a Shl 2) | (b Shr 4)
+		If j+1 < len Then rv[j+1] = ((b & 15) Shl 4) | (c Shr 2)
+		If j+2 < len Then rv[j+2] = ((c & 3) Shl 6) | d
+		i += 4
+		j += 3
+	Until i >= src2.Length
+	Return rv
+End
 
 ' constants
 
@@ -379,6 +412,7 @@ Const ASC_PIPE:Int = 124        '|'
 Const ASC_CLOSE_BRACE:Int = 125 '}'
 Const ASC_TILDE:Int = 126       '~'
 Const ASC_DELETE:Int = 127
+
 
 
 

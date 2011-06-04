@@ -288,6 +288,14 @@ Public
 		child.parent = Self
 	End
 	
+	Method HasAttribute:Bool(name:String)
+		For Local i% = 0 Until attributes.Size
+			Local att:XMLAttribute = attributes.Get(i)
+			If att.name = name Then Return True
+		Next
+		Return False
+	End
+	
 	Method GetAttribute:String(name:String, defaultValue:String = "")
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
@@ -427,6 +435,7 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&amp;", "&")
 	Return str
 End
+
 
 
 
