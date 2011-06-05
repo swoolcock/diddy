@@ -51,7 +51,18 @@ Class GameScreen Extends Screen
 		DrawText "GAME SCREEN!", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5
 		DrawText "Press 1 for Boom Sound", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 20, 0.5, 0.5
 		DrawText "Press 2 for Lazer Sound", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 40, 0.5, 0.5
-		DrawText "Channel : "+SoundPlayer.channel, SCREEN_WIDTH2, SCREEN_HEIGHT2 + 60, 0.5, 0.5
+		DrawText "Press 3 for Looping Lazer Sound", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 60, 0.5, 0.5
+		DrawText "Press 4 to Stop Lazer Sound", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 80, 0.5, 0.5
+		DrawText "Channel : "+SoundPlayer.channel, SCREEN_WIDTH2, SCREEN_HEIGHT2 + 120, 0.5, 0.5
+		
+		For Local i:Int = 0 to SoundPlayer.MAX_CHANNELS
+			DrawText "C", 1 + (i * 20), 10
+			DrawText i, 1 + (i * 20), 20
+			
+			DrawText ChannelState(i), 1 + (i * 20), 40 ' doesnt work in Flash!!!
+			DrawText SoundPlayer.playerChannelState[i], 1 + (i * 20), 60
+		Next
+		
 	End
 
 	Method Update:Void()
@@ -59,7 +70,17 @@ Class GameScreen Extends Screen
 			boom.Play()
 		End
 		if KeyHit(KEY_2)
+			lazer.loop = 0
 			lazer.Play()
+		End
+		
+		if KeyHit(KEY_3)
+			lazer.loop = 1
+			lazer.Play()
+		End
+		
+		if KeyHit(KEY_4)
+			lazer.Stop()
 		End
 
 		If KeyHit(KEY_ESCAPE)
