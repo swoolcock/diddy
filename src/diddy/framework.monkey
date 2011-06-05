@@ -2,6 +2,7 @@ Strict
 
 Import mojo
 Import functions
+Import collections
 
 'Device width and height
 Global DEVICE_WIDTH%
@@ -577,12 +578,14 @@ Class SoundBank Extends StringMap<GameSound>
 End
 
 Class GameSound
-	Field name$
+	Field name:String
 	Field sound:Sound
-	Field rate# = 1
-	Field pan# = 0
-	Field volume# = 1
-	Field loop% = 0
+	Field rate:Float = 1
+	Field pan:Float = 0
+	Field volume:Float = 1
+	Field loop:Int = 0
+	Field channel:Int
+	Field loopChannelList:IntArrayList = New IntArrayList
 	
 	Method Load:Void(file$)
 	
@@ -601,31 +604,71 @@ Class GameSound
 		name = StripAll(file.ToUpper())	
 	End
 	
-	Method Play:Void()
-		SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop)
+	Method Play:Void(playChannel:Int = -1)
+		channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
+		if loop = 1
+			loopChannelList.Add(channel)
+		End
 	End
+	
+	Method Stop:Void()
+		SoundPlayer.PlayerStopChannel(channel)
+		if loopChannelList.Size > 0
+			Local ch:Int
+			For Local i:Int = 0 Until loopChannelList.Size
+				ch = loopChannelList.GetInt(i)
+				SoundPlayer.PlayerStopChannel(ch)
+			Next
+			loopChannelList.Clear()
+		End
+	End
+	
 End
 
 Class SoundPlayer
 	Global channel:Int
 	Const MAX_CHANNELS:Int = 31
+	Global playerChannelState:Int[] = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ' 32 indexes - (0 to 31)
 	
 	Function StopChannels:Void()
 		For Local i:Int = 0 to MAX_CHANNELS
 			StopChannel(i)
+			playerChannelState[i] = 0
 		Next
 	End
 	
-	Function PlayFx:Void(s:Sound, pan#=0, rate#=1, volume#=1, loop% = 0)
-		channel += 1
-		If (channel > MAX_CHANNELS) Then channel = 0
+	Function PlayerStopChannel:Void(playerChannel:Int)
+		StopChannel(playerChannel)
+		playerChannelState[playerChannel] = 0
+	End
+	
+	Function PlayFx:Int(s:Sound, pan:Float=0, rate:Float=1, volume:Float=1, loop:Int = 0, playChannel:Int = -1)
+		if playChannel = -1
+			Local cnt:Int = 0
+			channel += 1
+			If (channel > MAX_CHANNELS) Then channel = 0
+			While playerChannelState[channel] = 1 ' channel State doesnt work with Flash
+				channel += 1
+				If (channel > MAX_CHANNELS) Then channel = 0
+				cnt=+1
+				if cnt > MAX_CHANNELS * 2 Then Exit ' stop infinite loop if case all channels are playing
+			Wend
+		Else
+			channel = playChannel
+			playerChannelState[playChannel] = 0
+		End
 
 		StopChannel(channel)
 		PlaySound(s, channel, loop)
 		SetChannelPan(channel, pan)
 		SetChannelRate(channel, rate)
 		SetChannelVolume(channel, volume)
+		if loop
+			playerChannelState[channel] = 1		
+		End
+		Return channel
 	End
+	
 End
 
 Class Sprite
