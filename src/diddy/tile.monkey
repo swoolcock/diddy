@@ -503,7 +503,6 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 									rx = x - modx - bx
 									ry = y - mody - by
 									DrawTile(tl, mapTile, rx, ry)
-									'DrawText(my, rx, ry + 10)
 								End
 							End
 							x += tileWidth
@@ -524,7 +523,6 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 							rx += 1
 						Wend
 						While ry >= 0 And rx < tl.width
-							'gid = tl.MapData.Get(rx, ry)
 							gid = tl.mapData.GetCell(rx, ry).gid
 							If gid > 0 Then
 								mapTile = tiles[gid - 1]
@@ -555,23 +553,7 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 		Return rv
 	End
 	
-	#Rem
-	Method ForEachMapCell(func:Int(layer:TTiledTileLayer, cell:TTiledMapCell, delta:Long), delta:Long)
-		Local layer:TTiledTileLayer
-		Local i%
-		For layer = EachIn Layers
-			For i = 0 To layer.MapData.Cells.Length - 1
-				func(layer, layer.MapData.Cells[i], delta)
-			Next
-		Next
-	End
-	#End
-	
-<<<<<<< .mine
 	Method UpdateAnimation:Void(timePassed:Int)
-=======
-	Method UpdateAnimation:Void(delta:Float)
->>>>>>> .r140
 		Local layer:TileMapLayer, tl:TileMapTileLayer, cell:TileMapCell, t:TileMapTile
 		' loop on each layer
 		For layer = EachIn layers
@@ -826,7 +808,7 @@ Class TileMapTile Extends TileMapPropertyContainer Implements TileMapPostLoad
 	Field height:Int
 	Field gid:Int
 	
-	Field animDelay:Float
+	Field animDelay:Int
 	Field animNext:Int
 	Field animDirection:Int
 	Field hasAnimDirection:Bool
@@ -859,7 +841,7 @@ Class TileMapCell
 	
 	' animation stuff
 	Field originalGid%
-	Field timePassed:Float = 0 ' the time that has passed since the last frame change
+	Field timePassed:Int = 0 ' the time that has passed since the last frame change
 	Field direction% = 1 ' >0 = forward, <0 = backward, 0 = paused
 
 	Method New(gid%, x%, y%)
@@ -962,6 +944,4 @@ Const NODE_PROPERTIES$          = "properties"
 Const NODE_PROPERTY$            = "property"
 Const NODE_OBJECTGROUP$         = "objectgroup"
 Const NODE_OBJECT$              = "object"
-
-
 
