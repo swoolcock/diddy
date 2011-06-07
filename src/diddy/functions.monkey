@@ -274,10 +274,10 @@ Function DecodeBase64Bytes:Int[](src:String)
 	j = 0
 	Repeat
 		a = BASE64_ARRAY[src2[i]]
-		If i+1 > src2.Length Then Exit ' This shouldn't happen with base64, so something's wrong!
+		If i+1 > srclen Then Exit ' This shouldn't happen with base64, so something's wrong!
 		b = BASE64_ARRAY[src2[i+1]]
-		If i+2 < src2.Length Then c = BASE64_ARRAY[src2[i+2]] Else c = 64
-		If i+3 < src2.Length Then d = BASE64_ARRAY[src2[i+3]] Else d = 64
+		If i+2 < srclen Then c = BASE64_ARRAY[src2[i+2]] Else c = 64
+		If i+3 < srclen Then d = BASE64_ARRAY[src2[i+3]] Else d = 64
 		rv[j] = (a Shl 2) | (b Shr 4)
 		If j+1 < len Then rv[j+1] = ((b & 15) Shl 4) | (c Shr 2)
 		If j+2 < len Then rv[j+2] = ((c & 3) Shl 6) | d
