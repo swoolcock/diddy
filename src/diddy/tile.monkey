@@ -503,7 +503,6 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 									rx = x - modx - bx
 									ry = y - mody - by
 									DrawTile(tl, mapTile, rx, ry)
-									'DrawText(mx, rx, ry)
 									'DrawText(my, rx, ry + 10)
 								End
 							End
@@ -568,7 +567,7 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 	End
 	#End
 	
-	Method UpdateAnimation:Void(delta:Int)
+	Method UpdateAnimation:Void(delta:Float)
 		Local layer:TileMapLayer, tl:TileMapTileLayer, cell:TileMapCell, t:TileMapTile
 		' loop on each layer
 		For layer = EachIn layers
@@ -823,7 +822,7 @@ Class TileMapTile Extends TileMapPropertyContainer Implements TileMapPostLoad
 	Field height:Int
 	Field gid:Int
 	
-	Field animDelay:Int
+	Field animDelay:Float
 	Field animNext:Int
 	Field animDirection:Int
 	Field hasAnimDirection:Bool
@@ -835,7 +834,7 @@ Class TileMapTile Extends TileMapPropertyContainer Implements TileMapPostLoad
 	
 	Method PostLoad:Void()
 		If properties.Has(PROP_TILE_ANIM_DELAY) Then
-			animDelay = properties.Get(PROP_TILE_ANIM_DELAY).GetInt()
+			animDelay = game.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
 			animated = True
 		End
 		If properties.Has(PROP_TILE_ANIM_NEXT) Then animNext = properties.Get(PROP_TILE_ANIM_NEXT).GetInt()
@@ -856,7 +855,7 @@ Class TileMapCell
 	
 	' animation stuff
 	Field originalGid%
-	Field timePassed:Int = 0 ' the time that has passed since the last frame change
+	Field timePassed:Float = 0 ' the time that has passed since the last frame change
 	Field direction% = 1 ' >0 = forward, <0 = backward, 0 = paused
 
 	Method New(gid%, x%, y%)
