@@ -207,9 +207,9 @@ Class XMLParser
 		a = str.Find("<", index)
 		While a >= index
 			' read text between tags
-			If a > index Then
+			If a > index And str[index..a].Trim() <> "" Then
 				If thisE <> Null Then
-					thisE.value += UnescapeXMLString(str[index..a])
+					thisE.value += UnescapeXMLString(str[index..a].Trim())
 				Else
 					Error("Loose text outside of any tag!")
 				End
