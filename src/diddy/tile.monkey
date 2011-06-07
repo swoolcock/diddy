@@ -567,7 +567,11 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 	End
 	#End
 	
+<<<<<<< .mine
+	Method UpdateAnimation:Void(timePassed:Int)
+=======
 	Method UpdateAnimation:Void(delta:Float)
+>>>>>>> .r140
 		Local layer:TileMapLayer, tl:TileMapTileLayer, cell:TileMapCell, t:TileMapTile
 		' loop on each layer
 		For layer = EachIn layers
@@ -585,8 +589,8 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 						
 						' if the direction is 0 (paused), do nothing
 						If t <> Null And cell.direction <> 0 Then
-							' add our delta to the time passed
-							cell.timePassed += delta
+							' add our time to the time passed for the cell
+							cell.timePassed += timePassed
 							
 							' if this tile has animation information
 							If t.animated Then
