@@ -175,6 +175,12 @@ Private
 	
 Public
 ' Abstract
+	Method AddLast:Bool(o:E) Abstract
+	Method RemoveLast:E() Abstract
+	Method GetLast:E() Abstract
+	Method AddFirst:Bool(o:E) Abstract
+	Method RemoveFirst:E() Abstract
+	Method GetFirst:E() Abstract
 	Method Get:E(index:Int) Abstract
 	Method Insert:Void(index:Int, o:E) Abstract
 	Method InsertAll:Bool(index:Int, c:AbstractCollection<E>) Abstract
@@ -570,6 +576,37 @@ Public
 			arr[i] = elements[i]
 		Next
 		Return arr
+	End
+	
+	' Overrides AbstractList
+	Method AddLast:Bool(o:E)
+		Return Add(o)
+	End
+	
+	' Overrides AbstractList
+	Method RemoveLast:E()
+		Return RemoveAt(size-1)
+	End
+	
+	' Overrides AbstractList
+	Method GetLast:E()
+		Return Get(size-1)
+	End
+	
+	' Overrides AbstractList
+	Method AddFirst:Bool(o:E)
+		Insert(0, o)
+		Return True
+	End
+	
+	' Overrides AbstractList
+	Method RemoveFirst:E()
+		Return Remove(0)
+	End
+	
+	' Overrides AbstractList
+	Method GetFirst:E()
+		Return Get(0)
 	End
 	
 	' Overrides AbstractList
@@ -976,6 +1013,4 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = val
 	Return storeIndex
 End
-
-
 
