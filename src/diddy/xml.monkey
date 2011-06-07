@@ -4,200 +4,327 @@
 ' All XML characters should be escaped in strings. &gt; &lt; etc.
 ' Currently it supports regular tag and attribute definitions, processing instructions, and skipping comments.
 ' For now, exported indentation is hardcoded to 2 spaces.
-' Based on a Java example: http://www.devx.com/xml/Article/10114
+' Written from scratch, using as little string manipulation as possible.
 
 Import functions
 Import collections
-Import io
 
+' note that we don't define a separate method for checking whitespace, to improve performance on android
 Class XMLParser
-Private
-	Field reader:Reader
-	Field elements:ArrayList<XMLElement> = New ArrayList<XMLElement>
-	Field currentElement:XMLElement = Null
+	Field str:String
 	
-	Method SkipWhitespace:Void()
-		While reader.IsReady()
-			reader.Mark()
-			If Not IsWhitespace(reader.Read())
-				reader.Reset()
-				Return
+	' find a string, ignoring quoted strings
+	Method FindUnquoted:Int(findit:String, start:Int)
+		' look for the string
+		Local a:Int = str.Find(findit, start)
+		
+		' look for a single or double quote
+		Local singleQuote:Int = str.Find("'", start)
+		Local doubleQuote:Int = str.Find("~q", start)
+		Local quoteToFind:String = ""
+		Local b:Int = -1
+		If singleQuote >= 0 And doubleQuote < 0 Or singleQuote >= 0 And singleQuote < doubleQuote Then
+			quoteToFind = "'"
+			b = singleQuote
+		ElseIf doubleQuote >= 0 And singleQuote < 0 Or doubleQuote >= 0 And doubleQuote < singleQuote Then
+			quoteToFind = "~q"
+			b = doubleQuote
+		End
+		
+		' while there's a quote to check
+		While b >= 0 And a >= 0 And a > b
+			' find the ending quote
+			b = str.Find(quoteToFind, b+1)
+			
+			' if not found, the quote doesn't end, so error
+			If b < 0 Then Error("Unclosed quote detected.")
+			
+			' find the next instance after b
+			a = str.Find(findit, b+1)
+			
+			' look for another starting quote
+			singleQuote = str.Find("'", b+1)
+			doubleQuote = str.Find("~q", b+1)
+			b = -1
+			If singleQuote >= 0 And doubleQuote < 0 Or singleQuote >= 0 And singleQuote < doubleQuote Then
+				quoteToFind = "'"
+				b = singleQuote
+			ElseIf doubleQuote >= 0 And singleQuote < 0 Or doubleQuote >= 0 And doubleQuote < singleQuote Then
+				quoteToFind = "~q"
+				b = doubleQuote
 			End
 		End
+		' done, so return a (it may be negative if not found)
+		Return a
 	End
-	
-	Method SkipProlog:Void()
-		reader.Skip(1)
-		Local type:Int = reader.Read()
-		While True
-			reader.Mark()
-			Local str:String = ""
-			If type = ASC_QUESTION Then
-				str = reader.ReadString(2)
-				If str.Length < 2 Or str = "?>" Then Exit
-			ElseIf type = ASC_EXCLAMATION Then
-				str = reader.ReadString(3)
-				If str.Length < 3 Or str = "-->" Then Exit
-			End
-			reader.Reset()
-			If reader.Skip(1) <= 0 Then Exit
+
+	' get the contents of a tag (given start and end)
+	Method GetTagContents:XMLElement(startIndex:Int, endIndex:Int)
+		' trim trailing whitespace
+		While endIndex > startIndex And (str[endIndex]=ASC_SPACE Or str[endIndex]=ASC_TAB Or str[endIndex]=ASC_LF Or str[endIndex]=ASC_CR)
+			endIndex += 1
 		End
-	End
-	
-	Method SkipPrologs:Void()
-		While True
-			SkipWhitespace()
-			Local arr:Int[] = New Int[2]
-			Local numread:Int = reader.PeekArray(arr, 0, 2)
-			If numread < 2 Then Return
-			If arr[0] <> ASC_LESS_THAN Then
-				Error("Expected '<' but got '" + String.FromChar(arr[0]) + "'.")
-			End
-			If arr[1] = ASC_QUESTION Or arr[1] = ASC_EXCLAMATION Then
-				SkipProlog()
-			Else
+		' die if empty tag
+		If startIndex = endIndex Then Error("Empty tag detected.")
+		' our element
+		Local e:XMLElement = New XMLElement
+		Local a:Int, singleQuoted:Bool, doubleQuoted:Bool, key:String, value:String
+		
+		' trim leading whitespace
+		While str[startIndex]=ASC_SPACE Or str[startIndex]=ASC_TAB Or str[startIndex]=ASC_LF Or str[startIndex]=ASC_CR
+			startIndex += 1
+		End
+		
+		' get the name
+		a = startIndex
+		While a < endIndex
+			If str[a]=ASC_SPACE Or str[a]=ASC_TAB Or str[a]=ASC_LF Or str[a]=ASC_CR Or a = endIndex-1 Then
+				If a = endIndex-1 Then
+					e.name = str[startIndex..endIndex]
+				Else
+					e.name = str[startIndex..a]
+				End
+				a += 1
 				Exit
 			End
+			a += 1
 		End
-	End
-	
-	Method ReadTag:String()
-		SkipWhitespace()
-		Local rv:String = ""
-		Local ch:Int = reader.Peek()
-		If ch <> ASC_LESS_THAN Then
-			Error("Expected '<' but got '" + String.FromChar(ch) + "'.")
-		End
+		startIndex = a
 		
-		rv += reader.ReadChar()
-		While reader.Peek() <> ASC_GREATER_THAN
-			rv += reader.ReadChar()
-		End
-		rv += reader.ReadChar()
+		' TODO: validate tag name is alphanumeric
+		' if no name, die
+		If e.name = "" Then Error("Error reading tag name.")
 		
-		Return rv
-	End
-	
-	' at the moment, this does not support the CDATA tag
-	Method ReadText:String()
-		Local rv:String = ""
-		While reader.Peek() <> ASC_LESS_THAN
-			rv += reader.ReadChar()
+		' loop on all tokens
+		While startIndex < endIndex
+			' trim leading whitespace
+			While startIndex < endIndex And (str[startIndex]=ASC_SPACE Or str[startIndex]=ASC_TAB Or str[startIndex]=ASC_LF Or str[startIndex]=ASC_CR)
+				startIndex += 1
+			End
+			
+			' clear check variables
+			singleQuoted = False
+			doubleQuoted = False
+			key = ""
+			value = ""
+			
+			' find the key
+			a = startIndex
+			While a < endIndex
+				If str[a] = ASC_EQUALS Or str[a]=ASC_SPACE Or str[a]=ASC_TAB Or str[a]=ASC_LF Or str[a]=ASC_CR Or a = endIndex-1 Then
+					If a=endIndex-1 Then
+						key = str[startIndex..endIndex]
+					Else
+						key = str[startIndex..a]
+					End
+					a += 1
+					Exit
+				End
+				a += 1
+			End
+			startIndex = a
+			
+			' if error reading key, die
+			If key = "" Then Error("Error reading attribute key.")
+			
+			' if it stopped on an equals, get the value
+			If str[a-1] = ASC_EQUALS Then
+				singleQuoted = False
+				doubleQuoted = False
+				While a < endIndex
+					' check if it's a single quote
+					If str[a] = ASC_SINGLE_QUOTE And Not doubleQuoted Then
+						' if this is the first index, mark it as quoted
+						If a = startIndex Then
+							singleQuoted = True
+						' otherwise, if we're not quoted at all, die
+						ElseIf Not singleQuoted And Not doubleQuoted Then
+							Error("Unexpected single quote detected in attribute value.")
+						Else
+							' we must be ending the quote here, so grab it and break out
+							singleQuoted = False
+							value = str[startIndex+1..a]
+							a += 1
+							Exit
+						End
+						
+					' check if it's a double quote
+					ElseIf str[a] = ASC_DOUBLE_QUOTE And Not singleQuoted Then
+						' if this is the first index, mark it as quoted
+						If a = startIndex Then
+							doubleQuoted = True
+						' otherwise, if we're not quoted at all, die
+						ElseIf Not singleQuoted And Not doubleQuoted Then
+							Error("Unexpected double quote detected in attribute value.")
+						Else
+							' we must be ending the quote here, so break out
+							doubleQuoted = False
+							value = str[startIndex+1..a]
+							a += 1
+							Exit
+						End
+						
+					' should we be ending the attribute?
+					ElseIf a = endIndex-1 Or (Not singleQuoted And Not doubleQuoted And (str[a]=ASC_SPACE Or str[a]=ASC_TAB Or str[a]=ASC_LF Or str[a]=ASC_CR))
+						If a=endIndex-1 Then
+							value = str[startIndex..endIndex]
+						Else
+							value = str[startIndex..a]
+						End
+						a += 1
+						Exit
+					End
+					a += 1
+				End
+				startIndex = a
+				value = UnescapeXMLString(value)
+				
+				If singleQuoted Or doubleQuoted Then Error("Unclosed quote detected.")
+			End
+			
+			' set the attribute
+			e.SetAttribute(key, value)
+
+			If a >= endIndex Then Exit
 		End
-		Return rv
+		Return e
 	End
-	
-Public
-' Methods
-	Method ParseString:XMLDocument(xmlString:String)
-		Return ParseReader(New StringReader(xmlString))
-	End
-	
+
 	Method ParseFile:XMLDocument(filename:String)
-		' TODO: read from files, once FileReader has been implemented
-		Return Null'ParseReader(New FileReader(filename))
+		Return ParseString(LoadString(filename))
 	End
 	
-	Method ParseReader:XMLDocument(reader:Reader)
-		Self.reader = reader
+	' parses an xml doc, currently doesn't support nested PI or prolog
+	Method ParseString:XMLDocument(str:String)
+		Self.str = str
 		
 		Local doc:XMLDocument = New XMLDocument
+		Local elements:ArrayList<XMLElement> = New ArrayList<XMLElement>
+		Local thisE:XMLElement = Null, newE:XMLElement = Null
+		Local index:Int = 0, a:Int, b:Int, c:Int, nextIndex:Int
 		
-		While True
-			SkipPrologs()
-			Local index:Int, tagName:String
-			Local currentTag:String = ReadTag().Trim()
-			If currentTag.StartsWith("</") Then
-				tagName = currentTag[2..currentTag.Length-1]
-				If currentElement = Null Then
-					Error("Got close tag " + tagName + " without open tag.")
-				End
-				If tagName <> currentElement.name Then
-					Error("Expected close tag for " + currentElement.name + " but got " + tagName + ".")
-				End
-				If elements.IsEmpty() Then
-					doc.root = currentElement
-					Return doc
-				End
-				currentElement = elements.RemoveAt(elements.Size-1)
-			Else
-				index = currentTag.Find(" ")
-				If index < 0 Then
-					If currentTag.EndsWith("/>") Then
-						tagName = currentTag[1..(currentTag.Length-2)]
-						currentTag = "/>"
-					Else
-						tagName = currentTag[1..(currentTag.Length-1)]
-						currentTag = ""
-					End
+		' find first opening tag
+		a = str.Find("<", index)
+		While a >= index
+			' read text between tags
+			If a > index Then
+				If thisE <> Null Then
+					thisE.value += UnescapeXMLString(str[index..a])
 				Else
-					tagName = currentTag[1..index]
-					currentTag = currentTag[(index+1)..]
-				End
-				
-				Local element:XMLElement = New XMLElement(tagName, currentElement)
-				Local tagClosed:Bool = False
-				While currentTag.Length > 0
-					currentTag = currentTag.Trim()
-
-					If currentTag = "/>" Then
-						tagClosed = True
-						Exit
-					ElseIf currentTag = ">" Then
-						Exit
-					End
-
-					index = currentTag.Find("=")
-					If index < 0 Then
-						Error("Invalid attribute for tag " + tagName + ".")
-					End
-
-					' this handles attributes without quoted values, but that breaks well-formed-ness and should be avoided
-					Local attributeName:String = currentTag[0..index]
-					currentTag = currentTag[(index+1)..]
-					Local attributeValue:String
-					Local quoted:Bool = True
-					If currentTag.StartsWith("~q") Then
-						index = currentTag.Find("~q", 1)
-					ElseIf currentTag.StartsWith("'") Then
-						index = currentTag.Find("'", 1)
-					Else
-						quoted = False
-						index = currentTag.Find(" ")
-						If index < 0 Then
-							index = currentTag.Find(">")
-							If index < 0 Then
-								index = currentTag.Find("/")
-							End
-						End
-					End
-
-					If index < 0 Then
-						Error("Invalid attribute for tag " + tagName + ".")
-					End
-
-					If quoted Then
-						attributeValue = currentTag[1..index]
-					Else
-						attributeValue = currentTag[0..index]
-					End
-
-					element.SetAttribute(attributeName, UnescapeXMLString(attributeValue))
-					currentTag = currentTag[(index+1)..]
-				End
-				
-				If Not tagClosed Then
-					element.value = UnescapeXMLString(ReadText())
-					If currentElement <> Null Then
-						elements.Add(currentElement)
-					End
-					currentElement = element
-				ElseIf currentElement = Null Then
-					doc.root = element
-					Return doc
+					Error("Loose text outside of any tag!")
 				End
 			End
+			' check for PI
+			If str[a+1] = ASC_QUESTION Then
+				' die if the PI is inside the document
+				If thisE <> Null Then Error("Processing instruction detected inside main document tag.")
+				' create PI element up until next unquoted ?> after a
+				nextIndex = FindUnquoted("?>", a+2)
+				newE = GetTagContents(a+2, nextIndex)
+				newE.pi = True
+				doc.pi.Add(newE)
+				newE = Null
+				nextIndex += 2
+			' check for prolog
+			ElseIf str[a+1] = ASC_EXCLAMATION Then
+				' if the next two chars are -- it's a comment
+				If str[a+2] = ASC_HYPHEN And str[a+3] = ASC_HYPHEN Then
+					' ignore everything until the next -->
+					nextIndex = str.Find("-->", a+4)
+					' if we couldn't find a comment end, die
+					If nextIndex < 0 Then Error("Unclosed comment detected.")
+					' XML specifications say that ---> is invalid
+					If str[nextIndex-1] = ASC_HYPHEN Then Error("Invalid comment close detected (too many hyphens).")
+					nextIndex += 3
+					
+				' if the next seven chars are [CDATA[ it's a cdata block
+				ElseIf str.Find("[CDATA[", a+2) = a+2 Then
+					' die if the CDATA is outside the document
+					If thisE = Null Then Error("CDATA detected outside main document tag.")
+					nextIndex = str.Find("]]>", a+9)
+					' die if it doesn't end
+					If nextIndex < 0 Then Error("Unclosed CDATA tag detected.")
+					newE = New XMLElement
+					newE.value = str[a+9..nextIndex]
+					newE.cdata = True
+					thisE.AddChild(newE)
+					newE = Null
+					nextIndex += 3
+					
+				' if the next seven chars are DOCTYPE it's a dtd tag
+				ElseIf str.Find("DOCTYPE", a+2) = a+2 Then
+					' die if the doctype is inside the document
+					If thisE <> Null Then Error("DOCTYPE detected inside main document tag.")
+					nextIndex = FindUnquoted(">", a+9)
+					newE = GetTagContents(a+9, nextIndex)
+					newE.prolog = True
+					doc.prologs.Add(newE)
+					newE = Null
+					nextIndex += 1
+				
+				' don't know!
+				Else
+					Error("Unknown prolog detected.")
+				End
+				
+			' check for closing tag
+			ElseIf str[a+1] = ASC_SLASH Then
+				' if no current element, die
+				If thisE = Null Then Error("Closing tag found outside main document tag.")
+				' find the next >
+				nextIndex = str.Find(">", a+2)
+				' if not found, the closing tag is broken
+				If nextIndex < 0 Then Error("Incomplete closing tag detected.")
+				' check that the tag name matches
+				If str[a+2..nextIndex].Trim() <> thisE.name Then Error("Closing tag ~q"+str[a+2..nextIndex].Trim()+"~q does not match opening tag ~q"+thisE.name+"~q")
+				If Not elements.IsEmpty() Then
+					thisE = elements.RemoveLast()
+				Else
+					doc.root = thisE
+					Exit
+				End
+				nextIndex += 1
+				
+			' check for opening tag
+			Else
+				' look for the end of the tag, and whether it's self-closing
+				b = FindUnquoted("/>", a+1)
+				c = FindUnquoted(">", a+1)
+				' if we couldn't find either
+				If c < 0 Then
+					Error("Incomplete opening tag detected.")
+					
+				' if it's not self-closing
+				ElseIf b < 0 Or c < b Then
+					' get the new one
+					newE = GetTagContents(a+1, c)
+					If thisE <> Null Then
+						' push the current element to the stack
+						elements.AddLast(thisE)
+						' add it as a child element
+						thisE.AddChild(newE)
+					End
+					thisE = newE
+					newE = Null
+					nextIndex = c+1
+				' it's self-closing
+				Else
+					newE = GetTagContents(a+1, b)
+					If thisE <> Null Then
+						thisE.AddChild(newE)
+					Else
+						doc.root = newE
+						Exit
+					End
+					newE = Null
+					nextIndex = b+2
+				End
+			End
+			index = nextIndex
+			a = str.Find("<", index)
 		End
+		If doc.root = Null Then Error("Error parsing XML: no document tag found.")
+		Return doc
 	End
 End
 
@@ -206,6 +333,9 @@ Private
 	Field xmlVersion:String = "1.0"
 	Field xmlEncoding:String = "UTF-8"
 	Field root:XMLElement
+	Field pi:ArrayList<XMLElement> = New ArrayList<XMLElement>
+	Field prologs:ArrayList<XMLElement> = New ArrayList<XMLElement>
+	
 Public
 	
 ' Constructors
@@ -235,6 +365,14 @@ Public
 ' Properties
 	Method Root:XMLElement() Property
 		Return root
+	End
+	
+	Method Prologs:ArrayList<XMLElement>() Property
+		Return prologs
+	End
+	
+	Method ProcessingInstructions:ArrayList<XMLElement>() Property
+		Return pi
 	End
 	
 	Method Version:String() Property
@@ -272,8 +410,15 @@ Private
 	Field value:String
 	Field parent:XMLElement
 
+	Field pi:Bool
+	Field prolog:Bool
+	Field cdata:Bool
+	
 Public
 ' Constructors
+	Method New()
+	End
+	
 	Method New(name:String, parent:XMLElement = Null)
 		Self.parent = parent
 		Self.name = name
@@ -281,6 +426,18 @@ Public
 	End
 
 ' Methods
+	Method IsProcessingInstruction:Bool()
+		Return pi
+	End
+	
+	Method IsProlog:Bool()
+		Return prolog
+	End
+	
+	Method IsCharacterData:Bool()
+		Return cdata
+	End
+	
 	' avoid using this method if you can, because you should try not to have "floating" elements
 	Method AddChild:Void(child:XMLElement)
 		If children.Contains(child) Return
@@ -435,6 +592,7 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&amp;", "&")
 	Return str
 End
+
 
 
 
