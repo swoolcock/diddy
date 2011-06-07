@@ -189,6 +189,9 @@ Class DiddyApp Extends App
 		Next
 	End
 	
+	Method CalcAnimLength:Float(ms:Int)
+		Return ms / (1000.0 / FPS)
+	End
 End
 
 Class ScreenFade
