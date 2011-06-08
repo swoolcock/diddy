@@ -315,6 +315,10 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 	Field wrapX:Bool = False
 	Field wrapY:Bool = False
 	
+	' optimisation
+	Field layerArray:Object[] = []
+	Field animatedTiles:TileMapTile[]
+	
 	' override this to configure a layer (called on every render)
 	Method ConfigureLayer:Void(tileLayer:TileMapLayer)
 	End
@@ -494,7 +498,7 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 								While my2 >= height
 									my2 -= height
 								End
-								gid = tl.mapData.GetCell(mx2, my2).gid
+								gid = tl.mapData.cells[mx2 + my2*tl.mapData.width].gid
 								If gid > 0 Then
 									mapTile = tiles[gid - 1]
 									
@@ -523,7 +527,7 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 							rx += 1
 						Wend
 						While ry >= 0 And rx < tl.width
-							gid = tl.mapData.GetCell(rx, ry).gid
+							gid = tl.mapData.cells[rx + ry*tl.mapData.width].gid
 							If gid > 0 Then
 								mapTile = tiles[gid - 1]
 								DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2, (rx + ry + 2) * tileHeight / 2 - mapTile.height)
@@ -555,15 +559,28 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 	
 	Method UpdateAnimation:Void(timePassed:Int)
 		Local layer:TileMapLayer, tl:TileMapTileLayer, cell:TileMapCell, t:TileMapTile
+		Local cellCount:Int, i:Int, j:Int
+		
+		' get the layers as an array
+		Local layerCount:Int = layers.Size
+		If layerArray.Length < layerCount Then
+			layerArray = layers.ToArray()
+			layerCount = layerArray.Length
+		Else
+			layerCount = layers.FillArray(layerArray)
+		End
+		
 		' loop on each layer
-		For layer = EachIn layers
+		For i = 0 Until layerCount
 			' cast
-			tl = TileMapTileLayer(layer)
+			tl = TileMapTileLayer(layerArray[i])
 			
 			' if the layer is a tile layer
 			If tl <> Null Then
 				' loop on each cell
-				For cell = EachIn tl.mapData.cells
+				cellCount = tl.mapData.cells.Length
+				For j = 0 Until cellCount
+					cell = tl.mapData.cells[j]
 					' if the cell exists and has a value
 					If cell <> Null And cell.gid > 0 Then
 						' get the tile
@@ -944,4 +961,5 @@ Const NODE_PROPERTIES$          = "properties"
 Const NODE_PROPERTY$            = "property"
 Const NODE_OBJECTGROUP$         = "objectgroup"
 Const NODE_OBJECT$              = "object"
+
 
