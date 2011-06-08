@@ -5,20 +5,20 @@ Import functions
 Import collections
 
 'Device width and height
-Global DEVICE_WIDTH%
-Global DEVICE_HEIGHT%
+Global DEVICE_WIDTH:Int
+Global DEVICE_HEIGHT:Int
 
 ' Screen width and height
-Global SCREEN_WIDTH#
-Global SCREEN_HEIGHT#
+Global SCREEN_WIDTH:Float
+Global SCREEN_HEIGHT:Float
 
 ' Half of SCREEN_WIDTH and HEIGHT
-Global SCREEN_WIDTH2#
-Global SCREEN_HEIGHT2#
+Global SCREEN_WIDTH2:Float
+Global SCREEN_HEIGHT2:Float
 
 ' Used for Virtual Res
-Global SCREENX_RATIO# = 1
-Global SCREENY_RATIO# = 1
+Global SCREENX_RATIO:Float = 1
+Global SCREENY_RATIO:Float = 1
 
 ' THE GAME!!
 Global game:DiddyApp
@@ -77,6 +77,7 @@ Class DiddyApp Extends App
 		Seed = RealMillisecs()
 		' Create the delta timer
 		dt = New DeltaTimer(FPS)
+		' Set the update rate
 		SetUpdateRate FPS
 		
 		'create all the particles
@@ -122,6 +123,7 @@ Class DiddyApp Extends App
 	
 	Method OnUpdate:Int()
 		dt.UpdateDelta()
+		
 		If debugKeyOn
 			If KeyHit(debugKey)
 				debugOn = Not debugOn
@@ -141,20 +143,38 @@ Class DiddyApp Extends App
 	Method DrawDebug:Void()
 		SetColor 255, 255, 255
 		FPSCounter.Draw(0,0)
-		DrawText "Screen             = "+currentScreen.name, 0, 10
-		DrawText "Delta              = "+FormatNumber(dt.delta, 2) , 0, 20
-		DrawText "Screen Width       = "+SCREEN_WIDTH, 0, 30
-		DrawText "Screen Height      = "+SCREEN_HEIGHT, 0, 40
-		DrawText "VMouseX            = "+Self.mouseX, 0, 50
-		DrawText "VMouseY            = "+Self.mouseY, 0, 60
-		DrawText "MouseX             = "+MouseX(), 0, 70
-		DrawText "MouseY             = "+MouseY(), 0, 80
-		DrawText "MusicOkay          = "+musicOkay, 0, 90
-		DrawText "Music State        = "+MusicState(), 0, 100
-		DrawText "Music Volume       = "+Self.musicVolume, 0, 110
-		DrawText "Mojo Music Volume  = "+Self.mojoMusicVolume, 0, 120
-		DrawText "Sound Volume       = "+Self.soundVolume, 0, 130
-		DrawText "Sound Channel      = "+SoundPlayer.channel, 0, 140
+		Local y:Int = 10
+		Local gap:Int = 10
+		DrawText "Screen             = "+currentScreen.name, 0, y
+		y += gap
+		DrawText "Delta              = "+FormatNumber(dt.delta, 2) , 0, y
+		y += gap
+		DrawText "Frame Time         = "+dt.frametime , 0, y		
+		y += gap
+		DrawText "Screen Width       = "+SCREEN_WIDTH, 0, y
+		y += gap
+		DrawText "Screen Height      = "+SCREEN_HEIGHT, 0, y
+		y += gap
+		DrawText "VMouseX            = "+Self.mouseX, 0, y
+		y += gap
+		DrawText "VMouseY            = "+Self.mouseY, 0, y
+		y += gap
+		DrawText "MouseX             = "+MouseX(), 0, y
+		y += gap
+		DrawText "MouseY             = "+MouseY(), 0, y
+		y += gap
+		DrawText "MusicOkay          = "+musicOkay, 0, y
+		y += gap
+		DrawText "Music State        = "+MusicState(), 0, y
+		y += gap
+		DrawText "Music Volume       = "+Self.musicVolume, 0, y
+		y += gap
+		DrawText "Mojo Music Volume  = "+Self.mojoMusicVolume, 0, y
+		y += gap
+		DrawText "Sound Volume       = "+Self.soundVolume, 0, y
+		y += gap
+		DrawText "Sound Channel      = "+SoundPlayer.channel, 0, y
+		y += gap
 	End
 	
 	Method DrawFPS:Void()
@@ -344,7 +364,6 @@ Class DeltaTimer
 	End
 End
 
-
 Class ImageBank Extends StringMap<GameImage>
 	
 	Field path$ = "graphics/"
@@ -422,23 +441,23 @@ Class ImageBank Extends StringMap<GameImage>
 End
 
 Class GameImage
-	Field name$
+	Field name:String
 	Field image:Image
-	Field w%
-	Field h%
-	Field w2#
-	Field h2#
-	Field midhandled%=0
+	Field w:Int
+	Field h:Int
+	Field w2:Float
+	Field h2:Float
+	Field midhandled:Int = 0
 	
-	Field leftMargin%=0
-	Field rightMargin%=0
-	Field topMargin%=0
-	Field bottomMargin%=0
+	Field leftMargin:Int = 0
+	Field rightMargin:Int = 0
+	Field topMargin:Int = 0
+	Field bottomMargin:Int = 0
 	
-	Field tileWidth%, tileHeight%
-	Field tileCountX%, tileCountY%
-	Field tileCount%
-	Field tileSpacing%, tileMargin%
+	Field tileWidth:Int, tileHeight:Int
+	Field tileCountX:Int, tileCountY:Int
+	Field tileCount:Int
+	Field tileSpacing:Int, tileMargin:Int
 	
 	Method Load:Void(file$, midhandle:bool=true)
 		name = StripAll(file.ToUpper())
@@ -447,14 +466,14 @@ Class GameImage
 		MidHandle(midhandle)
 	End
 	
-	Method LoadAnim:Void(file$, w%, h%, total%, tmpImage:Image, midhandle:Bool=true)
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=true)
 		name = StripAll(file.ToUpper())
 		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
 		CalcSize()
 		MidHandle(midhandle)
 	End
 	
-	Method LoadTileset:Void(file$, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, midhandle:Bool=False)
+	Method LoadTileset:Void(file:String, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0, midhandle:Bool=False)
 		Load(file, midhandle)
 		Self.tileWidth = tileWidth
 		Self.tileHeight = tileHeight
@@ -484,21 +503,21 @@ Class GameImage
 		End 
 	End
 	
-	Method Draw:Void(x#, y#, rotation# = 0, scaleX# = 1, scaleY# = 1, frame% = 0)
+	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
-	Method DrawSubImage:Void(destX#, destY#, srcX#, srcY#, srcWidth#, srcHeight#, rotation# = 0, scaleX# = 1, scaleY# = 1, frame% = 0)
+	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Float, srcY:Float, srcWidth:Float, srcHeight:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
 		DrawImageRect(Self.image, destX, destY, srcX, srcY, srcWidth, srcHeight, rotation, scaleX, scaleY, frame)
 	End
 	
-	Method DrawTile:Void(x#, y#, tile% = 0, rotation# = 0, scaleX# = 1, scaleY# = 1)
+	Method DrawTile:Void(x:Float, y:Float, tile:Int = 0, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1)
 		Local srcX% = tileMargin + (tileWidth + tileSpacing) * (tile Mod tileCountX)
 		Local srcY% = tileMargin + (tileHeight + tileSpacing) * (tile / tileCountX)
 		DrawImageRect(Self.image, x, y, srcX, srcY, tileWidth, tileHeight, rotation, scaleX, scaleY)
 	End
 	
-	Method DrawGrid:Void(x#, y#, rw#, rh#, frame% = 0)
+	Method DrawGrid:Void(x:Float, y:Float, rw:Float, rh:Float, frame:Int = 0)
 		' draw top left corner
 		DrawImageRect(self.image, x, y, 0, 0, leftMargin, topMargin, frame)
 		' draw top right corner
@@ -677,13 +696,13 @@ End
 Class Sprite
 	Field name$
 	Field visible?
-	Field x#, y#
-	Field ox#, oy#
-	Field dx#, dy#
-	Field speedX#, speedY#, speed#
-	Field maxXSpeed#, maxYSpeed#
+	Field x:Float, y:Float
+	Field ox:Float, oy:Float
+	Field dx:Float, dy:Float
+	Field speedX:Float, speedY:Float, speed:Float
+	Field maxXSpeed:Float, maxYSpeed:Float
 	Field image:GameImage
-	Field scaleX# = 1, scaleY# = 1
+	Field scaleX:Float = 1, scaleY:Float = 1
 
 	Field red% = 255, green% = 255, blue% = 255, alpha# = 1
 	Field hitBoxX:Int = 0
@@ -700,22 +719,23 @@ Class Sprite
 	Field reverse:Bool = false
 	Field pingPong:Bool = false
 	Field loop:Bool = true
-	Field ping%
+	Field ping:Int
 	
 	' Scale
-	Field scaleCounter#=0
-	Field scaleXSpeed# = 0.1
-	Field scaleYSpeed# = 0.1
-	Field ygravity#
+	Field scaleCounter:Float = 0
+	Field scaleXSpeed:Float = 0.1
+	Field scaleYSpeed:Float = 0.1
+	Field ygravity:Float
 	Field maxFrame:Int
 	
 	' Rotation
-	Field rotationCounter#=0
-	Field rotationLength%=1000
-	Field rotationLoop% = 0
-	Field rotation#, rotationSpeed# = 1
+	Field rotationCounter:Float = 0
+	Field rotationLength:Int = 1000
+	Field rotationLoop:Int = 0
+	Field rotation:Float
+	Field rotationSpeed:Float = 1
 	
-	Method New(img:GameImage,x#, y#)
+	Method New(img:GameImage, x:Float, y:Float)
 		Self.image = img
 		Self.x = x
 		Self.y = y
@@ -743,13 +763,13 @@ Class Sprite
 		DrawImage image.image, -image.w-50, -image.h-50		
 	End
 	
-	Method SetRGB:Void(r%,g%,b%)
+	Method SetRGB:Void(r:Int, g:Int ,b:Int)
 		Self.red = r
 		Self.green = g
 		Self.blue = b
 	End
 	
-	Method SetScaleXY:Void(sx#, sy#)
+	Method SetScaleXY:Void(sx:Float, sy:Float)
 		self.scaleX = sx
 		self.scaleY = sy
 	End
@@ -853,7 +873,7 @@ Class Sprite
 		Draw(0,0)
 	End
 	
-	Method Draw:Void(offsetx#=0, offsety#=0)
+	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0)
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
@@ -893,26 +913,26 @@ Class Sprite
 End
 
 Class Particle Extends Sprite
-	Global MAX_PARTICLES% = 800
+	Global MAX_PARTICLES:Int = 800
 	Global particles:Particle[MAX_PARTICLES]
-	Global lastDeath% = 0
-	Global maxIndex% = -1
-	Global minIndex% = -1
-	Global particleCount% = 0
-	Field lifeCounter# = 0
-	Field fadeIn# = 0
-	Field fadeCounter#
-	Field fadeInLength# = 0
-	Field fadeLength#=0
-	Field active% = 0
+	Global lastDeath:Int = 0
+	Global maxIndex:Int = -1
+	Global minIndex:Int = -1
+	Global particleCount:Int = 0
+	Field lifeCounter:Float = 0
+	Field fadeIn:Float = 0
+	Field fadeCounter:Float
+	Field fadeInLength:Float = 0
+	Field fadeLength:Float = 0
+	Field active:Int = 0
 	
 	Function Cache:Void()
-		For Local i% = 0 to MAX_PARTICLES - 1
+		For Local i:Int = 0 to MAX_PARTICLES - 1
 			particles[i] = New Particle()
 		Next
 	End
 	
-	Function Create:Particle(gi:GameImage, x#, y#, dx#=0, dy#=0, gravity#=0, fadeLength#=0, lifeCounter%=0)
+	Function Create:Particle(gi:GameImage, x:Float, y:Float, dx:Float = 0, dy:Float = 0, gravity:Float = 0, fadeLength:Float = 0, lifeCounter:Int = 0)
 		Local i%=lastDeath
 		Repeat
 			If particles[i] = Null Then particles[i] = New Particle()
@@ -940,7 +960,7 @@ Class Particle Extends Sprite
 	End
 	
 	Function Clear:Void()
-		For Local i% = 0 to MAX_PARTICLES - 1
+		For Local i:Int = 0 to MAX_PARTICLES - 1
 			particles[i].alpha = 0
 			particles[i].active = False
 		Next
@@ -968,9 +988,9 @@ Class Particle Extends Sprite
 	
 	Function UpdateAll:Void()
 		If minIndex < 0 Or maxIndex < 0 Then Return
-		Local newMinIndex% = -1
-		Local newMaxIndex% = -1
-		For Local i% = minIndex to maxIndex
+		Local newMinIndex:Int = -1
+		Local newMaxIndex:Int = -1
+		For Local i:Int = minIndex to maxIndex
 			if particles[i] <> null And particles[i].image <> null
 				If particles[i].active
 					particles[i].Update()
@@ -1009,4 +1029,3 @@ Class Particle Extends Sprite
 	End
 	
 End
-
