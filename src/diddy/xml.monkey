@@ -124,8 +124,14 @@ Class XMLParser
 			End
 			startIndex = a
 			
-			' if error reading key, die
-			If key = "" Then Error("Error reading attribute key.")
+			' if the key is empty, there was an error (unless we've hit the end of the string)
+			If key = "" Then
+				If a < endIndex Then
+					Error("Error reading attribute key.")
+				Else
+					Exit
+				End
+			End
 			
 			' if it stopped on an equals, get the value
 			If str[a-1] = ASC_EQUALS Then
