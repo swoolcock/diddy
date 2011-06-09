@@ -2,7 +2,6 @@ Strict
 
 Import mojo
 Import diddy
-Import diddy.tile
 
 Function Main:Int()
 	game = New MyGame
@@ -33,7 +32,8 @@ Class TitleScreen Extends Screen
 	
 	Method Render:Void()
 		Cls
-		DrawText "TITLE", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5
+		DrawText "TITLE SCREEN", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5
+		DrawText "CLICK TO PLAY", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 10, 0.5, 0.5
 		FPSCounter.Draw(0,0)
 	End
 	
