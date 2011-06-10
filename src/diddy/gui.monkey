@@ -856,7 +856,8 @@ Public
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
 		If image.midhandled
-			Self.midHandle = True
+			image.MidHandle(False)
+			Self.midHandle = False
 		End
 	End
 	
@@ -869,7 +870,8 @@ Public
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
 		If image.midhandled
-			Self.midHandle = True
+			image.MidHandle(False)
+			Self.midHandle = False
 		End
 	End
 	
