@@ -51,7 +51,7 @@ Class Rectangle
 	End
 End
 
-Class GUI
+Class GUI Implements ActionListener
 	Field desktop:Desktop
 	Field scissors:Rectangle[] = New Rectangle[128]
 	Field scissorDepth:Int = 0
@@ -118,21 +118,31 @@ Class GUI
 		SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
 	End
 	
+	' TODO: check Z-order
 	Method ComponentAtPoint:Component(x#, y#, parent:Component=Null)
 		' if no parent, it's the desktop
 		If parent = Null Then parent = desktop
 		' if the mouse is outside the component, return null
+		If parent.midHandle
+			x += parent.w2
+			y += parent.h2
+		EndIf
+
 		If x<0 Or y<0 Or x >= parent.w Or y >= parent.h Then Return Null
+
 		' check if it's inside a child
 		Local rv:Component = Null
 		For Local i% = 0 Until parent.children.Size
 			Local c:Component = parent.children.Get(i)
 			rv = ComponentAtPoint(x-c.x, y-c.y, c)
+
 			If rv <> Null Then Return rv
 		Next
 		' not inside a child, so it's this one
 		Return parent
 	End
+
+
 	
 	Method GetAbsoluteX:Float(comp:Component)
 		Local rv# = comp.x
@@ -277,7 +287,19 @@ Class GUI
 	End
 End
 
-Class AbstractMouseAdapter Abstract
+Interface ActionListener
+	Method ActionPerformed:Void(source:Component, action:String)
+End
+
+Interface MouseListener
+	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	Method MouseEntered:Void(x#, y#, exitedComp:Component, absoluteX#, absoluteY#)
+	Method MouseExited:Void(x#, y#, enteredComp:Component, absoluteX#, absoluteY#)
+End
+
+Class AbstractMouseAdapter Implements MouseListener Abstract
 	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
 	End
 	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
@@ -290,7 +312,12 @@ Class AbstractMouseAdapter Abstract
 	End
 End
 
-Class AbstractMouseMotionAdapter Abstract
+Interface MouseMotionListener
+	Method MouseMoved:Void(x#, y#, absoluteX#, absoluteY#)
+	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
+End
+
+Class AbstractMouseMotionAdapter Implements MouseMotionListener Abstract
 	Method MouseMoved:Void(x#, y#, absoluteX#, absoluteY#)
 	End
 	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
@@ -310,13 +337,14 @@ Class Desktop Extends Component
 	End
 End
 
-Class Component
+Class Component Implements ActionListener
 Private
+	Field midHandle:Bool = False
 	Field alpha# = 1
 	Field children:ArrayList<Component> = New ArrayList<Component>
-	Field mouseAdapter:AbstractMouseAdapter
-	Field mouseMotionAdapter:AbstractMouseMotionAdapter
-	Field forwardAction:Component = Null
+	Field mouseAdapter:MouseListener
+	Field mouseMotionAdapter:MouseMotionListener
+	Field forwardAction:ActionListener = Null
 	Field mouseHover:Bool = False
 	Field mouseDown:Bool = False
 	
@@ -330,19 +358,25 @@ Public
 	Field w2#, h2#
 	Field visible:Bool = True
 	
-	Method MouseAdapter:Void(mouseAdapter:AbstractMouseAdapter) Property
+	Method MouseAdapter:Void(mouseAdapter:MouseListener) Property
 		Self.mouseAdapter = mouseAdapter
 	End
-	Method MouseAdapter:AbstractMouseAdapter() Property
+	Method MouseAdapter:MouseListener() Property
 		Return Self.mouseAdapter
 	End
-	Method MouseMotionAdapter:Void(mouseMotionAdapter:AbstractMouseMotionAdapter) Property
+	Method MouseMotionAdapter:Void(mouseMotionAdapter:MouseMotionListener) Property
 		Self.mouseMotionAdapter = mouseMotionAdapter
 	End
-	Method MouseMotionAdapter:AbstractMouseMotionAdapter() Property
+	Method MouseMotionAdapter:MouseMotionListener() Property
 		Return Self.mouseMotionAdapter
 	End
-	
+	Method MidHandle:Void(mid:Bool) Property
+		Self.midHandle = mid
+	End
+	Method MidHandle:Bool() Property
+		Return Self.midHandle
+	End
+
 	Method StyleNormal:ComponentStyle() Property
 		If styleNormal = Null Then styleNormal = New ComponentStyle
 		Return styleNormal
@@ -439,10 +473,15 @@ Public
 		For Local c:Component = EachIn children
 			PushMatrix()
 			Translate(c.x, c.y)
-			c.Draw(parentGui, c.alpha * alpha, absx + c.x, absy + c.y)
+			If Not c.midHandle
+				c.Draw(parentGui, c.alpha * alpha, absx + c.x, absy + c.y)
+			Else
+				c.Draw(parentGui, c.alpha * alpha, absx + c.x - c.w2, absy + c.y - c.h2)
+			End
 			PopMatrix()
 		Next
 	End
+
 	
 	Method DrawComponent:Void()
 		Local style:ComponentStyle = GetCurrentStyle()
@@ -522,7 +561,7 @@ Public
 		End
 	End
 	
-	Method FindActionTarget:Component()
+	Method FindActionTarget:ActionListener()
 		' if this is a window or desktop, return itself
 		If Window(Self) <> Null Or Desktop(Self) <> Null Then Return Self
 		' traverse up the hierarchy and find the closest Window or Desktop to receive the actions
@@ -567,7 +606,7 @@ Class Panel Extends Component
 	End
 End
 
-Class Window Extends Component
+Class Window Extends Component Implements MouseListener, MouseMotionListener
 Private
 	Field contentPane:Panel
 	Field titlePane:Panel
@@ -607,8 +646,8 @@ Private
 	Method CreateTitlePane:Void()
 		titlePane = New Panel(Self)
 		titlePane.StyleNormal.drawBackground = False
-		titlePane.mouseAdapter = New WindowTitlePaneMouseAdapter(Self)
-		titlePane.mouseMotionAdapter = New WindowTitlePaneMouseMotionAdapter(Self)
+		titlePane.mouseAdapter = Self
+		titlePane.mouseMotionAdapter = Self
 	End
 Public
 	Method ContentPane:Panel() Property
@@ -700,46 +739,45 @@ Public
 		titlePane.SetBounds(4, 0, buttonPane.x-4, titleHeight)
 	End
 	
-	
-End
-
-Class WindowTitlePaneMouseAdapter Extends AbstractMouseAdapter
-	Field window:Window
-	Method New(window:Window)
-		Self.window = window
-	End
 	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		If window.dragging Then Return
-		If window.maximised Or window.minimised Then Return
-		window.dragging = True
-		window.dragX = absoluteX
-		window.dragY = absoluteY
-		window.originalX = window.x
-		window.originalY = window.y
+		If dragging Then Return
+		If maximised Or minimised Then Return
+		dragging = True
+		dragX = absoluteX
+		dragY = absoluteY
+		originalX = Self.x
+		originalY = Self.y
 	End
-	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		window.dragging = False
-	End
-End
 	
-Class WindowTitlePaneMouseMotionAdapter Extends AbstractMouseMotionAdapter
-	Field window:Window
-	Method New(window:Window)
-		Self.window = window
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
+		dragging = False
 	End
+	
 	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		If window.maximised Or window.minimised Then window.dragging = False
-		If Not window.dragging Then Return
-		Local dx# = absoluteX-window.dragX, dy# = absoluteY-window.dragY
-		Local newX# = window.originalX + dx, newY# = window.originalY + dy
+		If maximised Or minimised Then dragging = False
+		If Not dragging Then Return
+		Local dx# = absoluteX-dragX, dy# = absoluteY-dragY
+		Local newX# = originalX + dx, newY# = originalY + dy
 		
-		If Desktop(window.parent) <> Null And Desktop(window.parent).restrictWindows Then
-			If newX + window.w > window.parent.w Then newX = window.parent.w - window.w
-			If newY + window.h > window.parent.h Then newY = window.parent.h - window.h
+		If Desktop(parent) <> Null And Desktop(parent).restrictWindows Then
+			If newX + w > parent.w Then newX = parent.w - w
+			If newY + h > parent.h Then newY = parent.h - h
 			If newX < 0 Then newX = 0
 			If newY < 0 Then newY = 0
 		End
-		window.SetLocation(newX, newY)
+		SetLocation(newX, newY)
+	End
+	
+	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseEntered:Void(x#, y#, exitedComp:Component, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseExited:Void(x#, y#, enteredComp:Component, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseMoved:Void(x#, y#, absoluteX#, absoluteY#)
 	End
 End
 
@@ -780,12 +818,12 @@ Class Label Extends Component
 	Method DrawComponent:Void()
 		Super.DrawComponent()
 		If text.Length > 0
-			DrawText text, w2, h2, .5, .5
+			DrawText text, w*textXAlign+textXOffset, h*textYAlign+textYOffset, textXAlign, textYAlign
 		End
 	End
 End
 
-Class Button Extends Label
+Class Button Extends Label Implements MouseListener
 Private
 	Field styleSelected:ComponentStyle = Null
 	
@@ -798,32 +836,38 @@ Public
 	Method New(parent:Component)
 		Super.New(parent)
 		Self.forwardAction = FindActionTarget()
-		mouseAdapter = New ButtonMouseAdapter(Self)
+		mouseAdapter = Self
 	End
 	
 	Method New(parent:Component, image:GameImage)
 		Super.New(parent)
 		Self.forwardAction = FindActionTarget()
-		mouseAdapter = New ButtonMouseAdapter(Self)
+		mouseAdapter = Self
 		Self.StyleNormal.image = image
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
+		If image.midhandled
+			Self.midHandle = True
+		End
 	End
 	
 	Method New(parent:Component, image:GameImage, clickImage:GameImage)
 		Super.New(parent)
 		Self.forwardAction = FindActionTarget()
-		mouseAdapter = New ButtonMouseAdapter(Self)
+		mouseAdapter = Self
 		Self.StyleNormal.image = image
 		Self.styleNormal.downImage = clickImage
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
+		If image.midhandled
+			Self.midHandle = True
+		End
 	End
 	
 	Method New(parent:Component, forwardAction:Component)
 		Super.New(parent)
 		Self.forwardAction = forwardAction
-		mouseAdapter = New ButtonMouseAdapter(Self)
+		mouseAdapter = Self
 	End
 	
 	Method StyleSelected:ComponentStyle() Property
@@ -851,22 +895,28 @@ Public
 		If selected And styleSelected <> Null Then Return styleSelected
 		Return Super.GetCurrentStyle()
 	End
-End
-
-Class ButtonMouseAdapter Extends AbstractMouseAdapter
-	Field button:Button
-	Method New(button:Button)
-		Self.button = button
-	End
+	
 	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
 		' is it a radio button?
-		If Self.button.radioGroup <> Null Then
-			Self.button.radioGroup.SelectButton(Self.button)
+		If radioGroup <> Null Then
+			radioGroup.SelectButton(Self)
 		' is it a toggle button?
-		ElseIf Self.button.toggle Then
-			Self.button.selected = Not Self.button.selected
+		ElseIf toggle Then
+			selected = Not selected
 		End
-		Self.button.ActionPerformed(Self.button, ACTION_CLICKED)
+		ActionPerformed(Self, ACTION_CLICKED)
+	End
+	
+	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseEntered:Void(x#, y#, exitedComp:Component, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseExited:Void(x#, y#, enteredComp:Component, absoluteX#, absoluteY#)
 	End
 End
 
@@ -909,7 +959,7 @@ Class RadioGroup
 	End
 End
 
-Class Slider Extends Component
+Class Slider Extends Component Implements MouseListener, MouseMotionListener
 	Const SLIDER_HORIZONTAL% = 0
 	Const SLIDER_VERTICAL% = 1
 	Const SLIDER_DIRECTION_TL_TO_BR% = 0 ' min is top or left, max is bottom or right
@@ -947,8 +997,8 @@ Public
 		buttonUpLeft = New Button(Self, Self)
 		buttonDownRight = New Button(Self, Self)
 		handle = New Label(Self)
-		handle.mouseAdapter = New SliderHandleMouseAdapter(Self)
-		handle.mouseMotionAdapter = New SliderHandleMouseMotionAdapter(Self)
+		handle.mouseAdapter = Self
+		handle.mouseMotionAdapter = Self
 		buttonUpLeft.visible = False
 		buttonDownRight.visible = False
 	End
@@ -1095,7 +1145,7 @@ Public
 		
 		' if it changed, update the layout and fire an event
 		If value <> oldValue Then
-			Local target:Component = forwardAction
+			Local target:ActionListener = forwardAction
 			If target = Null Then target = FindActionTarget()
 			If target <> Null Then
 				Layout()
@@ -1161,7 +1211,7 @@ Public
 		
 		' if it changed, update the layout and fire an event
 		If value <> oldValue Then
-			Local target:Component = forwardAction
+			Local target:ActionListener = forwardAction
 			If target = Null Then target = FindActionTarget()
 			If target <> Null Then
 				Layout()
@@ -1170,38 +1220,32 @@ Public
 		End
 		Return value <> oldValue
 	End
-End
-
-Class SliderHandleMouseAdapter Extends AbstractMouseAdapter
-	Field slider:Slider
-	Method New(slider:Slider)
-		Self.slider = slider
-	End
+	
 	Method MousePressed:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		If slider.dragging Then Return
-		slider.dragging = True
-		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+		If dragging Then Return
+		dragging = True
+		HandleDrag(handle.x + x, handle.y + y)
 	End
+	
 	Method MouseReleased:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		slider.dragging = False
-		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+		dragging = False
+		HandleDrag(handle.x + x, handle.y + y)
 	End
-End
-
-Class SliderHandleMouseMotionAdapter Extends AbstractMouseMotionAdapter
-	Field slider:Slider
-	Method New(slider:Slider)
-		Self.slider = slider
-	End
+	
 	Method MouseDragged:Void(x#, y#, button%, absoluteX#, absoluteY#)
-		If Not slider.dragging Then Return
-		slider.HandleDrag(slider.handle.x + x, slider.handle.y + y)
+		If Not dragging Then Return
+		HandleDrag(handle.x + x, handle.y + y)
+	End
+	
+	Method MouseClicked:Void(x#, y#, button%, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseEntered:Void(x#, y#, exitedComp:Component, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseExited:Void(x#, y#, enteredComp:Component, absoluteX#, absoluteY#)
+	End
+	
+	Method MouseMoved:Void(x#, y#, absoluteX#, absoluteY#)
 	End
 End
-
-
-
-
-
-
-
