@@ -115,7 +115,7 @@ Class GUI
 	Method Draw()
 		desktop.Draw(Self)
 		scissorDepth = 0
-		SetScissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+		SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
 	End
 	
 	Method ComponentAtPoint:Component(x#, y#, parent:Component=Null)
