@@ -68,6 +68,8 @@ Class GUI Implements ActionListener
 	Field mouseThisY:Float
 	Field mouseThisComponent:Component
 	
+	Field useVirtualRes:Bool = False
+	
 	Method New()
 		desktop = New Desktop(Self)
 		desktop.SetBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -100,7 +102,12 @@ Class GUI Implements ActionListener
 	Method UpdateScissor:Void()
 		If scissorDepth > 0 Then
 			If Not EmptyScissor() Then
-				SetScissor(scissors[scissorDepth-1].x * SCREENX_RATIO, scissors[scissorDepth-1].y * SCREENY_RATIO, scissors[scissorDepth-1].w * SCREENX_RATIO, scissors[scissorDepth-1].h * SCREENY_RATIO)
+				Local xRatio:Float = 1, yRatio:Float = 1
+				if useVirtualRes
+					xRatio = SCREENX_RATIO
+					yRatio = SCREENY_RATIO
+				End
+				SetScissor(scissors[scissorDepth-1].x * xRatio, scissors[scissorDepth-1].y * yRatio, scissors[scissorDepth-1].w * xRatio, scissors[scissorDepth-1].h * yRatio)
 			End
 		Else
 			SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
@@ -166,8 +173,13 @@ Class GUI Implements ActionListener
 		mouseLastX = mouseThisX
 		mouseLastY = mouseThisY
 		mouseLastComponent = mouseThisComponent
-		mouseThisX = game.mouseX
-		mouseThisY = game.mouseY
+		if useVirtualRes
+			mouseThisX = game.mouseX
+			mouseThisY = game.mouseY
+		Else
+			mouseThisX = MouseX()
+			mouseThisY = MouseY()
+		End
 		mouseThisComponent = ComponentAtPoint(mouseThisX, mouseThisY)
 		DoMouse(MOUSE_LEFT)
 		DoMouse(MOUSE_MIDDLE)
