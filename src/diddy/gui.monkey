@@ -804,12 +804,21 @@ Class WindowButtonPanelButton Extends Button
 End
 
 Class Label Extends Component
+Private
 	Field text:String
 	Field textRed%, textGreen%, textBlue%
 	Field textXOffset# = 0
 	Field textYOffset# = 0
 	Field textXAlign# = 0
 	Field textYAlign# = 0
+
+Public
+
+	Method Text:Void(txt:String, xAlign:Float, yAlign:Float) Property
+		text = txt
+		textXAlign = xAlign
+		textYAlign = yAlign
+	End
 	
 	Method New(parent:Component)
 		Super.New(parent)
