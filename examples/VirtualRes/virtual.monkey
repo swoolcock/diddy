@@ -72,6 +72,10 @@ Class GameScreen Extends Screen
 			SCREEN_WIDTH = 480
 			SCREEN_HEIGHT = 320
 		End
+		If KeyHit(KEY_ENTER)
+			game.screenFade.Start(50, true)
+			game.nextScreen = gameScreen
+		End
 
 		game.SetScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT)
 		If KeyHit(KEY_ESCAPE)
