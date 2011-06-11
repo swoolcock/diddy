@@ -107,11 +107,11 @@ Class DiddyApp Extends App
 			Scale SCREENX_RATIO, SCREENY_RATIO
 		End
 			currentScreen.Render()
-			If screenFade.active then screenFade.Render()
 		if virtualResOn
 			PopMatrix
 		End
 		currentScreen.ExtraRender()
+		If screenFade.active then screenFade.Render()
 		If debugOn
 			DrawDebug()
 		End
@@ -274,7 +274,7 @@ Class ScreenFade
 		
 		SetAlpha 1 - ratio
 		SetColor 0, 0, 0
-		DrawRect 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT
+		DrawRect 0, 0, DEVICE_WIDTH, DEVICE_HEIGHT
 		SetAlpha 1
 		SetColor 255, 255, 255
 	End
