@@ -102,12 +102,51 @@ Class GUI Implements ActionListener
 	Method UpdateScissor:Void()
 		If scissorDepth > 0 Then
 			If Not EmptyScissor() Then
-				Local xRatio:Float = 1, yRatio:Float = 1
+				Local xRatio:Float = 1
+				Local yRatio:Float = 1
+				
 				if useVirtualRes
 					xRatio = SCREENX_RATIO
 					yRatio = SCREENY_RATIO
 				End
-				SetScissor(scissors[scissorDepth-1].x * xRatio, scissors[scissorDepth-1].y * yRatio, scissors[scissorDepth-1].w * xRatio, scissors[scissorDepth-1].h * yRatio)
+				
+				Local sx# = scissors[scissorDepth-1].x * xRatio
+				Local sy# = scissors[scissorDepth-1].y * yRatio
+				Local sw# = scissors[scissorDepth-1].w * xRatio
+				Local sh# = scissors[scissorDepth-1].h * yRatio
+				
+				if sx < 0
+					sx = 0
+				End
+				
+				if sy < 0
+					sy = 0
+				End
+				
+				if sx+sw < 0
+					sw = 0
+				End
+				
+				if sy+sh < 0
+					sh = 0
+				End
+				
+				if sx > DEVICE_WIDTH
+					sx = DEVICE_WIDTH
+				End
+				
+				if sy > DEVICE_HEIGHT
+					sy = DEVICE_HEIGHT
+				End
+
+				if sx+sw > DEVICE_WIDTH
+					sw = 0
+				End
+				if sy+sh > DEVICE_HEIGHT
+					sh = 0
+				End
+
+				SetScissor(sx, sy, sw, sh)
 			End
 		Else
 			SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
@@ -119,7 +158,8 @@ Class GUI Implements ActionListener
 		Return scissors[scissorDepth-1].empty
 	End
 	
-	Method Draw()
+	Method Draw(useVirtualRes:Bool = False)
+		Self.useVirtualRes = useVirtualRes
 		desktop.Draw(Self)
 		scissorDepth = 0
 		SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
