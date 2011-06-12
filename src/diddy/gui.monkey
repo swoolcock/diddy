@@ -130,11 +130,6 @@ Class GUI Implements ActionListener
 		' if no parent, it's the desktop
 		If parent = Null Then parent = desktop
 		' if the mouse is outside the component, return null
-		If parent.midHandle
-			x += parent.w2
-			y += parent.h2
-		EndIf
-
 		If x<0 Or y<0 Or x >= parent.w Or y >= parent.h Then Return Null
 
 		' check if it's inside a child
@@ -351,7 +346,6 @@ End
 
 Class Component Implements ActionListener
 Private
-	Field midHandle:Bool = False
 	Field alpha# = 1
 	Field children:ArrayList<Component> = New ArrayList<Component>
 	Field mouseAdapter:MouseListener
@@ -373,26 +367,24 @@ Public
 	Method MouseAdapter:Void(mouseAdapter:MouseListener) Property
 		Self.mouseAdapter = mouseAdapter
 	End
+
 	Method MouseAdapter:MouseListener() Property
 		Return Self.mouseAdapter
 	End
+
 	Method MouseMotionAdapter:Void(mouseMotionAdapter:MouseMotionListener) Property
 		Self.mouseMotionAdapter = mouseMotionAdapter
 	End
+
 	Method MouseMotionAdapter:MouseMotionListener() Property
 		Return Self.mouseMotionAdapter
-	End
-	Method MidHandle:Void(mid:Bool) Property
-		Self.midHandle = mid
-	End
-	Method MidHandle:Bool() Property
-		Return Self.midHandle
 	End
 
 	Method StyleNormal:ComponentStyle() Property
 		If styleNormal = Null Then styleNormal = New ComponentStyle
 		Return styleNormal
 	End
+
 	Method StyleNormal:Void(style:ComponentStyle) Property
 		AssertNotNull(style, "StyleNormal may not be null.")
 		styleNormal = style
@@ -418,6 +410,19 @@ Public
 			styleNormal.drawBackground = False
 		End
 		AddNotify()
+	End
+
+	Method CheckImage()
+		if styleNormal.image <> null
+			If styleNormal.image.midhandled
+				Error "Images can not be midhandled for GUI components"
+			End
+		End	
+		if styleNormal.downImage <> null
+			If styleNormal.downImage.midhandled
+				Error "Images can not be midhandled for GUI components"
+			End
+		End
 	End
 	
 	Method Alpha#() Property
@@ -485,11 +490,7 @@ Public
 		For Local c:Component = EachIn children
 			PushMatrix()
 			Translate(c.x, c.y)
-			If Not c.midHandle
-				c.Draw(parentGui, c.alpha * alpha, absx + c.x, absy + c.y)
-			Else
-				c.Draw(parentGui, c.alpha * alpha, absx + c.x - c.w2, absy + c.y - c.h2)
-			End
+			c.Draw(parentGui, c.alpha * alpha, absx + c.x, absy + c.y)
 			PopMatrix()
 		Next
 	End
@@ -867,10 +868,7 @@ Public
 		Self.StyleNormal.image = image
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
-		If image.midhandled
-			image.MidHandle(False)
-			Self.midHandle = False
-		End
+		CheckImage()
 	End
 	
 	Method New(parent:Component, image:GameImage, clickImage:GameImage)
@@ -881,10 +879,7 @@ Public
 		Self.styleNormal.downImage = clickImage
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
-		If image.midhandled
-			image.MidHandle(False)
-			Self.midHandle = False
-		End
+		CheckImage()
 	End
 	
 	Method New(parent:Component, forwardAction:Component)
