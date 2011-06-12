@@ -62,7 +62,7 @@ Class MyGUI Extends GUI
 	Method New()
 		button = New Button(desktop, game.images.Find("button"), game.images.Find("buttonClick"))
 		button.SetBounds(150,50,100,50)
-		button.text = "HELLO"
+		button.Text ("HELLO", 0.5, 0.5)
 		
 		toggleButton = New Button(desktop, game.images.Find("check"))
 		toggleButton.toggle = True
