@@ -112,6 +112,7 @@ Class DiddyApp Extends App
 		End
 		currentScreen.ExtraRender()
 		If screenFade.active then screenFade.Render()
+		currentScreen.DebugRender()
 		If debugOn
 			DrawDebug()
 		End
@@ -319,6 +320,9 @@ Class Screen Abstract
 	End
 	
 	Method ExtraRender:Void()
+	End
+	
+	Method DebugRender:Void()
 	End
 	
 End Class
