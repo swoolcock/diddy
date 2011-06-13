@@ -41,9 +41,14 @@ Class GameScreen Extends Screen
 	End
 	
 	Method ExtraRender:Void()
+		DrawText "This part of the render isnt affected by the virtual resolution!", 0, 10
+		DrawText "but is affected by fading!", 0, 25
+	End
+	
+	Method DebugRender:Void()
 		Local starty% = 120
 		Local height% = 20
-		DrawText "This part of the render isnt affected by the virtual resolution!", 0, DEVICE_HEIGHT - starty
+		DrawText "This part of the render isnt affected by the virtual resolution or fading either!", 0, DEVICE_HEIGHT - starty
 		starty-=height
 		DrawText "Use the cursor keys to change the virtual resolution", 0, DEVICE_HEIGHT - starty
 		starty-=height
@@ -52,7 +57,6 @@ Class GameScreen Extends Screen
 		DrawText "Device Width x Height = "+DEVICE_WIDTH+" x "+DEVICE_HEIGHT, 0, DEVICE_HEIGHT - starty
 		starty-=height
 		DrawText "Virtual Width x Height = "+FormatNumber(SCREEN_WIDTH, 3)+" x "+FormatNumber(SCREEN_HEIGHT,3), 0, DEVICE_HEIGHT - starty
-
 	End
 
 	Method Update:Void()
