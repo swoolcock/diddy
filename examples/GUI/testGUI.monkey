@@ -16,6 +16,7 @@ Class MyGame extends DiddyApp
 		images.Load("buttonClick.png", "", False)
 		images.Load("check.png", "", False)
 		images.Load("checkClick.png", "", False)
+		sounds.Load("ButtonClick")
 		drawFPSOn = True
 		guiScreen = new GUIScreen
 		guiScreen.PreStart()
@@ -54,15 +55,16 @@ Class GUIScreen Extends Screen
 End
 
 Class MyGUI Extends GUI
-	Field button:Button
+	Field button:MyButton
 	Field toggleButton:Button
 	Field slider:Slider
 	Field buttonImage:GameImage
 	
 	Method New()
-		button = New Button(desktop, game.images.Find("button"), game.images.Find("buttonClick"))
+		button = New MyButton(desktop, game.images.Find("button"), game.images.Find("buttonClick"))
 		button.SetBounds(150,50,100,50)
 		button.Text ("HELLO", 0.5, 0.5)
+		button.soundClick = game.sounds.Find("buttonclick")
 		
 		toggleButton = New Button(desktop, game.images.Find("check"))
 		toggleButton.toggle = True
@@ -101,6 +103,15 @@ Class MyGUI Extends GUI
 	End
 End
 
-
-
-
+Class MyButton Extends Button
+	Field soundClick:GameSound
+	
+	Method New(parent:Component, image:GameImage, clickImage:GameImage)
+		Super.New(parent, image, clickImage)
+	End
+	
+	Method ActionPerformed:Void(source:Component, action:String)
+		Super.ActionPerformed(source, action)
+		soundClick.Play()
+	End
+End
