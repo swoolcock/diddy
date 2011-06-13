@@ -1,0 +1,356 @@
+Import diddy
+
+Class SimpleMenu Extends List<SimpleButton>
+	Field x:Float, y:Float
+	Field buttonGap:Int = 0
+	Field mouseOverName:String = ""
+	Field clickedName:String = ""
+	Field clearClickedName:Int = 1 
+	Field nextY:Int = 0
+	Field w:Int, h:Int
+	Field addGap:Int = 0
+	Field soundMouseOver:GameSound
+	Field soundClick:GameSound
+	
+	Method New()
+		Error "Please use a different constructor"
+	End
+	
+	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int)
+		Init(soundMouseOverFile, soundClickFile, x, y, gap)
+	End
+	
+	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int)
+		Self.Clear()
+		Self.x = x
+		Self.y = y
+		nextY = y
+		Self.buttonGap = gap
+		h = 0
+		mouseOverName = ""
+		clickedName = ""
+		addGap = 0
+		If soundMouseOverFile<>"" Then
+			soundMouseOver = New GameSound
+			soundMouseOver.Load(soundMouseOverFile)
+		End
+		If soundClickFile<>"" Then
+			soundClick = New GameSound
+			soundClick.Load(soundClickFile)		
+		End
+	End
+
+	Method CalcWidth:Int()
+		Local left:Int=10000
+		Local right:Int=-10000
+		Local b:SimpleButton
+		For b = EachIn Self
+			If b.x < left Then left = b.x
+			If b.x+b.image.w > right Then right = b.x + b.image.w
+		Next				
+		w = right - left
+		Return w
+	End
+	
+	Method CalcHeight:Int()
+		Local top:Int=10000
+		Local bot:Int=-10000
+		Local b:SimpleButton
+		For b = EachIn Self
+			If b.y < top Then top = b.y
+			If b.y+b.image.h > bot Then bot = b.y + b.image.h
+		Next				
+		h = bot - top
+		Return h
+	End
+	
+	Method SetX:Void(thex#)
+		CalcLeft()
+		Local oldx# = x	
+		x = thex
+		Local diff# = x - oldx
+		Local b:SimpleButton
+		For b = EachIn Self
+			b.MoveBy(diff,0)
+		Next	
+	End
+		
+	Method SetY:Void(they#)
+		CalcTop()
+		Local oldy# = y	
+		y = they
+		Local diff# = y-oldy
+		Local b:SimpleButton
+		For b = EachIn Self
+			b.MoveBy(0,diff)
+		Next		
+	End
+	
+	Method CalcLeft:Void()
+		x = 10000
+		Local b:SimpleButton
+		For b = EachIn Self
+			If b.x <x Then x = b.x
+		Next						
+	End
+		
+	Method CalcTop:Void()
+		y = 10000
+		Local b:SimpleButton
+		For b = EachIn Self
+			If b.y < y Then y = b.y
+		Next						
+	End
+	
+	Method CentreHoriz:Void()
+		CalcWidth()
+		SetX((SCREEN_WIDTH-w)/2)		
+	End
+	
+	Method CentreVert:Void()
+		CalcHeight()
+		SetY((SCREEN_HEIGHT-h)/2)		
+	End
+
+	Method Centre:Void()
+		CentreHoriz()
+		CentreVert()
+	End
+	
+	Method SetMenuAlpha:Void(alpha:Float)
+		Local b:SimpleButton
+		For b = EachIn Self
+			b.alpha = alpha
+		Next
+	End
+
+	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String="")
+		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name)
+		IncreaseHeight(b)
+		Return b
+	End
+	
+	Method IncreaseHeight:Void(b:SimpleButton)
+		nextY = nextY + b.image.h + buttonGap
+
+		h = h + b.image.h
+		If addGap Then
+			h = h + buttonGap
+		Else
+			addGap = 1
+		End			
+	End
+	
+	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String)
+		Local b:SimpleButton = New SimpleButton
+		b.Load(buttonImageFile, mouseOverFile)
+			
+		If name <> "" Then b.name = name.ToUpper()
+		b.CentreX(nextY)
+		b.soundMouseOver = soundMouseOver 
+		b.soundClick = soundClick 
+		AddLast(b)
+		Return b
+	End
+	
+	Method FindButton:SimpleButton(name:String)
+		name = name.ToUpper()
+		Local b:SimpleButton
+		For b = EachIn Self
+			If b.name = name Then Return b
+		Next	
+		Return Null
+	End
+	
+	Method Clicked:Int(name:String)
+		name = name.ToUpper()
+		If name = clickedName
+			If clearClickedName Then clickedName = ""
+			Return 1		
+		Else
+			Return 0
+		End
+	End
+	
+	Method Update:Int()
+		If game.screenFade.active
+			Return 0
+		EndIf
+		clickedName = ""
+		Local b:SimpleButton
+		For b = EachIn Self
+			b.Update()
+			If b.mouseOver Then mouseOverName = b.name
+			If b.clicked Then clickedName = b.name	
+		Next
+		Return 1
+	End
+	
+	Method Precache:Void()
+		For Local b:SimpleButton = EachIn Self
+			b.Precache()
+		Next
+	End
+	
+	Method Draw:Void()
+		For Local b:SimpleButton = EachIn Self
+			b.Draw()
+		Next
+	End
+End
+
+Class SimpleButton Extends Sprite
+	Field active:Int = 1
+	Field clicked:Int = 0
+	Field mouseOver:Int = 0
+	Field disabled:Bool = False
+	Field soundMouseOver:GameSound
+	Field soundClick:GameSound
+	Field imageMouseOver:GameImage
+	
+	Method Precache:Void()
+		If image<>null
+			Super.Precache()
+		End
+	End
+	
+	Method Draw:Void()	
+		If active = 0 Then Return
+		SetAlpha Self.alpha
+		if mouseOver
+			DrawImage Self.imageMouseOver.image, x, y
+		else
+			DrawImage Self.image.image, x, y
+		EndIf
+		SetAlpha 1
+	End
+	
+	Method Click:Void()
+		If clicked = 0
+			clicked = 1
+			If soundClick <> null
+				soundClick.Play()
+			End
+		End
+	End
+	
+	Method CentreX:Void(yCoord:Int)
+		MoveTo((SCREEN_WIDTH-image.w)/2, yCoord)
+	End
+	
+	Method MoveBy:Void(dx:Float,dy:Float)
+		x+=dx
+		y+=dy
+	End Method
+
+	Method MoveTo:Void(dx:Float,dy:Float)
+		x=dx
+		y=dy
+	End Method
+		
+	Method Load:Void(buttonImage:String, mouseOverImage:String = "", soundMouseOverFile:String="", soundClickFile:String="")
+		Self.image = New GameImage
+		image.Load(game.images.path + buttonImage, False)
+		
+		if  mouseOverImage <> ""
+			imageMouseOver = New GameImage
+			imageMouseOver.Load(game.images.path + mouseOverImage, False)
+		End
+		
+		name = StripAll(buttonImage.ToUpper())
+		
+		If soundMouseOverFile<>"" Then
+			soundMouseOver = New GameSound
+			soundMouseOver.Load(soundMouseOverFile)
+		End
+		If soundClickFile<>"" Then
+			soundClick = New GameSound
+			soundClick.Load(soundClickFile)
+		End
+	End
+	
+	Method Update:Void()
+		If active = 0 or disabled Then Return
+		If game.mouseX >= x And game.mouseX < x+image.w And game.mouseY >= y And game.mouseY < y+image.h Then
+			If mouseOver = 0
+				if soundMouseOver <> null
+					soundMouseOver.Play()
+				End
+			End
+			mouseOver = 1
+			If game.mouseHit Then
+				Click()
+			End
+		Else
+			mouseOver = 0	
+			clicked = 0
+		End
+	End
+End
+
+Class SimpleSlider Extends Sprite
+	Field active:Int
+	Field dotImage:GameImage
+	Field dotX:Int, dotY:Int
+	Field value:Int
+	Field border:Int=0
+	Field borderY:Int=5
+	
+	Method New(barFile:String, dotFile:String, x:Int, y:int, border:int = 0, name:String="", borderY:int=5)
+		Self.image = New GameImage
+		image.Load(game.images.path + barFile, False)
+		name = StripAll(barFile.ToUpper())	
+		
+		dotImage = New GameImage
+		dotImage.Load(game.images.path + dotFile, False)
+		dotImage.name = StripAll(dotFile.ToUpper())
+		
+		Self.x = x
+		Self.y = y
+		Self.border = border
+		Self.borderY = borderY
+
+		Self.SetValue(50)
+		Self.dotY = y-3
+		Self.active = 1
+	End
+	
+	Method SetValue:Void(toSet:int)
+		value = toSet
+		If toSet < 0 Then value = 0	
+		If toSet > 100 Then value = 100
+		Local percent:Float = value/100.0		
+		dotX = x + border + (percent * (image.w - (border * 2))) - dotImage.w2
+	End Method
+		
+	Method Update:Int()
+		Local change:Int=0
+		If active
+			Local buffer:int = 10
+			If game.mouseX >= x-buffer And game.mouseX < x + image.w + buffer And game.mouseY >= y-borderY And game.mouseY < y+image.h+borderY
+				If MouseDown(MOUSE_LEFT)
+					If game.mouseX <= x+border
+						SetValue(0)
+						change = 1
+					ElseIf game.mouseX >= x+image.w-border
+						SetValue(100)
+						change = 1
+					Else
+						Local d:Float = game.mouseX - x - border
+						Local p:Float = d/(image.w-(border*2))
+						SetValue(Round(p*100))
+						change = 1
+					End
+				End
+			End
+		End
+		Return change
+	End
+	
+	Method Draw:Void()
+		If active
+			DrawImage(image.image,x,y)
+			DrawImage(dotImage.image,dotX,dotY)		
+		End
+	End
+End
