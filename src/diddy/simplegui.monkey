@@ -11,17 +11,19 @@ Class SimpleMenu Extends List<SimpleButton>
 	Field addGap:Int = 0
 	Field soundMouseOver:GameSound
 	Field soundClick:GameSound
+	Field useVirtualRes:Bool = False
 	
 	Method New()
 		Error "Please use a different constructor"
 	End
 	
-	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int)
-		Init(soundMouseOverFile, soundClickFile, x, y, gap)
+	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int, useVirtualRes:Bool)
+		Init(soundMouseOverFile, soundClickFile, x, y, gap, useVirtualRes)
 	End
 	
-	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int)
+	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int, useVirtualRes:Bool)
 		Self.Clear()
+		Self.useVirtualRes = useVirtualRes
 		Self.x = x
 		Self.y = y
 		nextY = y
@@ -104,12 +106,20 @@ Class SimpleMenu Extends List<SimpleButton>
 	
 	Method CentreHoriz:Void()
 		CalcWidth()
-		SetX((SCREEN_WIDTH-w)/2)		
+		if useVirtualRes
+			SetX((SCREEN_WIDTH-w)/2)
+		Else
+			SetX((DEVICE_WIDTH-w)/2)
+		End
 	End
 	
 	Method CentreVert:Void()
 		CalcHeight()
-		SetY((SCREEN_HEIGHT-h)/2)		
+		if useVirtualRes
+			SetY((SCREEN_HEIGHT-h)/2)
+		Else
+			SetY((DEVICE_HEIGHT-h)/2)
+		End
 	End
 
 	Method Centre:Void()
@@ -144,7 +154,7 @@ Class SimpleMenu Extends List<SimpleButton>
 	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String)
 		Local b:SimpleButton = New SimpleButton
 		b.Load(buttonImageFile, mouseOverFile)
-			
+		b.useVirtualRes = Self.useVirtualRes
 		If name <> "" Then b.name = name.ToUpper()
 		b.CentreX(nextY)
 		b.soundMouseOver = soundMouseOver 
@@ -207,6 +217,7 @@ Class SimpleButton Extends Sprite
 	Field soundMouseOver:GameSound
 	Field soundClick:GameSound
 	Field imageMouseOver:GameImage
+	Field useVirtualRes:Bool = False
 	
 	Method Precache:Void()
 		If image<>null
@@ -214,7 +225,7 @@ Class SimpleButton Extends Sprite
 		End
 	End
 	
-	Method Draw:Void()	
+	Method Draw:Void()
 		If active = 0 Then Return
 		SetAlpha Self.alpha
 		if mouseOver
@@ -235,7 +246,12 @@ Class SimpleButton Extends Sprite
 	End
 	
 	Method CentreX:Void(yCoord:Int)
-		MoveTo((SCREEN_WIDTH-image.w)/2, yCoord)
+		if useVirtualRes
+			MoveTo((SCREEN_WIDTH-image.w)/2, yCoord)
+		Else
+			MoveTo((DEVICE_WIDTH-image.w)/2, yCoord)
+		End
+		
 	End
 	
 	Method MoveBy:Void(dx:Float,dy:Float)
@@ -271,7 +287,13 @@ Class SimpleButton Extends Sprite
 	
 	Method Update:Void()
 		If active = 0 or disabled Then Return
-		If game.mouseX >= x And game.mouseX < x+image.w And game.mouseY >= y And game.mouseY < y+image.h Then
+		Local mx:Int = game.mouseX
+		Local my:Int = game.mouseY
+		if not useVirtualRes
+			mx = MouseX()
+			my = MouseY()
+		End
+		If mx >= x And mx < x+image.w And my >= y And my < y+image.h Then
 			If mouseOver = 0
 				if soundMouseOver <> null
 					soundMouseOver.Play()
@@ -295,9 +317,12 @@ Class SimpleSlider Extends Sprite
 	Field value:Int
 	Field border:Int=0
 	Field borderY:Int=5
+	Field useVirtualRes:Bool = False
 	
-	Method New(barFile:String, dotFile:String, x:Int, y:int, border:int = 0, name:String="", borderY:int=5)
+	Method New(barFile:String, dotFile:String, x:Int, y:int, border:int = 0, name:String="", borderY:int=5, useVirtualRes:Bool = True)
 		Self.image = New GameImage
+		Self.useVirtualRes = useVirtualRes
+		
 		image.Load(game.images.path + barFile, False)
 		name = StripAll(barFile.ToUpper())	
 		
@@ -327,16 +352,22 @@ Class SimpleSlider Extends Sprite
 		Local change:Int=0
 		If active
 			Local buffer:int = 10
-			If game.mouseX >= x-buffer And game.mouseX < x + image.w + buffer And game.mouseY >= y-borderY And game.mouseY < y+image.h+borderY
+			Local mx:Int = game.mouseX
+			Local my:Int = game.mouseY
+			if not useVirtualRes
+				mx = MouseX()
+				my = MouseY()
+			End
+			If mx >= x-buffer And mx < x + image.w + buffer And my >= y-borderY And my < y+image.h+borderY
 				If MouseDown(MOUSE_LEFT)
-					If game.mouseX <= x+border
+					If mx <= x+border
 						SetValue(0)
 						change = 1
-					ElseIf game.mouseX >= x+image.w-border
+					ElseIf mx >= x+image.w-border
 						SetValue(100)
 						change = 1
 					Else
-						Local d:Float = game.mouseX - x - border
+						Local d:Float = mx - x - border
 						Local p:Float = d/(image.w-(border*2))
 						SetValue(Round(p*100))
 						change = 1
