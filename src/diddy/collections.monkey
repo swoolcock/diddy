@@ -720,7 +720,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 	
 	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<IntObject>()
-		Return New IntArrayListEnumerator(Self)
+		Return New IntListEnumerator(Self)
 	End
 	
 	Method RemoveInt:Bool(o:Int)
@@ -810,7 +810,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 	
 	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<FloatObject>()
-		Return New FloatArrayListEnumerator(Self)
+		Return New FloatListEnumerator(Self)
 	End
 	
 	Method RemoveFloat:Bool(o:Float)
@@ -900,7 +900,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 
 	' Overrides ArrayList
 	Method Enumerator:AbstractEnumerator<StringObject>()
-		Return New StringArrayListEnumerator(Self)
+		Return New StringListEnumerator(Self)
 	End
 	
 	Method RemoveString:Bool(o:String)
