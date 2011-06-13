@@ -3,7 +3,7 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	game = New MyGame()
 	Return 0
 End Function
 
@@ -11,18 +11,18 @@ Global titleScreen:TitleScreen
 Global gameScreen:GameScreen
 Global optionScreen:OptionScreen
 
-Class MyGame extends DiddyApp
+Class MyGame Extends DiddyApp
 	Method OnCreate:Int()
 		Super.OnCreate()
-	
+		SetScreenSize(1024, 768)
 		drawFPSOn = True
 		
 		titleScreen = New TitleScreen
 		gameScreen = New GameScreen
-		optionScreen = new OptionScreen
+		optionScreen = New OptionScreen
 		
 		titleScreen.PreStart()
-		return 0
+		Return 0
 	End
 End
 
@@ -35,8 +35,8 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
-		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10)
+		game.screenFade.Start(50, False)
+		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, False)
 		Local b:SimpleButton = menu.AddButton("newgame.png", "newgameMO.png")
 		b = menu.AddButton("continue.png", "continueMO.png")
 		b = menu.AddButton("options.png", "optionsMO.png")
@@ -63,6 +63,10 @@ Class TitleScreen Extends Screen
 	Method Render:Void()
 		Cls
 		DrawText "TITLE SCREEN", SCREEN_WIDTH2, 10, 0.5, 0.5
+		
+	End
+	
+	Method ExtraRender:Void()
 		menu.Draw()
 	End
 	
@@ -70,22 +74,22 @@ Class TitleScreen Extends Screen
 		menu.Update()
 		
 		If menu.Clicked("newgame") Then
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = gameScreen
 		End
 		
 		If menu.Clicked("options") Then
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = optionScreen
 		End
 		
 		If menu.Clicked("continue") Then
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = titleScreen
 		End
 		
-		If KeyHit(KEY_ESCAPE) or menu.Clicked("quit")
-			game.screenFade.Start(50, true)
+		If KeyHit(KEY_ESCAPE) Or menu.Clicked("quit")
+			game.screenFade.Start(50, True)
 			game.nextScreen = game.exitScreen
 		End
 	End
@@ -95,8 +99,8 @@ Class GameScreen Extends Screen
 	Field menu:SimpleMenu
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
-		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10)
+		game.screenFade.Start(50, False)
+		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, True)
 		Local b:SimpleButton = menu.AddButton("quit.png", "quitMO.png")
 		menu.Centre()
 	End
@@ -111,7 +115,7 @@ Class GameScreen Extends Screen
 		menu.Update()
 		
 		If menu.Clicked("quit") Then
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = titleScreen
 		End
 	End
@@ -122,12 +126,12 @@ Class OptionScreen Extends Screen
 	Field musicSlider:SimpleSlider
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
-		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10)
+		game.screenFade.Start(50, False)
+		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, True)
 		Local b:SimpleButton = menu.AddButton("quit.png", "quitMO.png")
 		menu.Centre()
 		
-		musicSlider = New SimpleSlider("slider_bar.png", "slider.png", SCREEN_WIDTH2 - 93, 115, 35, "music", 20)
+		musicSlider = New SimpleSlider("slider_bar.png", "slider.png", SCREEN_WIDTH2 - 93, 115, 35, "music", 20, True)
 		musicSlider.SetValue(game.musicVolume)
 	End
 	
@@ -147,7 +151,7 @@ Class OptionScreen Extends Screen
 		End If
 		
 		If menu.Clicked("quit") Then
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = titleScreen
 		End
 	End
