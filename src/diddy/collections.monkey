@@ -997,7 +997,7 @@ Private
 	End
 	
 Public
-	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:E=Null)
+	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:E=Null)
 		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Object[defaultCapacity]
 		indices = New Int[defaultCapacity]
@@ -1080,7 +1080,7 @@ Private
 	End
 	
 Public
-	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:Int=0)
+	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Int=0)
 		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
@@ -1171,7 +1171,7 @@ Private
 	End
 	
 Public
-	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:String=Null)
+	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String=Null)
 		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New String[defaultCapacity]
 		indices = New Int[defaultCapacity]
@@ -1262,7 +1262,7 @@ Private
 	End
 	
 Public
-	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:Float=0)
+	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Float=0)
 		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
