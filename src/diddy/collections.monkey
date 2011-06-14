@@ -977,6 +977,362 @@ End
 
 
 
+Class SparseArray<E>
+Private
+	Field elements:Object[]
+	Field indices:Int[]
+	Field size:Int
+	Field arraySize:Int
+	Field defaultValue:E
+	
+	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	Method EnsureCapacity:Void(minCapacity:Int)
+		Local oldCapacity:Int = elements.Length
+		If minCapacity > oldCapacity Then
+			Local newCapacity:Int = (oldCapacity * 3) / 2 + 1
+			If newCapacity < minCapacity Then newCapacity = minCapacity
+			elements = elements.Resize(newCapacity)
+			indices = indices.Resize(newCapacity)
+		End
+	End
+	
+Public
+	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:E=Null)
+		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		elements = New Object[defaultCapacity]
+		indices = New Int[defaultCapacity]
+		Self.arraySize = arraySize
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Size:Int() Property
+		Return size
+	End
+	
+	Method ArraySize:Int() Property
+		Return arraySize
+	End
+	
+	Method ArraySize:Void(arraySize:Int) Property
+		AssertGreaterThan(arraySize, size, "The SparseArray contains more mappings than the requested size.")
+		Self.arraySize = arraySize
+	End
+	
+	Method DefaultValue:E() Property
+		Return defaultValue
+	End
+	
+	Method DefaultValue:Void(defaultValue:E) Property
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Get:E(index:Int)
+		AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		For Local i% = 0 Until size
+			If indices[i] = index Then Return E(elements[i])
+		Next
+		Return defaultValue
+	End
+	
+	Method Set:E(index:Int, value:E)
+		AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		For Local i% = 0 Until size
+			If indices[i] = index Then
+				Local oldVal:Object = elements[i]
+				elements[i] = value
+				Return E(oldVal)
+			End
+		Next
+		ResizeArrays()
+		indices[size] = index
+		elements[size] = value
+		size += 1
+		Return defaultValue
+	End
+	
+	Method Clear:Int()
+		For Local i% = 0 Until size
+			elements[i] = Null
+		Next
+		Local oldSize:Int = size
+		size = 0
+		Return oldSize
+	End
+End
+
+Class SparseIntArray
+Private
+	Field elements:Int[]
+	Field indices:Int[]
+	Field size:Int
+	Field arraySize:Int
+	Field defaultValue:E
+	
+	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	Method EnsureCapacity:Void(minCapacity:Int)
+		Local oldCapacity:Int = elements.Length
+		If minCapacity > oldCapacity Then
+			Local newCapacity:Int = (oldCapacity * 3) / 2 + 1
+			If newCapacity < minCapacity Then newCapacity = minCapacity
+			elements = elements.Resize(newCapacity)
+			indices = indices.Resize(newCapacity)
+		End
+	End
+	
+Public
+	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:Int=0)
+		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		elements = New Int[defaultCapacity]
+		indices = New Int[defaultCapacity]
+		Self.arraySize = arraySize
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Size:Int() Property
+		Return size
+	End
+	
+	Method ArraySize:Int() Property
+		Return arraySize
+	End
+	
+	Method ArraySize:Void(arraySize:Int) Property
+		AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		Self.arraySize = arraySize
+	End
+	
+	Method DefaultValue:Int() Property
+		Return defaultValue
+	End
+	
+	Method DefaultValue:Void(defaultValue:Int) Property
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Get:Int(index:Int)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then Return elements[i]
+		Next
+		Return defaultValue
+	End
+	
+	Method Set:Int(index:Int, value:Int)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then
+				Local oldVal:Int = elements[i]
+				elements[i] = value
+				Return oldVal
+			End
+		Next
+		ResizeArrays()
+		indices[size] = index
+		elements[size] = value
+		size += 1
+		Return defaultValue
+	End
+	
+	Method Clear:Int()
+		For Local i% = 0 Until size
+			elements[i] = 0
+		Next
+		Local oldSize:Int = size
+		size = 0
+		Return oldSize
+	End
+End
+
+Class SparseStringArray
+Private
+	Field elements:String[]
+	Field indices:Int[]
+	Field size:Int
+	Field arraySize:Int
+	Field defaultValue:String
+	
+	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	Method EnsureCapacity:Void(minCapacity:Int)
+		Local oldCapacity:Int = elements.Length
+		If minCapacity > oldCapacity Then
+			Local newCapacity:Int = (oldCapacity * 3) / 2 + 1
+			If newCapacity < minCapacity Then newCapacity = minCapacity
+			elements = elements.Resize(newCapacity)
+			indices = indices.Resize(newCapacity)
+		End
+	End
+	
+Public
+	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:String=Null)
+		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		elements = New String[defaultCapacity]
+		indices = New Int[defaultCapacity]
+		Self.arraySize = arraySize
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Size:Int() Property
+		Return size
+	End
+	
+	Method ArraySize:Int() Property
+		Return arraySize
+	End
+	
+	Method ArraySize:Void(arraySize:Int) Property
+		If arraySize >= 0 Then AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		Self.arraySize = arraySize
+	End
+	
+	Method DefaultValue:String() Property
+		Return defaultValue
+	End
+	
+	Method DefaultValue:Void(defaultValue:String) Property
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Get:String(index:Int)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then Return elements[i]
+		Next
+		Return defaultValue
+	End
+	
+	Method Set:String(index:Int, value:String)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then
+				Local oldVal:String = elements[i]
+				elements[i] = value
+				Return oldVal
+			End
+		Next
+		ResizeArrays()
+		indices[size] = index
+		elements[size] = value
+		size += 1
+		Return defaultValue
+	End
+	
+	Method Clear:Int()
+		For Local i% = 0 Until size
+			elements[i] = Null
+		Next
+		Local oldSize:Int = size
+		size = 0
+		Return oldSize
+	End
+End
+
+Class SparseFloatArray
+Private
+	Field elements:Float[]
+	Field indices:Int[]
+	Field size:Int
+	Field arraySize:Int
+	Field defaultValue:Float
+	
+	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	Method EnsureCapacity:Void(minCapacity:Int)
+		Local oldCapacity:Int = elements.Length
+		If minCapacity > oldCapacity Then
+			Local newCapacity:Int = (oldCapacity * 3) / 2 + 1
+			If newCapacity < minCapacity Then newCapacity = minCapacity
+			elements = elements.Resize(newCapacity)
+			indices = indices.Resize(newCapacity)
+		End
+	End
+	
+Public
+	Method New(arraySize:Int=-1, defaultCapacity=100, defaultValue:Float=0)
+		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		elements = New Int[defaultCapacity]
+		indices = New Int[defaultCapacity]
+		Self.arraySize = arraySize
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Size:Int() Property
+		Return size
+	End
+	
+	Method ArraySize:Int() Property
+		Return arraySize
+	End
+	
+	Method ArraySize:Void(arraySize:Int) Property
+		AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		Self.arraySize = arraySize
+	End
+	
+	Method DefaultValue:Float() Property
+		Return defaultValue
+	End
+	
+	Method DefaultValue:Void(defaultValue:Float) Property
+		Self.defaultValue = defaultValue
+	End
+	
+	Method Get:Float(index:Int)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then Return elements[i]
+		Next
+		Return defaultValue
+	End
+	
+	Method Set:Float(index:Int, value:Float)
+		If arraySize >= 0 Then
+			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		Else
+			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+		End
+		For Local i% = 0 Until size
+			If indices[i] = index Then
+				Local oldVal:Float = elements[i]
+				elements[i] = value
+				Return oldVal
+			End
+		Next
+		ResizeArrays()
+		indices[size] = index
+		elements[size] = value
+		size += 1
+		Return defaultValue
+	End
+	
+	Method Clear:Int()
+		For Local i% = 0 Until size
+			elements[i] = 0
+		Next
+		Local oldSize:Int = size
+		size = 0
+		Return oldSize
+	End
+End
+
 Function QuickSort:Void(arr:Object[], left:Int, right:Int, comp:AbstractComparator, reverse:Bool = False)
 	If right > left Then
 		Local pivotIndex:Int = left + (right-left)/2
