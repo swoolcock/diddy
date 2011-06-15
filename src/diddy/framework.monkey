@@ -188,12 +188,6 @@ Class DiddyApp Extends App
 	Method MusicPlay:Void(file:String, flags:Int=1)
 		musicFile = file
 		
-		if game.screenFade.active And game.screenFade.fadeMusic
-		'if Not (game.screenFade.active And game.screenFade.fadeMusic) ??? Slow brain day :(
-			
-		Else
-			SetMojoMusicVolume(musicVolume/100.0)
-		End
 		musicOkay = PlayMusic("music/"+musicFile, flags)
 		if musicOkay = -1
 			Print "Error Playing Music - Music must be in the data\music folder"
@@ -280,8 +274,18 @@ Class ScreenFade
 		
 	Method CalcRatio:Void()
 		ratio = counter/fadeTime
-		If ratio < 0 Then ratio = 0
-		If ratio > 1 Then ratio = 1			
+		If ratio < 0
+			ratio = 0
+			if fadeMusic
+				game.SetMojoMusicVolume(0)
+			End
+		End
+		If ratio > 1
+			ratio = 1
+			if fadeMusic
+				game.SetMojoMusicVolume(game.musicVolume / 100.0)
+			End
+		End
 		If fadeOut Then
 			ratio = 1 - ratio
 		End
