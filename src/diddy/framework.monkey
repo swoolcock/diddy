@@ -55,6 +55,7 @@ Class DiddyApp Extends App
 	' Store the sounds here
 	Field sounds:SoundBank = New SoundBank
 	' volume control
+	Field musicFile:String = ""
 	Field soundVolume:Int = 100
 	Field musicVolume:Int = 100
 	Field mojoMusicVolume:Float = 1.0
@@ -164,6 +165,8 @@ Class DiddyApp Extends App
 		y += gap
 		DrawText "MouseY             = "+MouseY(), 0, y
 		y += gap
+		DrawText "Music File         = "+musicFile, 0, y
+		y += gap
 		DrawText "MusicOkay          = "+musicOkay, 0, y
 		y += gap
 		DrawText "Music State        = "+MusicState(), 0, y
@@ -183,8 +186,18 @@ Class DiddyApp Extends App
 	End
 	
 	Method MusicPlay:Void(file:String, flags:Int=1)
-		SetMojoMusicVolume(musicVolume/100.0)
-		musicOkay = PlayMusic("music/"+file, flags)
+		musicFile = file
+		
+		if game.screenFade.active And game.screenFade.fadeMusic
+		'if Not (game.screenFade.active And game.screenFade.fadeMusic) ??? Slow brain day :(
+			
+		Else
+			SetMojoMusicVolume(musicVolume/100.0)
+		End
+		musicOkay = PlayMusic("music/"+musicFile, flags)
+		if musicOkay = -1
+			Print "Error Playing Music - Music must be in the data\music folder"
+		End
 	End
 	
 	Method MusicSetVolume:Void(volume:Int)
@@ -235,6 +248,10 @@ Class ScreenFade
 			ratio = 1
 		Else
 			ratio = 0
+			' set the music volume to zero if fading in the music
+			if Self.fadeMusic
+				game.SetMojoMusicVolume(0)
+			End			
 		End
 		counter = 0
 	End
