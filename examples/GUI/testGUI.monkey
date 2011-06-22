@@ -1,5 +1,6 @@
 Strict
 
+Import mojo
 Import diddy
 
 Function Main:Int()
@@ -12,11 +13,6 @@ Global guiScreen:GUIScreen
 Class MyGame extends DiddyApp
 	Method OnCreate:Int()
 		Super.OnCreate()
-		images.Load("button.png", "", False)
-		images.Load("buttonClick.png", "", False)
-		images.Load("check.png", "", False)
-		images.Load("checkClick.png", "", False)
-		sounds.Load("ButtonClick")
 		drawFPSOn = True
 		guiScreen = new GUIScreen
 		guiScreen.PreStart()
@@ -27,14 +23,12 @@ End
 Class GUIScreen Extends Screen
 	Field mygui:MyGUI = New MyGUI
 	
-	
 	Method New()
 		name = "Game"
 	End
 	
 	Method Start:Void()
 		game.screenFade.Start(50, false)
-		
 	End
 	
 	Method Render:Void()
@@ -55,32 +49,38 @@ Class GUIScreen Extends Screen
 End
 
 Class MyGUI Extends GUI
-	Field button:MyButton
+	Field button:Button
 	Field toggleButton:Button
 	Field slider:Slider
-	Field buttonImage:GameImage
+	Field window1:Window
+	Field window2:Window
 	
 	Method New()
-		button = New MyButton(desktop, game.images.Find("button"), game.images.Find("buttonClick"))
-		button.SetBounds(150,50,100,50)
-		button.Text ("HELLO", 0.5, 0.5)
-		button.soundClick = game.sounds.Find("buttonclick")
+		Super.New()
+		window1 = New Window(desktop)
+		window1.SetBounds(50,50,200,200)
 		
-		toggleButton = New Button(desktop, game.images.Find("check"))
+		button = New Button(window1.ContentPane)
+		button.SetBounds(10,10,100,50)
+		button.StyleNormal.red = 0
+		button.StyleNormal.green = 0
+		button.StyleNormal.blue = 255
+		
+		toggleButton = New Button(window1.ContentPane)
 		toggleButton.toggle = True
-		toggleButton.SetBounds(50,120,100,50)
-		toggleButton.StyleSelected.image = game.images.Find("checkClick")
-		toggleButton.StyleSelected.drawBackground = False
-	'	toggleButton.StyleNormal = cs
-'		toggleButton.StyleNormal.red = 0
-'		toggleButton.StyleNormal.green = 0
-'		toggleButton.StyleNormal.blue = 255
-'		toggleButton.StyleSelected.red = 0
-'		toggleButton.StyleSelected.green = 255
-'		toggleButton.StyleSelected.blue = 0
+		toggleButton.SetBounds(10,100,100,50)
+		toggleButton.StyleNormal.red = 0
+		toggleButton.StyleNormal.green = 0
+		toggleButton.StyleNormal.blue = 255
+		toggleButton.StyleSelected.red = 0
+		toggleButton.StyleSelected.green = 255
+		toggleButton.StyleSelected.blue = 0
+	
+		window2 = New Window(desktop)
+		window2.SetBounds(300,200,250,100)
 		
-		slider = New Slider(desktop)
-		slider.SetBounds(50,190,200,20)
+		slider = New Slider(window2.ContentPane)
+		slider.SetBounds(10,10,200,20)
 		slider.ShowButtons = True
 		slider.StyleNormal.red = 0
 		slider.StyleNormal.green = 0
@@ -103,15 +103,7 @@ Class MyGUI Extends GUI
 	End
 End
 
-Class MyButton Extends Button
-	Field soundClick:GameSound
-	
-	Method New(parent:Component, image:GameImage, clickImage:GameImage)
-		Super.New(parent, image, clickImage)
-	End
-	
-	Method ActionPerformed:Void(source:Component, action:String)
-		Super.ActionPerformed(source, action)
-		soundClick.Play()
-	End
-End
+
+
+
+
