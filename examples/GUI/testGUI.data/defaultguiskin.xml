@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<skin name="default" atlas="defaultguiskin.png">
+	<button>
+		<style name="normal" drawBackground="true" red="255" green="255" blue="255">
+			<normalImage   mode="grid" x="132" y="81"  width="80" height="26" leftMargin="4" rightMargin="4" topMargin="4" bottomMargin="4" />
+			<hoverImage    mode="grid" x="132" y="110" width="80" height="26" leftMargin="4" rightMargin="4" topMargin="4" bottomMargin="4" />
+			<downImage     mode="grid" x="132" y="139" width="80" height="26" leftMargin="4" rightMargin="4" topMargin="4" bottomMargin="4" />
+			<disabledImage mode="grid" x="132" y="168" width="80" height="26" leftMargin="4" rightMargin="4" topMargin="4" bottomMargin="4" />
+			<enterSound name="button_enter" />
+			<downSound name="button_down" />
+		</style>
+	</button>
+	<slider handleMargin="8"
+			leftButtonWidth="16" leftButtonHeight="15"
+			rightButtonWidth="16" rightButtonHeight="15"
+			topButtonWidth="15" topButtonHeight="16"
+			bottomButtonWidth="15" bottomButtonHeight="16">
+		<style name="normal" />
+		<style name="leftButton">
+			<normalImage   mode="normal" x="1"  y="263" width="16" height="15" />
+			<hoverImage    mode="normal" x="20" y="263" width="16" height="15" />
+			<downImage     mode="normal" x="39" y="263" width="16" height="15" />
+			<disabledImage mode="normal" x="58" y="263" width="16" height="15" />
+			<enterSound name="button_enter" />
+			<downSound name="button_down" />
+		</style>
+		<style name="rightButton">
+			<normalImage   mode="normal" x="1"  y="281" width="16" height="15" />
+			<hoverImage    mode="normal" x="20" y="281" width="16" height="15" />
+			<downImage     mode="normal" x="39" y="281" width="16" height="15" />
+			<disabledImage mode="normal" x="58" y="281" width="16" height="15" />
+			<enterSound name="button_enter" />
+			<downSound name="button_down" />
+		</style>
+		<style name="topButton">
+			<normalImage   mode="normal" x="1"  y="299" width="15" height="16" />
+			<hoverImage    mode="normal" x="20" y="299" width="15" height="16" />
+			<downImage     mode="normal" x="39" y="299" width="15" height="16" />
+			<disabledImage mode="normal" x="58" y="299" width="15" height="16" />
+			<enterSound name="button_enter" />
+			<downSound name="button_down" />
+		</style>
+		<style name="bottomButton">
+			<normalImage   mode="normal" x="1"  y="318" width="15" height="16" />
+			<hoverImage    mode="normal" x="20" y="318" width="15" height="16" />
+			<downImage     mode="normal" x="39" y="318" width="15" height="16" />
+			<disabledImage mode="normal" x="58" y="318" width="15" height="16" />
+			<enterSound name="button_enter" />
+			<downSound name="button_down" />
+		</style>
+		<style name="horizontalHandle">
+			<normalImage   mode="grid" x="240" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<hoverImage    mode="grid" x="253" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<downImage     mode="grid" x="266" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<disabledImage mode="grid" x="" y="" width="" height="" leftMargin="" rightMargin="" topMargin="" bottomMargin="" />
+		</style>
+		<style name="verticalHandle">
+			<normalImage   mode="grid" x="216" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<hoverImage    mode="grid" x="216" y="157" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<downImage     mode="grid" x="216" y="170" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
+			<disabledImage mode="grid" x="" y="" width="" height="" leftMargin="" rightMargin="" topMargin="" bottomMargin="" />
+		</style>
+		<style name="horizontalBar">
+			<normalImage mode="stretch" x="77"  y="263" width="32" height="15" />
+		</style>
+		<style name="verticalBar">
+			<normalImage mode="stretch" x="112" y="263" width="15" height="32" />
+		</style>
+	</slider>
+	<window contentPaneLeft="3" contentPaneTop="25" contentPaneRight="-3" contentPaneBottom="-3"
+			titlePaneLeft="3" titlePaneTop="3" titlePaneBottom="25" titlePaneRight="-3"
+			buttonPaneRight="-5" buttonPaneTop="5" buttonPaneBottom="22" buttonWidth="17" buttonHeight="17" buttonMargin="1">
+		<style name="normal">
+			<normalImage mode="grid" drawCenter="false" x="1" y="132" width="128" height="128" leftMargin="6" rightMargin="6" topMargin="25" bottomMargin="3" />
+		</style>
+		<style name="minimizeButton">
+			<normalImage mode="normal" x="234" y="1" width="17" height="17" />
+			<hoverImage  mode="normal" x="254" y="1" width="17" height="17" />
+			<downImage   mode="normal" x="274" y="1" width="17" height="17" />
+		</style>
+		<style name="maximizeButton">
+			<normalImage mode="normal" x="234" y="21" width="17" height="17" />
+			<hoverImage  mode="normal" x="254" y="21" width="17" height="17" />
+			<downImage   mode="normal" x="274" y="21" width="17" height="17" />
+		</style>
+		<style name="restoreButton">
+			<normalImage mode="normal" x="234" y="41" width="17" height="17" />
+			<hoverImage  mode="normal" x="254" y="41" width="17" height="17" />
+			<downImage   mode="normal" x="274" y="41" width="17" height="17" />
+		</style>
+		<style name="closeButton">
+			<normalImage mode="normal" x="234" y="61" width="17" height="17" />
+			<hoverImage  mode="normal" x="254" y="61" width="17" height="17" />
+			<downImage   mode="normal" x="274" y="61" width="17" height="17" />
+		</style>
+		<style name="contentPane" drawBackground="true" red="244" green="244" blue="244" />
+		<style name="titlePane" />
+		<style name="buttonPane" />
+	</window>
+	<checkbox>
+		<style name="normal">
+			<normalImage   mode="normal" x="215" y="81" width="13" height="13" />
+			<hoverImage    mode="normal" x="231" y="81" width="13" height="13" />
+			<downImage     mode="normal" x="247" y="81" width="13" height="13" />
+			<disabledImage mode="normal" x="263" y="81" width="13" height="13" />
+		</style>
+		<style name="selected">
+			<normalImage   mode="normal" x="215" y="97" width="13" height="13" />
+			<hoverImage    mode="normal" x="231" y="97" width="13" height="13" />
+			<downImage     mode="normal" x="247" y="97" width="13" height="13" />
+			<disabledImage mode="normal" x="263" y="97" width="13" height="13" />
+		</style>
+	</checkbox>
+	<radio>
+		<style name="normal">
+			<normalImage   mode="normal" x="215" y="113" width="13" height="13" />
+			<hoverImage    mode="normal" x="231" y="113" width="13" height="13" />
+			<downImage     mode="normal" x="247" y="113" width="13" height="13" />
+			<disabledImage mode="normal" x="263" y="113" width="13" height="13" />
+		</style>
+		<style name="selected">
+			<normalImage   mode="normal" x="215" y="128" width="13" height="13" />
+			<hoverImage    mode="normal" x="231" y="128" width="13" height="13" />
+			<downImage     mode="normal" x="247" y="128" width="13" height="13" />
+			<disabledImage mode="normal" x="263" y="128" width="13" height="13" />
+		</style>
+	</radio>
+</skin>

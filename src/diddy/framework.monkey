@@ -532,7 +532,7 @@ Class GameImage
 		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
-	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Float, srcY:Float, srcWidth:Float, srcHeight:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
+	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
 		DrawImageRect(Self.image, destX, destY, srcX, srcY, srcWidth, srcHeight, rotation, scaleX, scaleY, frame)
 	End
 	
@@ -582,6 +582,66 @@ Class GameImage
 		
 		' tile centre
 		' TODO
+	End
+	
+	Method DrawSubStretched:Void(destX:Float, destY:Float, destWidth:Float, destHeight:Float, srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int,
+			rotation:Float = 0)', scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
+		' scales for stretching
+		Local stretchScaleX:Float = destWidth / srcWidth
+		Local stretchScaleY:Float = destHeight / srcHeight
+		DrawImageRect(Self.image, destX, destY, srcX, srcY, srcWidth, srcHeight, rotation, stretchScaleX, stretchScaleY)', frame)
+	End
+	
+	' Yes, a crapload of parameters.  Thankfully most of them are optional, and this will usually only be called internally by the GUI.
+	' TODO: apply scale to parameters
+	Method DrawSubGrid:Void(x:Float, y:Float, width:Float, height:Float,
+			srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int,
+			leftMargin:Int, rightMargin:Int, topMargin:Int, bottomMargin:Int,
+			'rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1,
+			drawTopLeft:Bool = True, drawTop:Bool = True, drawTopRight:Bool = True,
+			drawLeft:Bool = True, drawCenter:Bool = True, drawRight:Bool = True,
+			drawBottomLeft:Bool = True, drawBottom:Bool = True, drawBottomRight:Bool = True)
+		' draw the corners
+		If drawTopLeft Then DrawImageRect(Self.image,
+				x, y, srcX, srcY,
+				leftMargin, topMargin)', rotation, scaleX, scaleY)
+		If drawTopRight Then DrawImageRect(Self.image,
+				x+width-rightMargin, y, srcX+srcWidth-rightMargin, srcY,
+				rightMargin, topMargin)', rotation, scaleX, scaleY)
+		If drawBottomLeft Then DrawImageRect(Self.image,
+				x, y+height-bottomMargin, srcX, srcY+srcHeight-bottomMargin,
+				leftMargin, bottomMargin)', rotation, scaleX, scaleY)
+		If drawBottomRight Then DrawImageRect(Self.image,
+				x+width-rightMargin, y+height-bottomMargin, srcX+srcWidth-rightMargin, srcY+srcHeight-bottomMargin,
+				rightMargin, bottomMargin)', rotation, scaleX, scaleY)
+		
+		' scales for stretching
+		Local stretchScaleX:Float = (width-leftMargin-rightMargin) / (srcWidth-leftMargin-rightMargin)
+		Local stretchScaleY:Float = (height-topMargin-bottomMargin) / (srcHeight-topMargin-bottomMargin)
+		
+		' draw edges
+		If drawLeft Then DrawImageRect(Self.image,
+				x, y+topMargin, srcX, srcY+topMargin,
+				leftMargin, srcHeight-topMargin-bottomMargin,
+				0, 1, stretchScaleY)
+		If drawRight Then DrawImageRect(Self.image,
+				x+width-rightMargin, y+topMargin, srcX+srcWidth-rightMargin, srcY+topMargin,
+				rightMargin, srcHeight-topMargin-bottomMargin,
+				0, 1, stretchScaleY)
+		If drawTop Then DrawImageRect(Self.image,
+				x+leftMargin, y, srcX+leftMargin, srcY,
+				srcWidth-leftMargin-rightMargin, topMargin,
+				0, stretchScaleX, 1)
+		If drawBottom Then DrawImageRect(Self.image,
+				x+leftMargin, y+height-bottomMargin, srcX+leftMargin, srcY+srcHeight-bottomMargin,
+				srcWidth-leftMargin-rightMargin, bottomMargin,
+				0, stretchScaleX, 1)
+		
+		' draw center
+		If drawCenter Then DrawImageRect(Self.image,
+				x+leftMargin, y+topMargin, srcX+leftMargin, srcY+topMargin,
+				srcWidth-leftMargin-rightMargin, srcHeight-topMargin-bottomMargin,
+				0, stretchScaleX, stretchScaleY)
 	End
 	
 	Method PreCache:Void()
@@ -1054,3 +1114,4 @@ Class Particle Extends Sprite
 	End
 	
 End
+
