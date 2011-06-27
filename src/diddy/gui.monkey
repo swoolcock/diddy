@@ -129,7 +129,7 @@ End
 ' Top level GUI class.  All public actions from components on the desktop get forwarded here
 ' unless an ActionListener is explicitly set for that component.
 Class GUI Implements IActionListener
-	Field desktop:Desktop
+Private
 	Field scissors:Rectangle[] = New Rectangle[128]
 	Field scissorDepth:Int = 0
 	
@@ -145,9 +145,18 @@ Class GUI Implements IActionListener
 	Field mouseThisY:Float
 	Field mouseThisComponent:Component
 	
+	Field currentFocus:Component = Null
+	
+	Field skinDoc:XMLDocument
+	Field skinAtlas:GameImage
+	
+Public
+	Field desktop:Desktop
 	Field useVirtualRes:Bool = False
 	
-	Field currentFocus:Component = Null
+	Method CurrentFocus:Component() Property
+		Return currentFocus
+	End
 	
 	Method New()
 		desktop = New Desktop(Self)
@@ -155,6 +164,17 @@ Class GUI Implements IActionListener
 		For Local i:Int = 0 Until scissors.Length
 			scissors[i] = New Rectangle
 		Next
+	End
+	
+	Method LoadSkin:Void(doc:XMLDocument)
+		Local atlas:String = doc.Root.GetAttribute("atlas","")
+		skinAtlas = game.images.Load(atlas,,False)
+		skinDoc = doc
+		ApplySkin()
+	End
+	
+	Method ApplySkin:Void()
+		If desktop <> Null Then desktop.ApplySkin()
 	End
 	
 	Method PushScissor:Void(x:Float, y:Float, w:Float, h:Float)
@@ -278,7 +298,7 @@ Class GUI Implements IActionListener
 	End
 	
 	Method DoMouse:Void(button:Int)
-		Local absX:Float, absY:Float
+		Local absX:Float, absY:Float, style:ComponentStyle
 		If MouseHit(button) Then
 			mouseDown[button] = True
 			mouseDownX[button] = mouseThisX
@@ -288,6 +308,8 @@ Class GUI Implements IActionListener
 			If mouseThisComponent.mouseListener <> Null Then
 				absX = GetAbsoluteX(mouseThisComponent)
 				absY = GetAbsoluteY(mouseThisComponent)
+				style = mouseThisComponent.GetCurrentStyle()
+				If style <> Null And style.downSound <> "" Then PlayComponentSound(mouseThisComponent, style.downSound)
 				mouseThisComponent.mouseListener.MousePressed(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 			End
 			mouseThisComponent.BringToFront()
@@ -305,6 +327,8 @@ Class GUI Implements IActionListener
 				If comp.mouseListener <> Null Then
 					absX = GetAbsoluteX(comp)
 					absY = GetAbsoluteY(comp)
+					style = comp.GetCurrentStyle()
+					If style <> Null And style.upSound <> "" Then PlayComponentSound(comp, style.upSound)
 					comp.mouseListener.MouseReleased(comp, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 				End
 				
@@ -313,6 +337,8 @@ Class GUI Implements IActionListener
 				
 				' if we released on the same component, fire mouse clicked
 				If mouseThisComponent = comp Then
+					style = comp.GetCurrentStyle()
+					If style <> Null And style.clickSound <> "" Then PlayComponentSound(comp, style.clickSound)
 					If comp.mouseListener <> Null Then comp.mouseListener.MouseClicked(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 				End
 				
@@ -330,6 +356,8 @@ Class GUI Implements IActionListener
 					If mouseLastComponent.mouseListener <> Null Then
 						absX = GetAbsoluteX(mouseLastComponent)
 						absY = GetAbsoluteY(mouseLastComponent)
+						style = mouseLastComponent.GetCurrentStyle()
+						If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
 						mouseLastComponent.mouseListener.MouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 					End
 					
@@ -340,6 +368,8 @@ Class GUI Implements IActionListener
 					If mouseThisComponent.mouseListener <> Null Then
 						absX = GetAbsoluteX(mouseThisComponent)
 						absY = GetAbsoluteY(mouseThisComponent)
+						style = mouseThisComponent.GetCurrentStyle()
+						If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
 						mouseThisComponent.mouseListener.MouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 					End
 					
@@ -363,6 +393,8 @@ Class GUI Implements IActionListener
 						If mouseLastComponent.mouseListener <> Null Then
 							absX = GetAbsoluteX(mouseLastComponent)
 							absY = GetAbsoluteY(mouseLastComponent)
+							style = mouseLastComponent.GetCurrentStyle()
+							If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
 							mouseLastComponent.mouseListener.MouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 						End
 						
@@ -375,6 +407,8 @@ Class GUI Implements IActionListener
 						If mouseThisComponent.mouseListener <> Null Then
 							absX = GetAbsoluteX(mouseThisComponent)
 							absY = GetAbsoluteY(mouseThisComponent)
+							style = mouseThisComponent.GetCurrentStyle()
+							If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
 							mouseThisComponent.mouseListener.MouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 						End
 						' set mouseHover
@@ -401,6 +435,13 @@ Class GUI Implements IActionListener
 		If currentFocus <> Null And currentFocus.focusListener <> Null Then
 			 currentFocus.focusListener.FocusGained(currentFocus, oldFocus)
 		End
+	End
+	
+	Method GetSkinNode:XMLElement(nodeName:String)
+		If skinDoc = Null Then Return Null
+		Local al:ArrayList<XMLElement> = skinDoc.Root.GetChildrenByName(nodeName)
+		AssertEquals(al.Size, 1, "Expected exactly one instance of "+nodeName)
+		Return al.GetFirst()
 	End
 	
 	' developer should override this to do anything useful!!!
@@ -432,7 +473,7 @@ Private
 	Field mouseHover:Bool = False
 	Field mouseDown:Bool = False
 	
-	Field styleNormal:ComponentStyle = Null
+	Field styleNormal:ComponentStyle = New ComponentStyle
 	
 	Method RequestFocusDelegate:Bool(thisGUI:GUI)
 		' check the last focused child
@@ -461,7 +502,7 @@ Private
 		' we still couldn't focus
 		Return False
 	End
-	
+
 Public
 	Field parent:Component
 	
@@ -559,6 +600,7 @@ Public
 	End
 
 	Method CheckImage()
+		#Rem
 		If styleNormal.image <> null
 			If styleNormal.image.midhandled
 				Error "Images can not be midhandled for GUI components"
@@ -569,6 +611,7 @@ Public
 				Error "Images can not be midhandled for GUI components"
 			End
 		End
+		#End
 	End
 	
 	Method Alpha:Float() Property
@@ -642,6 +685,11 @@ Public
 	End
 
 	Method DrawComponent:Void()
+		' get the gui and the atlas
+		Local parentGui:GUI = FindGUI()
+		Local atlas:GameImage = parentGui.skinAtlas
+		
+		' work with the current style
 		Local style:ComponentStyle = GetCurrentStyle()
 		If style <> Null Then
 			' background colour first
@@ -651,36 +699,46 @@ Public
 				DrawRect(0, 0, w, h)
 			End
 			
-			' image next, priority = down, hover, normal
-			If mouseDown And style.downImage <> Null Then
-				SetColor(255,255,255)
-				SetAlpha(alpha)
-				If style.downImageMode = ComponentStyle.IMAGE_GRID Then
-					style.downImage.DrawGrid(0, 0, w, h, style.downImageFrame)
-				ElseIf style.downImageMode = ComponentStyle.IMAGE_NORMAL Then
-					style.downImage.Draw(0, 0, 0, 1, 1, style.downImageFrame)
+			' image next, priority = disabled, down, hover, normal
+			Local imageType:Int = -1
+			If Not enabled Then
+				If style.imageMode[ComponentStyle.IMAGE_DISABLED] <> "" Then
+					imageType = ComponentStyle.IMAGE_DISABLED
+				ElseIf style.imageMode[ComponentStyle.IMAGE_NORMAL] <> "" Then
+					imageType = ComponentStyle.IMAGE_NORMAL
 				End
-			ElseIf mouseHover And style.hoverImage <> Null Then
+			ElseIf mouseDown And style.imageMode[ComponentStyle.IMAGE_DOWN] <> "" Then
+				imageType = ComponentStyle.IMAGE_DOWN
+			ElseIf mouseHover And style.imageMode[ComponentStyle.IMAGE_HOVER] <> "" Then
+				imageType = ComponentStyle.IMAGE_HOVER
+			ElseIf style.imageMode[ComponentStyle.IMAGE_NORMAL] <> "" Then
+				imageType = ComponentStyle.IMAGE_NORMAL
+			End
+			
+			' if we have an image to draw, do it!
+			If imageType >= 0 Then
 				SetColor(255,255,255)
 				SetAlpha(alpha)
-				If style.hoverImageMode = ComponentStyle.IMAGE_GRID Then
-					style.hoverImage.DrawGrid(0, 0, w, h, style.hoverImageFrame)
-				ElseIf style.hoverImageMode = ComponentStyle.IMAGE_NORMAL Then
-					style.hoverImage.Draw(0, 0, 0, 1, 1, style.hoverImageFrame)
-				End
-			ElseIf style.image <> Null Then
-				SetColor(255,255,255)
-				SetAlpha(alpha)
-				If style.imageMode = ComponentStyle.IMAGE_GRID Then
-					style.image.DrawGrid(0, 0, w, h, style.imageFrame)
-				ElseIf style.imageMode = ComponentStyle.IMAGE_NORMAL Then
-					style.image.Draw(0, 0, 0, 1, 1, style.imageFrame)
+				If style.imageMode[imageType] = ComponentStyle.IMAGE_MODE_GRID Then
+					' nasty call here!
+					atlas.DrawSubGrid(0, 0, w, h,
+							style.imageX[imageType], style.imageY[imageType], style.imageWidth[imageType], style.imageHeight[imageType],
+							style.imageLeftMargin[imageType], style.imageRightMargin[imageType], style.imageTopMargin[imageType], style.imageBottomMargin[imageType],
+							style.imageDrawTopLeft[imageType], style.imageDrawTop[imageType], style.imageDrawTopRight[imageType],
+							style.imageDrawLeft[imageType], style.imageDrawCenter[imageType], style.imageDrawRight[imageType],
+							style.imageDrawBottomLeft[imageType], style.imageDrawBottom[imageType], style.imageDrawBottomRight[imageType])
+				ElseIf style.imageMode[imageType] = ComponentStyle.IMAGE_MODE_STRETCH Then
+					atlas.DrawSubStretched(0, 0, w, h, style.imageX[imageType], style.imageY[imageType], style.imageWidth[imageType], style.imageHeight[imageType])
+				ElseIf style.imageMode[imageType] = ComponentStyle.IMAGE_MODE_NORMAL Then
+					atlas.DrawSubImage(0, 0, style.imageX[imageType], style.imageY[imageType], style.imageWidth[imageType], style.imageHeight[imageType])
 				End
 			End
 			
-			' reset stuff
-			SetColor(255,255,255)
-			SetAlpha(1)
+			' reset stuff if we changed it
+			If style.drawBackground Or imageType >= 0 Then
+				SetColor(255,255,255)
+				SetAlpha(1)
+			End
 		End
 	End
 	
@@ -787,40 +845,127 @@ Public
 			parent.children.Remove(Self)
 			parent.children.AddFirst(Self)
 		End
-		parent.SendToBack()
+	End
+	
+	Method ApplySkin:Void()
+		For Local i:Int = 0 Until children.Size
+			children.Get(i).ApplySkin()
+		Next
+	End
+	
+	Method LoadStyles:Void(node:XMLElement)
+		If node = Null Then Return
+		' copy styles
+		Local styleNodes:ArrayList<XMLElement> = node.GetChildrenByName("style")
+		For Local styleNode:XMLElement = EachIn styleNodes
+			Local style:ComponentStyle = New ComponentStyle
+			style.ReadFromNode(styleNode)
+			SetStyle(styleNode.GetAttribute("name"), style)
+		Next
+	End
+	
+	Method GetSkinNodeName:String()
+		Return ""
 	End
 End
 
 Class ComponentStyle
-	Global IMAGE_NORMAL:Int = 0
-	Global IMAGE_TILE:Int = 1
-	Global IMAGE_STRETCH:Int = 2
-	Global IMAGE_GRID:Int = 3
-	
+	Const IMAGE_NORMAL:Int = 0
+	Const IMAGE_HOVER:Int = 1
+	Const IMAGE_DOWN:Int = 2
+	Const IMAGE_DISABLED:Int = 3
+	Const IMAGE_COUNT:Int = 4
+
+	Const IMAGE_MODE_NORMAL:String = "normal"
+	Const IMAGE_MODE_TILE:String = "tile"
+	Const IMAGE_MODE_STRETCH:String = "stretch"
+	Const IMAGE_MODE_GRID:String = "grid"
+
 	Field drawBackground:Bool = True
 	Field red:Int = 255
 	Field green:Int = 255
 	Field blue:Int = 255
-	Field image:GameImage = Null
-	Field imageFrame:Int = 0
-	Field imageMode:Int = IMAGE_NORMAL
-	Field imageAlignX:Float = 0
-	Field imageAlignY:Float = 0
-	Field hoverImage:GameImage = Null
-	Field hoverImageFrame:Int = 0
-	Field hoverImageMode:Int = IMAGE_NORMAL
-	Field hoverImageAlignX:Float = 0
-	Field hoverImageAlignY:Float = 0
-	Field downImage:GameImage = Null
-	Field downImageFrame:Int = 0
-	Field downImageMode:Int = IMAGE_NORMAL
-	Field downImageAlignX:Float = 0
-	Field downImageAlignY:Float = 0
+	
+	Field imageMode:String[IMAGE_COUNT]
+	Field imageX:Int[IMAGE_COUNT]
+	Field imageY:Int[IMAGE_COUNT]
+	Field imageWidth:Int[IMAGE_COUNT]
+	Field imageHeight:Int[IMAGE_COUNT]
+	Field imageLeftMargin:Int[IMAGE_COUNT]
+	Field imageRightMargin:Int[IMAGE_COUNT]
+	Field imageTopMargin:Int[IMAGE_COUNT]
+	Field imageBottomMargin:Int[IMAGE_COUNT]
+	Field imageDrawTopLeft:Bool[IMAGE_COUNT]
+	Field imageDrawTop:Bool[IMAGE_COUNT]
+	Field imageDrawTopRight:Bool[IMAGE_COUNT]
+	Field imageDrawLeft:Bool[IMAGE_COUNT]
+	Field imageDrawCenter:Bool[IMAGE_COUNT]
+	Field imageDrawRight:Bool[IMAGE_COUNT]
+	Field imageDrawBottomLeft:Bool[IMAGE_COUNT]
+	Field imageDrawBottom:Bool[IMAGE_COUNT]
+	Field imageDrawBottomRight:Bool[IMAGE_COUNT]
+
+	Field upSound:String = ""
+	Field downSound:String = ""
+	Field clickSound:String = ""
+	Field enterSound:String = ""
+	Field exitSound:String = ""
+
+	Method ReadFromNode(node:XMLElement)
+		drawBackground = node.GetAttribute("drawBackground", "false").ToLower() = "true"
+		red = Int(node.GetAttribute("red", "255"))
+		green = Int(node.GetAttribute("green", "255"))
+		blue = Int(node.GetAttribute("blue", "255"))
+		For Local subNode:XMLElement = EachIn node.Children
+			Local imageType:Int = -1
+			If subNode.Name = "enterSound" Then
+				enterSound = subNode.GetAttribute("name")
+			ElseIf subNode.Name = "exitSound" Then
+				exitSound = subNode.GetAttribute("name")
+			ElseIf subNode.Name = "downSound" Then
+				downSound = subNode.GetAttribute("name")
+			ElseIf subNode.Name = "upSound" Then
+				upSound = subNode.GetAttribute("name")
+			ElseIf subNode.Name = "clickSound" Then
+				clickSound = subNode.GetAttribute("name")
+			ElseIf subNode.Name = "normalImage" Then
+				imageType = IMAGE_NORMAL
+			ElseIf subNode.Name = "hoverImage" Then
+				imageType = IMAGE_HOVER
+			ElseIf subNode.Name = "downImage" Then
+				imageType = IMAGE_DOWN
+			ElseIf subNode.Name = "disabledImage" Then
+				imageType = IMAGE_DISABLED
+			End
+			
+			If imageType >= 0 Then
+				imageMode[imageType]            = subNode.GetAttribute("mode")
+				imageX[imageType]               = Int(subNode.GetAttribute("x", "0"))
+				imageY[imageType]               = Int(subNode.GetAttribute("y", "0"))
+				imageWidth[imageType]           = Int(subNode.GetAttribute("width", "0"))
+				imageHeight[imageType]          = Int(subNode.GetAttribute("height", "0"))
+				imageLeftMargin[imageType]      = Int(subNode.GetAttribute("leftMargin", "0"))
+				imageRightMargin[imageType]     = Int(subNode.GetAttribute("rightMargin", "0"))
+				imageTopMargin[imageType]       = Int(subNode.GetAttribute("topMargin", "0"))
+				imageBottomMargin[imageType]    = Int(subNode.GetAttribute("bottomMargin", "0"))
+				imageDrawTopLeft[imageType]     = Bool(subNode.GetAttribute("drawTopLeft", "true"))
+				imageDrawTop[imageType]         = Bool(subNode.GetAttribute("drawTop", "true"))
+				imageDrawTopRight[imageType]    = Bool(subNode.GetAttribute("drawTopRight", "true"))
+				imageDrawLeft[imageType]        = Bool(subNode.GetAttribute("drawLeft", "true"))
+				imageDrawCenter[imageType]      = Bool(subNode.GetAttribute("drawCenter", "true"))
+				imageDrawRight[imageType]       = Bool(subNode.GetAttribute("drawRight", "true"))
+				imageDrawBottomLeft[imageType]  = Bool(subNode.GetAttribute("drawBottomLeft", "true"))
+				imageDrawBottom[imageType]      = Bool(subNode.GetAttribute("drawBottom", "true"))
+				imageDrawBottomRight[imageType] = Bool(subNode.GetAttribute("drawBottomRight", "true"))
+			End
+		Next
+	End
 End
 
 Class Panel Extends Component
 	Method New(parent:Component)
 		Super.New(parent)
+		ApplySkin()
 	End
 End
 
@@ -830,14 +975,35 @@ Private
 	Field titlePane:Panel
 	Field buttonPane:Panel
 	
+	Field styleMinimizeButton:ComponentStyle
+	Field styleMaximizeButton:ComponentStyle
+	Field styleRestoreButton:ComponentStyle
+	Field styleCloseButton:ComponentStyle
+	Field styleContentPane:ComponentStyle
+	Field styleButtonPane:ComponentStyle
+	Field styleTitlePane:ComponentStyle
+	
 	Field closeButton:Button
 	Field maximizeButton:Button
 	Field minimizeButton:Button
-	Field shadeButton:Button
+	'Field shadeButton:Button
 	Field internalWindowAdapter:InternalWindowAdapter
 	
-	Field titleHeight:Int = 22
-	Field buttonWidth:Int = 15
+	' read from skin
+	Field contentPaneLeft:Int
+	Field contentPaneRight:Int
+	Field contentPaneTop:Int
+	Field contentPaneBottom:Int
+	Field titlePaneLeft:Int
+	Field titlePaneRight:Int
+	Field titlePaneTop:Int
+	Field titlePaneBottom:Int
+	Field buttonPaneRight:Int
+	Field buttonPaneTop:Int
+	Field buttonPaneBottom:Int
+	Field buttonWidth:Int
+	Field buttonHeight:Int
+	Field buttonMargin:Int
 	
 	' note: a window can be all three of these states at once!
 	' priority is: minimized, maximized, shaded
@@ -849,23 +1015,19 @@ Private
 	
 	Field normalX:Float, normalY:Float, normalWidth:Float, normalHeight:Float
 
+	Field showMinimize:Bool = False
+	Field showMaximize:Bool = False
+	Field showClose:Bool = True
+	
 	Method CreateButtonPane:Void()
 		buttonPane = New Panel(Self)
-		buttonPane.w = buttonWidth*4
-		buttonPane.SetBackground(192,192,192)
-		'minimizeButton = New Button(buttonPane)
-		'minimizeButton.actionListener = internalWindowAdapter
-		'minimizeButton.SetBounds(0, 0, buttonWidth, buttonWidth)
-		'shadeButton = New Button(buttonPane)
-		'shadeButton.actionListener = internalWindowAdapter
-		'shadeButton.SetBounds(0, 0, buttonWidth, buttonWidth)
-		'maximizeButton = New Button(buttonPane)
-		'maximizeButton.actionListener = internalWindowAdapter
-		'maximizeButton.SetBounds(0, 0, buttonWidth, buttonWidth)
+		minimizeButton = New Button(buttonPane)
+		minimizeButton.actionListener = internalWindowAdapter
+		maximizeButton = New Button(buttonPane)
+		maximizeButton.toggle = True
+		maximizeButton.actionListener = internalWindowAdapter
 		closeButton = New Button(buttonPane)
 		closeButton.actionListener = internalWindowAdapter
-		closeButton.SetBounds(buttonPane.w-buttonWidth, 0, buttonWidth, buttonWidth)
-		closeButton.SetBackground(128,128,128)
 	End
 	
 	Method CreateContentPane:Void()
@@ -875,7 +1037,7 @@ Private
 	
 	Method CreateTitlePane:Void()
 		titlePane = New Panel(Self)
-		titlePane.SetBackground(192,192,192)
+		titlePane.SetBackground(False)
 		titlePane.mouseListener = internalWindowAdapter
 		titlePane.mouseMotionListener = internalWindowAdapter
 	End
@@ -950,8 +1112,7 @@ Public
 	End
 	
 	Method New()
-		Super.New(Self)
-		internalWindowAdapter = New InternalWindowAdapter(Self)
+		Error("Must pass a desktop.")
 	End
 	
 	Method New(parent:Component)
@@ -960,19 +1121,130 @@ Public
 		CreateButtonPane()
 		CreateContentPane()
 		CreateTitlePane()
+		ApplySkin()
+		Layout()
 	End
 	
 	Method Layout:Void()
+		If contentPane = Null Then Return
+		Local l:Int,r:Int,t:Int,b:Int
 		If minimized Or shaded Then
 			If contentPane <> Null Then contentPane.visible = False
 		Else
 			If contentPane <> Null Then
 				contentPane.visible = True
-				contentPane.SetBounds(4, titleHeight, w-8, h-titleHeight-4)
+				l = contentPaneLeft
+				r = contentPaneRight
+				t = contentPaneTop
+				b = contentPaneBottom
+				If l < 0 Then l += w
+				If r < 0 Then r += w
+				If t < 0 Then t += h
+				If b < 0 Then b += h
+				contentPane.SetBounds(l, t, r-l, b-t)
 			End
 		End
-		buttonPane.SetBounds(w-buttonPane.w-4, 0, buttonPane.w, titleHeight)
-		titlePane.SetBounds(4, 0, buttonPane.x-4, titleHeight)
+		Local buttonX:Int = 0
+		If showMinimize Then
+			minimizeButton.visible = True
+			minimizeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
+			buttonX += buttonWidth + buttonMargin
+		End
+		If showMaximize Then
+			maximizeButton.visible = True
+			minimizeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
+			buttonX += buttonWidth + buttonMargin
+		End
+		If showClose Then
+			closeButton.visible = True
+			closeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
+			buttonX += buttonWidth + buttonMargin
+		End
+		If buttonX = 0 Then
+			buttonPane.visible = False
+		Else
+			buttonPane.visible = True
+			r = buttonPaneRight
+			t = buttonPaneTop
+			b = buttonPaneBottom
+			If r < 0 Then r += w
+			If t < 0 Then t += h
+			If b < 0 Then b += h
+			l = r - buttonX + buttonMargin
+			buttonPane.SetBounds(l, t, r-l, b-t)
+		End
+		l = titlePaneLeft
+		r = titlePaneRight
+		t = titlePaneTop
+		b = titlePaneBottom
+		If l < 0 Then l += w
+		If t < 0 Then t += h
+		If b < 0 Then b += h
+		If r < 0 Then
+			If buttonPane.visible Then
+				r += buttonPane.x
+			Else
+				r += w
+			End
+		End
+		titlePane.SetBounds(l, t, r-l, b-t)
+	End
+	
+	Method GetSkinNodeName:String()
+		Return "window"
+	End
+	
+	Method ApplySkin:Void()
+		Local thisGUI:GUI = FindGUI()
+		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
+		If node <> Null Then
+			LoadStyles(node)
+			
+			If styleMinimizeButton <> Null Then minimizeButton.StyleNormal = styleMinimizeButton
+			If styleMaximizeButton <> Null Then maximizeButton.StyleNormal = styleMaximizeButton
+			If styleRestoreButton <> Null Then maximizeButton.StyleSelected = styleRestoreButton
+			If styleCloseButton <> Null Then closeButton.StyleNormal = styleCloseButton
+			If styleContentPane <> Null Then contentPane.StyleNormal = styleContentPane
+			If styleTitlePane <> Null Then titlePane.StyleNormal = styleTitlePane
+			If styleButtonPane <> Null Then buttonPane.StyleNormal = styleButtonPane
+			
+			contentPaneLeft   = Int(node.GetAttribute("contentPaneLeft","0"))
+			contentPaneRight  = Int(node.GetAttribute("contentPaneRight","-1"))
+			contentPaneTop    = Int(node.GetAttribute("contentPaneTop","0"))
+			contentPaneBottom = Int(node.GetAttribute("contentPaneBottom","-1"))
+			titlePaneLeft     = Int(node.GetAttribute("titlePaneLeft","0"))
+			titlePaneRight    = Int(node.GetAttribute("titlePaneRight","-1"))
+			titlePaneTop      = Int(node.GetAttribute("titlePaneTop","0"))
+			titlePaneBottom   = Int(node.GetAttribute("titlePaneBottom","-1"))
+			buttonPaneRight   = Int(node.GetAttribute("buttonPaneRight","-1"))
+			buttonPaneTop     = Int(node.GetAttribute("buttonPaneTop","0"))
+			buttonPaneBottom  = Int(node.GetAttribute("buttonPaneBottom","-1"))
+			buttonWidth       = Int(node.GetAttribute("buttonWidth","17"))
+			buttonHeight      = Int(node.GetAttribute("buttonHeight","17"))
+			buttonMargin      = Int(node.GetAttribute("buttonMargin","1"))
+			Layout()
+		End
+		If contentPane <> Null Then contentPane.ApplySkin()
+	End
+	
+	Method SetStyle:Void(name:String, style:ComponentStyle)
+		If name = "contentPane" Then
+			styleContentPane = style
+		ElseIf name = "buttonPane" Then
+			styleButtonPane = style
+		ElseIf name = "titlePane" Then
+			styleTitlePane = style
+		ElseIf name = "minimizeButton" Then
+			styleMinimizeButton = style
+		ElseIf name = "maximizeButton" Then
+			styleMaximizeButton = style
+		ElseIf name = "restoreButton" Then
+			styleRestoreButton = style
+		ElseIf name = "closeButton" Then
+			styleCloseButton = style
+		Else
+			Super.SetStyle(name, style)
+		End
 	End
 End
 
@@ -986,10 +1258,12 @@ Private
 	Field textYAlign:Float = 0
 
 Public
-	Method Text:Void(txt:String, xAlign:Float, yAlign:Float) Property
-		text = txt
-		textXAlign = xAlign
-		textYAlign = yAlign
+	Method SetText:Void(text:String, textXAlign:Float=0, textYAlign:Float=0, textXOffset:Float=0, textYOffset:Float=0)
+		Self.text = text
+		Self.textXAlign = textXAlign
+		Self.textYAlign = textYAlign
+		Self.textXOffset = textXOffset
+		Self.textYOffset = textYOffset
 	End
 	
 	Method New(parent:Component)
@@ -1019,27 +1293,31 @@ Public
 		Super.New(parent)
 		internalButtonAdapter = New InternalButtonAdapter(Self)
 		mouseListener = internalButtonAdapter
+		ApplySkin()
 	End
 	
 	Method New(parent:Component, image:GameImage)
 		Super.New(parent)
 		internalButtonAdapter = New InternalButtonAdapter(Self)
 		mouseListener = internalButtonAdapter
-		Self.StyleNormal.image = image
+		'Self.StyleNormal.image = image
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
 		CheckImage()
+		ApplySkin()
 	End
 	
+	' NOTE: this is temporarily broken until the ImageButton class is done!
 	Method New(parent:Component, image:GameImage, clickImage:GameImage)
 		Super.New(parent)
 		internalButtonAdapter = New InternalButtonAdapter(Self)
 		mouseListener = internalButtonAdapter
-		Self.StyleNormal.image = image
-		Self.styleNormal.downImage = clickImage
+		'Self.StyleNormal.image = image
+		'Self.styleNormal.downImage = clickImage
 		Self.StyleNormal.drawBackground = False
 		Self.SetSize(image.w, image.h)
 		CheckImage()
+		ApplySkin()
 	End
 	
 	Method StyleSelected:ComponentStyle() Property
@@ -1060,13 +1338,125 @@ Public
 		If name = "selected" Then
 			styleSelected = style
 		Else
-			Super.GetStyle(name)
+			Super.SetStyle(name, style)
 		End
 	End
 	
 	Method GetCurrentStyle:ComponentStyle()
 		If selected And styleSelected <> Null Then Return styleSelected
 		Return Super.GetCurrentStyle()
+	End
+	
+	Method ApplySkin:Void()
+		Local thisGUI:GUI = FindGUI()
+		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
+		LoadStyles(node)
+	End
+	
+	Method GetSkinNodeName:String()
+		Return "button"
+	End
+End
+
+Class RadioButton Extends Button
+	Method New(parent:Component)
+		Super.New(parent)
+		toggle = True
+	End
+	
+	Method GetSkinNodeName:String()
+		Return "radio"
+	End
+End
+
+Class Checkbox Extends Button
+	Method New(parent:Component)
+		Super.New(parent)
+		toggle = True
+	End
+	
+	Method GetSkinNodeName:String()
+		Return "checkbox"
+	End
+End
+
+Class ImageButton Extends Button
+Public
+	Field imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL
+	Field normalImage:GameImage
+	Field hoverImage:GameImage
+	Field downImage:GameImage
+	Field disabledImage:GameImage
+	
+	Field selectedNormalImage:GameImage
+	Field selectedHoverImage:GameImage
+	Field selectedDownImage:GameImage
+	Field selectedDisabledImage:GameImage
+	
+	Method New(parent:Component, imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL,
+			normalImage:GameImage, hoverImage:GameImage = Null, downImage:GameImage = Null, disabledImage:GameImage = Null)
+		Super.New(parent)
+		Self.imageMode = imageMode
+		Self.normalImage = normalImage
+		Self.hoverImage = hoverImage
+		Self.downImage = downImage
+		Self.disabledImage = disabledImage
+	End
+	
+	Method New(parent:Component, imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL,
+			normalImage:GameImage, hoverImage:GameImage = Null, downImage:GameImage = Null, disabledImage:GameImage = Null,
+			selectedNormalImage:GameImage = Null, selectedHoverImage:GameImage = Null, selectedDownImage:GameImage = Null, selectedDisabledImage:GameImage = Null)
+		Super.New(parent)
+		Self.imageMode = imageMode
+		Self.normalImage = normalImage
+		Self.hoverImage = hoverImage
+		Self.downImage = downImage
+		Self.disabledImage = disabledImage
+		Self.selectedNormalImage = selectedNormalImage
+		Self.selectedHoverImage = selectedHoverImage
+		Self.selectedDownImage = selectedDownImage
+		Self.selectedDisabledImage = selectedDisabledImage
+	End
+	
+	Method DrawComponent:Void()
+		Local image:GameImage
+		
+		If Not enabled And selected And selectedDisabledImage <> Null Then
+			image = selectedDisabledImage
+		ElseIf Not enabled And disabledImage <> Null Then
+			image = disabledImage
+		ElseIf mouseDown And selected And selectedDownImage <> Null Then
+			image = selectedDownImage
+		ElseIf mouseDown And downImage <> Null Then
+			image = downImage
+		ElseIf mouseHover And selected And selectedHoverImage <> Null Then
+			image = selectedHoverImage
+		ElseIf mouseHover And hoverImage <> Null Then
+			image = hoverImage
+		ElseIf selected And selectedNormalImage <> Null Then
+			image = selectedNormalImage
+		Else
+			image = normalImage
+		End
+		
+		If image <> Null Then
+			If imageMode = ComponentStyle.IMAGE_MODE_NORMAL Then
+				'image.Draw()
+			ElseIf imageMode = ComponentStyle.IMAGE_MODE_STRETCH Then
+				'image.DrawStretched()
+			End
+		End
+	End
+	
+	Method GetStyle:ComponentStyle(name:String)
+		Return styleNormal
+	End
+	
+	Method SetStyle:Void(name:String, style:ComponentStyle)
+	End
+	
+	Method GetCurrentStyle:ComponentStyle()
+		Return styleNormal
 	End
 End
 
@@ -1126,17 +1516,26 @@ Private
 	Field dragX:Int, dragY:Int, originalX:Int, originalY:Int
 	Field dragging:Bool = False
 	
-	Field styleLeftButton:ComponentStyle
-	Field styleRightButton:ComponentStyle
-	Field styleTopButton:ComponentStyle
-	Field styleBottomButton:ComponentStyle
-	Field styleHorizontalHandle:ComponentStyle
-	Field styleVerticalHandle:ComponentStyle
-	Field styleHorizontalBar:ComponentStyle
-	Field styleVerticalBar:ComponentStyle
+	Field styleLeftButton:ComponentStyle = New ComponentStyle
+	Field styleRightButton:ComponentStyle = New ComponentStyle
+	Field styleTopButton:ComponentStyle = New ComponentStyle
+	Field styleBottomButton:ComponentStyle = New ComponentStyle
+	Field styleHorizontalHandle:ComponentStyle = New ComponentStyle
+	Field styleVerticalHandle:ComponentStyle = New ComponentStyle
+	Field styleHorizontalBar:ComponentStyle = New ComponentStyle
+	Field styleVerticalBar:ComponentStyle = New ComponentStyle
 	
 	Field internalSliderAdapter:InternalSliderAdapter
 	
+	Field leftButtonWidth:Int
+	Field leftButtonHeight:Int
+	Field rightButtonWidth:Int
+	Field rightButtonHeight:Int
+	Field topButtonWidth:Int
+	Field topButtonHeight:Int
+	Field bottomButtonWidth:Int
+	Field bottomButtonHeight:Int
+
 Public
 	Field minValue:Int = 0
 	Field maxValue:Int = 100
@@ -1147,29 +1546,36 @@ Public
 	Field buttonSize:Int = 15
 	Field snapToTicks:Bool = True
 	
+	Method New()
+		Error("Must pass a parent component.")
+	End
+	
 	Method New(parent:Component)
 		Super.New(parent)
 		internalSliderAdapter = New InternalSliderAdapter(Self)
+		
 		bar = New Label(Self)
 		bar.zOrderLocked = True
-		bar.SetBackground(192,192,192)
 		bar.mouseListener = internalSliderAdapter
 		bar.mouseMotionListener = internalSliderAdapter
+		
 		buttonUpLeft = New Button(Self)
 		buttonUpLeft.actionListener = internalSliderAdapter
-		buttonUpLeft.SetBackground(128,128,128)
 		buttonUpLeft.zOrderLocked = True
+		
 		buttonDownRight = New Button(Self)
 		buttonDownRight.actionListener = internalSliderAdapter
-		buttonDownRight.SetBackground(128,128,128)
 		buttonDownRight.zOrderLocked = True
+		
 		handle = New Label(Self)
-		handle.SetBackground(128,128,128)
 		handle.mouseListener = internalSliderAdapter
 		handle.mouseMotionListener = internalSliderAdapter
 		handle.zOrderLocked = True
+		
 		buttonUpLeft.visible = False
 		buttonDownRight.visible = False
+		
+		ApplySkin()
 	End
 	
 	Method GetStyle:ComponentStyle(name:String)
@@ -1257,25 +1663,31 @@ Public
 		If orientation = SLIDER_HORIZONTAL Then
 			buttonUpLeft.StyleNormal = styleLeftButton
 			buttonDownRight.StyleNormal = styleRightButton
+			bar.StyleNormal = styleHorizontalBar
 			handle.StyleNormal = styleHorizontalHandle
 		Else
 			buttonUpLeft.StyleNormal = styleTopButton
 			buttonDownRight.StyleNormal = styleBottomButton
+			bar.StyleNormal = styleVerticalBar
 			handle.StyleNormal = styleVerticalHandle
 		End
 	End
 	
-	' TODO: adjust layout using xml offsets rather than hardcoded
 	Method Layout:Void()
+		Local startVal:Int, endVal:Int
 		If showButtons Then
 			If orientation = SLIDER_HORIZONTAL Then
-				buttonUpLeft.SetBounds(0, 0, buttonSize, Self.h)
-				buttonDownRight.SetBounds(Self.w - buttonSize, 0, buttonSize, Self.h)
-				bar.SetBounds(buttonUpLeft.w, 0, Self.w - buttonSize*2, Self.h)
+				buttonUpLeft.SetBounds(0, 0, leftButtonWidth, leftButtonHeight)
+				buttonDownRight.SetBounds(Self.w - rightButtonWidth, 0, rightButtonWidth, rightButtonHeight)
+				bar.SetBounds(buttonUpLeft.w, 0, Self.w - leftButtonWidth - rightButtonWidth, Self.h)
+				startVal = leftButtonWidth+handleMargin
+				endVal = startVal + bar.w - 2*handleMargin
 			Else
-				buttonUpLeft.SetBounds(0, 0, Self.w, buttonSize)
-				buttonDownRight.SetBounds(0, Self.h - buttonSize, Self.w, buttonSize)
-				bar.SetBounds(0, buttonUpLeft.h, Self.w, Self.h - buttonSize*2)
+				buttonUpLeft.SetBounds(0, 0, topButtonWidth, topButtonHeight)
+				buttonDownRight.SetBounds(0, Self.h - bottomButtonHeight, bottomButtonWidth, bottomButtonHeight)
+				bar.SetBounds(0, buttonUpLeft.h, Self.w, Self.h - topButtonHeight - bottomButtonHeight)
+				startVal = topButtonHeight+handleMargin
+				endVal = startVal + bar.h - 2*handleMargin
 			End
 			buttonUpLeft.visible = True
 			buttonDownRight.visible = True
@@ -1283,16 +1695,12 @@ Public
 			buttonUpLeft.visible = False
 			buttonDownRight.visible = False
 		End
-		Local startVal:Int = buttonSize+handleMargin
-		Local endVal:Int = -buttonSize-handleMargin
 		Local fraction:Float = Float(value-minValue)/Float(maxValue-minValue)
 		Local currentVal:Int
 		If orientation = SLIDER_HORIZONTAL Then
-			endVal += Self.w
 			currentVal = startVal + (endVal - startVal) * fraction
 			handle.SetBounds(currentVal-handleSize/2, 0, handleSize, Self.h)
 		Else
-			endVal += Self.h
 			currentVal = startVal + (endVal - startVal) * fraction
 			handle.SetBounds(0, currentVal-handleSize/2, Self.w, handleSize)
 		End
@@ -1369,6 +1777,29 @@ Public
 			FireActionPerformed(ACTION_VALUE_CHANGED)
 		End
 		Return value <> oldValue
+	End
+	
+	Method ApplySkin:Void()
+		Local thisGUI:GUI = FindGUI()
+		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
+		If node <> Null Then
+			LoadStyles(node)
+			
+			handleMargin = Int(node.GetAttribute("handleMargin", "8"))
+			leftButtonWidth = Int(node.GetAttribute("leftButtonWidth", "15"))
+			leftButtonHeight = Int(node.GetAttribute("leftButtonHeight", "16"))
+			rightButtonWidth = Int(node.GetAttribute("rightButtonWidth", "15"))
+			rightButtonHeight = Int(node.GetAttribute("rightButtonHeight", "16"))
+			topButtonWidth = Int(node.GetAttribute("topButtonWidth", "16"))
+			topButtonHeight = Int(node.GetAttribute("topButtonHeight", "15"))
+			bottomButtonWidth = Int(node.GetAttribute("bottomButtonWidth", "16"))
+			bottomButtonHeight = Int(node.GetAttribute("bottomButtonHeight", "15"))
+			Layout()
+		End
+	End
+	
+	Method GetSkinNodeName:String()
+		Return "slider"
 	End
 End
 
@@ -1453,7 +1884,7 @@ Class InternalWindowAdapter Implements IActionListener, IMouseListener, IMouseMo
 			window.Dispose()
 		ElseIf source = window.maximizeButton And action = ACTION_CLICKED Then
 		ElseIf source = window.minimizeButton And action = ACTION_CLICKED Then
-		ElseIf source = window.shadeButton And action = ACTION_CLICKED Then
+		'ElseIf source = window.shadeButton And action = ACTION_CLICKED Then
 		End
 	End
 	
@@ -1530,4 +1961,9 @@ Class InternalButtonAdapter Implements IMouseListener
 	Method MouseExited:Void(source:Component, x:Float, y:Float, enteredComp:Component, absoluteX:Float, absoluteY:Float)
 	End
 End
+
+Function PlayComponentSound(comp:Component, soundName:String)
+	' TODO: play sounds!
+End
+
 
