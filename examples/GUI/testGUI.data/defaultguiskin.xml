@@ -52,13 +52,13 @@
 			<normalImage   mode="grid" x="240" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
 			<hoverImage    mode="grid" x="253" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
 			<downImage     mode="grid" x="266" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
-			<disabledImage mode="grid" x="" y="" width="" height="" leftMargin="" rightMargin="" topMargin="" bottomMargin="" />
+			<disabledImage mode="grid" x="10" y="0" width="0" height="0" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" />
 		</style>
 		<style name="verticalHandle">
 			<normalImage   mode="grid" x="216" y="144" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
 			<hoverImage    mode="grid" x="216" y="157" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
 			<downImage     mode="grid" x="216" y="170" width="10" height="21" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" />
-			<disabledImage mode="grid" x="" y="" width="" height="" leftMargin="" rightMargin="" topMargin="" bottomMargin="" />
+			<disabledImage mode="grid" x="20" y="0" width="0" height="0" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" />
 		</style>
 		<style name="horizontalBar">
 			<normalImage mode="stretch" x="77"  y="263" width="32" height="15" />

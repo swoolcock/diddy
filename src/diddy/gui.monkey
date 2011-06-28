@@ -910,6 +910,12 @@ Class ComponentStyle
 	Field clickSound:String = ""
 	Field enterSound:String = ""
 	Field exitSound:String = ""
+	
+	Method New()
+		For Local i% = 0 Until IMAGE_COUNT
+			imageMode[i] = -1
+		Next
+	End
 
 	Method ReadFromNode(node:XMLElement)
 		drawBackground = node.GetAttribute("drawBackground", "false").ToLower() = "true"
