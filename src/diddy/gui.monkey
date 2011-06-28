@@ -913,7 +913,7 @@ Class ComponentStyle
 	
 	Method New()
 		For Local i% = 0 Until IMAGE_COUNT
-			imageMode[i] = -1
+			imageMode[i] = ""
 		Next
 	End
 
