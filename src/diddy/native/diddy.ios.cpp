@@ -30,4 +30,7 @@ class diddy
 	static void setMouse(int x, int y)
 	{
 	}	
+	static void showKeyboard()
+	{
+	}
 };

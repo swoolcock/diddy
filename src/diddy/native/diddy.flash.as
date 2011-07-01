@@ -33,4 +33,8 @@ class diddy
 	{
 		return app.updateRate;
 	}
+	
+	static public function showKeyboard():void
+	{
+	}
 }

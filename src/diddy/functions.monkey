@@ -15,6 +15,7 @@ Extern
 		Function ShowMouse:Void() = "diddy::showMouse"
 		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
+		Function ShowKeyboard:Void() = "diddy::showKeyboard"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -22,8 +23,8 @@ Extern
 		Function ShowMouse:Void() = "diddy.showMouse"
 		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
+		Function ShowKeyboard:Void() = "diddy.showKeyboard"
 	#End
-	
 Public
 
 Function ExitApp:Void()

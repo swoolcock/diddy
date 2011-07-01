@@ -35,4 +35,7 @@ class diddy
 	public static void setMouse(int x, int y)
 	{
 	}
+	public static void showKeyboard()
+	{
+	}
 }
