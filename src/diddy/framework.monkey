@@ -45,6 +45,9 @@ Class DiddyApp Extends App
 	Field exitScreen:ExitScreen = new ExitScreen()
 	' used for fading
 	Field screenFade:ScreenFade = New ScreenFade
+	' scroll
+	field scrollX:Float
+	field scrollY:Float
 	
 	' mouse
 	Field mouseX:Int, mouseY:Int
