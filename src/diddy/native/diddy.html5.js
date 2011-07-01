@@ -24,6 +24,10 @@ diddy.setMouse=function(x, y)
 {
 	
 }
+diddy.showKeyboard=function()
+{
+	
+}
 
 diddy.hideMouse=function()
 {

@@ -36,4 +36,7 @@ class diddy
 		glfwSetMousePos(x, y);
 	}
 	
+	static void showKeyboard()
+	{
+	}
 };

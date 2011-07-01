@@ -33,4 +33,11 @@ class diddy
 	static void setMouse(int x, int y)
 	{
 	}
+	
+	static void showKeyboard()
+	{
+		android.view.inputmethod.InputMethodManager inputMgr = (android.view.inputmethod.InputMethodManager)MonkeyGame.activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+		inputMgr.toggleSoftInput(0, 0);
+	}
+	
 }
