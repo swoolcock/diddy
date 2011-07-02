@@ -961,13 +961,22 @@ Class Sprite
 		Draw(0,0)
 	End
 	
-	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0)
+	Method Draw:Void(rounded:Bool)
+		Draw(0,0, rounded)
+	End
+	
+	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0, rounded:Bool = false)
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
 		SetAlpha Self.alpha
-		SetColor red, green, blue ' doesnt work with images!?!??!
-		DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+		SetColor red, green, blue
+		if rounded
+			DrawImage(image.image, int(x - offsetx), int(y - offsety), rotation, scaleX, scaleY, frame)
+		Else
+			DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+		End
+		
 		SetColor 255, 255, 255
 		SetAlpha 1
 
