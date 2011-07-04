@@ -40,9 +40,13 @@ class diddy
 	
 	static public function launchBrowser(address:String):void
 	{
+		var adobeURL:URLRequest = new URLRequest(address);
+		navigateToURL(adobeURL);
 	}
 	
 	static public function launchEmail(email:String, subject:String, text:String):void
 	{
+		var adobeURL:URLRequest = new URLRequest("mailto:"+email+"&subject="+subject+"&body="+text+"");
+		navigateToURL(adobeURL);
 	}
 }
