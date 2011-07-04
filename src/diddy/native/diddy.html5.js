@@ -29,9 +29,11 @@ diddy.showKeyboard=function()
 }
 diddy.launchBrowser=function(address)
 {
+	window.open(address);
 }
 diddy.launchEmail=function(email, subject, text)
 {
+	location.href="mailto:"+email+"&subject="+subject+"&body="+text+"";
 }
 
 diddy.hideMouse=function()
