@@ -16,6 +16,8 @@ Extern
 		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
+		Function LaunchBrowser:Void(address:String) = "diddy::launchBrowser"
+		Function LaunchEmail:Void(subject:String, text:String) = "diddy::launchEmail"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -24,6 +26,8 @@ Extern
 		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
 		Function ShowKeyboard:Void() = "diddy.showKeyboard"
+		Function LaunchBrowser:Void(address:String) = "diddy.launchBrowser"
+		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
 	#End
 Public
 

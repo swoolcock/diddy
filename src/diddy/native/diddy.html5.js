@@ -26,7 +26,12 @@ diddy.setMouse=function(x, y)
 }
 diddy.showKeyboard=function()
 {
-	
+}
+diddy.launchBrowser=function(address)
+{
+}
+diddy.launchEmail=function(email, subject, text)
+{
 }
 
 diddy.hideMouse=function()

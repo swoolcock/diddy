@@ -37,4 +37,12 @@ class diddy
 	static public function showKeyboard():void
 	{
 	}
+	
+	static public function launchBrowser(address:String):void
+	{
+	}
+	
+	static public function launchEmail(email:String, subject:String, text:String):void
+	{
+	}
 }
