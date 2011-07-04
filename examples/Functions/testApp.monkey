@@ -37,6 +37,12 @@ Class MyGame Extends DiddyApp
 				mouseOn = True
 			End
 		End	
+		If KeyHit(KEY_F1) or (TouchHit(0) And TouchY() < SCREEN_HEIGHT2)
+			LaunchBrowser("http://www.google.com")
+		End
+		If KeyHit(KEY_F2) or (TouchHit(0) And TouchY() > SCREEN_HEIGHT2)
+			LaunchEmail("test@testdomain.com", "TEST SUBJECT", "TEST TEXT!")
+		End
 		
 		If KeyHit(KEY_ESCAPE)
 			ExitApp()
@@ -86,7 +92,8 @@ Class MyGame Extends DiddyApp
 		DrawText "MouseY        = "+MouseY(), 10, 80
 		DrawText "DEVICE_WIDTH  = "+DEVICE_WIDTH, 10, 90
 		DrawText "DEVICE_HEIGHT = "+DEVICE_HEIGHT, 10, 100
-		
+		DrawText "Press F1 or click the top half of the screen to Launch Browser", 10, 120
+		DrawText "Press F2 or click the bottom half of the screen to Launch Email", 10, 130
 		Return 0
 	End
 		
