@@ -47,6 +47,6 @@ class diddy
 	static public function launchEmail(email:String, subject:String, text:String):void
 	{
 		var adobeURL:URLRequest = new URLRequest("mailto:"+email+"&subject="+subject+"&body="+text+"");
-		navigateToURL(adobeURL);
+		navigateToURL(adobeURL, "_self");
 	}
 }
