@@ -40,4 +40,21 @@ class diddy
 		inputMgr.toggleSoftInput(0, 0);
 	}
 	
+	static void launchBrowser(String address) {
+		android.net.Uri uriUrl = android.net.Uri.parse(address);
+		android.content.Intent launchBrowserActivity = new android.content.Intent(android.content.Intent.ACTION_VIEW, uriUrl);
+		MonkeyGame.activity.startActivity(launchBrowserActivity);
+	}
+	
+	static void launchEmail(String email, String subject, String text)
+	{
+		android.content.Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);	
+		emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{email});
+		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);  
+		emailIntent.setType("plain/text");  
+		emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, text);  
+		MonkeyGame.activity.startActivity(emailIntent);
+	}
+
+	
 }

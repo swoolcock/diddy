@@ -33,4 +33,10 @@ class diddy
 	static void showKeyboard()
 	{
 	}
+	static void launchBrowser(String address)
+	{
+	}
+	static void launchEmail(String email, String subject, String text)
+	{
+	}
 };
