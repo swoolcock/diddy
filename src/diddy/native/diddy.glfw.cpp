@@ -1,4 +1,5 @@
 #include <time.h>
+#include <Shellapi.h>
 
 class diddy
 {
@@ -43,8 +44,18 @@ class diddy
 	}
 	static void launchBrowser(String address)
 	{
+		LPCSTR addressStr = address.ToCString<char>();
+		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
 	}
 	static void launchEmail(String email, String subject, String text)
 	{
+		String tmp = "mailto:";
+		tmp+=email;
+		tmp+="&subject=";
+		tmp+=subject;
+		tmp+="&body=";
+		tmp+=text;
+		LPCSTR addressStr = tmp.ToCString<char>();
+		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
 	}
 };
