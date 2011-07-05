@@ -35,6 +35,9 @@ class diddy
 	}
 	static void launchBrowser(String address)
 	{
+		NSString *stringUrl = tonsstr(address);
+		NSURL *nsUrl = [NSURL URLWithString:stringUrl];
+		[[UIApplication sharedApplication] openURL:nsUrl];
 	}
 	static void launchEmail(String email, String subject, String text)
 	{
