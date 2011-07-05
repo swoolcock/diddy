@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <fonts>
-	<font name="Tahoma-10" atlas="tahoma-10.png" blackAtlas="tahoma-10-black.png">
+	<font name="Tahoma-10" atlas="tahoma_10.png" blackAtlas="tahoma_10_black.png">
 		<glyph code="32" char=" " baseline="10.00" srcX="0" srcY="0" srcWidth="3" srcHeight="13" />
 		<glyph code="33" char="!" baseline="10.00" srcX="16" srcY="0" srcWidth="2" srcHeight="13" />
 		<glyph code="34" char="&quot;" baseline="10.00" srcX="32" srcY="0" srcWidth="4" srcHeight="13" />
@@ -98,7 +98,7 @@
 		<glyph code="126" char="~" baseline="10.00" srcX="224" srcY="65" srcWidth="7" srcHeight="13" />
 		<glyph code="127" char="" baseline="10.00" srcX="240" srcY="65" srcWidth="10" srcHeight="13" />
 	</font>
-	<font name="Tahoma-Bold-10" atlas="tahoma-bold-10.png" blackAtlas="tahoma-bold-10-black.png">
+	<font name="Tahoma-Bold-10" atlas="tahoma_bold_10.png" blackAtlas="tahoma_bold_10_black.png">
 		<glyph code="32" char=" " baseline="10.00" srcX="0" srcY="0" srcWidth="3" srcHeight="13" />
 		<glyph code="33" char="!" baseline="10.00" srcX="17" srcY="0" srcWidth="3" srcHeight="13" />
 		<glyph code="34" char="&quot;" baseline="10.00" srcX="34" srcY="0" srcWidth="4" srcHeight="13" />
@@ -196,7 +196,7 @@
 		<glyph code="126" char="~" baseline="10.00" srcX="68" srcY="78" srcWidth="8" srcHeight="13" />
 		<glyph code="127" char="" baseline="10.00" srcX="85" srcY="78" srcWidth="10" srcHeight="13" />
 	</font>
-	<font name="Tahoma-12" atlas="tahoma-12.png" blackAtlas="tahoma-12-black.png">
+	<font name="Tahoma-12" atlas="tahoma_12.png" blackAtlas="tahoma_12_black.png">
 		<glyph code="32" char=" " baseline="12.01" srcX="0" srcY="0" srcWidth="4" srcHeight="15" />
 		<glyph code="33" char="!" baseline="12.01" srcX="19" srcY="0" srcWidth="4" srcHeight="15" />
 		<glyph code="34" char="&quot;" baseline="12.01" srcX="38" srcY="0" srcWidth="5" srcHeight="15" />
@@ -294,7 +294,7 @@
 		<glyph code="126" char="~" baseline="12.01" srcX="57" srcY="105" srcWidth="9" srcHeight="15" />
 		<glyph code="127" char="" baseline="12.01" srcX="76" srcY="105" srcWidth="12" srcHeight="15" />
 	</font>
-	<font name="Tahoma-Bold-12" atlas="tahoma-bold-12.png" blackAtlas="tahoma-bold-12-black.png">
+	<font name="Tahoma-Bold-12" atlas="tahoma_bold_12.png" blackAtlas="tahoma_bold_12_black.png">
 		<glyph code="32" char=" " baseline="12.01" srcX="0" srcY="0" srcWidth="4" srcHeight="15" />
 		<glyph code="33" char="!" baseline="12.01" srcX="21" srcY="0" srcWidth="5" srcHeight="15" />
 		<glyph code="34" char="&quot;" baseline="12.01" srcX="42" srcY="0" srcWidth="6" srcHeight="15" />
