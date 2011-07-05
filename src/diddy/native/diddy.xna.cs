@@ -40,8 +40,15 @@ class diddy
 	}
 	public static void launchBrowser(String address)
 	{
+#if WINDOWS
+		System.Diagnostics.Process.Start(address);
+#endif
 	}
 	public static void launchEmail(String email, String subject, String text)
 	{
+#if WINDOWS
+		string message = string.Format("mailto:{0}?subject={1}&body={2}",email, subject, text);
+		System.Diagnostics.Process.Start(message);
+#endif
 	}
 }
