@@ -487,14 +487,14 @@ Class GameImage
 	Field tileCount:Int
 	Field tileSpacing:Int, tileMargin:Int
 	
-	Method Load:Void(file$, midhandle:bool=true)
+	Method Load:Void(file$, midhandle:Bool=True)
 		name = StripAll(file.ToUpper())
 		image = LoadBitmap(file)	
 		CalcSize()
 		MidHandle(midhandle)
 	End
 	
-	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=true)
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=True)
 		name = StripAll(file.ToUpper())
 		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
 		CalcSize()
@@ -521,14 +521,18 @@ Class GameImage
 		End
 	End
 	
-	Method MidHandle:Void(On:Bool)
-		If On Then
+	Method MidHandle:Void(midhandle:Bool) Property
+		If midhandle Then
 			image.SetHandle(w2, h2)
-			midhandled=1
+			Self.midhandled=1
 		Else
 			image.SetHandle(0, 0)
-			midhandled=0
+			Self.midhandled=0
 		End 
+	End
+	
+	Method MidHandle:Bool() Property
+		Return Self.midhandled = 1
 	End
 	
 	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
@@ -543,6 +547,14 @@ Class GameImage
 		Local srcX% = tileMargin + (tileWidth + tileSpacing) * (tile Mod tileCountX)
 		Local srcY% = tileMargin + (tileHeight + tileSpacing) * (tile / tileCountX)
 		DrawImageRect(Self.image, x, y, srcX, srcY, tileWidth, tileHeight, rotation, scaleX, scaleY)
+	End
+	
+	Method DrawStretched:Void(destX:Float, destY:Float, destWidth:Float, destHeight:Float,
+			rotation:Float = 0)', scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
+		' scales for stretching
+		Local stretchScaleX:Float = destWidth / w
+		Local stretchScaleY:Float = destHeight / h
+		DrawImage(Self.image, destX, destY, rotation, stretchScaleX, stretchScaleY)', frame)
 	End
 	
 	Method DrawGrid:Void(x:Float, y:Float, rw:Float, rh:Float, frame:Int = 0)
