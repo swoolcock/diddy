@@ -529,7 +529,7 @@ Public
 	Method GetSkinNode:XMLElement(nodeName:String)
 		If skinDoc = Null Then Return Null
 		Local al:ArrayList<XMLElement> = skinDoc.Root.GetChildrenByName(nodeName)
-		AssertEquals(al.Size, 1, "Expected exactly one instance of "+nodeName)
+		AssertEqualsInt(al.Size, 1, "Expected exactly one instance of "+nodeName)
 		Return al.GetFirst()
 	End
 	
