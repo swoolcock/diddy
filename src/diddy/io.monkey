@@ -11,6 +11,7 @@ Public
 ' Abstract
 	Method Read:Int() Abstract
 	Method ReadArray:Int(arr:Int[], offset:Int, length:Int) Abstract
+	Method ReadUntil:String(findstr:String) Abstract
 	Method IsReady:Bool() Abstract
 	Method Close:Void() Abstract
 
@@ -30,7 +31,7 @@ Public
 	' Default Skip reads "count" number of times, but this may be overridden by implementations that
 	' do not need to read to increment the index (ie. StringReader)
 	Method Skip:Int(count:Int)
-		AssertGreaterThanOrEqual(count, 0, "Skip count must be >= 0!")
+		AssertGreaterThanOrEqualInt(count, 0, "Skip count must be >= 0!")
 		Local numToSkip:Int = count
 		While numToSkip > 0
 			Local numSkipped:Int = ReadArray(skipBuffer, 0, Min(numToSkip, skipBuffer.Length))
@@ -171,6 +172,15 @@ Public
 		End
 		index += count
 		Return count
+	End
+	
+	Method ReadUntil:String(findstr:String)
+		If index = str.Length Return ""
+		Local i:Int = str.Find(findstr, index)
+		If i < 0 Then Return ""
+		Local oldindex:Int = index
+		index = i
+		Return str[oldindex..i]
 	End
 End
 

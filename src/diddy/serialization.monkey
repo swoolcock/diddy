@@ -122,7 +122,7 @@ Public
 	End
 	
 	Method DeserializeObject:ISerializable(element:XMLElement)
-		AssertEquals(element.Name, "object", "Wasn't an object element!")
+		AssertEqualsString(element.Name, "object", "Wasn't an object element!")
 		currentElement = element
 		Local rv:ISerializable = CreateSerializable(element.GetAttribute("class"))
 		Return rv
