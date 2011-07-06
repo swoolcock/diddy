@@ -432,7 +432,7 @@ Public
 	End
 
 	Method New(initialCapacity:Int)
-		AssertGreaterThanOrEqual(initialCapacity, 0, "ArrayList.New: Illegal Capacity:")
+		AssertGreaterThanOrEqualInt(initialCapacity, 0, "ArrayList.New: Illegal Capacity:")
 		Self.elements = New Object[initialCapacity]
 	End
 
@@ -501,7 +501,7 @@ Public
 	
 	' Overrides AbstractCollection
 	Method FillArray:Int(arr:Object[])
-		AssertGreaterThanOrEqual(arr.Length, size, "ArrayList.FillArray: Array too small:")
+		AssertGreaterThanOrEqualInt(arr.Length, size, "ArrayList.FillArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = elements[i]
 		Next
@@ -676,7 +676,7 @@ Public
 
 	' Overrides AbstractList
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
-		AssertLessThanOrEqual(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
+		AssertLessThanOrEqualInt(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
 		If rangeChecking Then
 			RangeCheck(fromIndex)
 			RangeCheck(toIndex)
@@ -783,7 +783,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 	End
 
 	Method FillIntArray:Int(arr:Int[])
-		AssertLessThan(arr.Length, size, "IntArrayList.FillIntArray: Array too small:")
+		AssertLessThanInt(arr.Length, size, "IntArrayList.FillIntArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = IntObject(elements[i]).value
 		Next
@@ -873,7 +873,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 	End
 	
 	Method FillFloatArray:Int(arr:Float[])
-		AssertLessThan(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small:")
+		AssertLessThanInt(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small:")
 		For Local i:Int = 0 Until size
 			arr[i] = FloatObject(elements[i]).value
 		Next
@@ -963,7 +963,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 	End
 
 	Method FillStringArray:Int(arr:String[])
-		AssertLessThan(arr.Length, size, "StringArrayList.FillStringArray: Array too small:")
+		AssertLessThanInt(arr.Length, size, "StringArrayList.FillStringArray: Array too small:")
 		For Local i:Int = 0 Until size
 			If StringObject(elements[i]).value = value Then
 				Remove(elements[i])
@@ -998,7 +998,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:E=Null)
-		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Object[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1014,7 +1014,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThan(arraySize, size, "The SparseArray contains more mappings than the requested size.")
+		AssertGreaterThanInt(arraySize, size, "The SparseArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1027,7 +1027,7 @@ Public
 	End
 	
 	Method Get:E(index:Int)
-		AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return E(elements[i])
 		Next
@@ -1035,7 +1035,7 @@ Public
 	End
 	
 	Method Set:E(index:Int, value:E)
-		AssertRange(index, 0, arraySize, "Array index out of bounds.")
+		AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Object = elements[i]
@@ -1081,7 +1081,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Int=0)
-		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1097,7 +1097,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1111,9 +1111,9 @@ Public
 	
 	Method Get:Int(index:Int)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
@@ -1123,9 +1123,9 @@ Public
 	
 	Method Set:Int(index:Int, value:Int)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then
@@ -1172,7 +1172,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String=Null)
-		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New String[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1188,7 +1188,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		If arraySize >= 0 Then AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		If arraySize >= 0 Then AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1202,9 +1202,9 @@ Public
 	
 	Method Get:String(index:Int)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
@@ -1214,9 +1214,9 @@ Public
 	
 	Method Set:String(index:Int, value:String)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then
@@ -1263,7 +1263,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Float=0)
-		AssertGreaterThan(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1279,7 +1279,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThan(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1293,9 +1293,9 @@ Public
 	
 	Method Get:Float(index:Int)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
@@ -1305,9 +1305,9 @@ Public
 	
 	Method Set:Float(index:Int, value:Float)
 		If arraySize >= 0 Then
-			AssertRange(index, 0, arraySize, "Array index out of bounds.")
+			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
 		Else
-			AssertGreaterThanOrEqual(index, 0, "Array index out of bounds.")
+			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
 		End
 		For Local i% = 0 Until size
 			If indices[i] = index Then

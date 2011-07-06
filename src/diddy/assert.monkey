@@ -20,15 +20,15 @@ Function AssertNotNull:Void(val:Object, msg$=ASSERT_MESSAGE)
 	If val = Null Then Error(msg)
 End
 
-Function AssertEquals:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertEqualsInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val <> expected Then Error(msg + " " + val + "<>"+expected)
 End
 
-Function AssertEquals:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertEqualsFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val <> expected Then Error(msg + " " + val + "<>"+expected)
 End
 
-Function AssertEquals:Void(val$, expected$, msg$=ASSERT_MESSAGE)
+Function AssertEqualsString:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	If val <> expected Then Error(msg + " " + val + "<>"+expected)
 End
 
@@ -36,15 +36,15 @@ Function AssertEqualsIgnoreCase:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	' TODO:
 End
 
-Function AssertNotEqual:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertNotEqualInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val = expected Then Error(msg + " " + val + "="+expected)
 End
 
-Function AssertNotEqual:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertNotEqualFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val = expected Then Error(msg + " " + val + "="+expected)
 End
 
-Function AssertNotEqual:Void(val$, expected$, msg$=ASSERT_MESSAGE)
+Function AssertNotEqualString:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	If val = expected Then Error(msg + " " + val + "="+expected)
 End
 
@@ -52,51 +52,51 @@ Function AssertNotEqualIgnoreCase:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	' TODO:
 End
 
-Function AssertLessThan:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertLessThanInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val >= expected Then Error(msg + " " + val + ">="+expected)
 End
 
-Function AssertLessThan:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertLessThanFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val >= expected Then Error(msg + " " + val + ">="+expected)
 End
 
-Function AssertGreaterThan:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertGreaterThanInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val <= expected Then Error(msg + " " + val + "<="+expected)
 End
 
-Function AssertGreaterThan:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertGreaterThanFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val <= expected Then Error(msg + " " + val + "<="+expected)
 End
 
-Function AssertLessThanOrEqual:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertLessThanOrEqualInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val > expected Then Error(msg + " " + val + ">"+expected)
 End
 
-Function AssertLessThanOrEqual:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertLessThanOrEqualFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val > expected Then Error(msg + " " + val + ">"+expected)
 End
 
-Function AssertGreaterThanOrEqual:Void(val%, expected%, msg$=ASSERT_MESSAGE)
+Function AssertGreaterThanOrEqualInt:Void(val%, expected%, msg$=ASSERT_MESSAGE)
 	If val < expected Then Error(msg + " " + val + "<"+expected)
 End
 
-Function AssertGreaterThanOrEqual:Void(val#, expected#, msg$=ASSERT_MESSAGE)
+Function AssertGreaterThanOrEqualFloat:Void(val#, expected#, msg$=ASSERT_MESSAGE)
 	If val < expected Then Error(msg + " " + val + "<"+expected)
 End
 
-Function AssertRange:Void(val%, minbound%, maxbound%, msg$=ASSERT_MESSAGE)
+Function AssertRangeInt:Void(val%, minbound%, maxbound%, msg$=ASSERT_MESSAGE)
 	If val < minbound Or val >= maxbound Then Error(msg + " " + val + " is not " + minbound + "<=val<" + size)
 End
 
-Function AssertRange:Void(val%, minbound#, maxbound#, msg$=ASSERT_MESSAGE)
+Function AssertRangeFloat:Void(val#, minbound#, maxbound#, msg$=ASSERT_MESSAGE)
 	If val < minbound Or val >= maxbound Then Error(msg + " " + val + " is not " + minbound + "<=val<" + size)
 End
 
-Function AssertRangeInclusive:Void(val%, minbound%, maxbound%, msg$=ASSERT_MESSAGE)
+Function AssertRangeInclusiveInt:Void(val%, minbound%, maxbound%, msg$=ASSERT_MESSAGE)
 	If val < minbound Or val > maxbound Then Error(msg + " " + val + " is not " + minbound + "<=val<=" + size)
 End
 
-Function AssertRangeInclusive:Void(val%, minbound#, maxbound#, msg$=ASSERT_MESSAGE)
+Function AssertRangeInclusiveFloat:Void(val#, minbound#, maxbound#, msg$=ASSERT_MESSAGE)
 	If val < minbound Or val > maxbound Then Error(msg + " " + val + " is not " + minbound + "<=val<=" + size)
 End
 
