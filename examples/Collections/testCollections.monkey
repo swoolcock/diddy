@@ -3,7 +3,7 @@ Strict
 Import diddy
 Import monkey.list
 
-Class Test Implements Comparable
+Class Test Implements IComparable
 	Field a:Int
 	
 	Method New(a:Int)

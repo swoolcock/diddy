@@ -74,11 +74,11 @@ End
 
 
 #Rem
-	Comparable
+	IComparable
 	Allows developers to sort a collection without using a Comparator.  Each class is responsible
 	for providing its own logic to determine how it should be sorted.
 #End
-Interface Comparable
+Interface IComparable
 	Method Compare:Int(o:Object)
 	Method CompareBool:Bool(o:Object)
 End
@@ -1348,8 +1348,8 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[right] = pivotValue
 	Local storeIndex:Int = left, val:Object
 	For Local i:Int = left Until right
-		If Comparable(arr[i]) <> Null Then
-			If Not reverse And Comparable(arr[i]).Compare(pivotValue) <= 0 Or reverse And Comparable(arr[i]).Compare(pivotValue) >= 0 Then
+		If IComparable(arr[i]) <> Null Then
+			If Not reverse And IComparable(arr[i]).Compare(pivotValue) <= 0 Or reverse And IComparable(arr[i]).Compare(pivotValue) >= 0 Then
 				val = arr[i]
 				arr[i] = arr[storeIndex]
 				arr[storeIndex] = val

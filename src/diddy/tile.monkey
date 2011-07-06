@@ -19,9 +19,9 @@ End
 
 
 
-' TileMapPostLoad
+' ITileMapPostLoad
 ' Classes that implement this interface will have PostLoad automatically called once the object has been created.
-Interface TileMapPostLoad
+Interface ITileMapPostLoad
 	Method PostLoad:Void()
 End
 
@@ -101,7 +101,7 @@ Class TiledTileMapReader Extends TileMapReader
 	End
 	
 	Method DoPostLoad:Void(obj:Object)
-		If TileMapPostLoad(obj) <> Null Then TileMapPostLoad(obj).PostLoad()
+		If ITileMapPostLoad(obj) <> Null Then ITileMapPostLoad(obj).PostLoad()
 	End
 	
 	Method ReadProperties:Void(node:XMLElement, obj:Object)
@@ -293,7 +293,7 @@ End
 
 ' TileMap
 ' The main Map class.
-Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
+Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	' attributes
 	Field version:String = "1.0"
@@ -629,7 +629,7 @@ Class TileMap Extends TileMapPropertyContainer Implements TileMapPostLoad
 	End
 End
 
-Class TileMapTileset Implements TileMapPostLoad
+Class TileMapTileset Implements ITileMapPostLoad
 	' attributes
 	Field firstGid:Int
 	Field name:String
@@ -653,7 +653,7 @@ Class TileMapTileset Implements TileMapPostLoad
 End
 
 
-Class TileMapImage Implements TileMapPostLoad
+Class TileMapImage Implements ITileMapPostLoad
 	' attributes
 	Field source$
 	Field width%
@@ -668,7 +668,7 @@ Class TileMapImage Implements TileMapPostLoad
 End
 
 '<layer> and <objectgroup>
-Class TileMapLayer Extends TileMapPropertyContainer Implements TileMapPostLoad Abstract
+Class TileMapLayer Extends TileMapPropertyContainer Implements ITileMapPostLoad Abstract
 	' attributes
 	Field name$
 	Field width%
@@ -818,7 +818,7 @@ End
 
 
 
-Class TileMapTile Extends TileMapPropertyContainer Implements TileMapPostLoad
+Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field id%
 	Field image:GameImage
 	Field width:Int
