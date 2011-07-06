@@ -46,7 +46,7 @@ Function Main:Int()
 	End
 End
 
-Class TestClass Implements Serializable
+Class TestClass Implements ISerializable
 	Field intField:Int
 	Field floatField:Float
 	Field serField:TestClassTwo
@@ -83,7 +83,7 @@ Class TestClass Implements Serializable
 	End
 End
 
-Class TestClassTwo Implements Serializable
+Class TestClassTwo Implements ISerializable
 	Field myField:Int
 	
 	Method New()
@@ -110,7 +110,7 @@ End
 ' required because Monkey does not have reflection
 ' maybe some day this will be unnecessary
 Class MySerializer Extends Serializer
-	Method CreateSerializable:Serializable(className:String)
+	Method CreateSerializable:ISerializable(className:String)
 		If className="TestClass" Then Return New TestClass(Self)
 		If className="TestClassTwo" Then Return New TestClassTwo(Self)
 		Return Null
@@ -122,7 +122,7 @@ End
 
 
 #Rem
-Class MyClass Implements Serializable
+Class MyClass Implements ISerializable
   Field intField:Int
 
   Method New()
@@ -147,7 +147,7 @@ Class MyClass Implements Serializable
 End
 
 Class MySerializer Extends Serializer
-  Method CreateSerializable:Serializable(className:String)
+  Method CreateSerializable:ISerializable(className:String)
     If className = "MyClass" Then Return New MyClass(Self)
     Return Null
   End

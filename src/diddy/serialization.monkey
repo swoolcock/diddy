@@ -3,7 +3,7 @@ Strict
 Import xml
 Import assert
 
-Interface Serializable
+Interface ISerializable
 	Method Serialize:Void(serializer:Serializer)
 	Method GetClassName:String()
 	Method GetGenericNames:String[]()
@@ -15,7 +15,7 @@ Private
 
 Public
 ' Abstract
-	Method CreateSerializable:Serializable(className:String) Abstract
+	Method CreateSerializable:ISerializable(className:String) Abstract
 
 ' Methods
 	Method Write:Void(name:String, value:Int)
@@ -42,7 +42,7 @@ Public
 		currentElement.AddChild(element)
 	End
 	
-	Method Write:Void(name:String, value:Serializable)
+	Method Write:Void(name:String, value:ISerializable)
 		Local lastCurrent:XMLElement = currentElement
 		Local fieldElement:XMLElement = New XMLElement("field")
 		fieldElement.SetAttribute("name", name)
@@ -87,7 +87,7 @@ Public
 		Error("Couldn't find field" + name)
 	End
 	
-	Method ReadSerializable:Serializable(name:String)
+	Method ReadSerializable:ISerializable(name:String)
 		' find the named field
 		For Local element:XMLElement = EachIn currentElement.GetChildrenByName("field")
 			If element.GetAttribute("name") = name Then
@@ -100,7 +100,7 @@ Public
 					currentElement = objectElement
 					
 					' make that object serialize itself
-					Local rv:Serializable = CreateSerializable(objectElement.GetAttribute("class"))
+					Local rv:ISerializable = CreateSerializable(objectElement.GetAttribute("class"))
 					
 					' reset the current element
 					currentElement = lastCurrent
@@ -112,7 +112,7 @@ Public
 		Error("Couldn't find field" + name)
 	End
 	
-	Method SerializeObject:XMLElement(name:String, value:Serializable)
+	Method SerializeObject:XMLElement(name:String, value:ISerializable)
 		Local objectElement:XMLElement = New XMLElement("object")
 		objectElement.SetAttribute("name", name)
 		objectElement.SetAttribute("class", value.GetClassName())
@@ -121,10 +121,10 @@ Public
 		Return objectElement
 	End
 	
-	Method DeserializeObject:Serializable(element:XMLElement)
+	Method DeserializeObject:ISerializable(element:XMLElement)
 		AssertEquals(element.Name, "object", "Wasn't an object element!")
 		currentElement = element
-		Local rv:Serializable = CreateSerializable(element.GetAttribute("class"))
+		Local rv:ISerializable = CreateSerializable(element.GetAttribute("class"))
 		Return rv
 	End
 End
