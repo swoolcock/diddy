@@ -4,12 +4,20 @@ Import mojo
 Import diddy
 Import core
 
+Const SKIN_NODE_NONE:String = ""
+Const SKIN_NODE_WINDOW:String = "window"
+Const SKIN_NODE_BUTTON:String = "button"
+Const SKIN_NODE_RADIO:String = "radio"
+Const SKIN_NODE_CHECKBOX:String = "checkbox"
+Const SKIN_NODE_SLIDER:String = "slider"
+
 Class Component
 Private
 ' Private fields
 
 	Field alpha:Float = 1
 	Field children:ArrayList<Component> = New ArrayList<Component>
+	Field childrenZOrder:ArrayList<Component> = New ArrayList<Component>
 	Field focusedChild:Component
 	
 	Field mouseListener:IMouseListener
@@ -115,6 +123,46 @@ Public
 		Self.h2 = height/2.0
 	End
 	
+	' LeftEdge is read/write and updates x, w, and w2
+	Method LeftEdge:Int() Property
+		Return x
+	End
+	Method LeftEdge:Void(leftEdge:Int) Property
+		Local offset:Int = x-leftEdge
+		Self.x = leftEdge
+		Self.w += offset
+		Self.w2 = Self.w/2.0
+	End
+	
+	' RightEdge is read/write and updates w and w2
+	Method RightEdge:Int() Property
+		Return x+w
+	End
+	Method RightEdge:Void(rightEdge:Int) Property
+		Self.w = rightEdge-Self.x
+		Self.w2 = Self.w/2.0
+	End
+	
+	' TopEdge is read/write and updates y, h, and h2
+	Method TopEdge:Int() Property
+		Return y
+	End
+	Method TopEdge:Void(topEdge:Int) Property
+		Local offset:Int = y-topEdge
+		Self.y = topEdge
+		Self.h += offset
+		Self.h2 = Self.h/2.0
+	End
+	
+	' BottomEdge is read/write and updates h and h2
+	Method BottomEdge:Int() Property
+		Return y+h
+	End
+	Method BottomEdge:Void(bottomEdge:Int) Property
+		Self.h = bottomEdge-Self.y
+		Self.h2 = Self.h/2.0
+	End
+	
 	' Parent is read only
 	Method Parent:Component() Property
 		Return parent
@@ -131,6 +179,11 @@ Public
 	' Children is read only
 	Method Children:ArrayList<Component>() Property
 		Return children
+	End
+	
+	' ChildrenZOrder is read only
+	Method ChildrenZOrder:ArrayList<Component>() Property
+		Return childrenZOrder
 	End
 	
 	' LayoutManager is read/write
@@ -315,6 +368,7 @@ Public
 			If parent = Null Then NoParent()
 			Self.parent = parent
 			parent.children.Add(Self)
+			parent.childrenZOrder.Add(Self)
 			' if the parent has a layout manager, do it!
 			If parent.layoutManager <> Null Then parent.Layout()
 		Else
@@ -337,7 +391,7 @@ Public
 	End
 	
 	' Convenience method to set the style's background properties.  If the component is skinned, the background will be drawn under it, showing through transparency.
-	Method SetBackground:Void(red:Float, green:Float, blue:Float)
+	Method SetBackground:Void(red:Int, green:Int, blue:Int)
 		If red < 0 Then red = 0
 		If red > 255 Then red = 255
 		If green < 0 Then green = 0
@@ -383,10 +437,10 @@ Public
 	
 	' Convenience method to update x, y, width, and height at once using a Rectangle. This also fires off the layout manager.
 	Method SetBounds:Void(rect:Rectangle)
-		Self.x = Int(rect.x)
-		Self.y = Int(rect.y)
-		Self.w = Int(rect.w)
-		Self.h = Int(rect.h)
+		Self.x = rect.x
+		Self.y = rect.y
+		Self.w = rect.w
+		Self.h = rect.h
 		Self.w2 = w / 2.0
 		Self.h2 = h / 2.0
 		Layout()
@@ -419,7 +473,7 @@ Public
 	
 	' Loops through each of the component's children, translating to the correct position and firing off their Draw methods.
 	Method DrawChildren:Void(parentGui:GUI, alpha:Float = 1, absx:Int, absy:Int)
-		For Local c:Component = EachIn children
+		For Local c:Component = EachIn childrenZOrder
 			PushMatrix()
 			Translate(c.x, c.y)
 			c.Draw(parentGui, c.alpha * alpha, absx + c.x, absy + c.y)
@@ -499,6 +553,7 @@ Public
 			While enum.HasNext()
 				Local c:Component = enum.NextObject()
 				c.Dispose(True)
+				childrenZOrder.Remove(c)
 				enum.Remove()
 			End
 		End
@@ -508,7 +563,10 @@ Public
 		Local thisGui:GUI = FindGUI()
 		If thisGui.CurrentFocus = Self Then thisGui.CurrentFocus = Null
 		Self.parent = Null
-		If Not recursing Then p.children.Remove(Self)
+		If Not recursing Then
+			p.children.Remove(Self)
+			p.childrenZOrder.Remove(Self)
+		End
 	End
 	
 	' Called when a component is first added to its parent.
@@ -522,7 +580,8 @@ Public
 	' Fires off any assigned layout manager.  May be overridden to do a custom layout without using a manager.
 	Method Layout:Void()
 		If layoutManager <> Null Then
-			layoutManager.Layout(Self)
+			Local gui:GUI = FindGUI()
+			If gui = Null Or gui.LayoutEnabled Then layoutManager.Layout(Self)
 		End
 	End
 	
@@ -539,11 +598,13 @@ Public
 	Method FindActionTarget:IActionListener()
 		' traverse up the hierarchy and find the closest ActionListener to receive the actions
 		Local comp:Component = Self
-		While comp <> Null And GUIDesktop(comp) = Null And IActionListener(Object(comp)) = Null
+		While comp <> Null And IActionListener(Object(comp)) = Null
 			comp = comp.parent
 		End
-		If GUIDesktop(comp) <> Null Then Return GUIDesktop(comp).parentGUI
-		Return IActionListener(Object(comp))
+		If comp <> Null Then Return IActionListener(Object(comp))
+		' nfi why comp would be null here with android
+		Local gui:GUI = FindGUI()
+		Return gui
 	End
 	
 	' Tries to make this component the focused one.
@@ -588,9 +649,9 @@ Public
 	' Moves this component to the top of the z-order, and tells its parent to do the same thing.
 	Method BringToFront:Void()
 		If parent = Null Then Return
-		If parent.children.Size > 1 And Not zOrderLocked Then
-			parent.children.Remove(Self)
-			parent.children.Add(Self)
+		If parent.childrenZOrder.Size > 1 And Not zOrderLocked Then
+			parent.childrenZOrder.Remove(Self)
+			parent.childrenZOrder.Add(Self)
 		End
 		parent.BringToFront()
 	End
@@ -598,9 +659,9 @@ Public
 	' Moves this component to the bottom of the z-order, but leaves its parent alone.
 	Method SendToBack:Void()
 		If parent = Null Then Return
-		If parent.children.Size > 1 And Not zOrderLocked Then
-			parent.children.Remove(Self)
-			parent.children.AddFirst(Self)
+		If parent.childrenZOrder.Size > 1 And Not zOrderLocked Then
+			parent.childrenZOrder.Remove(Self)
+			parent.childrenZOrder.AddFirst(Self)
 		End
 	End
 	
@@ -615,9 +676,10 @@ Public
 	Method LoadStyles:Void(node:XMLElement)
 		If node = Null Then Return
 		' copy styles
-		Local styleNodes:ArrayList<XMLElement> = node.GetChildrenByName("style")
-		For Local styleNode:XMLElement = EachIn styleNodes
-			Local style:ComponentStyle = New ComponentStyle
+		For Local i:Int = 0 Until node.Children.Size
+			Local styleNode:XMLElement = node.Children.Get(i)
+			Local style:ComponentStyle = GetStyle(styleNode.GetAttribute("name"))
+			If style = Null Then style = New ComponentStyle
 			style.ReadFromNode(styleNode)
 			SetStyle(styleNode.GetAttribute("name"), style)
 		Next
@@ -625,21 +687,41 @@ Public
 	
 	' Should be overridden by each component to provide a matching XML element name in the gui skin xml.
 	Method GetSkinNodeName:String()
-		Return ""
+		Return SKIN_NODE_NONE
 	End
 	
 	' Calculates the minimum amount of space required to display the entire contents of this component.  Used for layout managers.
-	Method CalculateMinimum:Point(point:Point=Null)
-		If point = Null Then point = New Point
+	Method CalculateMinimum:Point(point:Point=Null, dontCreatePoint:Bool=False)
+		If point = Null And Not dontCreatePoint Then point = New Point
 		If layoutManager <> Null Then
-			layoutManager.LayoutMinimum(Self, point)
-		Else
+			point = layoutManager.LayoutMinimum(Self, point)
+			minimumWidth = point.x
+			minimumHeight = point.y
+			Return point
+		End
+		If point <> Null Then
 			point.x = 0
 			point.y = 0
 		End
-		minimumWidth = point.x
-		minimumHeight = point.y
+		minimumWidth = 0
+		minimumHeight = 0
 		Return point
+	End
+	
+	Method Pack:Void()
+		' if we have no layout manager, just find the bottom-right-most component
+		If layoutManager = Null Then
+			Local w:Int = 0, h:Int = 0
+			For Local i:Int = 0 Until Children.Size
+				Local child:Component = Children.Get(i)
+				w = Max(w, child.X + child.Width)
+				h = Max(h, child.Y + child.Height)
+			Next
+			SetSize(w, h)
+		Else
+			CalculateMinimum(Null,True)
+			SetSize(minimumWidth,minimumHeight)
+		End
 	End
 End
 
@@ -701,7 +783,7 @@ Public
 ' Public methods
 
 	Method ReadFromNode:Void(node:XMLElement)
-		drawBackground = node.GetAttribute("drawBackground", "false").ToLower() = "true"
+		drawBackground = node.GetAttribute("drawBackground", "false") = "true"
 		red = Int(node.GetAttribute("red", "255"))
 		green = Int(node.GetAttribute("green", "255"))
 		blue = Int(node.GetAttribute("blue", "255"))
@@ -737,15 +819,15 @@ Public
 				imageRightMargin[imageType]     = Int(subNode.GetAttribute("rightMargin", "0"))
 				imageTopMargin[imageType]       = Int(subNode.GetAttribute("topMargin", "0"))
 				imageBottomMargin[imageType]    = Int(subNode.GetAttribute("bottomMargin", "0"))
-				imageDrawTopLeft[imageType]     = subNode.GetAttribute("drawTopLeft", "true").ToLower() = "true"
-				imageDrawTop[imageType]         = subNode.GetAttribute("drawTop", "true").ToLower() = "true"
-				imageDrawTopRight[imageType]    = subNode.GetAttribute("drawTopRight", "true").ToLower() = "true"
-				imageDrawLeft[imageType]        = subNode.GetAttribute("drawLeft", "true").ToLower() = "true"
-				imageDrawCenter[imageType]      = subNode.GetAttribute("drawCenter", "true").ToLower() = "true"
-				imageDrawRight[imageType]       = subNode.GetAttribute("drawRight", "true").ToLower() = "true"
-				imageDrawBottomLeft[imageType]  = subNode.GetAttribute("drawBottomLeft", "true").ToLower() = "true"
-				imageDrawBottom[imageType]      = subNode.GetAttribute("drawBottom", "true").ToLower() = "true"
-				imageDrawBottomRight[imageType] = subNode.GetAttribute("drawBottomRight", "true").ToLower() = "true"
+				imageDrawTopLeft[imageType]     = subNode.GetAttribute("drawTopLeft", "true") = "true"
+				imageDrawTop[imageType]         = subNode.GetAttribute("drawTop", "true") = "true"
+				imageDrawTopRight[imageType]    = subNode.GetAttribute("drawTopRight", "true") = "true"
+				imageDrawLeft[imageType]        = subNode.GetAttribute("drawLeft", "true") = "true"
+				imageDrawCenter[imageType]      = subNode.GetAttribute("drawCenter", "true") = "true"
+				imageDrawRight[imageType]       = subNode.GetAttribute("drawRight", "true") = "true"
+				imageDrawBottomLeft[imageType]  = subNode.GetAttribute("drawBottomLeft", "true") = "true"
+				imageDrawBottom[imageType]      = subNode.GetAttribute("drawBottom", "true") = "true"
+				imageDrawBottomRight[imageType] = subNode.GetAttribute("drawBottomRight", "true") = "true"
 			End
 		Next
 	End
@@ -792,7 +874,6 @@ Public
 	
 	Method New(parent:Component)
 		Super.New(parent)
-		ApplySkin()
 	End
 End ' Class Panel
 
@@ -804,6 +885,7 @@ Private
 	Field titlePane:Label
 	Field buttonPane:Panel
 	
+	Field styleShadeButton:ComponentStyle
 	Field styleMinimizeButton:ComponentStyle
 	Field styleMaximizeButton:ComponentStyle
 	Field styleRestoreButton:ComponentStyle
@@ -815,7 +897,7 @@ Private
 	Field closeButton:Button
 	Field maximizeButton:Button
 	Field minimizeButton:Button
-	'Field shadeButton:Button
+	Field shadeButton:Button
 	Field internalWindowAdapter:InternalWindowAdapter
 	
 	' read from skin
@@ -848,6 +930,7 @@ Private
 
 	Field showMinimize:Bool = False
 	Field showMaximize:Bool = False
+	Field showShade:Bool = False
 	Field showClose:Bool = True
 	
 	Field title:String = ""
@@ -856,6 +939,8 @@ Private
 
 	Method CreateButtonPane:Void()
 		buttonPane = New Panel(Self)
+		shadeButton = New Button(buttonPane)
+		shadeButton.ActionListener = internalWindowAdapter
 		minimizeButton = New Button(buttonPane)
 		minimizeButton.ActionListener = internalWindowAdapter
 		maximizeButton = New Button(buttonPane)
@@ -897,11 +982,11 @@ Private
 		If Not maximized And Not minimized And Not shaded Then
 			SetBounds(normalX, normalY, normalWidth, normalHeight)
 		ElseIf minimized Then
-			SetBounds(0, 0, 50, titleHeight)
+			SetBounds(0, 0, 50, contentPaneTop)
 		ElseIf maximized Then
-			SetBounds(0, 0, parent.w, parent.h)
+			SetBounds(-contentPaneLeft, -titlePaneTop, parent.w+contentPaneLeft-contentPaneRight, parent.h+titlePaneTop-contentPaneBottom)
 		ElseIf shaded Then
-			SetBounds(normalX, normalY, normalWidth, titleHeight)
+			SetBounds(normalX, normalY, normalWidth, contentPaneTop)
 		End
 	End
 Public
@@ -967,10 +1052,58 @@ Public
 		Return shaded
 	End
 	
+	' ShowMinimize is read/write and forces a Layout and ApplySkin
+	Method ShowMinimize:Bool() Property
+		Return showMinimize
+	End
+	Method ShowMinimize:Void(showMinimize:Bool) Property
+		If Self.showMinimize <> showMinimize Then
+			Self.showMinimize = showMinimize
+			Layout()
+			ApplySkin()
+		End
+	End
+	
+	' ShowMaximize is read/write and forces a Layout and ApplySkin
+	Method ShowMaximize:Bool() Property
+		Return showMaximize
+	End
+	Method ShowMaximize:Void(showMaximize:Bool) Property
+		If Self.showMaximize <> showMaximize Then
+			Self.showMaximize = showMaximize
+			Layout()
+			ApplySkin()
+		End
+	End
+	
+	' ShowShade is read/write and forces a Layout and ApplySkin
+	Method ShowShade:Bool() Property
+		Return showShade
+	End
+	Method ShowShade:Void(showShade:Bool) Property
+		If Self.showShade <> showShade Then
+			Self.showShade = showShade
+			Layout()
+			ApplySkin()
+		End
+	End
+	
+	' ShowClose is read/write and forces a Layout and ApplySkin
+	Method ShowClose:Bool() Property
+		Return showClose
+	End
+	Method ShowClose:Void(showClose:Bool) Property
+		If Self.showClose <> showClose Then
+			Self.showClose = showClose
+			Layout()
+			ApplySkin()
+		End
+	End
+	
 ' Constructors
 
 	Method New()
-		Error("Must pass a desktop.")
+		AssertError("Must pass a desktop.")
 	End
 	
 	Method New(parent:GUIDesktop)
@@ -1006,6 +1139,11 @@ Public
 			End
 		End
 		Local buttonX:Int = 0
+		If showShade Then
+			shadeButton.visible = True
+			shadeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
+			buttonX += buttonWidth + buttonMargin
+		End
 		If showMinimize Then
 			minimizeButton.visible = True
 			minimizeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
@@ -1013,7 +1151,7 @@ Public
 		End
 		If showMaximize Then
 			maximizeButton.visible = True
-			minimizeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
+			maximizeButton.SetBounds(buttonX,0,buttonWidth,buttonHeight)
 			buttonX += buttonWidth + buttonMargin
 		End
 		If showClose Then
@@ -1058,7 +1196,7 @@ Public
 	
 	' Provide the node name of "window".
 	Method GetSkinNodeName:String()
-		Return "window"
+		Return SKIN_NODE_WINDOW
 	End
 	
 	' Applies custom styles to each of the child components.
@@ -1068,6 +1206,7 @@ Public
 		If node <> Null Then
 			LoadStyles(node)
 			
+			If styleShadeButton <> Null Then shadeButton.StyleNormal = styleShadeButton
 			If styleMinimizeButton <> Null Then minimizeButton.StyleNormal = styleMinimizeButton
 			If styleMaximizeButton <> Null Then maximizeButton.StyleNormal = styleMaximizeButton
 			If styleRestoreButton <> Null Then maximizeButton.StyleSelected = styleRestoreButton
@@ -1092,6 +1231,7 @@ Public
 			buttonMargin      = Int(node.GetAttribute("buttonMargin","1"))
 			titlePaneTextXOffset = Int(node.GetAttribute("titlePaneTextXOffset","0"))
 			titlePaneTextYOffset = Int(node.GetAttribute("titlePaneTextYOffset","0"))
+			
 			Layout()
 		End
 		If contentPane <> Null Then contentPane.ApplySkin()
@@ -1105,6 +1245,8 @@ Public
 			styleButtonPane = style
 		ElseIf name = "titlePane" Then
 			styleTitlePane = style
+		ElseIf name = "shadeButton" Then
+			styleShadeButton = style
 		ElseIf name = "minimizeButton" Then
 			styleMinimizeButton = style
 		ElseIf name = "maximizeButton" Then
@@ -1125,8 +1267,8 @@ Private
 
 	Field text:String
 	Field textRed:Int, textGreen:Int, textBlue:Int
-	Field textXOffset:Float = 0
-	Field textYOffset:Float = 0
+	Field textXOffset:Int = 0
+	Field textYOffset:Int = 0
 	Field textXAlign:Float = 0
 	Field textYAlign:Float = 0
 	Field useBaseline:Bool = True
@@ -1153,7 +1295,7 @@ Public
 	End
 	
 	' Convenience method to set the text, alignment, and offset all at once.
-	Method SetText:Void(text:String, textXAlign:Float=0, textYAlign:Float=0, textXOffset:Float=0, textYOffset:Float=0)
+	Method SetText:Void(text:String, textXAlign:Float=0, textYAlign:Float=0, textXOffset:Int=0, textYOffset:Int=0)
 		Self.text = text
 		Self.textXAlign = textXAlign
 		Self.textYAlign = textYAlign
@@ -1355,13 +1497,13 @@ Public
 			textYOffset = Int(node.GetAttribute("textYOffset", "0"))
 			textXAlign = Float(node.GetAttribute("textXAlign", "0"))
 			textYAlign = Float(node.GetAttribute("textXAlign", "0"))
-			useBaseline = (node.GetAttribute("useBaseline","false").ToLower() = "true")
-			toggle = (node.GetAttribute("toggle","false").ToLower() = "true")
+			useBaseline = (node.GetAttribute("useBaseline","false") = "true")
+			toggle = (node.GetAttribute("toggle","false") = "true")
 		End
 	End
 	
 	Method GetSkinNodeName:String()
-		Return "button"
+		Return SKIN_NODE_BUTTON
 	End
 End ' Class Button
 
@@ -1418,7 +1560,7 @@ Public
 
 	' Overrides Component.GetSkinNodeName() to return the node name of "radio".	
 	Method GetSkinNodeName:String()
-		Return "radio"
+		Return SKIN_NODE_RADIO
 	End
 End ' Class RadioButton
 
@@ -1451,109 +1593,9 @@ Public
 
 	' Overrides Component.GetSkinNodeName() to return the node name of "checkbox".	
 	Method GetSkinNodeName:String()
-		Return "checkbox"
+		Return SKIN_NODE_CHECKBOX
 	End
 End ' Class Checkbox
-
-#Rem
-Class ImageButton Extends Button
-Public
-	Field imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL
-	Field normalImage:String, normalImageGI:GameImage
-	Field hoverImage:String, hoverImageGI:GameImage
-	Field downImage:String, downImageGI:GameImage
-	Field disabledImage:String, disabledImageGI:GameImage
-	
-	Field selectedNormalImage:String, selectedNormalImageGI:GameImage
-	Field selectedHoverImage:String, selectedHoverImageGI:GameImage
-	Field selectedDownImage:String, selectedDownImageGI:GameImage
-	Field selectedDisabledImage:String, selectedDisabledImageGI:GameImage
-	
-	Method New()
-		NoParent()
-	End
-	
-	Method New(parent:Component,
-			normalImage:String, hoverImage:String = Null, downImage:String = Null, disabledImage:String = Null,
-			imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL)
-		Super.New(parent)
-		Self.imageMode = imageMode
-		Self.normalImage = normalImage
-		Self.hoverImage = hoverImage
-		Self.downImage = downImage
-		Self.disabledImage = disabledImage
-	End
-	
-	Method New(parent:Component,
-			normalImage:String, hoverImage:String = Null, downImage:String = Null, disabledImage:String = Null,
-			selectedNormalImage:String = Null, selectedHoverImage:String = Null, selectedDownImage:String = Null, selectedDisabledImage:String = Null,
-			imageMode:String = ComponentStyle.IMAGE_MODE_NORMAL)
-		Super.New(parent)
-		Self.imageMode = imageMode
-		Self.normalImage = normalImage
-		Self.hoverImage = hoverImage
-		Self.downImage = downImage
-		Self.disabledImage = disabledImage
-		Self.selectedNormalImage = selectedNormalImage
-		Self.selectedHoverImage = selectedHoverImage
-		Self.selectedDownImage = selectedDownImage
-		Self.selectedDisabledImage = selectedDisabledImage
-		toggle = True
-	End
-	
-	Method LoadImages:Void()
-		If normalImage <> "" And normalImageGI = Null Then normalImageGI = game.images.Load(normalImage)
-		If hoverImage <> "" And hoverImageGI = Null Then hoverImageGI = game.images.Load(hoverImage)
-		If downImage <> "" And downImageGI = Null Then downImageGI = game.images.Load(downImage)
-		If disabledImage <> "" And disabledImageGI = Null Then disabledImageGI = game.images.Load(disabledImage)
-		If selectedNormalImage <> "" And selectedNormalImageGI = Null Then selectedNormalImageGI = game.images.Load(selectedNormalImage)
-		If selectedHoverImage <> "" And selectedHoverImageGI = Null Then selectedHoverImageGI = game.images.Load(selectedHoverImage)
-		If selectedDownImage <> "" And selectedDownImageGI = Null Then selectedDownImageGI = game.images.Load(selectedDownImage)
-		If selectedDisabledImage <> "" And selectedDisabledImageGI = Null Then selectedDisabledImageGI = game.images.Load(selectedDisabledImage)
-	End
-	
-	Method DrawComponent:Void()
-		Local image:GameImage
-		LoadImages()
-		If Not enabled And selected And selectedDisabledImage <> "" Then
-			image = selectedDisabledImageGI
-		ElseIf Not enabled And disabledImage <> "" Then
-			image = disabledImageGI
-		ElseIf mouseDown And selected And selectedDownImage <> "" Then
-			image = selectedDownImageGI
-		ElseIf mouseDown And downImage <> "" Then
-			image = downImageGI
-		ElseIf mouseHover And selected And selectedHoverImage <> "" Then
-			image = selectedHoverImageGI
-		ElseIf mouseHover And hoverImage <> "" Then
-			image = hoverImageGI
-		ElseIf selected And selectedNormalImage <> "" Then
-			image = selectedNormalImageGI
-		Else
-			image = normalImageGI
-		End
-		
-		If image <> Null Then
-			If imageMode = ComponentStyle.IMAGE_MODE_NORMAL Then
-				image.Draw(0, 0)
-			ElseIf imageMode = ComponentStyle.IMAGE_MODE_STRETCH Then
-				image.DrawStretched(0, 0, w, h)
-			End
-		End
-	End
-	
-	Method GetStyle:ComponentStyle(name:String)
-		Return styleNormal
-	End
-	
-	Method SetStyle:Void(name:String, style:ComponentStyle)
-	End
-	
-	Method GetCurrentStyle:ComponentStyle()
-		Return styleNormal
-	End
-End
-#End
 
 Class RadioGroup
 Private
@@ -1968,9 +2010,11 @@ Public
 	End
 	
 	Method GetSkinNodeName:String()
-		Return "slider"
+		Return SKIN_NODE_SLIDER
 	End
 End ' Class Slider
+
+
 
 ' private internal classes
 Private
@@ -2070,9 +2114,12 @@ Public
 	Method ActionPerformed:Void(source:Component, action:String)
 		If source = window.closeButton And action = ACTION_CLICKED Then
 			window.Dispose()
-		'ElseIf source = window.maximizeButton And action = ACTION_CLICKED Then
-		'ElseIf source = window.minimizeButton And action = ACTION_CLICKED Then
-		'ElseIf source = window.shadeButton And action = ACTION_CLICKED Then
+		ElseIf source = window.maximizeButton And action = ACTION_CLICKED Then
+			window.Maximized = Not window.Maximized
+		ElseIf source = window.minimizeButton And action = ACTION_CLICKED Then
+			'window.Minimized = True ' TODO: disabled until positioning of minimised windows is done
+		ElseIf source = window.shadeButton And action = ACTION_CLICKED Then
+			window.Shaded = Not window.Shaded
 		End
 	End
 	
@@ -2129,16 +2176,9 @@ Private
 
 	Field button:Button
 	
-Public
-' Constructors
+' Private methods
 
-	Method New(button:Button)
-		Self.button = button
-	End
-	
-' Implements IMouseListener
-
-	Method MouseClicked:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+	Method DoClick:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 		' is it a radio button?
 		If RadioButton(Self.button) <> Null And RadioButton(Self.button).radioGroup <> Null Then
 			RadioButton(Self.button).radioGroup.SelectedButton = RadioButton(Self.button)
@@ -2149,7 +2189,29 @@ Public
 		Self.button.FireActionPerformed(ACTION_CLICKED)
 	End
 	
+Public
+' Constructors
+
+	Method New(button:Button)
+		Self.button = button
+	End
+	
+' Implements IMouseListener
+
+	Method MouseClicked:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		Self.button.Text = "MouseClicked"
+#If TARGET="ios" Or TARGET="android" Then
+		If Self.button.simpleNormalImage = Null Then DoClick(source, x, y, button, absoluteX, absoluteY)
+#Else
+		DoClick(source, x, y, button, absoluteX, absoluteY)
+#End
+	End
+	
 	Method MousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		Self.button.Text = "MousePressed"
+#If TARGET="ios" Or TARGET="android" Then
+		If Self.button.simpleNormalImage <> Null Then DoClick(source, x, y, button, absoluteX, absoluteY)
+#End
 	End
 	
 	Method MouseReleased:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
@@ -2164,11 +2226,11 @@ End ' Class InternalButtonAdapter
 
 ' This function exists to prevent developers from instantiating a component without a parent (since Monkey always provides an empty default constructor)
 Function NoParent:Void()
-	Error("Must pass a parent component.")
+	AssertError("Must pass a parent component.")
 End
 
 Function CheckMidhandle:Void(img:GameImage)
 	If img.MidHandle Then
-		Error("Components may not use a midhandled image.")
+		AssertError("Components may not use a midhandled image.")
 	End
 End
