@@ -10,6 +10,7 @@ End
 Interface ILayoutData
 End
 
+' Based on SWT GridLayout
 Class GridLayout Implements ILayoutManager
 Private
 ' Private Constants
@@ -35,32 +36,32 @@ Public
 	Const FILLTYPE_PREFERRED:Int = 1
 	Const FILLTYPE_STATIC:Int = 2
 	
-	Const DEFAULT_HORIZONTAL_MARGIN:Float = 5
-	Const DEFAULT_VERTICAL_MARGIN:Float = 5
-	Const DEFAULT_HORIZONTAL_SPACING:Float = 5
-	Const DEFAULT_VERTICAL_SPACING:Float = 5
+	Const DEFAULT_HORIZONTAL_MARGIN:Int = 5
+	Const DEFAULT_VERTICAL_MARGIN:Int = 5
+	Const DEFAULT_HORIZONTAL_SPACING:Int = 5
+	Const DEFAULT_VERTICAL_SPACING:Int = 5
 	
 ' Public fields
 
 	Field colWidthTypes:Int[]
 	Field rowHeightTypes:Int[]
-	Field colWidthValues:Float[]
-	Field rowHeightValues:Float[]
+	Field colWidthValues:Int[]
+	Field rowHeightValues:Int[]
 	
-	Field leftMargin:Float
-	Field rightMargin:Float
-	Field topMargin:Float
-	Field bottomMargin:Float
-	Field horizontalSpacing:Float
-	Field verticalSpacing:Float
+	Field leftMargin:Int
+	Field rightMargin:Int
+	Field topMargin:Int
+	Field bottomMargin:Int
+	Field horizontalSpacing:Int
+	Field verticalSpacing:Int
 	
 ' Constructors
 
 	Method New(rows:Int=0, columns:Int=1,
-			leftMargin:Float=DEFAULT_HORIZONTAL_MARGIN, rightMargin:Float=DEFAULT_HORIZONTAL_MARGIN,
-			topMargin:Float=DEFAULT_VERTICAL_MARGIN, bottomMargin:Float=DEFAULT_VERTICAL_MARGIN,
-			horizontalSpacing:Float=DEFAULT_HORIZONTAL_SPACING, verticalSpacing:Float=DEFAULT_VERTICAL_SPACING)
-		If rows <= 0 And columns <= 0 Then Error("Only one of rows/columns may be dynamic.")
+			leftMargin:Int=DEFAULT_HORIZONTAL_MARGIN, rightMargin:Int=DEFAULT_HORIZONTAL_MARGIN,
+			topMargin:Int=DEFAULT_VERTICAL_MARGIN, bottomMargin:Int=DEFAULT_VERTICAL_MARGIN,
+			horizontalSpacing:Int=DEFAULT_HORIZONTAL_SPACING, verticalSpacing:Int=DEFAULT_VERTICAL_SPACING)
+		If rows <= 0 And columns <= 0 Then AssertError("Only one of rows/columns may be dynamic.")
 		Self.rows = rows
 		Self.columns = columns
 		Self.leftMargin = leftMargin
@@ -72,18 +73,18 @@ Public
 		
 		If rows = 0 Then
 			rowHeightTypes = New Int[DYNAMIC_MAX]
-			rowHeightValues = New Float[DYNAMIC_MAX]
+			rowHeightValues = New Int[DYNAMIC_MAX]
 		Else
 			rowHeightTypes = New Int[rows]
-			rowHeightValues = New Float[rows]
+			rowHeightValues = New Int[rows]
 		End
 		
 		If columns = 0 Then
 			colWidthTypes = New Int[DYNAMIC_MAX]
-			colWidthValues = New Float[DYNAMIC_MAX]
+			colWidthValues = New Int[DYNAMIC_MAX]
 		Else
 			colWidthTypes = New Int[columns]
-			colWidthValues = New Float[columns]
+			colWidthValues = New Int[columns]
 		End
 		
 		For Local i:Int = 0 Until rowHeightValues.Length
@@ -172,7 +173,7 @@ Private
 						If currentRow >= rows Then
 							currentRow = 0
 							currentColumn += 1
-							maxColumn = currentColumn
+							maxColumn = Max(maxColumn,currentColumn)
 						End
 					' if rows are dynamic, or the grid is fixed, left to right then top to bottom
 					Else
@@ -180,7 +181,7 @@ Private
 						If currentColumn >= columns Then
 							currentColumn = 0
 							currentRow += 1
-							maxRow = currentRow
+							maxRow = Max(maxRow,currentRow)
 						End
 					End
 				Until Not cellTaken[currentColumn+currentRow*cellTakenCols]
@@ -200,6 +201,10 @@ Private
 				Next
 			Next
 		Next
+		
+		' fix the dynamic one (if there is one)
+		If maxRow < 0 Then maxRow = currentRow + rowSpan
+		If maxColumn < 0 Then maxColumn = currentColumn + colSpan
 		
 		' store last
 		calculatedRows = maxRow + 1
@@ -230,7 +235,7 @@ Private
 			If rowHeightTypes[rowNums[i]] = FILLTYPE_PREFERRED Then
 				' only continue if the component consumes a single row
 				If rowSpan = 1 Then
-					Local y:Float = Component(compArray[i]).PreferredHeight
+					Local y:Int = Component(compArray[i]).PreferredHeight
 					If y <= 0 Then y = Component(compArray[i]).MinimumHeight
 					rowHeightValues[rowNums[i]] = Max(rowHeightValues[rowNums[i]], y)
 				End
@@ -240,7 +245,7 @@ Private
 			If colWidthTypes[colNums[i]] = FILLTYPE_PREFERRED Then
 				' only continue if the component consumes a single column
 				If colSpan = 1 Then
-					Local x:Float = Component(compArray[i]).PreferredWidth
+					Local x:Int = Component(compArray[i]).PreferredWidth
 					If x <= 0 Then x = Component(compArray[i]).MinimumWidth
 					colWidthValues[colNums[i]] = Max(colWidthValues[colNums[i]], x)
 				End
@@ -250,8 +255,8 @@ Private
 		' calculate the available fill space
 		Local colFillCount:Int = 0
 		Local rowFillCount:Int = 0
-		Local fillWidth:Float = parent.Width - leftMargin - rightMargin - horizontalSpacing * (calculatedColumns - 1)
-		Local fillHeight:Float = parent.Height - topMargin - bottomMargin - verticalSpacing * (calculatedRows - 1)
+		Local fillWidth:Int = parent.Width - leftMargin - rightMargin - horizontalSpacing * (calculatedColumns - 1)
+		Local fillHeight:Int = parent.Height - topMargin - bottomMargin - verticalSpacing * (calculatedRows - 1)
 		For Local i:Int = 0 Until calculatedColumns
 			If colWidthTypes[i] = FILLTYPE_FILL Then
 				colFillCount += 1
@@ -293,8 +298,8 @@ Private
 					rowSpan = 1
 				End
 				
-				Local x:Float = leftMargin
-				Local y:Float = topMargin
+				Local x:Int = leftMargin
+				Local y:Int = topMargin
 				For Local j:Int = 0 Until colNums[i]
 					x += colWidthValues[j] + horizontalSpacing
 				Next
@@ -302,12 +307,16 @@ Private
 					y += rowHeightValues[j] + verticalSpacing
 				Next
 				
-				Local width:Float = colWidthValues[colNums[i]]
-				Local height:Float = rowHeightValues[rowNums[i]]
+				Local width:Int = colWidthValues[colNums[i]]
+				Local height:Int = rowHeightValues[rowNums[i]]
 				For Local j:Int = 1 Until colSpan
+					AssertLessThanInt(i, colNums.Length)
+					AssertLessThanInt(colNums[i]+j, colWidthValues.Length)
 					width += colWidthValues[colNums[i]+j] + horizontalSpacing
 				Next
 				For Local j:Int = 1 Until rowSpan
+					AssertLessThanInt(i, rowNums.Length)
+					AssertLessThanInt(rowNums[i]+j, rowHeightValues.Length)
 					height += rowHeightValues[rowNums[i]+j] + verticalSpacing
 				Next
 				
@@ -317,13 +326,13 @@ Private
 		
 		' calculate the total size of the laid-out container
 		If point = Null Then point = New Point
-		For Local i:Int = 0 Until colWidthValues.Length
+		For Local i:Int = 0 Until calculatedColumns
 			If i = 0 Then point.x = leftMargin Else point.x += horizontalSpacing
 			point.x += colWidthValues[i]
 		Next
 		point.x += rightMargin
 		
-		For Local i:Int = 0 Until rowHeightValues.Length
+		For Local i:Int = 0 Until calculatedRows
 			If i = 0 Then point.y = topMargin Else point.y += verticalSpacing
 			point.y += rowHeightValues[i]
 		Next
@@ -361,4 +370,3 @@ Public
 		Self.rightBorder = border
 	End
 End ' Class GridData
-
