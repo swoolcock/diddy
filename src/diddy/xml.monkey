@@ -37,7 +37,7 @@ Class XMLParser
 			b = str.Find(quoteToFind, b+1)
 			
 			' if not found, the quote doesn't end, so error
-			If b < 0 Then Error("Unclosed quote detected.")
+			If b < 0 Then AssertError("Unclosed quote detected.")
 			
 			' find the next instance after b
 			a = str.Find(findit, b+1)
@@ -65,7 +65,7 @@ Class XMLParser
 			endIndex += 1
 		End
 		' die if empty tag
-		If startIndex = endIndex Then Error("Empty tag detected.")
+		If startIndex = endIndex Then AssertError("Empty tag detected.")
 		' our element
 		Local e:XMLElement = New XMLElement
 		Local a:Int, singleQuoted:Bool, doubleQuoted:Bool, key:String, value:String
@@ -93,7 +93,7 @@ Class XMLParser
 		
 		' TODO: validate tag name is alphanumeric
 		' if no name, die
-		If e.name = "" Then Error("Error reading tag name.")
+		If e.name = "" Then AssertError("Error reading tag name.")
 		
 		' loop on all tokens
 		While startIndex < endIndex
@@ -127,7 +127,7 @@ Class XMLParser
 			' if the key is empty, there was an error (unless we've hit the end of the string)
 			If key = "" Then
 				If a < endIndex Then
-					Error("Error reading attribute key.")
+					AssertError("Error reading attribute key.")
 				Else
 					Exit
 				End
@@ -145,7 +145,7 @@ Class XMLParser
 							singleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							Error("Unexpected single quote detected in attribute value.")
+							AssertError("Unexpected single quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so grab it and break out
 							singleQuoted = False
@@ -161,7 +161,7 @@ Class XMLParser
 							doubleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							Error("Unexpected double quote detected in attribute value.")
+							AssertError("Unexpected double quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so break out
 							doubleQuoted = False
@@ -185,7 +185,7 @@ Class XMLParser
 				startIndex = a
 				value = UnescapeXMLString(value)
 				
-				If singleQuoted Or doubleQuoted Then Error("Unclosed quote detected.")
+				If singleQuoted Or doubleQuoted Then AssertError("Unclosed quote detected.")
 			End
 			
 			' set the attribute
@@ -217,13 +217,13 @@ Class XMLParser
 				If thisE <> Null Then
 					thisE.value += UnescapeXMLString(str[index..a].Trim())
 				Else
-					Error("Loose text outside of any tag!")
+					AssertError("Loose text outside of any tag!")
 				End
 			End
 			' check for PI
 			If str[a+1] = ASC_QUESTION Then
 				' die if the PI is inside the document
-				If thisE <> Null Then Error("Processing instruction detected inside main document tag.")
+				If thisE <> Null Then AssertError("Processing instruction detected inside main document tag.")
 				' create PI element up until next unquoted ?> after a
 				nextIndex = FindUnquoted("?>", a+2)
 				newE = GetTagContents(a+2, nextIndex)
@@ -238,18 +238,18 @@ Class XMLParser
 					' ignore everything until the next -->
 					nextIndex = str.Find("-->", a+4)
 					' if we couldn't find a comment end, die
-					If nextIndex < 0 Then Error("Unclosed comment detected.")
+					If nextIndex < 0 Then AssertError("Unclosed comment detected.")
 					' XML specifications say that ---> is invalid
-					If str[nextIndex-1] = ASC_HYPHEN Then Error("Invalid comment close detected (too many hyphens).")
+					If str[nextIndex-1] = ASC_HYPHEN Then AssertError("Invalid comment close detected (too many hyphens).")
 					nextIndex += 3
 					
 				' if the next seven chars are [CDATA[ it's a cdata block
 				ElseIf str.Find("[CDATA[", a+2) = a+2 Then
 					' die if the CDATA is outside the document
-					If thisE = Null Then Error("CDATA detected outside main document tag.")
+					If thisE = Null Then AssertError("CDATA detected outside main document tag.")
 					nextIndex = str.Find("]]>", a+9)
 					' die if it doesn't end
-					If nextIndex < 0 Then Error("Unclosed CDATA tag detected.")
+					If nextIndex < 0 Then AssertError("Unclosed CDATA tag detected.")
 					newE = New XMLElement
 					newE.value = str[a+9..nextIndex]
 					newE.cdata = True
@@ -260,7 +260,7 @@ Class XMLParser
 				' if the next seven chars are DOCTYPE it's a dtd tag
 				ElseIf str.Find("DOCTYPE", a+2) = a+2 Then
 					' die if the doctype is inside the document
-					If thisE <> Null Then Error("DOCTYPE detected inside main document tag.")
+					If thisE <> Null Then AssertError("DOCTYPE detected inside main document tag.")
 					nextIndex = FindUnquoted(">", a+9)
 					newE = GetTagContents(a+9, nextIndex)
 					newE.prolog = True
@@ -270,19 +270,19 @@ Class XMLParser
 				
 				' don't know!
 				Else
-					Error("Unknown prolog detected.")
+					AssertError("Unknown prolog detected.")
 				End
 				
 			' check for closing tag
 			ElseIf str[a+1] = ASC_SLASH Then
 				' if no current element, die
-				If thisE = Null Then Error("Closing tag found outside main document tag.")
+				If thisE = Null Then AssertError("Closing tag found outside main document tag.")
 				' find the next >
 				nextIndex = str.Find(">", a+2)
 				' if not found, the closing tag is broken
-				If nextIndex < 0 Then Error("Incomplete closing tag detected.")
+				If nextIndex < 0 Then AssertError("Incomplete closing tag detected.")
 				' check that the tag name matches
-				If str[a+2..nextIndex].Trim() <> thisE.name Then Error("Closing tag ~q"+str[a+2..nextIndex].Trim()+"~q does not match opening tag ~q"+thisE.name+"~q")
+				If str[a+2..nextIndex].Trim() <> thisE.name Then AssertError("Closing tag ~q"+str[a+2..nextIndex].Trim()+"~q does not match opening tag ~q"+thisE.name+"~q")
 				If Not elements.IsEmpty() Then
 					thisE = elements.RemoveLast()
 				Else
@@ -298,7 +298,7 @@ Class XMLParser
 				c = FindUnquoted(">", a+1)
 				' if we couldn't find either
 				If c < 0 Then
-					Error("Incomplete opening tag detected.")
+					AssertError("Incomplete opening tag detected.")
 					
 				' if it's not self-closing
 				ElseIf b < 0 Or c < b Then
@@ -329,7 +329,7 @@ Class XMLParser
 			index = nextIndex
 			a = str.Find("<", index)
 		End
-		If doc.root = Null Then Error("Error parsing XML: no document tag found.")
+		If doc.root = Null Then AssertError("Error parsing XML: no document tag found.")
 		Return doc
 	End
 End
