@@ -170,7 +170,7 @@ Private
 	Method RangeCheck:Void(index:Int)
 		Local size:Int = Self.Size()
 		' range check doesn't use assert, for speed
-		If index < 0 Or index >= size Then Error("AbstractList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
+		If index < 0 Or index >= size Then AssertError("AbstractList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 	
 Public
@@ -223,7 +223,7 @@ Private
 	
 	Method CheckConcurrency:Void()
 		' for speed we don't use assert
-		If lst.modCount <> expectedModCount Then Error("ListEnumerator.CheckConcurrency: Concurrent list modification")
+		If lst.modCount <> expectedModCount Then AssertError("ListEnumerator.CheckConcurrency: Concurrent list modification")
 	End
 
 Public
@@ -420,7 +420,7 @@ Private
 	
 	Method RangeCheck:Void(index:Int)
 		' range check doesn't use assert, for speed
-		If index < 0 Or index >= size Then Error("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
+		If index < 0 Or index >= size Then AssertError("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 
 	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
