@@ -2199,7 +2199,6 @@ Public
 ' Implements IMouseListener
 
 	Method MouseClicked:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
-		Self.button.Text = "MouseClicked"
 #If TARGET="ios" Or TARGET="android" Then
 		If Self.button.simpleNormalImage = Null Then DoClick(source, x, y, button, absoluteX, absoluteY)
 #Else
@@ -2208,7 +2207,6 @@ Public
 	End
 	
 	Method MousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
-		Self.button.Text = "MousePressed"
 #If TARGET="ios" Or TARGET="android" Then
 		If Self.button.simpleNormalImage <> Null Then DoClick(source, x, y, button, absoluteX, absoluteY)
 #End
