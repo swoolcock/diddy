@@ -9,6 +9,8 @@ Function Main:Int()
 End Function
 
 Global guiScreen:GUIScreen
+Global xmlParser:XMLParser = New XMLParser
+Global guiSkin:XMLDocument
 
 Class MyGame extends DiddyApp
 	Method OnCreate:Int()
@@ -24,8 +26,9 @@ Class MyGame extends DiddyApp
 		' enable this and UseVirtualResolution to test the GUI under virtual res
 		'SetScreenSize(1024, 768)
 		
-		Local parser:XMLParser = New XMLParser
-		Font.LoadFonts(parser.ParseString(LoadString("fonts.xml")))
+		Font.LoadFonts(xmlParser.ParseString(LoadString("fonts.xml")))
+		guiSkin = xmlParser.ParseString(LoadString("defaultguiskin.xml"))
+		
 		drawFPSOn = True
 		
 		guiScreen = new GUIScreen
@@ -83,17 +86,17 @@ Class MyGUI Extends GUI
 	Field imageButton2:Button
 	Field imageButton3:Button
 	
+	Field testPanel:Panel
+	
 	Method New()
 		' by default the GUI will always ignore virtual resolution and display using 1:1 with the device resolution
 		'UseVirtualResolution = True
-		
-		Local parser:XMLParser = New XMLParser
-		Local guiskin:XMLDocument = parser.ParseString(LoadString("defaultguiskin.xml"))
-		
+		Self.LayoutEnabled = True
 		' Note: LoadSkin (should) work at any point of the GUI lifecycle
-		LoadSkin(guiskin)
+		LoadSkin(guiSkin)
 		
-		window1 = New Window(Desktop)
+		window1 = New Window(Self.Desktop)
+		window1.ShowMaximize = True
 		window1.SetBounds(50,70,200,200)
 		window1.Title = "GridLayout Demo"
 		window1.ContentPane.LayoutManager = New GridLayout(0,2)
@@ -106,7 +109,8 @@ Class MyGUI Extends GUI
 		button3 = New Button(window1.ContentPane)
 		button3.Text = "Button 3"
 	
-		window2 = New Window(Desktop)
+		window2 = New Window(Self.Desktop)
+		window2.ShowMinimize = True
 		window2.Title = "Form Components Example"
 		window2.SetBounds(300,200,230,200)
 		
@@ -146,18 +150,32 @@ Class MyGUI Extends GUI
 		checkbox.Text = "Does diddy rock?"
 		checkbox.SetBounds(10,130,150,15)
 		
-		window3 = New Window(Desktop)
-		window3.Title = "Image Button Demo"
-		window3.SetBounds(350,50,260,200)
+		'window3 = New Window(Self.Desktop)
+		'window3.ShowShade = True
+		'window3.ShowClose = False
+		'window3.Title = "Image Button Demo"
+		'window3.SetBounds(350,50,260,200)
 		
-		imageButton1 = New Button(window3.ContentPane, game.images.Find("continue"), game.images.Find("continueMO"))
-		imageButton1.SetLocation(20,20)
+		'window3.ContentPane.LayoutManager = New GridLayout(0,1)'FlowLayout(FlowLayout.FLOW_VERTICAL)
+		' test panel not using a window
+		testPanel = New Panel(Self.Desktop)
+		Local gl:GridLayout = New GridLayout(0,1)
+		testPanel.LayoutManager = gl
+		gl.rowHeightTypes[0] = GridLayout.FILLTYPE_PREFERRED
+		gl.rowHeightTypes[1] = GridLayout.FILLTYPE_PREFERRED
+		gl.rowHeightTypes[2] = GridLayout.FILLTYPE_PREFERRED
+		gl.colWidthTypes[0] = GridLayout.FILLTYPE_PREFERRED
 		
-		imageButton2 = New Button(window3.ContentPane, game.images.Find("newgame"), game.images.Find("newgameMO"))
-		imageButton2.SetLocation(20,imageButton1.Y+imageButton1.Height)
+		imageButton1 = New Button(testPanel, game.images.Find("continue"), game.images.Find("continueMO"))
+		imageButton2 = New Button(testPanel, game.images.Find("newgame"), game.images.Find("newgameMO"))
+		imageButton3 = New Button(testPanel, game.images.Find("options"), game.images.Find("optionsMO"))
 		
-		imageButton3 = New Button(window3.ContentPane, game.images.Find("options"), game.images.Find("optionsMO"))
-		imageButton3.SetLocation(20,imageButton2.Y+imageButton2.Height)
+		testPanel.Pack()
+		testPanel.SetLocation((Self.Desktop.Width-testPanel.Width)/2,Self.Desktop.Height-testPanel.Height)
+		
+		' Layout manager is disabled by default (to stop nasty recursion spam while building up the gui); this line enables it.
+		' From here on, any changes to the gui structure that affect the layout will cause it to fire.
+		Self.LayoutEnabled = True
 	End
 	
 	Method ActionPerformed:Void(source:Component, action:String)
@@ -165,16 +183,22 @@ Class MyGUI Extends GUI
 			Print "slider="+slider.Value
 		ElseIf source = button1 And action = ACTION_CLICKED Then
 			Print("pressed button1!")
+			slider.Value = 10
 		ElseIf source = button2 And action = ACTION_CLICKED Then
 			Print("pressed button2!")
+			slider.Value = 20
 		ElseIf source = button3 And action = ACTION_CLICKED Then
 			Print("pressed button3!")
+			slider.Value = 30
 		ElseIf source = imageButton1 And action = ACTION_CLICKED Then
 			Print("Pressed continue!")
+			slider.Value = 40
 		ElseIf source = imageButton2 And action = ACTION_CLICKED Then
 			Print("Pressed new game!")
+			slider.Value = 50
 		ElseIf source = imageButton3 And action = ACTION_CLICKED Then
 			Print("Pressed options!")
+			slider.Value = 60
 		ElseIf source = checkbox And action = ACTION_CLICKED Then
 			If checkbox.Selected Then
 				Print("pressed checkbox! selected=true")
