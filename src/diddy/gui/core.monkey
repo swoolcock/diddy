@@ -12,18 +12,18 @@ Class Rectangle
 Public
 ' Public fields
 
-	Field x:Float, y:Float, w:Float, h:Float
+	Field x:Int, y:Int, w:Int, h:Int
 	Field empty:Bool = False
 
 ' Constructors
 	
-	Method New(x:Float, y:Float, w:Float, h:Float)
+	Method New(x:Int, y:Int, w:Int, h:Int)
 		Set(x, y, w, h)
 	End
 	
 ' Public methods
 
-	Method Set:Void(x:Float, y:Float, w:Float, h:Float)
+	Method Set:Void(x:Int, y:Int, w:Int, h:Int)
 		Self.x = x
 		Self.y = y
 		Self.w = w
@@ -45,7 +45,7 @@ Public
 		Self.empty = True
 	End
 	
-	Method Intersect:Void(x:Float, y:Float, w:Float, h:Float)
+	Method Intersect:Void(x:Int, y:Int, w:Int, h:Int)
 		If x >= Self.x + Self.w Or y >= Self.y + Self.h Or Self.x >= x + w Or Self.y >= y + h Then
 			Clear()
 			Return
@@ -66,12 +66,12 @@ Class Point
 Public
 ' Public fields
 
-	Field x:Float
-	Field y:Float
+	Field x:Int
+	Field y:Int
 	
 ' Constructors
 
-	Method New(x:Float, y:Float)
+	Method New(x:Int, y:Int)
 		Self.x = x
 		Self.y = y
 	End
@@ -197,11 +197,15 @@ Private
 	Field desktop:GUIDesktop
 	Field useVirtualRes:Bool = False
 	
+	Field layoutEnabled:Bool = False
+	
 ' Private methods
 
 	Method PushScissor:Void(x:Float, y:Float, w:Float, h:Float)
 		' don't use assert, for speed on android (one less method call)
-		If scissorDepth >= scissors.Length Then Error("GUI.PushScissor: Out of space for scissors.")
+		If scissorDepth >= scissors.Length Then
+			AssertError("GUI.PushScissor: Out of space for scissors.")
+		End
 		If scissorDepth = 0 Then
 			scissors[0].Set(x, y, w, h)
 		Else
@@ -399,6 +403,19 @@ Private
 Public
 ' Properties
 
+	' LayoutEnabled is read/write
+	Method LayoutEnabled:Bool() Property
+		Return layoutEnabled
+	End
+	Method LayoutEnabled:Void(layoutEnabled:Bool) Property
+		If layoutEnabled <> Self.layoutEnabled Then
+			Self.layoutEnabled = layoutEnabled
+			If layoutEnabled Then
+				desktop.Layout()
+			End
+		End
+	End
+	
 	' Desktop is read only
 	Method Desktop:GUIDesktop() Property
 		Return desktop
@@ -479,8 +496,8 @@ Public
 
 		' check if it's inside a child (reverse, to honour z-order)
 		Local rv:Component = Null
-		For Local i:Int = parent.Children.Size-1 To 0 Step -1
-			Local c:Component = parent.Children.Get(i)
+		For Local i:Int = parent.ChildrenZOrder.Size-1 To 0 Step -1
+			Local c:Component = parent.ChildrenZOrder.Get(i)
 			If c.Visible Then
 				rv = ComponentAtPoint(x-c.X, y-c.Y, c)
 			End
@@ -528,9 +545,13 @@ Public
 	
 	Method GetSkinNode:XMLElement(nodeName:String)
 		If skinDoc = Null Then Return Null
-		Local al:ArrayList<XMLElement> = skinDoc.Root.GetChildrenByName(nodeName)
-		AssertEqualsInt(al.Size, 1, "Expected exactly one instance of "+nodeName)
-		Return al.GetFirst()
+		Local node:XMLElement = Null
+		For Local i:Int = 0 Until skinDoc.Root.Children.Size
+			node = skinDoc.Root.Children.Get(i)
+			If node.Name = nodeName Then Return node
+		Next
+		AssertError("Couldn't find skin node with name "+nodeName)
+		Return Null
 	End
 	
 	' developer should override this to do anything useful!!!
