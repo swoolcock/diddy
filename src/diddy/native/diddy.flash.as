@@ -23,7 +23,9 @@ class diddy
 	{
 		Mouse.hide();
 	}
-	
+	static public function setGraphics(w:int, h:int):void
+	{
+	}
 	static public function setMouse(x:int, y:int):void
 	{
 		

@@ -34,6 +34,10 @@ class diddy
 		glfwDisable( GLFW_MOUSE_CURSOR );
 	}
 	
+	static void setGraphics(int w, int h)
+	{
+	}
+	
 	static void setMouse(int x, int y)
 	{
 		glfwSetMousePos(x, y);

@@ -19,7 +19,13 @@ diddy.showMouse=function()
 {
 	document.getElementById("GameCanvas").style.cursor='default';
 }
-
+diddy.setGraphics=function(w, h)
+{
+	var canvas = GameCanvas;
+	canvas.width  = w;
+	canvas.height = h;
+	//return window.innerHeight;
+}
 diddy.setMouse=function(x, y)
 {
 	
