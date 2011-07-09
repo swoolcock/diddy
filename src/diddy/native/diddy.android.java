@@ -28,7 +28,9 @@ class diddy
 	static void hideMouse()
 	{
 	}
-	
+	static void setGraphics(int w, int h)
+	{
+	}
 	// empty function
 	static void setMouse(int x, int y)
 	{
