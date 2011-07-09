@@ -18,6 +18,7 @@ Extern
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
 		Function LaunchBrowser:Void(address:String) = "diddy::launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy::launchEmail"
+		Function SetGraphics:Void(w:Int, h:Int) = "diddy::setGraphics"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
