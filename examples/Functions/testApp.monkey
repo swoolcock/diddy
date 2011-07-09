@@ -22,8 +22,7 @@ Class MyGame Extends DiddyApp
 		' set the seed to use the system time
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
-		ShowMouse()
-		
+		HideMouse()
 		Return 0
 	End
 	
@@ -47,7 +46,18 @@ Class MyGame Extends DiddyApp
 		If KeyHit(KEY_ESCAPE)
 			ExitApp()
 		End
-		
+		if KeyHit(KEY_Q)
+			Print"Setting graphics.. to 1024x768"
+			SetGraphics(1024, 768)
+		End
+		if KeyHit(KEY_W)
+			Print"Setting graphics.. to 800 x 600"
+			SetGraphics(800, 600)
+		End
+		if KeyHit(KEY_E)
+			Print"Setting graphics.. to 640 x 480"
+			SetGraphics(640, 480)
+		End
 		' this will print "No FlushKeys 3 times
 		For Local i:Int = 1 To 3
 			If KeyHit(KEY_SPACE)
@@ -73,6 +83,7 @@ Class MyGame Extends DiddyApp
 				HideMouse()
 			End
 		End
+
 		Return 0
 	End
 
@@ -94,6 +105,9 @@ Class MyGame Extends DiddyApp
 		DrawText "DEVICE_HEIGHT = "+DEVICE_HEIGHT, 10, 100
 		DrawText "Press F1 or click the top half of the screen to Launch Browser", 10, 120
 		DrawText "Press F2 or click the bottom half of the screen to Launch Email", 10, 130
+		DrawText "Press Q to Change Screen size to 1024x768", 10, 140
+		DrawText "Press W to Change Screen size to 800x600", 10, 150
+		DrawText "Press E to Change Screen size to 640x480", 10, 160
 		Return 0
 	End
 		
