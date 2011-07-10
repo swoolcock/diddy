@@ -4,6 +4,7 @@
 	Import "native/diddy.${TARGET}.${LANG}"
 #end
 Import mojo
+Import framework
 Import assert
 
 Extern
@@ -18,7 +19,7 @@ Extern
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
 		Function LaunchBrowser:Void(address:String) = "diddy::launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy::launchEmail"
-		Function SetGraphics:Void(w:Int, h:Int) = "diddy::setGraphics"
+		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy::setGraphics"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -29,9 +30,19 @@ Extern
 		Function ShowKeyboard:Void() = "diddy.showKeyboard"
 		Function LaunchBrowser:Void(address:String) = "diddy.launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
-		Function SetGraphics:Void(w:Int, h:Int) = "diddy.setGraphics"
+		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy.setGraphics"
 	#End
 Public
+
+Function SetGraphics:Void(w:Int, h:Int)
+	SetNativeGraphicsSize(w, h)
+	DEVICE_WIDTH = w
+	DEVICE_HEIGHT = h
+	SCREEN_HEIGHT = h
+	SCREEN_WIDTH = w
+	SCREEN_WIDTH2 = SCREEN_WIDTH / 2
+	SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
+End
 
 Function ExitApp:Void()
 	Error ""
