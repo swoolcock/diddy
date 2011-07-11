@@ -21,7 +21,7 @@ diddy.showMouse=function()
 }
 diddy.setGraphics=function(w, h)
 {
-	var canvas = GameCanvas;
+	var canvas=document.getElementById( "GameCanvas" );
 	canvas.width  = w;
 	canvas.height = h;
 	//return window.innerHeight;
