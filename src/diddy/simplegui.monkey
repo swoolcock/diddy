@@ -300,8 +300,10 @@ Class SimpleButton Extends Sprite
 				End
 			End
 			mouseOver = 1
-			If game.mouseHit Then
+			If MouseHit() Then
 				Click()
+			Else
+				clicked = 0
 			End
 		Else
 			mouseOver = 0	
