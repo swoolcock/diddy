@@ -3,6 +3,7 @@ Strict
 Import mojo
 Import functions
 Import collections
+Import inputcache
 
 'Device width and height
 Global DEVICE_WIDTH:Int
@@ -42,9 +43,9 @@ Class DiddyApp Extends App
 	' next Screen
 	Field nextScreen:Screen
 	' exit Screen
-	Field exitScreen:ExitScreen = new ExitScreen()
+	Field exitScreen:ExitScreen
 	' used for fading
-	Field screenFade:ScreenFade = New ScreenFade
+	Field screenFade:ScreenFade
 	' scroll
 	field scrollX:Float
 	field scrollY:Float
@@ -54,9 +55,9 @@ Class DiddyApp Extends App
 	Field mouseHit:Int
 	
 	' Store the images here
-	Field images:ImageBank = New ImageBank
+	Field images:ImageBank
 	' Store the sounds here
-	Field sounds:SoundBank = New SoundBank
+	Field sounds:SoundBank
 	' volume control
 	Field musicFile:String = ""
 	Field soundVolume:Int = 100
@@ -65,6 +66,17 @@ Class DiddyApp Extends App
 	Field musicOkay:Int
 	
 	Field clickSound:GameSound
+	
+	' input
+	Field inputCache:InputCache
+	
+	Method New()
+		exitScreen = New ExitScreen
+		screenFade = New ScreenFade
+		images = New ImageBank
+		sounds = New SoundBank
+		inputCache = New InputCache
+	End
 	
 	Method OnCreate:Int()
 		' Store the device width and height
@@ -128,6 +140,7 @@ Class DiddyApp Extends App
 	
 	Method OnUpdate:Int()
 		dt.UpdateDelta()
+		inputCache.ReadInput()
 		
 		If debugKeyOn
 			If KeyHit(debugKey)
