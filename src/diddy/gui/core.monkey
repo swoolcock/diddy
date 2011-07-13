@@ -11,18 +11,15 @@ Const ACTION_VALUE_CHANGED:String = "changed"
 Class Rectangle
 Public
 ' Public fields
-
 	Field x:Int, y:Int, w:Int, h:Int
 	Field empty:Bool = False
 
 ' Constructors
-	
 	Method New(x:Int, y:Int, w:Int, h:Int)
 		Set(x, y, w, h)
 	End
 	
 ' Public methods
-
 	Method Set:Void(x:Int, y:Int, w:Int, h:Int)
 		Self.x = x
 		Self.y = y
@@ -65,12 +62,10 @@ End ' Class Rectangle
 Class Point
 Public
 ' Public fields
-
 	Field x:Int
 	Field y:Int
 	
 ' Constructors
-
 	Method New(x:Int, y:Int)
 		Self.x = x
 		Self.y = y
@@ -116,7 +111,6 @@ End
 Class AbstractMouseAdapter Implements IMouseListener, IMouseMotionListener Abstract
 Public
 ' Implements IMouseListener
-
 	Method MousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 	End
 	
@@ -133,7 +127,6 @@ Public
 	End
 	
 ' Implements IMouseMotionListener
-
 	Method MouseMoved:Void(source:Component, x:Int, y:Int, absoluteX:Int, absoluteY:Int)
 	End
 	
@@ -144,7 +137,6 @@ End ' Class AbstractMouseAdapter
 Class AbstractKeyAdapter Implements IKeyListener Abstract
 Public
 ' Implements IKeyListener
-
 	Method KeyPressed:Void(source:Component, keychar:String, keycode:Int)
 	End
 	
@@ -161,7 +153,6 @@ End ' Class AbstractKeyAdapter
 Class AbstractFocusAdapter Implements IFocusListener Abstract
 Public
 'Implements IFocusListener
-
 	Method FocusGained:Void(source:Component, oldFocus:Component)
 	End
 	Method FocusLost:Void(source:Component, newFocus:Component)
@@ -173,7 +164,6 @@ End ' Class AbstractFocusAdapter
 Class GUI Implements IActionListener
 Private
 ' Private fields
-
 	Field scissors:Rectangle[] = New Rectangle[128]
 	Field scissorDepth:Int = 0
 	
@@ -200,7 +190,6 @@ Private
 	Field layoutEnabled:Bool = False
 	
 ' Private methods
-
 	Method PushScissor:Void(x:Float, y:Float, w:Float, h:Float)
 		' don't use assert, for speed on android (one less method call)
 		If scissorDepth >= scissors.Length Then
@@ -272,14 +261,15 @@ Private
 			
 			' null safety check
 			If mouseThisComponent <> Null Then
+				' request the focus
+				mouseThisComponent.RequestFocus()
 				' fire pressed on mouseThisComponent
-				If mouseThisComponent.MouseListener <> Null Then
-					absX = mouseThisComponent.AbsoluteX
-					absY = mouseThisComponent.AbsoluteY
-					style = mouseThisComponent.GetCurrentStyle()
-					If style <> Null And style.downSound <> "" Then PlayComponentSound(mouseThisComponent, style.downSound)
-					mouseThisComponent.MouseListener.MousePressed(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
-				End
+				absX = mouseThisComponent.AbsoluteX
+				absY = mouseThisComponent.AbsoluteY
+				style = mouseThisComponent.GetCurrentStyle()
+				If style <> Null And style.downSound <> "" Then PlayComponentSound(mouseThisComponent, style.downSound)
+				mouseThisComponent.FireMousePressed(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
+				' bring the component to front
 				mouseThisComponent.BringToFront()
 				' set mouseDown
 				mouseThisComponent.mouseDown = True
@@ -295,13 +285,11 @@ Private
 				' null safety check
 				If comp <> Null Then
 					' fire mouse released on comp
-					If comp.MouseListener <> Null Then
-						absX = comp.AbsoluteX
-						absY = comp.AbsoluteY
-						style = comp.GetCurrentStyle()
-						If style <> Null And style.upSound <> "" Then PlayComponentSound(comp, style.upSound)
-						comp.MouseListener.MouseReleased(comp, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
-					End
+					absX = comp.AbsoluteX
+					absY = comp.AbsoluteY
+					style = comp.GetCurrentStyle()
+					If style <> Null And style.upSound <> "" Then PlayComponentSound(comp, style.upSound)
+					comp.FireMouseReleased(comp, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 					
 					' clear mouseDown
 					comp.mouseDown = False
@@ -310,19 +298,22 @@ Private
 					If mouseThisComponent = comp Then
 						style = comp.GetCurrentStyle()
 						If style <> Null And style.clickSound <> "" Then PlayComponentSound(comp, style.clickSound)
-						If comp.MouseListener <> Null Then comp.MouseListener.MouseClicked(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
+						comp.FireMouseClicked(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
 					End
 				End
 				
 			ElseIf mouseLastX <> mouseThisX Or mouseLastY <> mouseThisY Then
 				' null safety check
 				If mouseDownComponent[button] <> Null Then
+					' this check is only commented for now, because i'm not sure if the extra method calls every update will affect android
+					' if the performance drops i'll have to rethink this part
+					
 					' fire mouse dragged on mouseDownComponent
-					If mouseDownComponent[button].MouseMotionListener <> Null Then
+					'If mouseDownComponent[button].MouseMotionListener <> Null Then
 						absX = mouseDownComponent[button].AbsoluteX
 						absY = mouseDownComponent[button].AbsoluteY
-						mouseDownComponent[button].MouseMotionListener.MouseDragged(mouseDownComponent[button], mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
-					End
+						mouseDownComponent[button].FireMouseDragged(mouseDownComponent[button], mouseThisX-absX, mouseThisY-absY, button, mouseThisX, mouseThisY)
+					'End
 				End
 				
 				' if the component changed, fire exit/enter
@@ -330,13 +321,11 @@ Private
 					' null safety check
 					If mouseLastComponent <> Null Then
 						' fire mouse exited on mouseLastComponent
-						If mouseLastComponent.MouseListener <> Null Then
-							absX = mouseLastComponent.AbsoluteX
-							absY = mouseLastComponent.AbsoluteY
-							style = mouseLastComponent.GetCurrentStyle()
-							If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
-							mouseLastComponent.MouseListener.MouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
-						End
+						absX = mouseLastComponent.AbsoluteX
+						absY = mouseLastComponent.AbsoluteY
+						style = mouseLastComponent.GetCurrentStyle()
+						If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
+						mouseLastComponent.FireMouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 						
 						' clear mouseHover
 						mouseLastComponent.mouseHover = False
@@ -345,13 +334,11 @@ Private
 					' null safety check
 					If mouseThisComponent <> Null Then
 						' fire mouse entered on mouseThisComponent
-						If mouseThisComponent.MouseListener <> Null Then
-							absX = mouseThisComponent.AbsoluteX
-							absY = mouseThisComponent.AbsoluteY
-							style = mouseThisComponent.GetCurrentStyle()
-							If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
-							mouseThisComponent.MouseListener.MouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
-						End
+						absX = mouseThisComponent.AbsoluteX
+						absY = mouseThisComponent.AbsoluteY
+						style = mouseThisComponent.GetCurrentStyle()
+						If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
+						mouseThisComponent.FireMouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 						
 						' set the STATE_HOVER bit
 						mouseThisComponent.mouseHover = True
@@ -360,24 +347,23 @@ Private
 			End
 		Else
 			If mouseLastX <> mouseThisX Or mouseLastY <> mouseThisY Then
+				' check is commented for the same reason as above
 				' fire mouse moved on mouseThisComponent
-				If mouseThisComponent <> Null And mouseThisComponent.MouseMotionListener <> Null Then
+				If mouseThisComponent <> Null Then 'And mouseThisComponent.MouseMotionListener <> Null Then
 					absX = mouseThisComponent.AbsoluteX
 					absY = mouseThisComponent.AbsoluteY
-					mouseThisComponent.MouseMotionListener.MouseMoved(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseThisX, absY)
+					mouseThisComponent.FireMouseMoved(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseThisX, absY)
 				End
 				
 				' if the component changed, fire exit/enter
 				If mouseThisComponent <> mouseLastComponent Then
 					' fire mouse exited on mouseLastComponent
 					If mouseLastComponent <> Null Then
-						If mouseLastComponent.MouseListener <> Null Then
-							absX = mouseLastComponent.AbsoluteX
-							absY = mouseLastComponent.AbsoluteY
-							style = mouseLastComponent.GetCurrentStyle()
-							If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
-							mouseLastComponent.MouseListener.MouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
-						End
+						absX = mouseLastComponent.AbsoluteX
+						absY = mouseLastComponent.AbsoluteY
+						style = mouseLastComponent.GetCurrentStyle()
+						If style <> Null And style.exitSound <> "" Then PlayComponentSound(mouseLastComponent, style.exitSound)
+						mouseLastComponent.FireMouseExited(mouseLastComponent, mouseThisX-absX, mouseThisY-absY, mouseThisComponent, mouseThisX, mouseThisY)
 						
 						' clear mouseHover
 						mouseLastComponent.mouseHover = False
@@ -385,13 +371,11 @@ Private
 					
 					' fire mouse entered on mouseThisComponent
 					If mouseThisComponent <> Null Then
-						If mouseThisComponent.MouseListener <> Null Then
-							absX = mouseThisComponent.AbsoluteX
-							absY = mouseThisComponent.AbsoluteY
-							style = mouseThisComponent.GetCurrentStyle()
-							If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
-							mouseThisComponent.MouseListener.MouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
-						End
+						absX = mouseThisComponent.AbsoluteX
+						absY = mouseThisComponent.AbsoluteY
+						style = mouseThisComponent.GetCurrentStyle()
+						If style <> Null And style.enterSound <> "" Then PlayComponentSound(mouseThisComponent, style.enterSound)
+						mouseThisComponent.FireMouseEntered(mouseThisComponent, mouseThisX-absX, mouseThisY-absY, mouseLastComponent, mouseThisX, mouseThisY)
 						' set mouseHover
 						mouseThisComponent.mouseHover = True
 					End
@@ -402,7 +386,6 @@ Private
 	
 Public
 ' Properties
-
 	' LayoutEnabled is read/write
 	Method LayoutEnabled:Bool() Property
 		Return layoutEnabled
@@ -455,7 +438,6 @@ Public
 	End
 	
 ' Constructors
-
 	Method New()
 		desktop = New GUIDesktop(Self)
 		desktop.SetBounds(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
@@ -465,7 +447,6 @@ Public
 	End
 	
 ' Public methods
-
 	Method LoadSkin:Void(doc:XMLDocument)
 		Local atlas:String = doc.Root.GetAttribute("atlas","")
 		skinAtlas = game.images.Load(atlas,,False)
@@ -526,25 +507,26 @@ Public
 	End
 	
 	Method SetFocus:Void(comp:Component)
-		If currentFocus <> Null And currentFocus.FocusListener <> Null Then
-			 currentFocus.FocusListener.FocusLost(currentFocus, comp)
+		If currentFocus <> Null Then
+			 currentFocus.FireFocusLost(currentFocus, comp)
 		End
 		comp.focusedChild = Null
 		Local current:Component = comp
-		While current.parent <> Null
+		While current.Parent <> Null
 			current.BringToFront()
-			current.parent.focusedChild = current
-			current = current.parent
+			current.Parent.focusedChild = current
+			current = current.Parent
 		End
 		Local oldFocus:Component = currentFocus
 		currentFocus = comp
-		If currentFocus <> Null And currentFocus.FocusListener <> Null Then
-			 currentFocus.FocusListener.FocusGained(currentFocus, oldFocus)
+		If currentFocus <> Null Then
+			 currentFocus.FireFocusGained(currentFocus, oldFocus)
 		End
 	End
 	
 	Method GetSkinNode:XMLElement(nodeName:String)
 		If skinDoc = Null Then Return Null
+		If nodeName = "" Then Return Null
 		Local node:XMLElement = Null
 		For Local i:Int = 0 Until skinDoc.Root.Children.Size
 			node = skinDoc.Root.Children.Get(i)
@@ -562,4 +544,3 @@ End ' Class GUI
 Function PlayComponentSound:Void(comp:Component, soundName:String)
 	' TODO: play sounds!
 End
-

@@ -80,6 +80,7 @@ Class MyGUI Extends GUI
 	Field radio3:RadioButton
 	Field radio4:RadioButton
 	Field radio5:RadioButton
+	Field label:Label
 	
 	Field window3:Window
 	Field imageButton1:Button
@@ -112,7 +113,7 @@ Class MyGUI Extends GUI
 		window2 = New Window(Self.Desktop)
 		window2.ShowMinimize = True
 		window2.Title = "Form Components Example"
-		window2.SetBounds(300,200,230,200)
+		window2.SetBounds(300,50,230,200)
 		
 		radio1 = New RadioButton(window2.ContentPane)
 		radio1.Text = "Lorum"
@@ -150,13 +151,10 @@ Class MyGUI Extends GUI
 		checkbox.Text = "Does diddy rock?"
 		checkbox.SetBounds(10,130,150,15)
 		
-		'window3 = New Window(Self.Desktop)
-		'window3.ShowShade = True
-		'window3.ShowClose = False
-		'window3.Title = "Image Button Demo"
-		'window3.SetBounds(350,50,260,200)
+		label = New Label(window2.ContentPane)
+		label.Text = "Label"
+		label.SetBounds(10,150,50,20)
 		
-		'window3.ContentPane.LayoutManager = New GridLayout(0,1)'FlowLayout(FlowLayout.FLOW_VERTICAL)
 		' test panel not using a window
 		testPanel = New Panel(Self.Desktop)
 		Local gl:GridLayout = New GridLayout(0,1)

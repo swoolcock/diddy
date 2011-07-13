@@ -126,4 +126,7 @@
 			<disabledImage mode="normal" x="263" y="128" width="13" height="13" />
 		</style>
 	</radio>
+	<label textXOffset="0" textYOffset="11" textXAlign="0" textYAlign="0" useBaseline="true">
+		<style name="normal" drawBackground="false" />
+	</label>
 </skin>

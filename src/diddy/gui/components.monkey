@@ -10,21 +10,28 @@ Const SKIN_NODE_BUTTON:String = "button"
 Const SKIN_NODE_RADIO:String = "radio"
 Const SKIN_NODE_CHECKBOX:String = "checkbox"
 Const SKIN_NODE_SLIDER:String = "slider"
+Const SKIN_NODE_LABEL:String = "label"
 
 Class Component
 Private
 ' Private fields
-
 	Field alpha:Float = 1
 	Field children:ArrayList<Component> = New ArrayList<Component>
 	Field childrenZOrder:ArrayList<Component> = New ArrayList<Component>
-	Field focusedChild:Component
 	
+	' external listeners (properties) - these can and should be changed by developers for their own needs
 	Field mouseListener:IMouseListener
 	Field mouseMotionListener:IMouseMotionListener
 	Field keyListener:IKeyListener
 	Field focusListener:IFocusListener
 	Field actionListener:IActionListener
+	
+	' internal listeners - these can't and shouldn't be changed by developers!!!
+	Field internalMouseListener:IMouseListener
+	Field internalMouseMotionListener:IMouseMotionListener
+	Field internalKeyListener:IKeyListener
+	Field internalFocusListener:IFocusListener
+	Field internalActionListener:IActionListener
 	
 	Field layoutManager:ILayoutManager
 	Field layoutData:ILayoutData
@@ -51,8 +58,7 @@ Private
 	Field zOrderLocked:Bool = False
 
 ' Private methods
-	
-	Method RequestFocusDelegate:Bool(thisGUI:GUI)
+	Method RequestFocusDelegate:Bool(thisGui:GUI)
 		' check the last focused child
 		If focusedChild <> Null Then
 			' check focusable first to save a method call
@@ -61,7 +67,7 @@ Private
 				Return True
 			End
 			' recurse
-			If focusedChild.RequestFocusDelegate(thisGUI) Then Return True
+			If focusedChild.RequestFocusDelegate(thisGui) Then Return True
 		End
 		' find first focusable child
 		For Local i:Int = 0 Until children.Size
@@ -74,21 +80,46 @@ Private
 		' request focus on the children
 		For Local i:Int = 0 Until children.Size
 			Local child:Component = children.Get(i)
-			If child <> focusedChild And child.RequestFocusDelegate(thisGUI) Then Return True
+			If child <> focusedChild And child.RequestFocusDelegate(thisGui) Then Return True
 		Next
 		' we still couldn't focus
 		Return False
 	End
 
+	Method ReadSkinFields:Void(node:XMLElement)
+	End
+	
+	' Reads the styles from the XML node.
+	Method LoadStyles:Void(node:XMLElement)
+		If node = Null Then Return
+		' copy styles
+		For Local i:Int = 0 Until node.Children.Size
+			Local styleNode:XMLElement = node.Children.Get(i)
+			Local style:ComponentStyle = GetStyle(styleNode.GetAttribute("name"))
+			If style = Null Then style = New ComponentStyle
+			style.ReadFromNode(styleNode)
+			SetStyle(styleNode.GetAttribute("name"), style)
+		Next
+	End
+	
+	Method ApplySkin:Void()
+		Local thisGUI:GUI = FindGUI()
+		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
+		If node <> Null Then
+			LoadStyles(node)
+			ReadSkinFields(node)
+		End
+	End
+	
 Public
-' Fields
+' Public Fields
 	' Note that these are public for now so they can be referenced from core.monkey
 	' Please don't use them directly!!!
 	Field mouseHover:Bool = False
 	Field mouseDown:Bool = False
+	Field focusedChild:Component
 	
 ' Properties
-
 	' X is read/write
 	Method X:Int() Property
 		Return x
@@ -356,7 +387,6 @@ Public
 	End
 	
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
@@ -378,7 +408,6 @@ Public
 	End
 	
 ' Public methods
-
 	' Get an associated style based on a name
 	Method GetStyle:ComponentStyle(name:String)
 		If name = "normal" Then Return styleNormal
@@ -585,15 +614,6 @@ Public
 		End
 	End
 	
-	' Fires an ActionPerformed event to the assigned ActionListener.  If no action listener is assigned, it loops through
-	' the parent hierarchy until it finds a component that implements IActionListener, or it reaches the desktop.
-	Method FireActionPerformed:Void(action:String)
-		Local al:IActionListener = actionListener
-		If al = Null Then al = FindActionTarget()
-		If al <> Null Then al.ActionPerformed(Self, action)
-		' if al is null here, something is seriously wrong!!!
-	End
-	
 	'FIXME: Shouldn't need Object casts for interfaces
 	Method FindActionTarget:IActionListener()
 		' traverse up the hierarchy and find the closest ActionListener to receive the actions
@@ -665,26 +685,6 @@ Public
 		End
 	End
 	
-	' Calls ApplySkin on all of this component's children.
-	Method ApplySkin:Void()
-		For Local i:Int = 0 Until children.Size
-			children.Get(i).ApplySkin()
-		Next
-	End
-	
-	' Reads the styles from the XML node.
-	Method LoadStyles:Void(node:XMLElement)
-		If node = Null Then Return
-		' copy styles
-		For Local i:Int = 0 Until node.Children.Size
-			Local styleNode:XMLElement = node.Children.Get(i)
-			Local style:ComponentStyle = GetStyle(styleNode.GetAttribute("name"))
-			If style = Null Then style = New ComponentStyle
-			style.ReadFromNode(styleNode)
-			SetStyle(styleNode.GetAttribute("name"), style)
-		Next
-	End
-	
 	' Should be overridden by each component to provide a matching XML element name in the gui skin xml.
 	Method GetSkinNodeName:String()
 		Return SKIN_NODE_NONE
@@ -723,17 +723,120 @@ Public
 			SetSize(minimumWidth,minimumHeight)
 		End
 	End
-End
+	
+	' Fires an ActionPerformed event to the assigned ActionListener.  If no action listener is assigned, it loops through
+	' the parent hierarchy until it finds a component that implements IActionListener, or it reaches the desktop.
+	Method FireActionPerformed:Void(source:Component, action:String)
+		' first do internal
+		If internalActionListener <> Null Then internalActionListener.ActionPerformed(Self, action)
+		' now user defined
+		Local al:IActionListener = actionListener
+		If al = Null Then al = FindActionTarget()
+		If al <> Null Then al.ActionPerformed(Self, action)
+		' if al is null here, something is seriously wrong!!!
+	End
+	
+	Method FireMousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseListener <> Null Then internalMouseListener.MousePressed(source, x, y, button, absoluteX, absoluteY)
+		' now user defined
+		If mouseListener <> Null Then mouseListener.MousePressed(source, x, y, button, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseReleased:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseListener <> Null Then internalMouseListener.MouseReleased(source, x, y, button, absoluteX, absoluteY)
+		' now user defined
+		If mouseListener <> Null Then mouseListener.MouseReleased(source, x, y, button, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseClicked:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseListener <> Null Then internalMouseListener.MouseClicked(source, x, y, button, absoluteX, absoluteY)
+		' now user defined
+		If mouseListener <> Null Then mouseListener.MouseClicked(source, x, y, button, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseEntered:Void(source:Component, x:Int, y:Int, exitedComp:Component, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseListener <> Null Then internalMouseListener.MouseEntered(source, x, y, exitedComp, absoluteX, absoluteY)
+		' now user defined
+		If mouseListener <> Null Then mouseListener.MouseEntered(source, x, y, exitedComp, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseExited:Void(source:Component, x:Int, y:Int, enteredComp:Component, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseListener <> Null Then internalMouseListener.MouseExited(source, x, y, enteredComp, absoluteX, absoluteY)
+		' now user defined
+		If mouseListener <> Null Then mouseListener.MouseExited(source, x, y, enteredComp, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseMoved:Void(source:Component, x:Int, y:Int, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseMotionListener <> Null Then internalMouseMotionListener.MouseMoved(source, x, y, absoluteX, absoluteY)
+		' now user defined
+		If mouseMotionListener <> Null Then mouseMotionListener.MouseMoved(source, x, y, absoluteX, absoluteY)
+	End
+	
+	Method FireMouseDragged:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
+		' first do internal
+		If internalMouseMotionListener <> Null Then internalMouseMotionListener.MouseDragged(source, x, y, button, absoluteX, absoluteY)
+		' now user defined
+		If mouseMotionListener <> Null Then mouseMotionListener.MouseDragged(source, x, y, button, absoluteX, absoluteY)
+	End
+	
+	Method FireKeyPressed:Void(source:Component, keychar:String, keycode:Int)
+		' first do internal
+		If internalKeyListener <> Null Then internalKeyListener.KeyPressed(source, keychar, keycode)
+		' now user defined
+		If keyListener <> Null Then keyListener.KeyPressed(source, keychar, keycode)
+	End
+	
+	Method FireKeyReleased:Void(source:Component, keychar:String, keycode:Int)
+		' first do internal
+		If internalKeyListener <> Null Then internalKeyListener.KeyReleased(source, keychar, keycode)
+		' now user defined
+		If keyListener <> Null Then keyListener.KeyReleased(source, keychar, keycode)
+	End
+	
+	Method FireKeyRepeated:Void(source:Component, keychar:String, keycode:Int)
+		' first do internal
+		If internalKeyListener <> Null Then internalKeyListener.KeyRepeated(source, keychar, keycode)
+		' now user defined
+		If keyListener <> Null Then keyListener.KeyRepeated(source, keychar, keycode)
+	End
+	
+	Method FireKeyTyped:Void(source:Component, keychar:String, keycode:Int)
+		' first do internal
+		If internalKeyListener <> Null Then internalKeyListener.KeyTyped(source, keychar, keycode)
+		' now user defined
+		If keyListener <> Null Then keyListener.KeyTyped(source, keychar, keycode)
+	End
+	
+	Method FireFocusGained:Void(source:Component, oldFocus:Component)
+		' first do internal
+		If internalFocusListener <> Null Then internalFocusListener.FocusGained(source, oldFocus)
+		' now user defined
+		If focusListener <> Null Then focusListener.FocusGained(source, oldFocus)
+	End
+	
+	Method FireFocusLost:Void(source:Component, newFocus:Component)
+		' first do internal
+		If internalFocusListener <> Null Then internalFocusListener.FocusLost(source, newFocus)
+		' now user defined
+		If focusListener <> Null Then focusListener.FocusLost(source, newFocus)
+	End
+End ' Class Component
 
 Class ComponentStyle
 Public
 ' Constants
-
 	Const IMAGE_NORMAL:Int = 0
 	Const IMAGE_HOVER:Int = 1
 	Const IMAGE_DOWN:Int = 2
 	Const IMAGE_DISABLED:Int = 3
-	Const IMAGE_COUNT:Int = 4
+	Const IMAGE_FOCUS:Int = 4
+	Const IMAGE_COUNT:Int = 5
 
 	Const IMAGE_MODE_NORMAL:String = "normal"
 	Const IMAGE_MODE_TILE:String = "tile"
@@ -741,7 +844,6 @@ Public
 	Const IMAGE_MODE_GRID:String = "grid"
 
 ' Public fields
-
 	Field drawBackground:Bool = True
 	Field red:Int = 255
 	Field green:Int = 255
@@ -773,7 +875,6 @@ Public
 	Field exitSound:String = ""
 	
 ' Constructors
-
 	Method New()
 		For Local i% = 0 Until IMAGE_COUNT
 			imageMode[i] = ""
@@ -781,7 +882,6 @@ Public
 	End
 
 ' Public methods
-
 	Method ReadFromNode:Void(node:XMLElement)
 		drawBackground = node.GetAttribute("drawBackground", "false") = "true"
 		red = Int(node.GetAttribute("red", "255"))
@@ -807,6 +907,8 @@ Public
 				imageType = IMAGE_DOWN
 			ElseIf subNode.Name = "disabledImage" Then
 				imageType = IMAGE_DISABLED
+			ElseIf subNode.Name = "focusImage" Then
+				imageType = IMAGE_FOCUS
 			End
 			
 			If imageType >= 0 Then
@@ -836,13 +938,11 @@ End ' Class ComponentStyle
 Class GUIDesktop Extends Component
 Private
 ' Private fields
-
 	Field restrictWindows:Bool = True
 	Field parentGUI:GUI
 	
 Public
 ' Properties
-
 	' RestrictWindows is read/write
 	Method RestrictWindows:Bool() Property
 		Return restrictWindows
@@ -857,7 +957,10 @@ Public
 	End
 	
 ' Constructors
-
+	Method New()
+		AssertError("Must pass a parent GUI.")
+	End
+	
 	Method New(parentGUI:GUI)
 		Super.New(Null)
 		Self.parentGUI = parentGUI
@@ -865,9 +968,17 @@ Public
 End ' Class GUIDesktop
 
 Class Panel Extends Component
+Private
+' Private methods
+	Method ApplySkin:Void()
+		Super.ApplySkin()
+		For Local i:Int = 0 Until children.Size
+			children.Get(i).ApplySkin()
+		Next
+	End
+
 Public
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
@@ -880,7 +991,6 @@ End ' Class Panel
 Class Window Extends Component
 Private
 ' Private fields
-
 	Field contentPane:Panel
 	Field titlePane:Label
 	Field buttonPane:Panel
@@ -936,18 +1046,17 @@ Private
 	Field title:String = ""
 	
 ' Private methods
-
 	Method CreateButtonPane:Void()
 		buttonPane = New Panel(Self)
 		shadeButton = New Button(buttonPane)
-		shadeButton.ActionListener = internalWindowAdapter
+		shadeButton.internalActionListener = internalWindowAdapter
 		minimizeButton = New Button(buttonPane)
-		minimizeButton.ActionListener = internalWindowAdapter
+		minimizeButton.internalActionListener = internalWindowAdapter
 		maximizeButton = New Button(buttonPane)
 		maximizeButton.toggle = True
-		maximizeButton.ActionListener = internalWindowAdapter
+		maximizeButton.internalActionListener = internalWindowAdapter
 		closeButton = New Button(buttonPane)
-		closeButton.ActionListener = internalWindowAdapter
+		closeButton.internalActionListener = internalWindowAdapter
 	End
 	
 	Method CreateContentPane:Void()
@@ -958,8 +1067,8 @@ Private
 	Method CreateTitlePane:Void()
 		titlePane = New Label(Self)
 		titlePane.SetBackground(False)
-		titlePane.MouseListener = internalWindowAdapter
-		titlePane.MouseMotionListener = internalWindowAdapter
+		titlePane.internalMouseListener = internalWindowAdapter
+		titlePane.internalMouseMotionListener = internalWindowAdapter
 		titlePane.text = title
 		titlePane.textRed = 0
 		titlePane.textGreen = 0
@@ -989,9 +1098,41 @@ Private
 			SetBounds(normalX, normalY, normalWidth, contentPaneTop)
 		End
 	End
+	
+	Method ReadSkinFields:Void(node:XMLElement)
+		Super.ReadSkinFields(node)
+		contentPaneLeft   = Int(node.GetAttribute("contentPaneLeft","0"))
+		contentPaneRight  = Int(node.GetAttribute("contentPaneRight","-1"))
+		contentPaneTop    = Int(node.GetAttribute("contentPaneTop","0"))
+		contentPaneBottom = Int(node.GetAttribute("contentPaneBottom","-1"))
+		titlePaneLeft     = Int(node.GetAttribute("titlePaneLeft","0"))
+		titlePaneRight    = Int(node.GetAttribute("titlePaneRight","-1"))
+		titlePaneTop      = Int(node.GetAttribute("titlePaneTop","0"))
+		titlePaneBottom   = Int(node.GetAttribute("titlePaneBottom","-1"))
+		buttonPaneRight   = Int(node.GetAttribute("buttonPaneRight","-1"))
+		buttonPaneTop     = Int(node.GetAttribute("buttonPaneTop","0"))
+		buttonPaneBottom  = Int(node.GetAttribute("buttonPaneBottom","-1"))
+		buttonWidth       = Int(node.GetAttribute("buttonWidth","17"))
+		buttonHeight      = Int(node.GetAttribute("buttonHeight","17"))
+		buttonMargin      = Int(node.GetAttribute("buttonMargin","1"))
+		titlePaneTextXOffset = Int(node.GetAttribute("titlePaneTextXOffset","0"))
+		titlePaneTextYOffset = Int(node.GetAttribute("titlePaneTextYOffset","0"))
+	End
+	
+	Method LoadStyles:Void(node:XMLElement)
+		Super.LoadStyles(node)
+		If styleShadeButton <> Null Then shadeButton.StyleNormal = styleShadeButton
+		If styleMinimizeButton <> Null Then minimizeButton.StyleNormal = styleMinimizeButton
+		If styleMaximizeButton <> Null Then maximizeButton.StyleNormal = styleMaximizeButton
+		If styleRestoreButton <> Null Then maximizeButton.StyleSelected = styleRestoreButton
+		If styleCloseButton <> Null Then closeButton.StyleNormal = styleCloseButton
+		If styleContentPane <> Null Then contentPane.StyleNormal = styleContentPane
+		If styleTitlePane <> Null Then titlePane.StyleNormal = styleTitlePane
+		If styleButtonPane <> Null Then buttonPane.StyleNormal = styleButtonPane
+	End
+	
 Public
 ' Properties
-
 	' Title is read/write and updates the title pane's text.
 	Method Title:String() Property
 		Return title
@@ -1101,7 +1242,6 @@ Public
 	End
 	
 ' Constructors
-
 	Method New()
 		AssertError("Must pass a desktop.")
 	End
@@ -1117,7 +1257,6 @@ Public
 	End
 	
 ' Overrides Component
-
 	' Lays out all the panels and buttons.
 	Method Layout:Void()
 		If contentPane = Null Then Return
@@ -1199,41 +1338,8 @@ Public
 		Return SKIN_NODE_WINDOW
 	End
 	
-	' Applies custom styles to each of the child components.
 	Method ApplySkin:Void()
-		Local thisGUI:GUI = FindGUI()
-		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
-		If node <> Null Then
-			LoadStyles(node)
-			
-			If styleShadeButton <> Null Then shadeButton.StyleNormal = styleShadeButton
-			If styleMinimizeButton <> Null Then minimizeButton.StyleNormal = styleMinimizeButton
-			If styleMaximizeButton <> Null Then maximizeButton.StyleNormal = styleMaximizeButton
-			If styleRestoreButton <> Null Then maximizeButton.StyleSelected = styleRestoreButton
-			If styleCloseButton <> Null Then closeButton.StyleNormal = styleCloseButton
-			If styleContentPane <> Null Then contentPane.StyleNormal = styleContentPane
-			If styleTitlePane <> Null Then titlePane.StyleNormal = styleTitlePane
-			If styleButtonPane <> Null Then buttonPane.StyleNormal = styleButtonPane
-			
-			contentPaneLeft   = Int(node.GetAttribute("contentPaneLeft","0"))
-			contentPaneRight  = Int(node.GetAttribute("contentPaneRight","-1"))
-			contentPaneTop    = Int(node.GetAttribute("contentPaneTop","0"))
-			contentPaneBottom = Int(node.GetAttribute("contentPaneBottom","-1"))
-			titlePaneLeft     = Int(node.GetAttribute("titlePaneLeft","0"))
-			titlePaneRight    = Int(node.GetAttribute("titlePaneRight","-1"))
-			titlePaneTop      = Int(node.GetAttribute("titlePaneTop","0"))
-			titlePaneBottom   = Int(node.GetAttribute("titlePaneBottom","-1"))
-			buttonPaneRight   = Int(node.GetAttribute("buttonPaneRight","-1"))
-			buttonPaneTop     = Int(node.GetAttribute("buttonPaneTop","0"))
-			buttonPaneBottom  = Int(node.GetAttribute("buttonPaneBottom","-1"))
-			buttonWidth       = Int(node.GetAttribute("buttonWidth","17"))
-			buttonHeight      = Int(node.GetAttribute("buttonHeight","17"))
-			buttonMargin      = Int(node.GetAttribute("buttonMargin","1"))
-			titlePaneTextXOffset = Int(node.GetAttribute("titlePaneTextXOffset","0"))
-			titlePaneTextYOffset = Int(node.GetAttribute("titlePaneTextYOffset","0"))
-			
-			Layout()
-		End
+		Super.ApplySkin()
 		If contentPane <> Null Then contentPane.ApplySkin()
 	End
 	
@@ -1264,7 +1370,6 @@ End ' Class Window
 Class Label Extends Component
 Private
 ' Private fields
-
 	Field text:String
 	Field textRed:Int, textGreen:Int, textBlue:Int
 	Field textXOffset:Int = 0
@@ -1275,9 +1380,17 @@ Private
 
 	Field simpleNormalImage:GameImage
 	
+	Method ReadSkinFields:Void(node:XMLElement)
+		Super.ReadSkinFields(node)
+		textXOffset = Int(node.GetAttribute("textXOffset", "5"))
+		textYOffset = Int(node.GetAttribute("textYOffset", "14"))
+		textXAlign = Float(node.GetAttribute("textXAlign", "0"))
+		textYAlign = Float(node.GetAttribute("textYAlign", "0"))
+		useBaseline = (node.GetAttribute("useBaseline","true") = "true")
+	End
+	
 Public
 ' Properties
-
 	' Text is read/write
 	Method Text:String() Property
 		Return text
@@ -1304,7 +1417,6 @@ Public
 	End
 	
 ' Constructors
-
 	Method New(parent:Component, simpleNormalImage:GameImage=Null)
 		Super.New(parent)
 		If simpleNormalImage <> Null Then
@@ -1313,10 +1425,10 @@ Public
 			Self.SetPreferredSize(simpleNormalImage.w, simpleNormalImage.h)
 			Self.SetSize(simpleNormalImage.w, simpleNormalImage.h)
 		End
+		ApplySkin()
 	End
 
 ' Overrides Component
-
 	' Overrides Component.DrawComponent() to render the text.
 	Method DrawComponent:Void()
 		If simpleNormalImage <> Null Then
@@ -1332,12 +1444,15 @@ Public
 			End
 		End
 	End
+	
+	Method GetSkinNodeName:String()
+		Return SKIN_NODE_LABEL
+	End
 End ' Class Label
 
 Class Button Extends Label
 Private
 ' Private fields
-
 	Field styleSelected:ComponentStyle = Null
 	Field internalButtonAdapter:InternalButtonAdapter
 	Field selected:Bool
@@ -1349,9 +1464,14 @@ Private
 	Field simpleSelectedHoverImage:GameImage
 	Field simpleSelectedDownImage:GameImage
 	
+' Private methods
+	Method ReadSkinFields:Void(node:XMLElement)
+		Super.ReadSkinFields(node)
+		toggle = (node.GetAttribute("toggle","false") = "true")
+	End
+
 Public
 ' Properties
-
 	' StyleSelected is read/write
 	Method StyleSelected:ComponentStyle() Property
 		If styleSelected = Null Then styleSelected = New ComponentStyle
@@ -1379,9 +1499,17 @@ Public
 	
 	' SimpleNormalImage is read/write
 	Method SimpleNormalImage:GameImage() Property
+		Return simpleNormalImage
+	End
+	Method SimpleNormalImage:Void(simpleNormalImage:GameImage) Property
+		Self.simpleNormalImage = simpleNormalImage
+	End
+	
+	' SimpleHoverImage is read/write
+	Method SimpleHoverImage:GameImage() Property
 		Return simpleHoverImage
 	End
-	Method SimpleNormalImage:Void(simpleHoverImage:GameImage) Property
+	Method SimpleHoverImage:Void(simpleHoverImage:GameImage) Property
 		Self.simpleHoverImage = simpleHoverImage
 	End
 	
@@ -1418,15 +1546,15 @@ Public
 	End
 	
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
 	
 	Method New(parent:Component, simpleNormalImage:GameImage=Null, simpleHoverImage:GameImage=Null, simpleDownImage:GameImage=Null)
 		Super.New(parent)
+		focusable = True
 		internalButtonAdapter = New InternalButtonAdapter(Self)
-		MouseListener = internalButtonAdapter
+		internalMouseListener = internalButtonAdapter
 		If simpleDownImage <> Null Then
 			CheckMidhandle(simpleDownImage)
 			Self.simpleDownImage = simpleDownImage
@@ -1445,7 +1573,6 @@ Public
 	End
 	
 ' Overrides Component
-
 	Method DrawComponent:Void()
 		Local simple:GameImage = Null
 		If selected Then
@@ -1488,20 +1615,6 @@ Public
 		Return Super.GetCurrentStyle()
 	End
 	
-	Method ApplySkin:Void()
-		Local thisGUI:GUI = FindGUI()
-		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
-		If node <> Null Then
-			LoadStyles(node)
-			textXOffset = Int(node.GetAttribute("textXOffset", "0"))
-			textYOffset = Int(node.GetAttribute("textYOffset", "0"))
-			textXAlign = Float(node.GetAttribute("textXAlign", "0"))
-			textYAlign = Float(node.GetAttribute("textXAlign", "0"))
-			useBaseline = (node.GetAttribute("useBaseline","false") = "true")
-			toggle = (node.GetAttribute("toggle","false") = "true")
-		End
-	End
-	
 	Method GetSkinNodeName:String()
 		Return SKIN_NODE_BUTTON
 	End
@@ -1510,13 +1623,11 @@ End ' Class Button
 Class RadioButton Extends Button
 Private
 ' Private fields
-
 	Field radioGroup:RadioGroup
 	Field radioValue:String
 
 Public
 ' Properties
-
 	' AssignedRadioGroup is read only (remove the RadioButton through the group itself)
 	Method AssignedRadioGroup:RadioGroup() Property
 		Return radioGroup
@@ -1534,7 +1645,6 @@ Public
 	End
 	
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
@@ -1557,7 +1667,6 @@ Public
 	End
 
 ' Overrides Component
-
 	' Overrides Component.GetSkinNodeName() to return the node name of "radio".	
 	Method GetSkinNodeName:String()
 		Return SKIN_NODE_RADIO
@@ -1567,7 +1676,6 @@ End ' Class RadioButton
 Class Checkbox Extends Button
 Public
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
@@ -1590,7 +1698,6 @@ Public
 	End
 	
 ' Overrides Component
-
 	' Overrides Component.GetSkinNodeName() to return the node name of "checkbox".	
 	Method GetSkinNodeName:String()
 		Return SKIN_NODE_CHECKBOX
@@ -1600,13 +1707,11 @@ End ' Class Checkbox
 Class RadioGroup
 Private
 ' Private fields
-
 	Field buttons:ArrayList<RadioButton> = New ArrayList<RadioButton>
 	Field currentValue:String
 	
 Public
 ' Properties
-
 	' RadioButtons is read only
 	Method RadioButtons:ArrayList<RadioButton>() Property
 		Return buttons
@@ -1640,7 +1745,6 @@ Public
 	End
 	
 ' Public methods
-
 	Method AddButton:Void(button:RadioButton, value:String)
 		button.radioValue = value
 		button.radioGroup = Self
@@ -1657,7 +1761,6 @@ End
 Class Slider Extends Component
 Public
 ' Constants
-
 	Const SLIDER_HORIZONTAL:Int = 0
 	Const SLIDER_VERTICAL:Int = 1
 	Const SLIDER_DIRECTION_TL_TO_BR:Int = 0 ' min is top or left, max is bottom or right
@@ -1665,7 +1768,6 @@ Public
 	
 Private
 ' Private fields
-
 	Field buttonUpLeft:Button ' the button used for up and left
 	Field buttonDownRight:Button ' the button used for down and right
 	Field handle:Label
@@ -1707,7 +1809,6 @@ Private
 	Field snapToTicks:Bool = True
 
 ' Private methods
-
 	Method DoDrag:Int(mx:Int, my:Int)
 		Local pos:Int, topLeft:Int = handleMargin, bottomRight:Int = -handleMargin
 		If showButtons Then
@@ -1730,7 +1831,7 @@ Private
 		' if it changed, update the layout and fire an event
 		If value <> oldValue Then
 			Layout()
-			FireActionPerformed(ACTION_VALUE_CHANGED)
+			FireActionPerformed(Self, ACTION_VALUE_CHANGED)
 		End
 	End
 	
@@ -1748,9 +1849,20 @@ Private
 		End
 	End
 	
+	Method ReadSkinFields:Void(node:XMLElement)
+		handleMargin = Int(node.GetAttribute("handleMargin", "8"))
+		leftButtonWidth = Int(node.GetAttribute("leftButtonWidth", "15"))
+		leftButtonHeight = Int(node.GetAttribute("leftButtonHeight", "16"))
+		rightButtonWidth = Int(node.GetAttribute("rightButtonWidth", "15"))
+		rightButtonHeight = Int(node.GetAttribute("rightButtonHeight", "16"))
+		topButtonWidth = Int(node.GetAttribute("topButtonWidth", "16"))
+		topButtonHeight = Int(node.GetAttribute("topButtonHeight", "15"))
+		bottomButtonWidth = Int(node.GetAttribute("bottomButtonWidth", "16"))
+		bottomButtonHeight = Int(node.GetAttribute("bottomButtonHeight", "15"))
+	End
+	
 Public
 ' Properties
-
 	' ShowButtons is read/write and fires off a Layout()
 	Method ShowButtons:Bool() Property
 		Return showButtons
@@ -1829,7 +1941,6 @@ Public
 	End
 
 ' Constructors
-
 	Method New()
 		NoParent()
 	End
@@ -1840,20 +1951,20 @@ Public
 		
 		bar = New Label(Self)
 		bar.zOrderLocked = True
-		bar.MouseListener = internalSliderAdapter
-		bar.MouseMotionListener = internalSliderAdapter
+		bar.internalMouseListener = internalSliderAdapter
+		bar.internalMouseMotionListener = internalSliderAdapter
 		
 		buttonUpLeft = New Button(Self)
-		buttonUpLeft.ActionListener = internalSliderAdapter
+		buttonUpLeft.internalActionListener = internalSliderAdapter
 		buttonUpLeft.zOrderLocked = True
 		
 		buttonDownRight = New Button(Self)
-		buttonDownRight.ActionListener = internalSliderAdapter
+		buttonDownRight.internalActionListener = internalSliderAdapter
 		buttonDownRight.zOrderLocked = True
 		
 		handle = New Label(Self)
-		handle.MouseListener = internalSliderAdapter
-		handle.MouseMotionListener = internalSliderAdapter
+		handle.internalMouseListener = internalSliderAdapter
+		handle.internalMouseMotionListener = internalSliderAdapter
 		handle.zOrderLocked = True
 		
 		buttonUpLeft.visible = False
@@ -1863,7 +1974,6 @@ Public
 	End
 
 ' Public methods
-
 	Method SnapToValue:Int(val:Int)
 		If val < minValue Then
 			val = minValue
@@ -1906,13 +2016,12 @@ Public
 		' if it changed, update the layout and fire an event
 		If value <> oldValue Then
 			Layout()
-			FireActionPerformed(ACTION_VALUE_CHANGED)
+			FireActionPerformed(Self, ACTION_VALUE_CHANGED)
 		End
 		Return value <> oldValue
 	End
 
 ' Overrides Component
-
 	Method GetStyle:ComponentStyle(name:String)
 		If name = "leftButton" Then
 			Return styleLeftButton
@@ -1989,25 +2098,6 @@ Public
 			handle.SetBounds(0, currentVal-handleSize/2, Self.w, handleSize)
 		End
 	End
-		
-	Method ApplySkin:Void()
-		Local thisGUI:GUI = FindGUI()
-		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
-		If node <> Null Then
-			LoadStyles(node)
-			
-			handleMargin = Int(node.GetAttribute("handleMargin", "8"))
-			leftButtonWidth = Int(node.GetAttribute("leftButtonWidth", "15"))
-			leftButtonHeight = Int(node.GetAttribute("leftButtonHeight", "16"))
-			rightButtonWidth = Int(node.GetAttribute("rightButtonWidth", "15"))
-			rightButtonHeight = Int(node.GetAttribute("rightButtonHeight", "16"))
-			topButtonWidth = Int(node.GetAttribute("topButtonWidth", "16"))
-			topButtonHeight = Int(node.GetAttribute("topButtonHeight", "15"))
-			bottomButtonWidth = Int(node.GetAttribute("bottomButtonWidth", "16"))
-			bottomButtonHeight = Int(node.GetAttribute("bottomButtonHeight", "15"))
-			Layout()
-		End
-	End
 	
 	Method GetSkinNodeName:String()
 		Return SKIN_NODE_SLIDER
@@ -2027,13 +2117,11 @@ Private
 	
 Public
 ' Constructors
-
 	Method New(slider:Slider)
 		Self.slider = slider
 	End
 	
 ' Implements IActionListener
-
 	Method ActionPerformed:Void(source:Component, action:String)
 		If source = slider.buttonUpLeft And action = ACTION_CLICKED Then
 			If slider.direction = Slider.SLIDER_DIRECTION_TL_TO_BR Then
@@ -2051,7 +2139,6 @@ Public
 	End
 	
 ' Implements IMouseListener
-
 	Method MousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 		If slider.dragging Then Return
 		slider.dragging = True
@@ -2081,7 +2168,6 @@ Public
 	End
 	
 ' Implements IMouseMotionListener
-
 	Method MouseMoved:Void(source:Component, x:Int, y:Int, absoluteX:Int, absoluteY:Int)
 	End
 	
@@ -2099,18 +2185,15 @@ End ' Class InternalSliderAdapter
 Class InternalWindowAdapter Implements IActionListener, IMouseListener, IMouseMotionListener
 Private
 ' Private fields
-
 	Field window:Window
 
 Public
 ' Constructors
-	
 	Method New(window:Window)
 		Self.window = window
 	End
 
 ' Implements IActionListener
-	
 	Method ActionPerformed:Void(source:Component, action:String)
 		If source = window.closeButton And action = ACTION_CLICKED Then
 			window.Dispose()
@@ -2124,7 +2207,6 @@ Public
 	End
 	
 ' Implements IMouseListener
-
 	Method MousePressed:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 		If window.dragging Then Return
 		If window.maximized Or window.minimized Then Return
@@ -2149,7 +2231,6 @@ Public
 	End
 
 ' Implements IMouseMotionListener
-	
 	Method MouseMoved:Void(source:Component, x:Int, y:Int, absoluteX:Int, absoluteY:Int)
 	End
 	
@@ -2173,11 +2254,9 @@ End ' Class InternalWindowAdapter
 Class InternalButtonAdapter Implements IMouseListener
 Private
 ' Private fields
-
 	Field button:Button
 	
 ' Private methods
-
 	Method DoClick:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 		' is it a radio button?
 		If RadioButton(Self.button) <> Null And RadioButton(Self.button).radioGroup <> Null Then
@@ -2186,18 +2265,16 @@ Private
 		ElseIf Self.button.toggle Then
 			Self.button.selected = Not Self.button.selected
 		End
-		Self.button.FireActionPerformed(ACTION_CLICKED)
+		Self.button.FireActionPerformed(Self.button, ACTION_CLICKED)
 	End
 	
 Public
 ' Constructors
-
 	Method New(button:Button)
 		Self.button = button
 	End
 	
 ' Implements IMouseListener
-
 	Method MouseClicked:Void(source:Component, x:Int, y:Int, button:Int, absoluteX:Int, absoluteY:Int)
 #If TARGET="ios" Or TARGET="android" Then
 		If Self.button.simpleNormalImage = Null Then DoClick(source, x, y, button, absoluteX, absoluteY)
