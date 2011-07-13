@@ -32,7 +32,22 @@ Extern
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy.setGraphics"
 	#End
+	
+	#If LANG="java" Then
+		Function BuildString:String(arr:Int[], offset:Int, length:Int) = "diddy.buildString"
+	#End
 Public
+
+#If LANG <> "java" Then
+	Function BuildString:String(arr:Int[], offset:Int, length:Int)
+		If offset<0 Or length<=0 Or offset+length > arr.Length Then Return ""
+		Local rv:String = String.FromChar(arr[offset])
+		For Local i:Int = offset+1 Until offset+length
+			rv += String.FromChar(arr[i])
+		Next
+		Return rv
+	End
+#End
 
 Function SetGraphics:Void(w:Int, h:Int)
 	SetNativeGraphicsSize(w, h)
@@ -454,8 +469,3 @@ Const ASC_PIPE:Int = 124        '|'
 Const ASC_CLOSE_BRACE:Int = 125 '}'
 Const ASC_TILDE:Int = 126       '~'
 Const ASC_DELETE:Int = 127
-
-
-
-
-

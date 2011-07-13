@@ -92,5 +92,13 @@ class diddy
 		MonkeyGame.activity.startActivity(emailIntent);
 	}
 
-	
+	static String buildString(int[] arr, int offset, int length) {
+		if(offset<0 || length<=0 || offset+length > arr.length)
+			return "";
+		StringBuilder sb = new StringBuilder(length);
+		for(int i=offset;i<offset+length;i++) {
+			sb.append((char)arr[i]);
+		}
+		return sb.toString().intern();
+	}
 }
