@@ -38,11 +38,21 @@ class diddy
 	}
 	static void launchBrowser(String address)
 	{
-		NSString *stringUrl = tonsstr(address);
-		NSURL *nsUrl = [NSURL URLWithString:stringUrl];
-		[[UIApplication sharedApplication] openURL:nsUrl];
+		NSString *NSstrURL = address.ToNSString();
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:NSstrURL]];
 	}
 	static void launchEmail(String email, String subject, String text)
 	{
+		NSString *NSstrMailAdress = email.ToNSString();
+		NSString *NSstrBody = text.ToNSString();
+		NSstrBody = [NSstrBody stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		NSString *NSstrSubject = subject.ToNSString();
+		NSstrSubject = [NSstrSubject stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+		NSString *message = [NSString stringWithFormat:@"mailto:%@?subject=%@&body=%@",NSstrMailAdress,NSstrSubject,NSstrBody];
+
+		//Open E-Mail And add message
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:message]];
+
 	}
 };
