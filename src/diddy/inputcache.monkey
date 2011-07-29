@@ -4,6 +4,20 @@ Import mojo
 Import assert
 Import functions
 
+Private
+
+Global charForCodeArray:Int[]
+Global charForShiftCodeArray:Int[]
+
+' warning: do not try to use these externally! they are here until Mark fixes the official monkey constants in input.monkey
+Const VK_ALT:Int = 18
+Const VK_SEMICOLON:Int = 59
+Const VK_EQUALS:Int = 107
+Const VK_HYPHEN:Int = 109
+Const VK_BACKSLASH:Int = 220
+
+Public
+
 Const EVENT_KEY_DOWN:Int = 1
 Const EVENT_KEY_RELEASED:Int = 2
 Const EVENT_KEY_HIT:Int = 3
@@ -18,9 +32,14 @@ Private
 	Field keyReleasedWrapper:EnumWrapper<KeyEventEnumerator>
 	
 Public
+	Const FIRST_KEY:Int = KEY_BACKSPACE
+	Const LAST_KEY:Int = KEY_QUOTES
+	
 	Const TOUCH_COUNT:Int = 32
 	Const MOUSE_COUNT:Int = 3
-	Const KEY_COUNT:Int = 512
+	Const KEY_COUNT:Int = LAST_KEY-FIRST_KEY+1
+	
+	Const INPUT_COUNT:Int = 512
 	
 	' TouchHit() for 0-31
 	Field touchHit:Int[] = New Int[TOUCH_COUNT]
@@ -93,17 +112,17 @@ Public
 	Field currentMouseReleased:Int[] = New Int[MOUSE_COUNT]
 	
 	' KeyHit() for each monitored key
-	Field keyHit:Int[] = New Int[KEY_COUNT]
+	Field keyHit:Int[] = New Int[INPUT_COUNT]
 	' The time it was hit
-	Field keyHitTime:Int[] = New Int[KEY_COUNT]
+	Field keyHitTime:Int[] = New Int[INPUT_COUNT]
 	' KeyDown() for each monitored key
-	Field keyDown:Int[] = New Int[KEY_COUNT]
+	Field keyDown:Int[] = New Int[INPUT_COUNT]
 	' The time it was first down
-	Field keyDownTime:Int[] = New Int[KEY_COUNT]
+	Field keyDownTime:Int[] = New Int[INPUT_COUNT]
 	' KeyDown() is false but was true last loop
-	Field keyReleased:Int[] = New Int[KEY_COUNT]
+	Field keyReleased:Int[] = New Int[INPUT_COUNT]
 	' The time it was released
-	Field keyReleasedTime:Int[] = New Int[KEY_COUNT]
+	Field keyReleasedTime:Int[] = New Int[INPUT_COUNT]
 	' is any monitored key down?
 	Field keyDownCount:Int
 	' was any monitored key hit?
@@ -111,14 +130,14 @@ Public
 	' was any monitored key released?
 	Field keyReleasedCount:Int
 	' If true, we should monitor that key (defaults To false)
-	Field monitorKey:Bool[] = New Bool[KEY_COUNT]
+	Field monitorKey:Bool[] = New Bool[INPUT_COUNT]
 	' the number of keys we are monitoring; this is so we can skip key checks if we aren't monitoring any
 	Field monitorKeyCount:Int = 0
 	
 	' the index of keys that were hit, released, or down (use keyHitCount, keyDownCount, keyReleasedCount]
-	Field currentKeysHit:Int[] = New Int[KEY_COUNT]
-	Field currentKeysDown:Int[] = New Int[KEY_COUNT]
-	Field currentKeysReleased:Int[] = New Int[KEY_COUNT]
+	Field currentKeysHit:Int[] = New Int[INPUT_COUNT]
+	Field currentKeysDown:Int[] = New Int[INPUT_COUNT]
+	Field currentKeysReleased:Int[] = New Int[INPUT_COUNT]
 	
 ' Properties
 	Method KeysHit:EnumWrapper<KeyEventEnumerator>() Property
@@ -176,10 +195,12 @@ Public
 			keyDown[i] = 0
 			keyReleased[i] = 0
 		Next
-		
-		' we still monitor shift/ctrl
-		monitorKey[KEY_SHIFT] = True
-		monitorKey[KEY_CONTROL] = True
+	End
+	
+	Method MonitorAll:Void(val:Bool=True)
+		MonitorMouse(val)
+		MonitorTouch(val)
+		MonitorAllKeys(val)
 	End
 	
 	Method MonitorAllKeys:Void(val:Bool=True)
@@ -188,15 +209,12 @@ Public
 		Else
 			monitorKeyCount = 0
 		End
-		For Local i:Int = 0 Until KEY_COUNT
+		For Local i:Int = FIRST_KEY To LAST_KEY
 			monitorKey[i] = val
 			keyHit[i] = 0
 			keyDown[i] = 0
 			keyReleased[i] = 0
 		Next
-		' we still monitor shift/ctrl
-		monitorKey[KEY_SHIFT] = True
-		monitorKey[KEY_CONTROL] = True
 	End
 	
 	Method MonitorKey:Void(keyNum:Int, val:Bool=True)
@@ -229,6 +247,12 @@ Public
 		mouseDownCount = 0
 		mouseHitCount = 0
 		mouseReleasedCount = 0
+	End
+	
+	Method MonitorControlKeys:Void(val:Bool=True)
+		MonitorKey(KEY_CONTROL, val)
+		MonitorKey(KEY_SHIFT, val)
+		MonitorKey(VK_ALT, val)
 	End
 	
 	Method ReadInput:Void()
@@ -337,7 +361,7 @@ Public
 		keyHitCount = 0
 		keyReleasedCount = 0
 		If monitorKeyCount > 0 Then
-			For Local i:Int = 0 Until KEY_COUNT
+			For Local i:Int = FIRST_KEY To LAST_KEY
 				If monitorKey[i] Then
 					' get the key hit
 					newval = KeyHit(i)
@@ -412,10 +436,14 @@ End
 Class KeyEvent Extends InputEvent
 Private
 	Field keyCode:Int
+	Field keyChar:Int
 	
 Public
 	Method KeyCode:Int() Property
 		Return keyCode
+	End
+	Method KeyChar:Int() Property
+		Return keyChar
 	End
 	
 	Method New(eventType:Int)
@@ -476,8 +504,9 @@ Public
 		index += 1
 		event.shiftDown = ic.keyDown[KEY_SHIFT]<>0
 		event.ctrlDown = ic.keyDown[KEY_CONTROL]<>0
-		'event.altDown = ic.keyDown[KEY_ALT] 'FIXME: apparently KEY_ALT doesn't exist in monkey
+		event.altDown = ic.keyDown[VK_ALT]<>0
 		event.keyCode = idx
+		event.keyChar = CharForCode(idx, event.shiftDown)
 		Return event
 	End
 End
@@ -496,4 +525,79 @@ Public
 		If InputEventEnumerator(wrappedEnum) <> Null Then InputEventEnumerator(wrappedEnum).Reset()
 		Return wrappedEnum
 	End
+End
+
+Function CharForCode:Int(code:Int, shiftDown:Bool)
+	BuildCharForCodeArray()
+	If shiftDown Then
+		Return charForShiftCodeArray[code]
+	Else
+		Return charForCodeArray[code]
+	End
+End
+
+Private
+
+' Builds up arrays to convert key codes to characters.
+' This is based off a US keyboard layout (sorry!)
+' I may look at doing something native to correctly match keyboards to locale.
+' warning: 107 seems to be the code for both the EQUALS in the number row and the PLUS on the number pad... wtf?
+Function BuildCharForCodeArray:Void()
+	If charForCodeArray.Length > 0 Then Return
+	charForCodeArray = New Int[InputCache.INPUT_COUNT]
+	charForShiftCodeArray = New Int[InputCache.INPUT_COUNT]
+	
+	' letters
+	For Local i:Int = KEY_A To KEY_Z
+		charForCodeArray[i] = i+32
+		charForShiftCodeArray[i] = i
+	Next
+	
+	' numbers
+	For Local i:Int = KEY_0 To KEY_9
+		charForCodeArray[i] = i
+	Next
+	
+	' keypad numbers
+	For Local i:Int = 96 To 105
+		charForCodeArray[i] = KEY_0 + i - 96
+	Next
+	
+	' shift-numbers
+	charForShiftCodeArray[KEY_0] = ASC_CLOSE_PARENTHESIS
+	charForShiftCodeArray[KEY_1] = ASC_EXCLAMATION
+	charForShiftCodeArray[KEY_2] = ASC_AT
+	charForShiftCodeArray[KEY_3] = ASC_HASH
+	charForShiftCodeArray[KEY_4] = ASC_DOLLAR
+	charForShiftCodeArray[KEY_5] = ASC_PERCENT
+	charForShiftCodeArray[KEY_6] = ASC_CIRCUMFLEX
+	charForShiftCodeArray[KEY_7] = ASC_AMPERSAND
+	charForShiftCodeArray[KEY_8] = ASC_ASTERISK
+	charForShiftCodeArray[KEY_9] = ASC_OPEN_PARENTHESIS
+	
+	charForCodeArray[VK_SEMICOLON] = ASC_SEMICOLON
+	charForCodeArray[VK_EQUALS] = ASC_EQUALS
+	charForCodeArray[KEY_COMMA] = ASC_COMMA
+	charForCodeArray[VK_HYPHEN] = ASC_HYPHEN
+	charForCodeArray[KEY_PERIOD] = ASC_PERIOD
+	charForCodeArray[KEY_SLASH] = ASC_SLASH
+	charForCodeArray[KEY_TILDE] = ASC_BACKTICK
+	charForCodeArray[KEY_OPENBRACKET] = ASC_OPEN_BRACKET
+	charForCodeArray[KEY_CLOSEBRACKET] = ASC_CLOSE_BRACKET
+	charForCodeArray[KEY_QUOTES] = ASC_DOUBLE_QUOTE
+	charForCodeArray[VK_BACKSLASH] = ASC_BACKSLASH
+	charForCodeArray[KEY_SPACE] = ASC_SPACE
+	
+	charForShiftCodeArray[VK_SEMICOLON] = ASC_COLON
+	charForShiftCodeArray[VK_EQUALS] = ASC_PLUS
+	charForShiftCodeArray[KEY_COMMA] = ASC_LESS_THAN
+	charForShiftCodeArray[VK_HYPHEN] = ASC_UNDERSCORE
+	charForShiftCodeArray[KEY_PERIOD] = ASC_GREATER_THAN
+	charForShiftCodeArray[KEY_SLASH] = ASC_QUESTION
+	charForShiftCodeArray[KEY_TILDE] = ASC_TILDE
+	charForShiftCodeArray[KEY_OPENBRACKET] = ASC_OPEN_BRACE
+	charForShiftCodeArray[KEY_CLOSEBRACKET] = ASC_CLOSE_BRACE
+	charForShiftCodeArray[KEY_QUOTES] = ASC_SINGLE_QUOTE
+	charForShiftCodeArray[VK_BACKSLASH] = ASC_PIPE
+	charForShiftCodeArray[KEY_SPACE] = ASC_SPACE
 End

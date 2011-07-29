@@ -37,15 +37,15 @@ Class InputTestScreen Extends Screen
 	Method Update:Void()
 		For Local event:KeyEvent = EachIn game.inputCache.KeysHit
 			' do something for each key hit since the last frame
-			Print "KeyHit: key,at="+String.FromChar(event.KeyCode)+","+event.EventTime
+			Print "KeyHit: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
 		For Local event:KeyEvent = EachIn game.inputCache.KeysDown
 			' do something for each key held down
-			'Print "KeyDown: key,at="+String.FromChar(event.KeyCode)+","+event.EventTime
+			'Print "KeyDown: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
 		For Local event:KeyEvent = EachIn game.inputCache.KeysReleased
 			' do something for each key released since the last frame
-			Print "KeyReleased: key,at="+String.FromChar(event.KeyCode)+","+event.EventTime
+			Print "KeyReleased: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
 		
 		If game.inputCache.keyHit[KEY_ESCAPE] Then
