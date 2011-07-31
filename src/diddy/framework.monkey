@@ -997,7 +997,7 @@ Class Sprite
 		SetAlpha Self.alpha
 		SetColor red, green, blue
 		if rounded
-			DrawImage(image.image, int(x - offsetx), int(y - offsety), rotation, scaleX, scaleY, frame)
+			DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y- offsety + 0.5), rotation, scaleX, scaleY, frame)
 		Else
 			DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
 		End
