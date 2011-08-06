@@ -12,6 +12,10 @@ Global gameScreen:GameScreen
 Class MyGame extends DiddyApp
 	Method OnCreate:Int()
 		Super.OnCreate()
+		' enable touch for non-phones
+		#If TARGET<>"ios" or TARGET<>"android"
+			game.inputCache.MonitorTouch(True)
+		#End
 		gameScreen = new GameScreen
 		gameScreen.PreStart()
 		return 0
@@ -40,10 +44,8 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Render:Void()
-		Cls
 		' fill the background with an awful colour
-		SetColor(red,green,blue)
-		DrawRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
+		Cls(red, green, blue)
 		' for each of the circles
 		For Local i:Int = 0 Until life.Length
 			' if we're touching the screen for this circle, or it has some life left
@@ -67,7 +69,15 @@ Class GameScreen Extends Screen
 			End
 		Next
 		SetColor(255,255,255)
-		FPSCounter.Draw(0,0)
+		DrawInfo()
+	End
+	
+	Method DrawInfo:Void()
+		DrawText("Diddy's Touch Test", 0, 0)
+		DrawText("Press to move the circle and release to 'fling' it!", 0, 15)
+		DrawText("Press down for a few seconds to change the background colour", 0, 30)
+		DrawText("Do two touches to switch between big and small circles just for that fling", 0, 45)
+		FPSCounter.Draw(0, 60)
 	End
 	
 	Method Update:Void()
@@ -168,6 +178,3 @@ Class GameScreen Extends Screen
 		If pointer = 1 Then useBigCircles = Not useBigCircles
 	End
 End
-
-
-
