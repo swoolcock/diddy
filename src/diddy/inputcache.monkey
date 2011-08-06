@@ -41,6 +41,10 @@ Public
 	
 	Const INPUT_COUNT:Int = 512
 	
+	Const FLING_THRESHOLD:Float = 250
+	Const IGNORE_CLICK_DISTANCE:Float = 20
+	Const LONG_PRESS_TIME:Int = 1000
+
 	' TouchHit() for 0-31
 	Field touchHit:Int[] = New Int[TOUCH_COUNT]
 	' The time it was hit
@@ -139,6 +143,11 @@ Public
 	Field currentKeysDown:Int[] = New Int[INPUT_COUNT]
 	Field currentKeysReleased:Int[] = New Int[INPUT_COUNT]
 	
+	' for touch handling
+	Field touchData:TouchData[] = New TouchData[TOUCH_COUNT]
+	Field flingThreshold:Float = FLING_THRESHOLD
+	Field longPressTime:Int = LONG_PRESS_TIME
+  
 ' Properties
 	Method KeysHit:EnumWrapper<KeyEventEnumerator>() Property
 		Return keyHitWrapper
@@ -149,6 +158,18 @@ Public
 	Method KeysReleased:EnumWrapper<KeyEventEnumerator>() Property
 		Return keyReleasedWrapper
 	End
+	Method FlingThreshold:Float() Property
+		Return flingThreshold
+	End
+	Method FlingThreshold:Void(flingThreshold:Float) Property
+		Self.flingThreshold = flingThreshold
+	End
+	Method LongPressTime:Float() Property
+		Return longPressTime
+	End
+	Method LongPressTime:Void(longPressTime:Float) Property
+		Self.longPressTime = longPressTime
+	End
 	
 ' Constructors
 	Method New()
@@ -158,6 +179,9 @@ Public
 		keyHitWrapper = New EnumWrapper<KeyEventEnumerator>(keyHitEnumerator)
 		keyDownWrapper = New EnumWrapper<KeyEventEnumerator>(keyDownEnumerator)
 		keyReleasedWrapper = New EnumWrapper<KeyEventEnumerator>(keyReleasedEnumerator)
+		For Local i:Int = 0 Until touchData.Length
+			touchData[i] = New TouchData
+		Next
 		#If TARGET="android" Or TARGET="ios"
 			monitorTouch = True
 			monitorMouse = False
@@ -399,6 +423,54 @@ Public
 			Next
 		End
 	End
+
+	Method HandleEvents:Void(screen:Screen)
+		' handle calling touch hit
+		For Local i:Int = 0 Until touchHitCount
+			Local pointer:Int = currentTouchHit[i]
+			Local x:Int = Int(touchX[pointer])
+			Local y:Int = Int(touchY[pointer])
+			touchData[pointer].Reset(x, y)
+			screen.OnTouchHit(x, y, pointer)
+		Next
+	    
+		' handle calling touch click/released/fling
+		For Local i:Int = 0 Until touchReleasedCount
+			Local pointer:Int = currentTouchReleased[i]
+			Local x:Int = Int(touchX[pointer])
+			Local y:Int = Int(touchY[pointer])
+			touchData[pointer].Update(x, y);
+			If Not touchData[pointer].movedTooFar Then
+				screen.OnTouchClick(x, y, pointer)
+			Else
+				' check to see how fast we were moving to see if we fire a fling
+				If touchData[pointer].touchVelocityX * touchData[pointer].touchVelocityX +
+						touchData[pointer].touchVelocityY * touchData[pointer].touchVelocityY >=
+						flingThreshold * flingThreshold Then
+					screen.OnTouchFling(x, y, touchData[pointer].touchVelocityX, touchData[pointer].touchVelocityY,
+					touchData[pointer].touchVelocitySpeed, pointer)
+				End
+			End
+			screen.OnTouchReleased(x, y, pointer)
+		Next
+			
+		For Local i:Int = 0 Until touchDownCount
+			Local pointer:Int = currentTouchDown[i]
+			Local x:Int = Int(touchX[pointer])
+			Local y:Int = Int(touchY[pointer])
+			touchData[pointer].Update(x, y)
+			screen.OnTouchDragged(x, y, touchData[pointer].distanceMovedX, touchData[pointer].distanceMovedY, pointer)
+			' check long press
+			If Not touchData[pointer].testedLongPress And dt.currentticks-touchData[pointer].firstTouchTime >= longPressTime Then
+				touchData[pointer].testedLongPress = True
+				If Not touchData[pointer].movedTooFar Then
+					' fire long press
+					screen.OnTouchLongPress(x, y, pointer)
+					touchData[pointer].firedLongPress = True
+				End
+			End
+		Next
+	End
 End
 
 ' top level class for input events
@@ -537,6 +609,100 @@ Function CharForCode:Int(code:Int, shiftDown:Bool)
 End
 
 Private
+
+Class TouchData
+	Const FLING_SAMPLE_RATE:Int = 10
+	
+	Field firstTouchX:Int
+	Field firstTouchY:Int
+	Field firstTouchTime:Int
+	Field lastTouchX:Int
+	Field lastTouchY:Int
+	Field flingSamplesX:Int[FLING_SAMPLE_RATE]
+	Field flingSamplesY:Int[FLING_SAMPLE_RATE]
+	Field flingSamplesTime:Int[FLING_SAMPLE_RATE]
+	Field flingSampleCount:Int
+	Field flingSampleNext:Int
+	
+	' calculated values
+	Field movedTooFar:Bool
+	Field testedLongPress:Bool
+	Field firedLongPress:Bool
+	Field distanceMovedX:Int
+	Field distanceMovedY:Int
+	Field touchVelocityX:Float
+	Field touchVelocityY:Float
+	Field touchVelocitySpeed:Float
+	
+	Method Reset:Void(x:Int, y:Int)
+		firstTouchX = x
+		firstTouchY = y
+		lastTouchX = x
+		lastTouchY = y
+		firstTouchTime = Int(dt.currentticks)
+		testedLongPress = False
+		firedLongPress = False
+		For Local i:Int = 0 Until FLING_SAMPLE_RATE
+			flingSamplesX[i] = 0
+			flingSamplesY[i] = 0
+			flingSamplesTime[i] = 0
+		Next
+		flingSampleCount = 0
+		flingSampleNext = 0
+		movedTooFar = False
+		touchVelocityX = 0
+		touchVelocityY = 0
+		touchVelocitySpeed = 0
+		AddFlingSample(x, y)
+	End
+
+	Method AddFlingSample:Void(x:Int, y:Int)
+		flingSamplesX[flingSampleNext] = x
+		flingSamplesY[flingSampleNext] = y
+		flingSamplesTime[flingSampleNext] = Int(dt.currentticks)
+		If flingSampleCount < FLING_SAMPLE_RATE Then flingSampleCount += 1
+		flingSampleNext += 1
+		If flingSampleNext >= FLING_SAMPLE_RATE Then flingSampleNext = 0
+		
+		' find the first and last samples
+		Local first:Int = flingSampleNext - flingSampleCount
+		Local last:Int = flingSampleNext - 1
+		While first < 0
+			first += FLING_SAMPLE_RATE
+		End
+		While last < 0
+			last += FLING_SAMPLE_RATE
+		End
+		
+		' get the total delta
+		If flingSampleCount > 0 Then
+			' calculate the velocity in pixels per second
+			Local secs:Float = Float(flingSamplesTime[last] - flingSamplesTime[first]) / 1000
+			touchVelocityX = (flingSamplesX[last] - flingSamplesX[first]) / secs
+			touchVelocityY = (flingSamplesY[last] - flingSamplesY[first]) / secs
+			touchVelocitySpeed = Sqrt(touchVelocityX * touchVelocityX + touchVelocityY * touchVelocityY)
+		End
+	End
+	
+	Method Update:Void(x:Int, y:Int)
+		' update distance
+		distanceMovedX = x - lastTouchX
+		distanceMovedY = y - lastTouchY
+		lastTouchX = x
+		lastTouchY = y
+		' update the fling
+		AddFlingSample(x, y)
+		' check to see if we moved far enough away that we won't count this as a click
+		If Not movedTooFar Then
+			' get the first delta
+			Local dx:Int = x - firstTouchX
+			Local dy:Int = y - firstTouchY
+			If dx * dx + dy * dy > InputCache.IGNORE_CLICK_DISTANCE * InputCache.IGNORE_CLICK_DISTANCE Then
+				movedTooFar = True
+			End
+		End
+	End
+End
 
 ' Builds up arrays to convert key codes to characters.
 ' This is based off a US keyboard layout (sorry!)
