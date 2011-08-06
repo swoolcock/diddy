@@ -440,7 +440,7 @@ Public
 			Local x:Int = Int(touchX[pointer])
 			Local y:Int = Int(touchY[pointer])
 			touchData[pointer].Update(x, y);
-			If Not touchData[pointer].movedTooFar Then
+			If Not touchData[pointer].movedTooFar And Not touchData[pointer].firedLongPress Then
 				screen.OnTouchClick(x, y, pointer)
 			Else
 				' check to see how fast we were moving to see if we fire a fling
