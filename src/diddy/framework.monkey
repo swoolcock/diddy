@@ -141,6 +141,7 @@ Class DiddyApp Extends App
 	Method OnUpdate:Int()
 		dt.UpdateDelta()
 		inputCache.ReadInput()
+		inputCache.HandleEvents(currentScreen)
 		
 		If debugKeyOn
 			If KeyHit(debugKey)
@@ -362,6 +363,32 @@ Class Screen Abstract
 	Method DebugRender:Void()
 	End
 	
+	' fired when you first touch the screen
+	Method OnTouchHit:Void(x:Int, y:Int, pointer:Int)
+	End
+	
+	' fired when you release a finger from the screen
+	Method OnTouchReleased:Void(x:Int, y:Int, pointer:Int)
+	End
+	
+	' fired when one of your fingers drags along the screen
+	Method OnTouchDragged:Void(x:Int, y:Int, dx:Int, dy:Int, pointer:Int)
+	End
+	
+	Method OnTouchClick:Void(x:Int, y:Int, pointer:Int)
+	End
+  
+	' fired if you touch the screen and hold the finger in the same position for one second (configurable using game.inputCache.LongPressTime)
+	' this is checked at a specific time after touching the screen, so if you move your finger around and then
+	' hold it still, it won't fire
+	Method OnTouchLongPress:Void(x:Int, y:Int, pointer:Int)
+	End
+
+	' fired after you release a finger from the screen, if it was moving fast enough (configurable using game.inputCache.FlingThreshold)
+	' velocityx/y/speed is in pixels per second, but speed is taken from the entire vector, by pythagoras
+	' ie. velocitySpeed = Sqrt(velocityX*velocityX + velocityY*velocityY) in pixels per second
+	Method OnTouchFling:Void(releaseX:Int, releaseY:Int, velocityX:Float, velocityY:Float, velocitySpeed:Float, pointer:Int)
+	End
 End Class
 
 Class FPSCounter Abstract
@@ -1151,4 +1178,3 @@ Class Particle Extends Sprite
 	End
 	
 End
-
