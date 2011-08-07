@@ -174,7 +174,9 @@ Class DiddyApp Extends App
 				Update()
 			Next
 			
-			Local re:Float = numTicks Mod 1
+			'FIXME: When Monkey is fixed!  MOD doesnt work right in Monkey!?!?! 3.4 Mod 1 = 0!?!?! Should be 0.4
+			' Local re:Float = numTicks Mod 1
+			Local re:Float = numTicks - Floor(numTicks)
 			If re > 0 Then
 				dt.delta = re
 				Update()
