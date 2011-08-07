@@ -51,4 +51,7 @@ class diddy
 	static void launchEmail(String email, String subject, String text)
 	{
 	}
+	static float realMod(float value, float amount) {
+		return modf(value, &amount);
+	}
 };

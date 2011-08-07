@@ -101,4 +101,8 @@ class diddy
 		}
 		return sb.toString().intern();
 	}
+	
+	static float realMod(float value, float amount) {
+		return value % amount;
+	}
 }

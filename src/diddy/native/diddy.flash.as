@@ -51,4 +51,8 @@ class diddy
 		var adobeURL:URLRequest = new URLRequest("mailto:"+email+"&subject="+subject+"&body="+text+"");
 		navigateToURL(adobeURL, "_self");
 	}
+	
+	static public function realMod(value:Number, amount:Number):Number {
+		return value % amount;
+	}
 }

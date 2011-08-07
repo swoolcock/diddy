@@ -1,4 +1,5 @@
 #include <time.h>
+#import <math.h>
 
 class diddy
 {
@@ -54,5 +55,8 @@ class diddy
 		//Open E-Mail And add message
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:message]];
 
+	}
+	static float realMod(float value, float amount) {
+		return fmod(value, amount);
 	}
 };
