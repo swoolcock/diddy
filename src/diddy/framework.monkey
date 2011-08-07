@@ -54,9 +54,9 @@ Class DiddyApp Extends App
 	Field mouseX:Int, mouseY:Int
 	Field mouseHit:Int
 	
-	' Store the images here
+	' store the images here
 	Field images:ImageBank
-	' Store the sounds here
+	' store the sounds here
 	Field sounds:SoundBank
 	' volume control
 	Field musicFile:String = ""
@@ -69,13 +69,23 @@ Class DiddyApp Extends App
 	
 	' input
 	Field inputCache:InputCache
+
+	' fixed rate logic stuff
+	Field useFixedRateLogic:Bool = False
+	Field frameRate:Float = 200 ' speed the logic runs at
+	Field ms:Float = 0 ' milliseconds per frame eg 1000ms/200framerate = 5ms per frame
+	Field tmpMs:Float
+	Field numTicks:Float
+	Field lastNumTicks:Float
+	Field maxMs:Int = 50
+	Field lastTime:Float
 	
 	Method New()
-		exitScreen = New ExitScreen
-		screenFade = New ScreenFade
-		images = New ImageBank
-		sounds = New SoundBank
-		inputCache = New InputCache
+		Self.exitScreen = New ExitScreen
+		Self.screenFade = New ScreenFade
+		Self.images = New ImageBank
+		Self.sounds = New SoundBank
+		Self.inputCache = New InputCache
 	End
 	
 	Method OnCreate:Int()
@@ -99,6 +109,14 @@ Class DiddyApp Extends App
 		'create all the particles
 		Particle.Cache()
 		
+		' fixed rate logic timing
+		if useFixedRateLogic
+			ms = 1000 / frameRate
+			numTicks = 0
+			lastNumTicks = 1
+			lastTime = Millisecs()
+			dt.delta = 1
+		End
 		Return 0
 	End
 	
@@ -139,7 +157,40 @@ Class DiddyApp Extends App
 	End
 	
 	Method OnUpdate:Int()
-		dt.UpdateDelta()
+		if useFixedRateLogic
+			local now:Int = Millisecs()
+			If now < lastTime
+				numTicks = lastNumTicks
+			else
+				tmpMs = now - lastTime
+				if tmpMs > maxMs tmpMs = maxMs
+				numTicks = tmpMs / ms
+			Endif
+		
+			lastTime = now
+			lastNumTicks = numTicks
+			For local i:Int = 1 to Floor(numTicks)
+				dt.delta = 1
+				Update()
+			Next
+			
+			Local re:Float = numTicks Mod 1
+			If re > 0 Then
+				dt.delta = re
+				Update()
+			End
+		Else
+			Update()
+		End
+
+
+		Return 0
+	End
+	
+	Method Update:Void()
+		if not useFixedRateLogic 
+			dt.UpdateDelta()
+		End
 		inputCache.ReadInput()
 		inputCache.HandleEvents(currentScreen)
 		
@@ -154,9 +205,7 @@ Class DiddyApp Extends App
 		mouseHit = MouseHit()
  
 		If screenFade.active then screenFade.Update()
-		currentScreen.Update()
-
-		Return 0
+		currentScreen.Update()	
 	End
 
 	Method DrawDebug:Void()
