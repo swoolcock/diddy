@@ -20,6 +20,7 @@ Extern
 		Function LaunchBrowser:Void(address:String) = "diddy::launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy::launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy::setGraphics"
+		Function RealMod:Float(value:Float, amount:Float) = "diddy::realMod"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -31,6 +32,7 @@ Extern
 		Function LaunchBrowser:Void(address:String) = "diddy.launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy.setGraphics"
+		Function RealMod:Float(value:Float, amount:Float) = "diddy.realMod"
 	#End
 	
 	#If LANG="java" Then

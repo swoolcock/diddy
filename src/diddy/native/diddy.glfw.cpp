@@ -66,4 +66,7 @@ class diddy
 		LPCSTR addressStr = tmp.ToCString<char>();
 		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
 	}
+	static float realMod(float value, float amount) {
+		return modf(value, &amount);
+	}
 };

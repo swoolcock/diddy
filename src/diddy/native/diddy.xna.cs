@@ -54,4 +54,7 @@ class diddy
 		System.Diagnostics.Process.Start(message);
 #endif
 	}
+	public static float realMod(float value, float amount) {
+		return value % amount;
+	}
 }
