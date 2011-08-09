@@ -170,30 +170,25 @@ Class DiddyApp Extends App
 			lastTime = now
 			lastNumTicks = numTicks
 			For local i:Int = 1 to Floor(numTicks)
-				dt.delta = 1
-				Update()
+				Update(1)
 			Next
 			
-			'FIXME: When Monkey is fixed!  MOD doesnt work right in Monkey!?!?! 3.4 Mod 1 = 0!?!?! Should be 0.4
-			' Local re:Float = numTicks Mod 1
-			'Local re:Float = numTicks - Floor(numTicks)
+			' Monkey's MOD doesnt work with floats
 			Local re:Float = RealMod(numTicks, 1)
 			If re > 0 Then
-				Print re
-				dt.delta = re
-				Update()
+				Update(re)
 			End
 		Else
-			Update()
+			Update(0)
 		End
-
 
 		Return 0
 	End
 	
-	Method Update:Void()
-		if not useFixedRateLogic 
-			dt.UpdateDelta()
+	Method Update:Void(fixedRateLogicDelta:Float)
+		dt.UpdateDelta()
+		if useFixedRateLogic
+			dt.delta = fixedRateLogicDelta
 		End
 		inputCache.ReadInput()
 		inputCache.HandleEvents(currentScreen)
