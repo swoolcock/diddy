@@ -283,6 +283,7 @@ Function DecodeBase64Bytes:Int[](src:String)
 	InitBase64()
 	Local a:Int, b:Int, c:Int, d:Int, i:Int, j:Int
 	Local src2:Int[] = New Int[src.Length]
+	Local padding:Int = 0
 	
 	' find out how many base64 characters
 	Local srclen:Int = 0
@@ -290,6 +291,8 @@ Function DecodeBase64Bytes:Int[](src:String)
 		If BASE64_ARRAY[src[i]] >= 0 Then
 			src2[srclen] = src[i]
 			srclen += 1
+			' check if it's a padding character and increment the count
+			If BASE64_ARRAY[src[i]] = 64 Then padding += 1
 		End
 	Next
 	
@@ -297,11 +300,12 @@ Function DecodeBase64Bytes:Int[](src:String)
 	If srclen = 0 Then Return []
 	
 	' get the target length and create the array
-	Local len:Int = 3*srclen/4
-	If srclen Mod 4 = 1 Or srclen Mod 4 = 2 Then
-		len += 1
-	ElseIf srclen Mod 4 = 3 Then
-		len += 2
+	Local len:Int = 3*(srclen/4)
+	If srclen Mod 4 = 0 Then
+		len -= padding
+	ElseIf padding = 0 Then
+		If srclen Mod 4 >= 2 Then len += 1
+		If srclen Mod 4 = 3 Then len += 1
 	End
 	Local rv:Int[] = New Int[len]
 	
