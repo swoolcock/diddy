@@ -51,7 +51,14 @@ Class TiledTileMapReader Extends TileMapReader
 	Method LoadMap:TileMap(filename:String)
 		' open file and get root node
 		Local parser:XMLParser = New XMLParser
-		doc = parser.ParseString(LoadString(filename)) ' TODO: at the moment it assumes filename is actually the loaded string
+		Local xmlString:String = LoadString(filename)
+		' look for the data encoding, if we cant find it assume its RAW XML and thats just too slow!
+		Local findData:Int = xmlString.Find("<data encoding")
+		If findData = -1
+			AssertError("Tiled Raw XML is not supported!")
+		End
+		
+		doc = parser.ParseString(xmlString)
 		Return ReadMap(doc.Root)
 	End
 	
@@ -76,24 +83,24 @@ Class TiledTileMapReader Extends TileMapReader
 		
 		' parse children
 		If Not node.Children.IsEmpty() Then
-			For Local mapchild:XMLElement = EachIn node.Children
+			For Local mapchild:XMLElement = Eachin node.Children
 				' tileset
 				If mapchild.Name = NODE_TILESET Then
 					Local ts:TileMapTileset = ReadTileset(mapchild)
 					tileMap.tilesets.Set(ts.name, ts)
 				
 				' tile layer
-				ElseIf mapchild.Name = NODE_LAYER Then
+				Elseif mapchild.Name = NODE_LAYER Then
 					Local layer:TileMapLayer = ReadTileLayer(mapchild)
 					tileMap.layers.Add(layer)
 				
 				' object layer
-				ElseIf mapchild.Name = NODE_OBJECTGROUP Then
+				Elseif mapchild.Name = NODE_OBJECTGROUP Then
 					Local layer:TileMapLayer = ReadObjectLayer(mapchild)
 					tileMap.layers.Add(layer)
-				EndIf
+				Endif
 			Next
-		EndIf
+		Endif
 		
 		DoPostLoad(tileMap)
 		
@@ -107,13 +114,13 @@ Class TiledTileMapReader Extends TileMapReader
 	Method ReadProperties:Void(node:XMLElement, obj:Object)
 		Local cont:TileMapPropertyContainer = TileMapPropertyContainer(obj)
 		If cont <> Null Then
-			For Local propNode:XMLElement = EachIn node.Children
+			For Local propNode:XMLElement = Eachin node.Children
 				If propNode.Name = NODE_PROPERTIES Then
-					For Local child:XMLElement = EachIn propNode.Children
+					For Local child:XMLElement = Eachin propNode.Children
 						If child.Name = NODE_PROPERTY Then
 							Local prop:TileMapProperty = ReadProperty(child)
 							cont.properties.props.Set(prop.name, prop)
-						EndIf
+						Endif
 					Next
 					Return
 				End
@@ -144,10 +151,10 @@ Class TiledTileMapReader Extends TileMapReader
 			If node.HasAttribute(ATTR_TILESET_MARGIN) Then rv.margin = Int(node.GetAttribute(ATTR_TILESET_MARGIN))
 		
 			If Not node.Children.IsEmpty() Then
-				For Local child:XMLElement = EachIn node.Children
+				For Local child:XMLElement = Eachin node.Children
 					If child.Name = NODE_IMAGE Then
 						rv.imageNode = ReadImage(child)
-					ElseIf child.Name = NODE_TILE Then
+					Elseif child.Name = NODE_TILE Then
 						rv.tileNodes.Add(ReadTile(child))
 					End
 				Next
@@ -175,7 +182,7 @@ Class TiledTileMapReader Extends TileMapReader
 		If rv.properties.Has(PROP_LAYER_PARALLAX_SCALE_X) Then rv.parallaxScaleX = rv.properties.Get(PROP_LAYER_PARALLAX_SCALE_X).GetFloat()
 		If rv.properties.Has(PROP_LAYER_PARALLAX_SCALE_Y) Then rv.parallaxScaleY = rv.properties.Get(PROP_LAYER_PARALLAX_SCALE_Y).GetFloat()
 		
-		For Local child:XMLElement = EachIn node.Children
+		For Local child:XMLElement = Eachin node.Children
 			If child.Name = NODE_DATA Then
 				rv.mapData = ReadTileData(child, rv)
 			End
@@ -192,7 +199,7 @@ Class TiledTileMapReader Extends TileMapReader
 		
 		If node.HasAttribute(ATTR_OBJECTGROUP_COLOR) Then rv.color = ColorToInt(node.GetAttribute(ATTR_OBJECTGROUP_COLOR))
 		
-		For Local child:XMLElement = EachIn node.Children
+		For Local child:XMLElement = Eachin node.Children
 			If child.Name = NODE_OBJECT Then
 				rv.objects.Add(ReadObject(child, rv))
 			End
@@ -214,7 +221,7 @@ Class TiledTileMapReader Extends TileMapReader
 			rv.transR = HexToDec(rv.trans[0..2])
 			rv.transG = HexToDec(rv.trans[2..4])
 			rv.transB = HexToDec(rv.trans[4..6])
-		EndIf
+		Endif
 		
 		DoPostLoad(rv)
 		Return rv
@@ -247,15 +254,21 @@ Class TiledTileMapReader Extends TileMapReader
 		' default to raw xml (ugly)
 		Local encoding$ = DATA_ENCODING_RAW
 		If node.HasAttribute(ATTR_DATA_ENCODING) Then encoding = node.GetAttribute(ATTR_DATA_ENCODING)
-		
 		If encoding = DATA_ENCODING_RAW Then
 			' TODO: raw xml
-		ElseIf encoding = DATA_ENCODING_CSV Then
-			' TODO: csv encoding
-		ElseIf encoding = DATA_ENCODING_BASE64 Then
+			AssertError("Raw xml is currently not supported")
+		Elseif encoding = DATA_ENCODING_CSV Then
+			Local csv:String[] = node.Value.Split(",")
+			For Local i% = 0 Until csv.Length
+				Local gid:Int = Int(csv[i].Trim())
+				rv.tiles[i] = gid
+				rv.cells[i] = tileMap.CreateCell(gid, i Mod rv.width, i / rv.width)
+			Next
+		Elseif encoding = DATA_ENCODING_BASE64 Then
 			Local bytes:Int[] = DecodeBase64Bytes(node.Value)
 			If node.HasAttribute(ATTR_DATA_COMPRESSION) Then
 				' TODO: compression
+				AssertError("Compression is currently not supported")
 			End
 			For Local i% = 0 Until bytes.Length Step 4
 				' little endian
@@ -371,7 +384,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Method PostLoad:Void()
 		Local totaltiles% = 0, ts:TileMapTileset
 		Local alltiles:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
-		For Local ts:TileMapTileset = EachIn tilesets.Values()
+		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' load the image
 			ts.image = game.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing)
 			' get the cell count
@@ -383,7 +396,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 			
 			' build tile list
 			ts.tiles = New TileMapTile[ts.tileCount]
-			For Local t:TileMapTile = EachIn ts.tileNodes
+			For Local t:TileMapTile = Eachin ts.tileNodes
 				ts.tiles[t.id] = t
 			Next
 			For Local i% = 0 Until ts.tiles.Length
@@ -402,12 +415,12 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		
 		' make our cache
 		tiles = New TileMapTile[totaltiles]
-		For Local t:TileMapTile = EachIn alltiles
+		For Local t:TileMapTile = Eachin alltiles
 			tiles[t.gid - 1] = t
 		Next
 		
 		' calculate the max tile size per layer
-		For Local l:TileMapLayer = EachIn layers
+		For Local l:TileMapLayer = Eachin layers
 			If TileMapTileLayer(l) <> Null Then
 				Local tl:TileMapTileLayer = TileMapTileLayer(l)
 				For Local i% = 0 Until tl.mapData.tiles.Length
@@ -420,7 +433,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Next
 	End
 	
-	#Rem
+	#rem
 	Method WorldToMap:TPoint(worldPoint:TPoint)
 		If worldPoint.X < 0 Or worldPoint.Y < 0 Or worldPoint.X > Width * TileWidth Or worldPoint.Y > Height * TileHeight Then
 			' out of range!
@@ -434,7 +447,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	#End
 	
 	Method GetAllObjects:ArrayList<TileMapObject>()
-		#Rem
+		#rem
 		Local layer:TTiledLayer
 		Local obj:TTiledObject
 		Local rv:TList = New TList
@@ -450,7 +463,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	End
 	
 	Method FindObjectByName:TileMapObject(name:String)
-		#Rem
+		#rem
 		Local layer:TTiledLayer, obj:TTiledObject
 		For layer = EachIn Layers
 			If TTiledObjectLayer(layer) <> Null Then
@@ -468,15 +481,15 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	' wx,wy = wrap x/y (boolean, defaults to false)
 	Method RenderMap:Void(bx%, by%, bw%, bh%, sx# = 1, sy# = 1)
 		Local x%, y%, rx%, ry%, mx%, my%, mx2%, my2%, modx%, mody%
-		For Local layer:TileMapLayer = EachIn layers
+		For Local layer:TileMapLayer = Eachin layers
 			If layer.visible And TileMapTileLayer(layer) <> Null Then
 				Local tl:TileMapTileLayer = TileMapTileLayer(layer)
 				Local mapTile:TileMapTile, gid%
 				ConfigureLayer(layer)
 				' ortho
 				If orientation = MAP_ORIENTATION_ORTHOGONAL Then
-					modx = (bx * tl.parallaxScaleX) mod tileWidth
-					mody = (by * tl.parallaxScaleY) mod tileHeight
+					modx = (bx * tl.parallaxScaleX) Mod tileWidth
+					mody = (by * tl.parallaxScaleY) Mod tileHeight
 					y = by
 					my = Int(Floor(Float(by * tl.parallaxScaleY) / Float(tileHeight)))
 					While y < by + bh + tl.maxTileHeight
@@ -517,7 +530,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 					End
 
 				' iso
-				ElseIf orientation = MAP_ORIENTATION_ISOMETRIC Then
+				Elseif orientation = MAP_ORIENTATION_ISOMETRIC Then
 					' TODO: wrapping
 					For y = 0 Until tl.width + tl.height
 						ry = y
@@ -531,7 +544,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 							If gid > 0 Then
 								mapTile = tiles[gid - 1]
 								DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2, (rx + ry + 2) * tileHeight / 2 - mapTile.height)
-							EndIf
+							Endif
 							ry -= 1
 							rx += 1
 						End
@@ -548,12 +561,12 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 			rv.y = tileHeight - maxTileHeight
 			rv.w = (width - 1) * tileWidth + maxTileWidth
 			rv.h = (height - 1) * tileHeight + maxTileHeight
-		ElseIf orientation = MAP_ORIENTATION_ISOMETRIC Then
+		Elseif orientation = MAP_ORIENTATION_ISOMETRIC Then
 			rv.x = -height * tileWidth / 2
 			rv.y = tileHeight - maxTileHeight
 			rv.w = (width - 2) * tileWidth / 2 + maxTileWidth - rv.X
 			rv.h = (width + height) * tileHeight / 2 - rv.Y
-		EndIf
+		Endif
 		Return rv
 	End
 	
@@ -775,7 +788,7 @@ Public
 			rawValue = "true"
 		Else
 			rawValue = "false"
-		EndIf
+		Endif
 		ValueType = 2
 	End
 	
