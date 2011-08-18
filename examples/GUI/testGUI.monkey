@@ -135,7 +135,7 @@ Class MyGUI Extends GUI
 		radio5.Text = "Amet"
 		radio5.SetBounds(10,90,100,15)
 		
-		rg = New RadioGroup
+		rg = New TestRadioGroup
 		rg.AddButton(radio1, "L")
 		rg.AddButton(radio2, "I")
 		rg.AddButton(radio3, "D")
@@ -206,5 +206,11 @@ Class MyGUI Extends GUI
 		ElseIf RadioButton(source) <> Null Then
 			Print("pressed radiobutton! value="+rg.SelectedValue)
 		End
+	End
+End
+
+Class TestRadioGroup Extends RadioGroup
+	Method ValueChanged:Void(newValue:String, newButton:RadioButton, oldValue:String, oldButton:RadioButton)
+		Print("Changed value from "+oldValue+" to "+newValue)
 	End
 End
