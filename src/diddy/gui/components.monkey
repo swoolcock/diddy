@@ -1725,12 +1725,14 @@ Public
 		Return Null
 	End
 	Method SelectedButton:Void(button:RadioButton) Property
+		Local oldValue:String = currentValue
+		Local oldButton:Button = Null
 		For Local b:RadioButton = EachIn buttons
+			If b.selected Then oldButton = b
 			b.selected = (b = button)
-			If b.selected Then
-				currentValue = b.radioValue
-			End
+			If b.selected Then currentValue = b.radioValue
 		Next
+		If oldButton <> button Then ValueChanged(currentValue, RadioButton(button), oldValue, RadioButton(oldButton))
 	End
 	
 	' SelectedValue is read/write
@@ -1738,10 +1740,18 @@ Public
 		Return currentValue
 	End
 	Method SelectedValue:Void(value:String) Property
+		Local oldValue:String = currentValue
+		Local oldButton:Button = Null
+		Local newButton:Button = Null
 		For Local b:RadioButton = EachIn buttons
+			If b.selected Then oldButton = b
 			b.selected = (b.radioValue = value)
-			If b.selected Then currentValue = value
+			If b.selected Then
+				currentValue = value
+				newButton = b
+			End
 		Next
+		If oldValue <> value Then ValueChanged(currentValue, RadioButton(newButton), oldValue, RadioButton(oldButton))
 	End
 	
 ' Public methods
@@ -1755,6 +1765,9 @@ Public
 		button.radioValue = ""
 		button.radioGroup = Null
 		buttons.Remove(button)
+	End
+	
+	Method ValueChanged:Void(newValue:String, newButton:RadioButton, oldValue:String, oldButton:RadioButton)
 	End
 End
 
