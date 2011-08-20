@@ -57,4 +57,10 @@ class diddy
 	public static float realMod(float value, float amount) {
 		return value % amount;
 	}
+	public static void startVibrate(int millisecs)
+	{
+	}
+	public static void stopVibrate()
+	{
+	}
 }

@@ -59,4 +59,10 @@ class diddy
 	static float realMod(float value, float amount) {
 		return fmod(value, amount);
 	}
+	static void startVibrate(int millisecs)
+	{
+	}
+	static void stopVibrate()
+	{
+	}
 };

@@ -55,4 +55,10 @@ class diddy
 	static public function realMod(value:Number, amount:Number):Number {
 		return value % amount;
 	}
+	static public function startVibrate(millisec:Number):void
+	{
+	}
+	static public function stopVibrate():void
+	{
+	}
 }

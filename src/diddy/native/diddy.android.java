@@ -1,5 +1,11 @@
+import android.os.Vibrator;
+import android.content.Context;
+
+
 class diddy
 {
+	public static Vibrator vibrator;
+
 	static int systemMillisecs()
 	{
 		int ms = (int)System.currentTimeMillis();
@@ -104,5 +110,26 @@ class diddy
 	
 	static float realMod(float value, float amount) {
 		return value % amount;
+	}
+	
+	public static void startVibrate(int millisec)
+	{
+		try {
+			vibrator = (Vibrator)MonkeyGame.activity.getSystemService(Context.VIBRATOR_SERVICE);
+			if (vibrator!=null)
+				vibrator.vibrate(millisec);
+		} catch (java.lang.SecurityException e) {
+			android.util.Log.e("[Monkey]", "SecurityException: " + android.util.Log.getStackTraceString(e));
+		}
+	}
+  
+	public static void stopVibrate()
+	{
+		try {
+			if (vibrator!=null)
+				vibrator.cancel();
+		} catch (java.lang.SecurityException e) {
+			android.util.Log.e("[Monkey]", "SecurityException: " + android.util.Log.getStackTraceString(e));
+		}
 	}
 }
