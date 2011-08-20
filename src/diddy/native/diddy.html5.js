@@ -28,7 +28,6 @@ diddy.setGraphics=function(w, h)
 }
 diddy.setMouse=function(x, y)
 {
-	
 }
 diddy.showKeyboard=function()
 {
@@ -45,6 +44,12 @@ diddy.launchEmail=function(email, subject, text)
 diddy.realMod=function(value, amount)
 {
 	return value % amount;
+}
+diddy.startVibrate=function(millisecs)
+{
+}
+diddy.stopVibrate=function()
+{
 }
 
 diddy.hideMouse=function()

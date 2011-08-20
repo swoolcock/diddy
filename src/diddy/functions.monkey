@@ -21,6 +21,8 @@ Extern
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy::launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy::setGraphics"
 		Function RealMod:Float(value:Float, amount:Float) = "diddy::realMod"
+		Function StartVibrate:Void(millisec:Int) = "diddy::startVibrate"
+		Function StopVibrate:Void() = "diddy::stopVibrate"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -33,6 +35,8 @@ Extern
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy.setGraphics"
 		Function RealMod:Float(value:Float, amount:Float) = "diddy.realMod"
+		Function StartVibrate:Void(millisec:Int) = "diddy.startVibrate"
+		Function StopVibrate:Void() = "diddy.stopVibrate"
 	#End
 	
 	#If LANG="java" Then
