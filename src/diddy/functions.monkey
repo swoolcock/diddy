@@ -23,6 +23,14 @@ Extern
 		Function RealMod:Float(value:Float, amount:Float) = "diddy::realMod"
 		Function StartVibrate:Void(millisec:Int) = "diddy::startVibrate"
 		Function StopVibrate:Void() = "diddy::stopVibrate"
+		Function GetDayOfMonth:Int()="diddy::getDayOfMonth"
+		Function GetDayOfWeek:Int()="diddy::getDayOfWeek"
+		Function GetMonth:Int()="diddy::getMonth"
+		Function GetYear:Int()="diddy::getYear"
+		Function GetHours:Int()="diddy::getHours"
+		Function GetMinutes:Int()="diddy::getMinutes"
+		Function GetSeconds:Int()="diddy::getSeconds"
+		Function GetMilliSeconds:Int()="diddy::getMilliSeconds"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -37,6 +45,14 @@ Extern
 		Function RealMod:Float(value:Float, amount:Float) = "diddy.realMod"
 		Function StartVibrate:Void(millisec:Int) = "diddy.startVibrate"
 		Function StopVibrate:Void() = "diddy.stopVibrate"
+		Function GetDayOfMonth:Int()="diddy.getDayOfMonth"
+		Function GetDayOfWeek:Int()="diddy.getDayOfWeek"
+		Function GetMonth:Int()="diddy.getMonth"
+		Function GetYear:Int()="diddy.getYear"
+		Function GetHours:Int()="diddy.getHours"
+		Function GetMinutes:Int()="diddy.getMinutes"
+		Function GetSeconds:Int()="diddy.getSeconds"
+		Function GetMilliSeconds:Int()="diddy.getMilliSeconds"
 	#End
 	
 	#If LANG="java" Then
