@@ -61,4 +61,45 @@ class diddy
 	static public function stopVibrate():void
 	{
 	}
+	
+	static public function getDayOfMonth():int
+	{
+		return 0;
+	}
+	
+	static public function getDayOfWeek():int
+	{
+		return 0;
+	}
+	
+	static public function getMonth():int
+	{
+		return 0;
+	}
+
+	static public function getYear():int
+	{
+		return 0;
+	}
+	
+	static public function getHours():int
+	{
+		return 0;
+	}
+	
+	static public function getMinutes():int
+	{
+		return 0;
+	}
+	
+	static public function getSeconds():int
+	{
+		return 0;
+	}
+	
+	static public function getMilliSeconds():int
+	{
+		return 0;
+	}
+
 }

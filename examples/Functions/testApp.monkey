@@ -15,7 +15,7 @@ End
 Class MyGame Extends DiddyApp
 	' save the starting seed
 	Field startingSeed:Int
-	Field mouseOn:Bool = true
+	Field mouseOn:Bool = false
 	
 	Method OnCreate:Int()
 		Super.OnCreate()
@@ -23,6 +23,7 @@ Class MyGame Extends DiddyApp
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
 		HideMouse()
+		
 		Return 0
 	End
 	
@@ -31,16 +32,20 @@ Class MyGame Extends DiddyApp
 			If mouseOn
 				HideMouse()
 				mouseOn = False
+				
 			Else
 				ShowMouse()
 				mouseOn = True
+				
 			End
 		End	
 		If KeyHit(KEY_F1) or (TouchHit(0) And TouchY() < SCREEN_HEIGHT2)
 			LaunchBrowser("http://www.google.com")
+			StartVibrate(1000)
 		End
 		If KeyHit(KEY_F2) or (TouchHit(0) And TouchY() > SCREEN_HEIGHT2)
 			LaunchEmail("test@testdomain.com", "TEST SUBJECT", "TEST TEXT!")
+			StopVibrate()
 		End
 		
 		If KeyHit(KEY_ESCAPE)
@@ -108,6 +113,14 @@ Class MyGame Extends DiddyApp
 		DrawText "Press Q to Change Screen size to 1024x768", 10, 140
 		DrawText "Press W to Change Screen size to 800x600", 10, 150
 		DrawText "Press E to Change Screen size to 640x480", 10, 160
+		DrawText "Day of Month = "+GetDayOfMonth(), 10, 180
+		DrawText "Day of Week = "+GetDayOfWeek(), 10, 200
+		DrawText "Month = "+GetMonth(), 10, 220
+		DrawText "Year = "+GetYear(), 10, 240
+		DrawText "Hours = "+GetHours(), 10, 260
+		DrawText "Minutes = "+GetMinutes(), 10, 280
+		DrawText "Seconds = "+GetSeconds(), 10, 300
+		DrawText "MilliSeconds = "+GetMilliSeconds(), 10, 320
 		Return 0
 	End
 		
