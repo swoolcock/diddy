@@ -24,5 +24,6 @@ Class TestApp Extends App
 			Print stream.ReadString()
 			Print stream.ReadFloat()
 		End
+		Return 0
 	End
 End
