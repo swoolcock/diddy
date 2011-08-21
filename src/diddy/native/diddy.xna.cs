@@ -63,4 +63,44 @@ class diddy
 	public static void stopVibrate()
 	{
 	}
+	public static int getDayOfMonth()
+	{
+		return 0;
+	}
+	
+	public static int getDayOfWeek()
+	{
+		return 0;
+	}
+	
+	public static int getMonth()
+	{
+		return 0;
+	}
+	
+	public static int getYear()
+	{
+		return 0;
+	}
+	
+	public static int getHours()
+	{
+		return 0;
+	}
+	
+	public static int getMinutes()
+	{
+		return 0;
+	}
+	
+	public static int getSeconds()
+	{
+		return 0;
+	}
+	
+	public static int getMilliSeconds()
+	{
+		return 0;
+	}
+
 }
