@@ -1,11 +1,17 @@
 import android.os.Vibrator;
 import android.content.Context;
-
+import android.location.LocationManager;
+import android.location.LocationListener;
+import android.location.Location;
 
 class diddy
 {
 	public static Vibrator vibrator;
-
+	public static LocationManager myManager;
+	public static String latitude;
+	public static String longitude;
+	public static boolean gpsStarted = false;
+	
 	static int systemMillisecs()
 	{
 		int ms = (int)System.currentTimeMillis();
@@ -180,4 +186,44 @@ class diddy
 		Calendar c = Calendar.getInstance();
 		return c.get(Calendar.MILLISECOND);
 	}
+	
+	static void startGps()
+	{
+		try {
+			myManager = (LocationManager)MonkeyGame.activity.getSystemService(Context.LOCATION_SERVICE);
+
+			final LocationListener locationListener = new LocationListener() {
+
+				public void onLocationChanged(Location location) {
+					latitude = String.format("%.6f", location.getLatitude());
+					longitude = String.format("%.6f", location.getLongitude());
+				}
+				public void onStatusChanged(String provider, int status, Bundle extras) {}
+				public void onProviderEnabled(String provider) {}
+				public void onProviderDisabled(String provider) {}
+			};
+
+			MonkeyGame.activity.runOnUiThread(new Runnable() {
+				public void run() {
+					try {
+						if (!gpsStarted) {
+							myManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener); 
+							gpsStarted = true;
+						}
+					}catch (java.lang.SecurityException e) {
+						android.util.Log.e("[Monkey]", "SecurityException: " + android.util.Log.getStackTraceString(e));
+					}
+				}
+			});
+		} catch (java.lang.SecurityException e) {
+			android.util.Log.e("[Monkey]", "SecurityException: " + android.util.Log.getStackTraceString(e));
+		}
+	}
+	static String getLatitiude() {
+		return latitude;
+	}
+	static String getLongitude() {
+		return longitude;
+	}
+
 }

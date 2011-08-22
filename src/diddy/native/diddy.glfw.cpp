@@ -115,5 +115,16 @@ class diddy
 	{
 		return 0;
 	}
-
+	
+	static void startGps()
+	{
+	}
+	static String getLatitiude()
+	{
+		return "";
+	}
+	static String getLongitude()
+	{
+		return "";
+	}
 };

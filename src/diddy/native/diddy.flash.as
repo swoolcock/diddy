@@ -101,5 +101,15 @@ class diddy
 	{
 		return 0;
 	}
-
+	static public function startGps():void
+	{
+	}
+	static public function getLatitiude():String
+	{
+		return "";
+	}
+	static public function getLongitude():String
+	{
+		return "";
+	}
 }

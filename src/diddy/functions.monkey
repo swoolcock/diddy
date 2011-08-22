@@ -31,6 +31,9 @@ Extern
 		Function GetMinutes:Int()="diddy::getMinutes"
 		Function GetSeconds:Int()="diddy::getSeconds"
 		Function GetMilliSeconds:Int()="diddy::getMilliSeconds"
+		Function StartGps:Void()="diddy::startGps"
+		Function GetLatitiude:String()="diddy::getLatitiude"
+		Function GetLongitude:String()="diddy::getLongitude"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -53,6 +56,9 @@ Extern
 		Function GetMinutes:Int()="diddy.getMinutes"
 		Function GetSeconds:Int()="diddy.getSeconds"
 		Function GetMilliSeconds:Int()="diddy.getMilliSeconds"
+		Function StartGps:Void()="diddy.startGps"
+		Function GetLatitiude:String()="diddy.getLatitiude"
+		Function GetLongitude:String()="diddy.getLongitude"
 	#End
 	
 	#If LANG="java" Then
