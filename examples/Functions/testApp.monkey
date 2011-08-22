@@ -16,6 +16,8 @@ Class MyGame Extends DiddyApp
 	' save the starting seed
 	Field startingSeed:Int
 	Field mouseOn:Bool = false
+	Field lat:String
+	Field long:String
 	
 	Method OnCreate:Int()
 		Super.OnCreate()
@@ -23,7 +25,7 @@ Class MyGame Extends DiddyApp
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
 		HideMouse()
-		
+		StartGps()
 		Return 0
 	End
 	
@@ -121,6 +123,8 @@ Class MyGame Extends DiddyApp
 		DrawText "Minutes = "+GetMinutes(), 10, 280
 		DrawText "Seconds = "+GetSeconds(), 10, 300
 		DrawText "MilliSeconds = "+GetMilliSeconds(), 10, 320
+		DrawText "GetLatitiude = "+GetLatitiude(), 10, 340
+		DrawText "GetLongitude = "+GetLongitude(), 10, 360
 		Return 0
 	End
 		
