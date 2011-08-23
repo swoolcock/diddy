@@ -543,7 +543,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 							gid = tl.mapData.cells[rx + ry*tl.mapData.width].gid
 							If gid > 0 Then
 								mapTile = tiles[gid - 1]
-								DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2, (rx + ry + 2) * tileHeight / 2 - mapTile.height)
+								DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2 - bx, (rx + ry + 2) * tileHeight / 2 - mapTile.height - by)
 							Endif
 							ry -= 1
 							rx += 1
