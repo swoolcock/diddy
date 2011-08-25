@@ -1,4 +1,5 @@
 #include <time.h>
+#include <math.h>
 
 class diddy
 {
@@ -52,7 +53,7 @@ class diddy
 	{
 	}
 	static float realMod(float value, float amount) {
-		return modf(value, &amount);
+		return fmod(value, amount);
 	}
 	static void startVibrate(int millisecs)
 	{

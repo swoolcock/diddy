@@ -1,5 +1,5 @@
 #include <time.h>
-#import <math.h>
+#include <math.h>
 
 class diddy
 {
