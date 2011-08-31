@@ -34,6 +34,8 @@ Extern
 		Function StartGps:Void()="diddy::startGps"
 		Function GetLatitiude:String()="diddy::getLatitiude"
 		Function GetLongitude:String()="diddy::getLongitude"
+		Function ShowAlertDialog:Void(title:String, message:String) = "diddy::showAlertDialog"
+		Function GetInputString:String()="diddy::getInputString"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -59,6 +61,8 @@ Extern
 		Function StartGps:Void()="diddy.startGps"
 		Function GetLatitiude:String()="diddy.getLatitiude"
 		Function GetLongitude:String()="diddy.getLongitude"
+		Function ShowAlertDialog:Void(title:String, message:String) = "diddy.showAlertDialog"
+		Function GetInputString:String()="diddy.getInputString"
 	#End
 	
 	#If LANG="java" Then

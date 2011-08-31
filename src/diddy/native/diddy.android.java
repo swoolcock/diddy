@@ -3,14 +3,21 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.location.LocationListener;
 import android.location.Location;
+import android.app.AlertDialog;
+import android.widget.EditText;
+import android.content.DialogInterface;
+import android.widget.EditText;
 
 class diddy
 {
 	public static Vibrator vibrator;
 	public static LocationManager myManager;
-	public static String latitude;
-	public static String longitude;
+	public static String latitude = "";
+	public static String longitude = "";
 	public static boolean gpsStarted = false;
+	public static AlertDialog.Builder alert;
+	public static EditText input;
+	public static String inputString = "";
 	
 	static int systemMillisecs()
 	{
@@ -86,6 +93,34 @@ class diddy
 	{
 		android.view.inputmethod.InputMethodManager inputMgr = (android.view.inputmethod.InputMethodManager)MonkeyGame.activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
 		inputMgr.toggleSoftInput(0, 0);
+	}
+	
+	static void showAlertDialog(String title, String message)
+	{
+		alert = new AlertDialog.Builder(MonkeyGame.activity);
+		alert.setTitle(title);
+		alert.setMessage(message);
+		// Set an EditText view to get user input 
+		input = new EditText(MonkeyGame.activity);
+		alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				inputString = input.getText().toString();
+			}
+		});
+		
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() { 
+			public void onClick(DialogInterface dialog, int whichButton) {   
+				// Canceled.  
+			}
+		});
+		
+		alert.show();
+	}
+	
+	static String getInputString()
+	{
+		return inputString;
 	}
 	
 	static void launchBrowser(String address) {
