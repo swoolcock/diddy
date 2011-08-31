@@ -112,4 +112,13 @@ class diddy
 	{
 		return "";
 	}
+	
+	static public function showAlertDialog(title:String, message:String):void
+	{
+	}
+	
+	static public function getInputString():String
+	{
+		return "";
+	}
 }

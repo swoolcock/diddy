@@ -113,4 +113,11 @@ class diddy
 	{
 		return "";
 	}
+	public static void showAlertDialog(String title, String message)
+	{ }
+	public static String getInputString()
+	{
+		return "";
+	}
+	
 }

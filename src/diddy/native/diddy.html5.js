@@ -93,6 +93,13 @@ diddy.getLatitiude=function(){
 diddy.getLongitude=function(){
 	return ""
 }
+diddy.showAlertDialog=function(title, message)
+{
+}
+diddy.getInputString=function()
+{
+	return "";
+}
 
 diddy.hideMouse=function()
 {
