@@ -1822,7 +1822,7 @@ Private
 	Field snapToTicks:Bool = True
 
 ' Private methods
-	Method DoDrag:Int(mx:Int, my:Int)
+	Method DoDrag:Void(mx:Int, my:Int)
 		Local pos:Int, topLeft:Int = handleMargin, bottomRight:Int = -handleMargin
 		If showButtons Then
 			topLeft += buttonSize
