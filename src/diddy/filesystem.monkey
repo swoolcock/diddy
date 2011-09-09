@@ -35,6 +35,7 @@ Public
 		Else
 			Return False
 		End
+		Return False
 	End
 	
 	Method ListDir:Void()
@@ -142,8 +143,8 @@ Public
 		if strLen > 0
 			result = Self.data[Self.fileptr..self.fileptr+strLen]
 			Self.fileptr+=strLen
-			Return result
 		End
+		Return result
 	End
 	
 	Method WriteString:Void(val:String)
@@ -169,15 +170,26 @@ Public
 		Self.data+=Self.IntToString(s.Length())
 		Self.data+=s
 	End
+	
+	Method ReadBool:Bool()
+		Local result:Bool
+		result = Bool(Self.data[Self.fileptr])
+		Self.fileptr+=1
+		Return result
+	End Method
+	
+	Method WriteBool:Void(val:Bool)
+		Self.data+=String.FromChar(val)
+	End Method	
 End
 
 Class DataConversion
 	Method IntToString:String(val:Int)
 		Local result:String
-		result = String.FromChar((val Shr 24) & $FF)
-		result+= String.FromChar((val Shr 16) & $FF)
+		result = String.FromChar((val) & $FF)
 		result+= String.FromChar((val Shr 8) & $FF)
-		result+= String.FromChar(val & $FF)
+		result+= String.FromChar((val Shr 16) & $FF)
+		result+= String.FromChar((val Shr 24) & $FF)
 		Return result
 	End
 
@@ -187,13 +199,14 @@ Class DataConversion
 	
 	Method StringToInt:Int(val:String)
 		Local result:Int
-		result = (val[0] Shl 24)
-		result|= (val[1] Shl 16)
-		result|= (val[2] Shl 8)
-		result|= val[3]
+		result = (val[0])
+		result|= (val[1] Shl 8)
+		result|= (val[2] Shl 16)
+		result|= (val[3] Shl 24)
 		Return result
 	End
-
+	
+	
 	Method StringToFloat:Float(val:String)
 		Return Float(val)
 	End		
