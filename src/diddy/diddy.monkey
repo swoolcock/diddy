@@ -16,3 +16,4 @@ Import io
 Import tile
 Import font
 Import filesystem
+Import i18n
