@@ -36,7 +36,7 @@ Class DiddyApp Extends App
 	
 	Field virtualResOn:Bool = True
 	
-	Field FPS% = 60
+	Field FPS:Int = 60
 	
 	' current Screen
 	Field currentScreen:Screen
@@ -71,7 +71,6 @@ Class DiddyApp Extends App
 	Field inputCache:InputCache
 
 	' fixed rate logic stuff
-	Field useFixedRateLogic:Bool = False
 	Field frameRate:Float = 200 ' speed the logic runs at
 	Field ms:Float = 0 ' milliseconds per frame eg 1000ms/200framerate = 5ms per frame
 	Field tmpMs:Float
@@ -79,7 +78,10 @@ Class DiddyApp Extends App
 	Field lastNumTicks:Float
 	Field maxMs:Int = 50
 	Field lastTime:Float
+Private
+	Field useFixedRateLogic:Bool = False
 	
+Public
 	Method New()
 		Self.exitScreen = New ExitScreen
 		Self.screenFade = New ScreenFade
@@ -87,7 +89,7 @@ Class DiddyApp Extends App
 		Self.sounds = New SoundBank
 		Self.inputCache = New InputCache
 	End
-	
+			
 	Method OnCreate:Int()
 		' Store the device width and height
 		DEVICE_WIDTH = DeviceWidth()
@@ -284,6 +286,25 @@ Class DiddyApp Extends App
 	
 	Method CalcAnimLength:Float(ms:Int)
 		Return ms / (1000.0 / FPS)
+	End
+	
+	Method UseFixedRateLogic:Bool() Property
+		Return Self.useFixedRateLogic
+	End
+	
+	Method UseFixedRateLogic:Void(useFrl:Bool) Property
+		Self.useFixedRateLogic = useFrl
+		ResetFixedRateLogic()
+	End
+	
+	Method ResetFixedRateLogic:Void()
+		ms = 1000 / frameRate
+		numTicks = 0
+		lastNumTicks = 1
+		lastTime = Millisecs()
+		if dt <> null
+			dt.delta = 1
+		End
 	End
 End
 
