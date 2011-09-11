@@ -113,11 +113,7 @@ Public
 		
 		' fixed rate logic timing
 		if useFixedRateLogic
-			ms = 1000 / frameRate
-			numTicks = 0
-			lastNumTicks = 1
-			lastTime = Millisecs()
-			dt.delta = 1
+			ResetFixedRateLogic()
 		End
 		Return 0
 	End
