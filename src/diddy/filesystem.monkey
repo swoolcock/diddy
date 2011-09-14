@@ -2,20 +2,25 @@ Strict
 Import mojo
 
 Class FileSystem Extends DataConversion
-Private
+'Private
+	Field delimiter:String
 	Field _header:String = "MKYDATA"
 	Field fileData:String
 	Field index:StringMap<FileStream>
-Public
+'Public
 	
-	Method New()
-		Self.LoadAll()
+	Function Create:FileSystem(delimiter:String = String.FromChar(9)) 'tab-delimited by default
+		Local t:FileSystem = New FileSystem
+		t.delimiter = delimiter
+		t.LoadAll()
+		Return t
 	End
 	
 	Method WriteFile:FileStream(filename:String)
 		Local f:FileStream = new FileStream
 		f.filename = filename.ToLower()
-		f.fileptr = 0
+		f.ptr = 0
+		f.delimiter = Self.delimiter
 		Self.index.Insert(f.filename.ToLower(),f)
 		Return f	
 	End
@@ -24,7 +29,8 @@ Public
 		filename = filename.ToLower()
 		Local f:FileStream
 		f = Self.index.ValueForKey(filename)
-		f.fileptr = 0
+		f.ptr = 0
+		f.arr = f.data.Split(f.delimiter)
 		Return f
 	End
 	
@@ -58,18 +64,19 @@ Public
 	Method SaveAll:Void()
 		Local f:FileStream
 		Self.fileData = Self._header'header
+		Self.fileData+= Self.delimiter
 		self.fileData+= Self.IntToString(Self.index.Count())'number of files in index
 		if Self.index.Count() > 0
 			For f = EachIn Self.index.Values()
 				'store filename
-				Self.fileData+= Self.IntToString(f.filename.Length())
-				if f.filename.Length() > 0
-					Self.fileData+= f.filename
-				End
+				Self.fileData+=Self.delimiter
+				Self.fileData+= f.filename
 				'store data
-				Self.fileData+= Self.IntToString(f.data.Length())
-				if f.data.Length() > 0
-					Self.fileData+= f.data
+				Self.fileData+=Self.delimiter
+				Self.fileData+= Self.IntToString(f.numElements)
+				if f.numElements > 0
+					Self.fileData+=Self.delimiter
+					Self.fileData+=f.data
 				End
 			Next
 		End
@@ -78,33 +85,39 @@ Public
 	
 	Method LoadAll:Void()
 		Local numFiles:Int
+		Local numElements:Int
 		Local stream:FileStream
 		Local len:Int
 		Local ptr:Int
+		Local elementCounter:Int
+		Local arr:String[]
 		Self.fileData = LoadState()
 		self.index = New StringMap<FileStream>
 		if Self.fileData.Length() > 0
-			if Self.fileData.StartsWith(Self._header)
+			arr = Self.fileData.Split(Self.delimiter)
+			if arr[ptr] = Self._header
 				Self.index.Clear()
-				ptr+=Self._header.Length()
-				numFiles = Self.StringToInt(Self.fileData[ptr..ptr+3])
-				ptr+=3
+				ptr+=1
+				numFiles = Self.StringToInt(arr[ptr])
+				ptr+=1
 				if numFiles > 0				
 					For Local n:Int = 1 to numFiles
 						stream = New FileStream
 						'filename
-						len = Self.StringToInt(Self.fileData[ptr..ptr+3])
-						ptr+=3
-						if len > 0
-							stream.filename = Self.fileData[ptr..ptr+len]
-							ptr+=len
-						End
+						stream.delimiter = Self.delimiter
+						stream.filename = arr[ptr] ; ptr+=1
 						'data
-						len = Self.StringToInt(Self.fileData[ptr..ptr+3])
-						ptr+=3
-						if len > 0
-							stream.data = Self.fileData[ptr..ptr+len]
-							ptr+=len
+						stream.numElements = Int(arr[ptr]) ; ptr+=1
+						if stream.numElements > 0
+							elementCounter = 0
+							Repeat
+								stream.data+=arr[ptr]
+								elementCounter+=1
+								if elementCounter < stream.numElements
+									stream.data+=Self.delimiter
+								EndIf
+								ptr+=1
+							Until elementCounter = stream.numElements
 						End
 						Self.index.Insert(stream.filename,stream)
 					Next
@@ -120,67 +133,104 @@ End
 
 Class FileStream Extends DataConversion
 	Field filename:String
-	Field fileptr:Int
-Private
+	Field ptr:Int
+'Private
 	Field data:String
-Public
+	Field arr:String[]
+	Field delimiter:String
+	Field numElements:Int
+'Public
 	
 	Method ReadInt:Int()
-		Local result:string
-		result = Self.data[Self.fileptr..self.fileptr+3]
-		Self.fileptr+=3
-		Return Self.StringToInt(result)
+		Local result:Int
+		if Self.ptr >= Self.arr.Length()
+			Self.EofError()
+		EndIf
+
+		result = Int(Self.arr[Self.ptr])
+		Self.ptr+=1
+		Return result
 	End
 	
 	Method WriteInt:Void(val:Int)
+		If Self.data.Length() > 0
+			Self.data+=Self.delimiter
+		EndIf
 		Self.data+=Self.IntToString(val)
+		Self.numElements+=1
 	End
 	
 	Method ReadString:String()
 		Local result:String
-		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+3])
-		Self.fileptr+=3
-		if strLen > 0
-			result = Self.data[Self.fileptr..self.fileptr+strLen]
-			Self.fileptr+=strLen
-		End
+		if Self.ptr >= Self.arr.Length()
+			Self.EofError()
+		EndIf
+		result = Self.arr[Self.ptr]
+		Self.ptr+=1
 		Return result
 	End
 	
 	Method WriteString:Void(val:String)
-		Self.data+=Self.IntToString(val.Length())
-		if val.Length() > 0
-			Self.data+=val
-		End
+		If Self.data.Length() > 0
+			Self.data+=Self.delimiter
+		EndIf
+		Self.data+=val
+		Self.numElements+=1		
 	End
 	
 	Method ReadFloat:Float()
 		Local result:float
-		Local s:String
-		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+3])
-		Self.fileptr+=3
-		s = Self.data[Self.fileptr..self.fileptr+strLen]
-		result = Self.StringToFloat(s)
-		Self.fileptr+=strLen
+		if Self.ptr >= Self.arr.Length()
+			Self.EofError()
+		EndIf
+
+		result = Float(Self.arr[Self.ptr])
+		Self.ptr+=1
 		Return result
 	End
 	
 	Method WriteFloat:Void(val:Float)
 		Local s:String = self.FloatToString(val)
-		Self.data+=Self.IntToString(s.Length())
+		If Self.data.Length() > 0
+			Self.data+=Self.delimiter
+		EndIf
 		Self.data+=s
+		Self.numElements+=1
 	End
 	
 	Method ReadBool:Bool()
 		Local result:Bool
-		result = Bool(Self.data[Self.fileptr])
-		Self.fileptr+=1
+		if Self.ptr >= Self.arr.Length()
+			Self.EofError()
+		EndIf
+
+		if Self.arr[Self.ptr] = "0"
+			result = False
+		Else
+			result = True
+		EndIf
+		
+		Self.ptr+=1
 		Return result
 	End Method
 	
 	Method WriteBool:Void(val:Bool)
-		Self.data+=String.FromChar(val)
-	End Method	
+		Local txt:String
+		If Self.data.Length() > 0
+			Self.data+=Self.delimiter
+		EndIf
+		If val
+			txt = "1"
+		Else
+			txt = "0"
+		EndIf
+		Self.data+=txt
+		Self.numElements+=1
+	End Method
+	
+	Method EofError:Void()
+		Error "End of file: " + Self.filename
+	End Method
 End
 
 Class DataConversion
@@ -202,21 +252,18 @@ Class DataConversion
 		Return result
 	End	
 	
-	Method IntToString:String(val:Int)
-		Local result:String
-		result = String.FromChar($F000 | ((val Shr 20) & $0FFF) )
-		result += String.FromChar($F000 | ((val Shr 8) & $0FFF))
-		result += String.FromChar($F000 | (val & $00FF))
-		Return result
-	End
+    Method IntToString:String(val:Int)
+		Return String(val)
+    End
         
-	Method StringToInt:Int(val:String)
-		Return ((val[0]&$0FFF) Shl 20) | ((val[1]&$0FFF) Shl 8) |(val[2]&$00FF)
-	End
+    Method StringToInt:Int(val:String)
+		Return Int(val)
+    End
+
 
 	Method FloatToString:String(val:Float)
 		Return String(val)
-	End
+	End		
 	
 	Method StringToFloat:Float(val:String)
 		Return Float(val)
