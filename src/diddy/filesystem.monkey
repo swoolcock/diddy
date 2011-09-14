@@ -14,9 +14,9 @@ Public
 	
 	Method WriteFile:FileStream(filename:String)
 		Local f:FileStream = new FileStream
-		f.filename = filename
+		f.filename = filename.ToLower()
 		f.fileptr = 0
-		Self.index.Set(f.filename.ToLower(),f)
+		Self.index.Insert(f.filename.ToLower(),f)
 		Return f	
 	End
 	
@@ -87,31 +87,31 @@ Public
 			if Self.fileData.StartsWith(Self._header)
 				Self.index.Clear()
 				ptr+=Self._header.Length()
-				numFiles = Self.StringToInt(Self.fileData[ptr..ptr+4])
-				ptr+=4
-				if numFiles > 0
+				numFiles = Self.StringToInt(Self.fileData[ptr..ptr+3])
+				ptr+=3
+				if numFiles > 0				
 					For Local n:Int = 1 to numFiles
 						stream = New FileStream
 						'filename
-						len = Self.StringToInt(Self.fileData[ptr..ptr+4])
-						ptr+=4
+						len = Self.StringToInt(Self.fileData[ptr..ptr+3])
+						ptr+=3
 						if len > 0
 							stream.filename = Self.fileData[ptr..ptr+len]
 							ptr+=len
 						End
 						'data
-						len = Self.StringToInt(Self.fileData[ptr..ptr+4])
-						ptr+=4
+						len = Self.StringToInt(Self.fileData[ptr..ptr+3])
+						ptr+=3
 						if len > 0
 							stream.data = Self.fileData[ptr..ptr+len]
 							ptr+=len
 						End
-						Self.index.Set(stream.filename,stream)
+						Self.index.Insert(stream.filename,stream)
 					Next
 				End
 			End
 		Else
-			SaveState(Self._header+Self.IntToString(0))'save empty file and indicate no files stored
+			SaveState("")'save empty file and indicate no files stored
 		End
 	End
 End
@@ -127,8 +127,8 @@ Public
 	
 	Method ReadInt:Int()
 		Local result:string
-		result = Self.data[Self.fileptr..self.fileptr+4]
-		Self.fileptr+=4
+		result = Self.data[Self.fileptr..self.fileptr+3]
+		Self.fileptr+=3
 		Return Self.StringToInt(result)
 	End
 	
@@ -138,8 +138,8 @@ Public
 	
 	Method ReadString:String()
 		Local result:String
-		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+4])
-		Self.fileptr+=4
+		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+3])
+		Self.fileptr+=3
 		if strLen > 0
 			result = Self.data[Self.fileptr..self.fileptr+strLen]
 			Self.fileptr+=strLen
@@ -157,8 +157,8 @@ Public
 	Method ReadFloat:Float()
 		Local result:float
 		Local s:String
-		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+4])
-		Self.fileptr+=4
+		Local strLen:Int = self.StringToInt(self.data[self.fileptr..self.fileptr+3])
+		Self.fileptr+=3
 		s = Self.data[Self.fileptr..self.fileptr+strLen]
 		result = Self.StringToFloat(s)
 		Self.fileptr+=strLen
@@ -184,7 +184,7 @@ Public
 End
 
 Class DataConversion
-	Method IntToString:String(val:Int)
+	Method LittleEndianIntToString:String(val:Int)
 		Local result:String
 		result = String.FromChar((val) & $FF)
 		result+= String.FromChar((val Shr 8) & $FF)
@@ -193,19 +193,30 @@ Class DataConversion
 		Return result
 	End
 
-	Method FloatToString:String(val:Float)
-		Return String(val)
-	End		
-	
-	Method StringToInt:Int(val:String)
+	Method StringToLittleEndianInt:Int(val:String)
 		Local result:Int
 		result = (val[0])
 		result|= (val[1] Shl 8)
 		result|= (val[2] Shl 16)
 		result|= (val[3] Shl 24)
 		Return result
-	End
+	End	
 	
+	Method IntToString:String(val:Int)
+		Local result:String
+		result = String.FromChar($F000 | ((val Shr 20) & $0FFF) )
+		result += String.FromChar($F000 | ((val Shr 8) & $0FFF))
+		result += String.FromChar($F000 | (val & $00FF))
+		Return result
+	End
+        
+	Method StringToInt:Int(val:String)
+		Return ((val[0]&$0FFF) Shl 20) | ((val[1]&$0FFF) Shl 8) |(val[2]&$00FF)
+	End
+
+	Method FloatToString:String(val:Float)
+		Return String(val)
+	End
 	
 	Method StringToFloat:Float(val:String)
 		Return Float(val)
