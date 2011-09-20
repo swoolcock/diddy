@@ -2212,6 +2212,10 @@ Public
 			window.Dispose()
 		ElseIf source = window.maximizeButton And action = ACTION_CLICKED Then
 			window.Maximized = Not window.Maximized
+			' clear out mouse hover/down after maximising/restoring
+			' should probably do this in a common place but... >_>
+			window.maximizeButton.mouseHover = False
+			window.maximizeButton.mouseDown = False
 		ElseIf source = window.minimizeButton And action = ACTION_CLICKED Then
 			'window.Minimized = True ' TODO: disabled until positioning of minimised windows is done
 		ElseIf source = window.shadeButton And action = ACTION_CLICKED Then
