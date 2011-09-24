@@ -155,6 +155,7 @@ Public
 	End
 	
 	Method OnUpdate:Int()
+		OverrideUpdate()
 		if useFixedRateLogic
 			local now:Int = Millisecs()
 			If now < lastTime
@@ -183,6 +184,9 @@ Public
 		Return 0
 	End
 	
+	Method OverrideUpdate:Void()
+	End
+
 	Method Update:Void(fixedRateLogicDelta:Float)
 		dt.UpdateDelta()
 		if useFixedRateLogic
@@ -1009,9 +1013,9 @@ Class Sprite
 	
 	Method MoveForward:Void()
 		dx = -Sin(rotation) * speed
-        dy = -Cos(rotation) * speed
+		dy = -Cos(rotation) * speed
 
-		move()
+		Move()
 	End
 
 	Method SetFrame:Void(startFrame:Int=0, endFrame:Int=0, speed:Int=125, pingPong:Bool = false, loop:Bool = true)

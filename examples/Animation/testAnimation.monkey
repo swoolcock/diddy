@@ -34,6 +34,10 @@ Class MyGame Extends DiddyApp
 		
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
 	End
+	
+	Method OverrideUpdate:Void()
+		Print "HERE"
+	End
 End
 
 
@@ -147,13 +151,12 @@ End
 
 
 Class Player Extends Sprite
-    Field vx:Float, vy:Float
-    Field ax:Float, ay:Float
-    Field direction:Float
+	Field vx:Float, vy:Float
+	Field ax:Float, ay:Float
 	
 	Method New(gi:GameImage, x#, y#)
 		Super.New(gi, x, y)
-		direction = -90
+		rotation = 0
 		frame = 3
 	End
 	
@@ -161,28 +164,24 @@ Class Player Extends Sprite
 		Local Acceleration:Float
 		
 		If KeyDown(KEY_UP)
-			Acceleration=.2
+			speed+=.3
 		else If KeyDown(KEY_DOWN)
-			Acceleration=-.2
+			speed-=.3
 		Else
-			Acceleration=0
+			if speed > 0
+				speed-=.1
+			Else
+				speed+=.1
+			End
 		End If		
 		If KeyDown(KEY_LEFT)
-			direction-=2
 			self.rotation+=2
 		End If
 		If KeyDown(KEY_RIGHT)
-			direction+=2
 			self.rotation-=2
 		End If
 		
-		Local ax:Float = Acceleration * Cos(direction)
-		Local ay:Float = Acceleration * Sin(direction)
-		
-		vx+=ax 
-		vy+=ay
-		x+=vx * dt.delta
-		y+=vy * dt.delta
+		MoveForward()
 		
 		If x < 0 x = SCREEN_WIDTH
 		If x > SCREEN_WIDTH x = 0
