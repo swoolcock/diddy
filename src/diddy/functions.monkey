@@ -369,6 +369,32 @@ Function InitBase64:Void()
 	End
 End
 
+Function Interpolate:Float(type:Int, startValue:Float, endValue:Float, alpha:Float)
+	AssertRangeInt(type, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid interpolation type.")
+	Local range:Float = endValue-startValue
+	Local rv:Float = 0
+	Select type
+		Case INTERPOLATION_LINEAR
+			rv = startValue + range*alpha
+			
+		Case INTERPOLATION_INVERSE_LINEAR
+			rv = startValue + range - range*alpha
+			
+		Case INTERPOLATION_HALF_SINE
+			rv = startValue + range * Sin(alpha*PI)
+			
+		Case INTERPOLATION_HALF_COSINE
+			rv = startValue + range * Cos(alpha*PI)
+	End
+	' clip to start/end
+	If startValue < endValue And rv < startValue Or startValue > endValue And rv > startValue Then
+		rv = startValue
+	ElseIf startValue < endValue And rv > endValue Or startValue > endValue And rv < endValue Then
+		rv = endValue
+	End
+	Return rv
+End
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
@@ -505,3 +531,10 @@ Const ASC_PIPE:Int = 124        '|'
 Const ASC_CLOSE_BRACE:Int = 125 '}'
 Const ASC_TILDE:Int = 126       '~'
 Const ASC_DELETE:Int = 127
+
+Const INTERPOLATION_NONE:Int = 0
+Const INTERPOLATION_LINEAR:Int = 1          ' interpolates from start to end
+Const INTERPOLATION_INVERSE_LINEAR:Int = 2  ' interpolates from end to start
+Const INTERPOLATION_HALF_SINE:Int = 3       ' interpolates from start to end and back again, in a wave
+Const INTERPOLATION_HALF_COSINE:Int = 4     ' interpolates from end to start and back again, in a wave
+Const INTERPOLATION_COUNT:Int = 5
