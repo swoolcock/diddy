@@ -1,0 +1,65 @@
+'--------------------
+' BlitzMax path
+'
+BMAX_PATH="C:\BlitzMax\1.42\bin\bmk.exe"
+
+'--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+'for opening .html files...
+HTML_PLAYER="${TRANSDIR}\mserver_winnt.exe"
+'--------------------
+
+'--------------------
+'Ant build tool path
+'
+'Must be set to a valid dir for ANDROID target support
+'
+ANT_PATH="E:\Programming\apache-ant-1.8.2"
+'--------------------
+
+'--------------------
+'MinGW path.
+'
+'Must be set to a valid dir for STDCPP target support.
+'
+MINGW_PATH="${SYSTEMDRIVE}\MinGW"
+'--------------------
+
+'--------------------
+'Java dev kit path
+'
+'Must be set to a valid dir for ANDROID and FLASH target support
+'
+JDK_PATH="C:\Program Files (x86)\Java\jdk1.6.0_19"
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support
+'
+ANDROID_PATH="C:\Program Files (x86)\Android\android-sdk"
+'--------------------
+
+'--------------------
+'Flex SDK and flash player path.
+'
+'FLEX_PATH Must be set for FLASH target support.
+'Either HTML_PLAYER or FLASH_PLAYER must be set for FLASH target support.
+'
+FLEX_PATH="E:\Programming\flex_sdk_4.1"
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="${SYSTEMDRIVE}\flex_sdk_4.0\flashplayer_10_sa_debug.exe"
+
+'--------------------
+
+'--------------------
+'MSBUILD path.
+'
+'Must be set for XNA and GLFW target support.
+'
+MSBUILD_PATH="${WINDIR}\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
+'--------------------
