@@ -370,7 +370,6 @@ Function InitBase64:Void()
 End
 
 Function Interpolate:Float(type:Int, startValue:Float, endValue:Float, alpha:Float)
-	AssertRangeInt(type, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid interpolation type.")
 	Local range:Float = endValue-startValue
 	Local rv:Float = 0
 	Select type
