@@ -50,6 +50,12 @@ Private
 	Field spawnMaxRange:Float                   ' the maximum distance to spawn from the emit point
 	Field life:Float                            ' the default life of the particle in seconds
 	Field lifeSpread:Float                      ' the life spread in seconds
+	Field rotation:Float
+	Field rotationSpread:Float
+	Field rotationSpeed:Float
+	Field rotationSpeedSpread:Float
+	Field scale:Float = 1
+	Field scaleSpread:Float
 	
 	' colours
 	Field redInterpolation:Int = INTERPOLATION_NONE     ' interpolates the particle's red based on life
@@ -395,6 +401,54 @@ Public
 		Self.particleImage = particleImage
 	End
 	
+	' rotation
+	Method Rotation:Float() Property
+		Return rotation
+	End
+	Method Rotation:Void(rotation:Float) Property
+		Self.rotation = rotation
+	End
+	
+	' rotationSpread
+	Method RotationSpread:Float() Property
+		Return rotationSpread
+	End
+	Method RotationSpread:Void(rotationSpread:Float) Property
+		Self.rotationSpread = rotationSpread
+	End
+	
+	' rotationSpeed
+	Method RotationSpeed:Float() Property
+		Return rotationSpeed
+	End
+	Method RotationSpeed:Void(rotationSpeed:Float) Property
+		Self.rotationSpeed = rotationSpeed
+	End
+	
+	' rotationSpeedSpread
+	Method RotationSpeedSpread:Float() Property
+		Return rotationSpeedSpread
+	End
+	Method RotationSpeedSpread:Void(rotationSpeedSpread:Float) Property
+		Self.rotationSpeedSpread = rotationSpeedSpread
+	End
+	
+	' scale
+	Method Scale:Float() Property
+		Return scale
+	End
+	Method Scale:Void(scale:Float) Property
+		Self.scale = scale
+	End
+	
+	' scaleSpread
+	Method ScaleSpread:Float() Property
+		Return scaleSpread
+	End
+	Method ScaleSpread:Void(scaleSpread:Float) Property
+		Self.scaleSpread = scaleSpread
+	End
+	
 	' x
 	Method X:Float() Property
 		Return x
@@ -529,6 +583,18 @@ Public
 		Self.polarVelocityAmplitudeSpread = polarVelocityAmplitudeSpread
 	End
 	
+	Method SetParticleRotation:Void(rotation:Float, rotationSpread:Float=0, rotationSpeed:Float=0, rotationSpeedSpread:Float=0)
+		Self.rotation = rotation
+		Self.rotationSpread = rotationSpread
+		Self.rotationSpeed = rotationSpeed
+		Self.rotationSpeedSpread = rotationSpeedSpread
+	End
+	
+	Method SetParticleScale:Void(scale:Float, scaleSpread:Float = 0)
+		Self.scale = scale
+		Self.scaleSpread = scaleSpread
+	End
+	
 ' Death emitter methods
 	Method AddDeathEmitter(emitter:Emitter, chance:Float)
 		deathEmitters.Add(emitter)
@@ -591,6 +657,9 @@ Public
 			group.sourceEmitter[index] = Self
 			group.alive[index] = True
 			group.life[index] = life - lifeSpread/2 + Rnd() * lifeSpread
+			group.rotation[index] = rotation - rotationSpread/2 + Rnd() * rotationSpread
+			group.rotationSpeed[index] = rotationSpeed - rotationSpeedSpread/2 + Rnd() * rotationSpeedSpread
+			group.scale[index] = scale - scaleSpread/2 + Rnd() * scaleSpread
 			
 			' image
 			group.particleImage[index] = particleImage
@@ -688,6 +757,10 @@ Private
 	Field polarVelocityAngle:Float[] ' radians
 	Field usePolar:Bool[]
 	Field mass:Float[]
+	Field rotation:Float[]
+	Field rotationSpeed:Float[]
+	Field scale:Float[]
+
 	
 	Field red:Int[]
 	Field green:Int[]
@@ -771,6 +844,10 @@ Public
 		alive = New Bool[maxParticles]
 		mass = New Float[maxParticles]
 		particleImage = New Image[maxParticles]
+		rotation = New Float[maxParticles]
+		rotationSpeed = New Float[maxParticles]
+		scale = New Float[maxParticles]
+
 		
 		red = New Int[maxParticles]
 		green = New Int[maxParticles]
@@ -832,6 +909,15 @@ Public
 				' update position
 				x[index] += velocityX[index] * delta
 				y[index] += velocityY[index] * delta
+				' update rotation
+				rotation[index] += rotationSpeed[index] * delta
+				' clip rotation
+				While rotation[index] > 2*PI
+					rotation[index] -= 2*PI
+				End
+				While rotation[index] < 0
+					rotation[index] += 2*PI
+				End
 				' interpolate colours
 				If startRed[index] <> endRed[index] And life[index] < redInterpolationTime[index] Then
 					red[index] = Int(Interpolate(redInterpolation[index], startRed[index], endRed[index], 1 - life[index]/redInterpolationTime[index]))
@@ -914,6 +1000,9 @@ Public
 		polarVelocityAmplitude[index] = 0
 		polarVelocityAngle[index] = 0
 		usePolar[index] = False
+		scale[index] = 1
+		rotation[index] = 0
+		rotationSpeed[index] = 0
 		sourceEmitter[index] = Null
 		alive[index] = False
 	End
@@ -932,14 +1021,32 @@ Public
 	End
 	
 	Method Render:Void()
+		Local r2d:Float = 180/PI
 		For Local i:Int = 0 Until aliveParticles
 			Local index:Int = alivePointers[i]
 			SetColor(red[index], green[index], blue[index])
 			SetAlpha(alpha[index])
+			
+			' scale should never be <=0, so we'll fix it here
+			If scale[index] <= 0 Then scale[index] = 1
+			
 			If particleImage[index] <> Null Then
-				DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
+				If scale[index] <> 1 Or rotation[index] <> 0 Then
+					DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index], rotation[index]*r2d, scale[index], scale[index])
+				Else
+					DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
+				End
 			Else
-				DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+				If scale[index] <> 1 Or rotation[index] <> 0 Then
+					PushMatrix
+					Translate(x[index]-1, SCREEN_HEIGHT-y[index]-1)
+					If scale[index] <> 1 Then Scale(scale[index], scale[index])
+					If rotation[index] <> 0 Then Rotate(rotation[index] * r2d)
+					DrawRect(0, 0, 3, 3)
+					PopMatrix
+				Else
+					DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+				End
 			End
 		Next
 	End
