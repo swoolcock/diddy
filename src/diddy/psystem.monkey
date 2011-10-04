@@ -71,11 +71,14 @@ Private
 	Field minEndBlue:Int = 255, maxEndBlue:Int = 255
 	Field minEndAlpha:Float = 0, maxEndAlpha:Float = 0
 	
+	Field particleImage:Image
+	
 ' Emitter info
 	Field x:Float
 	Field y:Float
 	Field amplitude:Float = 10
 	Field angle:Float
+	Field group:ParticleGroup
 	
 ' Death emitters
 	Field deathEmitters:ArrayList<Emitter>      ' the death emitters will fire at the particle's point of death
@@ -384,6 +387,14 @@ Public
 		Self.maxEndAlpha = maxEndAlpha
 	End
 	
+	' particleImage
+	Method ParticleImage:Image() Property
+		Return particleImage
+	End
+	Method ParticleImage:Void(particleImage:Image) Property
+		Self.particleImage = particleImage
+	End
+	
 	' x
 	Method X:Float() Property
 		Return x
@@ -414,6 +425,14 @@ Public
 	End
 	Method Amplitude:Void(amplitude:Float) Property
 		Self.amplitude = amplitude
+	End
+	
+	' group
+	Method Group:ParticleGroup() Property
+		Return group
+	End
+	Method Group:Void(group:ParticleGroup) Property
+		Self.group = group
 	End
 	
 ' Constructors
@@ -532,19 +551,22 @@ Public
 	End
 	
 ' Emits	
-	Method Emit:Void(group:ParticleGroup, amount:Int)
-		EmitAtAngle(group, amount, x, y, angle)
+	Method Emit:Void(amount:Int, group:ParticleGroup=Null)
+		EmitAtAngle(amount, x, y, angle, group)
 	End
 	
-	Method EmitAt:Void(group:ParticleGroup, amount:Int, emitX:Float, emitY:Float)
-		EmitAtAngle(group, amount, emitX, emitY, angle)
+	Method EmitAt:Void(amount:Int, emitX:Float, emitY:Float, group:ParticleGroup=Null)
+		EmitAtAngle(amount, emitX, emitY, angle, group)
 	End
 	
-	Method EmitAngle:Void(group:ParticleGroup, amount:Int, emitAngle:Float)', emitAmplitude:Float)
-		EmitAtAngle(group, amount, x, y, emitAngle)
+	Method EmitAngle:Void(amount:Int, emitAngle:Float, emitAmplitude:Float, group:ParticleGroup=Null)
+		'EmitAtAngle(group, amount, x, y, emitAngle, group)
 	End
 	
-	Method EmitAtAngle:Void(group:ParticleGroup, amount:Int, emitX:Float, emitY:Float, emitAngle:Float)
+	Method EmitAtAngle:Void(amount:Int, emitX:Float, emitY:Float, emitAngle:Float, group:ParticleGroup=Null)
+		' if not passed a group, use the assigned one
+		If group = Null Then group = Self.group
+		' create "amount" number of particles
 		For Local i:Int = 0 Until amount
 			' get an index for a new particle
 			Local index:Int = group.CreateParticle()
@@ -560,8 +582,7 @@ Public
 				' TODO: adjust for src speed
 				group.polarVelocityAngle[index] = emitAngle + polarVelocityAngle - polarVelocityAngleSpread/2 + Rnd() * polarVelocityAngleSpread
 				group.polarVelocityAmplitude[index] = polarVelocityAmplitude - polarVelocityAmplitudeSpread/2 + Rnd() * polarVelocityAmplitudeSpread
-				group.velocityX[index] = Cosr(group.polarVelocityAngle[index]) * group.polarVelocityAmplitude[index]
-				group.velocityY[index] = Sinr(group.polarVelocityAngle[index]) * group.polarVelocityAmplitude[index]
+				group.UpdateCartesian(index)
 			Else
 				' TODO: adjust for src angle and speed
 				group.velocityX[index] = velocityX - velocityXSpread/2 + Rnd() * velocityXSpread
@@ -570,6 +591,9 @@ Public
 			group.sourceEmitter[index] = Self
 			group.alive[index] = True
 			group.life[index] = life - lifeSpread/2 + Rnd() * lifeSpread
+			
+			' image
+			group.particleImage[index] = particleImage
 			
 			' start colours
 			If minStartRed <> maxStartRed Then
@@ -670,6 +694,8 @@ Private
 	Field blue:Int[]
 	Field alpha:Float[]
 	
+	Field particleImage:Image[]
+	
 	Field startRed:Int[]
 	Field startGreen:Int[]
 	Field startBlue:Int[]
@@ -744,6 +770,7 @@ Public
 		life = New Float[maxParticles]
 		alive = New Bool[maxParticles]
 		mass = New Float[maxParticles]
+		particleImage = New Image[maxParticles]
 		
 		red = New Int[maxParticles]
 		green = New Int[maxParticles]
@@ -794,11 +821,6 @@ Public
 			If life[index] > 0 Then
 				' apply acceleration
 				If Not forces.IsEmpty() Then
-					' update cartesian velocity
-					If usePolar[index] Then
-						velocityX[index] = Cosr(polarVelocityAngle[index]) * polarVelocityAmplitude[index]
-						velocityY[index] = Sinr(polarVelocityAngle[index]) * polarVelocityAmplitude[index]
-					End
 					' apply forces
 					For Local fi:Int = 0 Until forces.Size
 						Local f:Force = forces.Get(fi)
@@ -806,12 +828,6 @@ Public
 						velocityY[index] += f.ApplyY(velocityY[index], mass[index]) * delta
 					Next
 					' TODO: terminal velocity
-					' update polar velocity
-					If usePolar[index] Then
-						Local angle:Float = SafeATanr(velocityX[index], velocityY[index], polarVelocityAngle[index])
-						polarVelocityAngle[index] = angle
-						polarVelocityAmplitude[index] = Sqrt(velocityX[index]*velocityX[index] + velocityY[index]*velocityY[index])
-					End
 				End
 				' update position
 				x[index] += velocityX[index] * delta
@@ -851,11 +867,27 @@ Public
 				Local c:Float = deadEmitters[i].deathEmitterChances.Get(j)
 				If c = 1 Or c > 0 And Rnd() <= c Then
 					Local e:Emitter = deadEmitters[i].deathEmitters.Get(j)
-					e.EmitAtAngle(Self, 30, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]))
+					' if the emitter has no group assigned, we use Self
+					If e.group = Null Then
+						e.EmitAtAngle(30, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]), Self)
+					Else
+						e.EmitAtAngle(30, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]))
+					End
 				End
 			Next
 			deadEmitters[i] = Null
 		Next
+	End
+	
+	Method UpdatePolar(index:Int)
+		Local angle:Float = SafeATanr(velocityX[index], velocityY[index], polarVelocityAngle[index])
+		polarVelocityAngle[index] = angle
+		polarVelocityAmplitude[index] = Sqrt(velocityX[index]*velocityX[index] + velocityY[index]*velocityY[index])
+	End
+	
+	Method UpdateCartesian(index:Int)
+		velocityX[index] = Cosr(polarVelocityAngle[index]) * polarVelocityAmplitude[index]
+		velocityY[index] = Sinr(polarVelocityAngle[index]) * polarVelocityAmplitude[index]
 	End
 	
 	Method CreateParticle:Int()
@@ -904,7 +936,11 @@ Public
 			Local index:Int = alivePointers[i]
 			SetColor(red[index], green[index], blue[index])
 			SetAlpha(alpha[index])
-			DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+			If particleImage[index] <> Null Then
+				DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
+			Else
+				DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+			End
 		Next
 	End
 End
