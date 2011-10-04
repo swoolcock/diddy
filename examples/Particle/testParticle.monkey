@@ -94,13 +94,16 @@ Class ParticleTestScreen Extends Screen
 		e.SetPolarVelocity(PI/2, PI/3, 250, 50) ' points up with a spread of 60 degrees
 		e.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
 		e.ParticleImage = speck
+		e.SetParticleScale(1.5,2)
 		e.Group = pg
 		
 		e2 = New Emitter
-		e2.Life = 2 ' lives for 2 seconds
+		e2.Life = 3 ' lives for 3 seconds
 		e2.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
 		e2.SetPolarVelocity(0,2*PI,50,10) ' points right with a spread of 360 degrees (a full circle)
 		e2.SetParticleRGBInterpolated(0,255,255,0,255,0) ' fade from cyan to green
+		e2.SetParticleScale(2,2)
+		e2.SetParticleRotation(0, PI/8, 0, PI/2)
 		e.AddDeathEmitter(e2, 0.05) ' 5% chance to fire off this emitter when a particle from other emitter dies
 	End
 End
