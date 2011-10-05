@@ -133,27 +133,6 @@ Type gxtkApp
 	EndMethod
 EndType
 
-Function BlitzMaxMillisecs:Int()
-	return MilliSecs()
-EndFunction
-
-Function BlitzMaxSetColor(r:Int, g:Int, b:Int)
-	SetColor(r, g, b)
-EndFunction
-
-Function BlitzMaxSetBlend(blend:Int)
-	SetBlend(blend)
-EndFunction
-
-Function BlitzMaxSetAlpha(a:Float)
-	SetAlpha(a)
-EndFunction
-
-Function BlitzMaxCls(r:Int = 0, g:Int = 0, b:Int = 0)
-	SetClsColor(r, g, b)
-	Cls
-EndFunction
-
 Type gxtkGraphics
 	
 	Method Cls:Int(r:int = 0, g:int = 0, b:int = 0)
@@ -228,7 +207,68 @@ Type gxtkGraphics
 		
 		Return 0
 	EndMethod
+	
+	Method DrawLine:Int( x1:Float,y1:Float,x2:Float,y2:Float )
+		BlitzMaxDrawLine(x1, y1, x2, y2)
+		Return 0
+	EndMethod
+	
+	Method DrawOval:Int( x:Float, y:Float, w:Float, h:Float )
+		BlitzMaxDrawOval(x, y, w, h)
+		Return 0
+	EndMethod
+	
+	Method DrawPoly:Int(vertices:Float[])
+		BlitzMaxDrawPoly( vertices )
+		Return 0
+	EndMethod
+	
+	Method DrawRect:Int( x:Float, y:Float, w:Float, h:Float )
+		BlitzMaxDrawRect(x, y, w, h)
+		Return 0
+	EndMethod
 EndType
+
+Function BlitzMaxDrawPoly:Int(vertices:Float[])
+	DrawPoly vertices
+	Return 0
+EndFunction
+
+Function BlitzMaxDrawRect:Int( x:Float, y:Float, w:Float, h:Float )
+	DrawRect x, y, w, h
+	Return 0
+EndFunction
+
+Function BlitzMaxDrawOval:Int( x:Float, y:Float, w:Float, h:Float )
+	DrawOval x, y, w, h
+	Return 0
+EndFunction
+
+Function BlitzMaxDrawLine:Int( x1:Float,y1:Float,x2:Float,y2:Float )
+	DrawLine x1, y1, x2, y2
+	Return 0
+EndFunction
+
+Function BlitzMaxMillisecs:Int()
+	return MilliSecs()
+EndFunction
+
+Function BlitzMaxSetColor(r:Int, g:Int, b:Int)
+	SetColor(r, g, b)
+EndFunction
+
+Function BlitzMaxSetBlend(blend:Int)
+	SetBlend(blend)
+EndFunction
+
+Function BlitzMaxSetAlpha(a:Float)
+	SetAlpha(a)
+EndFunction
+
+Function BlitzMaxCls(r:Int = 0, g:Int = 0, b:Int = 0)
+	SetClsColor(r, g, b)
+	Cls
+EndFunction
 
 Type gxtkSurface
 	Field w:Int, h:Int
