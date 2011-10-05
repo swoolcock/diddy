@@ -31,11 +31,23 @@ Class MyGame Extends App
 	End
 	
 	Method OnRender:Int()
-		Cls(255,0,0)
-		DrawText "HELLO", DeviceWidth()/2, 10, .5, .5
-		DrawImage img, 10, 64
+		Cls(100,100,100)
+		DrawText("HELLO", DeviceWidth()/2, 10, .5, .5)
+		DrawImage(img, 10, 64)
 		SetColor(255,255,0)
 		spr.Draw()
+		SetColor(255,0,255)
+		DrawLine(0, 0, DeviceWidth(), DeviceHeight())
+		SetColor(0,255,255)
+		DrawCircle(50, 200, 10)
+		SetColor(255,255,0)
+		Local tri#[]=[10.0,300.0,100.0,400.0,0.0,400.0]
+		DrawPoly tri
+		SetColor(255,0,0)
+		DrawRect(100,300,100,50)
+		SetColor(255,255,255)
+		DrawImageRect(img, 10, 128, 32, 0, 64, 64)
+		
 		Return 0
 	End
 End
