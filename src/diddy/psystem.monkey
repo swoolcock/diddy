@@ -814,8 +814,16 @@ Private
 	Field forces:ArrayList<Force>
 	Field forcesArray:Object[]
 	
+	Field useMonkeyCoords:Bool = True
 Public
 ' Properties
+	Method UseMonkeyCoords:Bool() Property
+		Return useMonkeyCoords
+	End
+	Method UseMonkeyCoords:Void(use:Bool) Property
+		useMonkeyCoords = use
+	End
+
 	Method AliveParticles:Int() Property
 		Return aliveParticles
 	End
@@ -1042,20 +1050,36 @@ Public
 			
 			If particleImage[index] <> Null Then
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
-					DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index], rotation[index]*r2d, scale[index], scale[index])
+					If useMonkeyCoords
+						DrawImage(particleImage[index], x[index], y[index], rotation[index]*r2d, scale[index], scale[index])
+					Else
+						DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index], rotation[index]*r2d, scale[index], scale[index])
+					End
 				Else
-					DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
+					If useMonkeyCoords
+						DrawImage(particleImage[index], x[index], y[index])
+					Else
+						DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
+					End
 				End
 			Else
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
 					PushMatrix
-					Translate(x[index]-1, SCREEN_HEIGHT-y[index]-1)
+					If useMonkeyCoords
+						Translate(x[index]-1, y[index]-1)
+					Else
+						Translate(x[index]-1, SCREEN_HEIGHT-y[index]-1)
+					End
 					If scale[index] <> 1 Then Scale(scale[index], scale[index])
 					If rotation[index] <> 0 Then Rotate(rotation[index] * r2d)
 					DrawRect(0, 0, 3, 3)
 					PopMatrix
 				Else
-					DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+					If useMonkeyCoords
+						DrawRect(x[index]-1, y[index]-1, 3, 3)						
+					Else
+						DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
+					End
 				End
 			End
 		Next
@@ -1163,19 +1187,19 @@ Function SafeATanr:Float(dx:Float, dy:Float, def:Float=0)
 	Local angle:Float = def
 	If dy = 0 And dx >= 0 Then ' 0
 		angle = 0
-	ElseIf dy = 0 And dx < 0 Then ' 180
+	Elseif dy = 0 And dx < 0 Then ' 180
 		angle = PI
-	ElseIf dy > 0 And dx = 0 Then ' 90
+	Elseif dy > 0 And dx = 0 Then ' 90
 		angle = PI/2
-	ElseIf dy < 0 And dx = 0 Then ' 270
+	Elseif dy < 0 And dx = 0 Then ' 270
 		angle = 3*PI / 2
-	ElseIf dy > 0 And dx > 0 Then ' Acute
+	Elseif dy > 0 And dx > 0 Then ' Acute
 		angle = ATanr(dy / dx)
-	ElseIf dy > 0 And dx < 0 Then ' Obtuse
+	Elseif dy > 0 And dx < 0 Then ' Obtuse
 		angle = PI - ATanr(dy / -dx)
-	ElseIf dy < 0 And dx < 0 Then ' Reflex < 270
+	Elseif dy < 0 And dx < 0 Then ' Reflex < 270
 		angle = PI + ATanr(dy / dx)
-	ElseIf dy < 0 And dx > 0 Then ' Reflex > 270
+	Elseif dy < 0 And dx > 0 Then ' Reflex > 270
 		angle = 2*PI - ATanr(-dy / dx)
 	End
 	Return angle
