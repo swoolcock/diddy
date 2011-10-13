@@ -26,9 +26,11 @@ Class ParticleTestScreen Extends Screen
 	Field e:Emitter
 	Field e2:Emitter
 	Field f:Force
+	Field pf:PointForce
 	Field speck:Image
 	
 	Field emitting:Bool
+	Field emitCount:Int = 3
 	Field rendering:Bool = True
 	
 	Method New()
@@ -51,14 +53,32 @@ Class ParticleTestScreen Extends Screen
 		SetColor(255,255,255)
 		SetAlpha(1)
 #If TARGET="android" Or TARGET="ios" Then
-		DrawText("Tap top half to toggle emitter, bottom half to toggle rendering",0,30)
+		DrawText("Tap top half to toggle emitter, bottom half to toggle rendering",0,20)
+		DrawText("pg.AliveParticles="+pg.AliveParticles,0,35)
 #Else
-		DrawText("Space: toggle emitter, R: toggle rendering",0,30)
+		DrawText("Space: toggle emitter, R: toggle rendering",0,20)
+		DrawText("Hold Shift: Cursor repels, Hold Control: Cursor attracts",0,35)
+		DrawText("Up/Down arrows increase/decrease emit count from 1-20. Current: "+emitCount,0,50)
+		DrawText("pg.AliveParticles="+pg.AliveParticles,0,65)
 #End
-		DrawText("pg.AliveParticles="+pg.AliveParticles,0,50)
 	End
 	
 	Method Update:Void()
+		pf.X = game.mouseX
+		pf.Y = SCREEN_HEIGHT-game.mouseY
+		If KeyDown(KEY_CONTROL) Then
+			pf.Acceleration = 300
+			pf.Enabled = True
+			f.Enabled = False
+		ElseIf KeyDown(KEY_SHIFT) Then
+			pf.Acceleration = -300
+			pf.Enabled = True
+			f.Enabled = False
+		Else
+			pf.Enabled = False
+			f.Enabled = True
+		End
+	
 		If KeyHit(KEY_SPACE) Then emitting = Not emitting
 		If KeyHit(KEY_R) Then rendering = Not rendering
 		
@@ -69,8 +89,14 @@ Class ParticleTestScreen Extends Screen
 				rendering = Not rendering
 			End
 		End
+		
+		If KeyHit(KEY_UP) Then emitCount+=1
+		If KeyHit(KEY_DOWN) Then emitCount-=1
+		If emitCount < 1 Then emitCount = 1
+		If emitCount > 20 Then emitCount = 20
+		
 		If emitting Then
-			e.EmitAt(3, SCREEN_WIDTH2, SCREEN_HEIGHT2+50)
+			e.EmitAt(emitCount, SCREEN_WIDTH2, SCREEN_HEIGHT2+50)
 		End
 		ps.Update(dt.frametime)
 		If KeyHit(KEY_ESCAPE) Then
@@ -87,6 +113,8 @@ Class ParticleTestScreen Extends Screen
 		
 		f = New ConstantForce(0,-150) ' constant downward force of 150 pixels per second per second
 		pg.Forces.Add(f)
+		pf = New PointForce(0, 0, 0)
+		pg.Forces.Add(pf)
 		
 		e = New Emitter
 		e.SetParticleRGBInterpolated(255,0,0,0,255,0) ' fade from red to green
