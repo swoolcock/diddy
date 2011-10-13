@@ -29,7 +29,7 @@ Class ParticleTestScreen Extends Screen
 	Field pf:PointForce
 	Field speck:Image
 	
-	Field emitting:Bool
+	Field emitting:Bool = True
 	Field emitCount:Int = 3
 	Field rendering:Bool = True
 	
@@ -40,7 +40,7 @@ Class ParticleTestScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
+		game.screenFade.Start(50, False)
 	End
 	
 	Method Render:Void()
@@ -70,13 +70,16 @@ Class ParticleTestScreen Extends Screen
 			pf.Acceleration = 300
 			pf.Enabled = True
 			f.Enabled = False
-		ElseIf KeyDown(KEY_SHIFT) Then
+		Elseif KeyDown(KEY_SHIFT) Then
 			pf.Acceleration = -300
 			pf.Enabled = True
 			f.Enabled = False
 		Else
 			pf.Enabled = False
 			f.Enabled = True
+		End
+		If KeyHit(KEY_M) 
+			pg.UseMonkeyCoords = Not pg.UseMonkeyCoords
 		End
 	
 		If KeyHit(KEY_SPACE) Then emitting = Not emitting
@@ -96,7 +99,7 @@ Class ParticleTestScreen Extends Screen
 		If emitCount > 20 Then emitCount = 20
 		
 		If emitting Then
-			e.EmitAt(emitCount, SCREEN_WIDTH2, SCREEN_HEIGHT2+50)
+			e.EmitAt(emitCount, game.mouseX, game.mouseY)
 		End
 		ps.Update(dt.frametime)
 		If KeyHit(KEY_ESCAPE) Then
@@ -111,7 +114,7 @@ Class ParticleTestScreen Extends Screen
 		pg = New ParticleGroup(5000) ' group of 5000 particles
 		ps.Groups.Add(pg)
 		
-		f = New ConstantForce(0,-150) ' constant downward force of 150 pixels per second per second
+		f = New ConstantForce(0,150) ' constant downward force of 150 pixels per second per second
 		pg.Forces.Add(f)
 		pf = New PointForce(0, 0, 0)
 		pg.Forces.Add(pf)
@@ -119,7 +122,7 @@ Class ParticleTestScreen Extends Screen
 		e = New Emitter
 		e.SetParticleRGBInterpolated(255,0,0,0,255,0) ' fade from red to green
 		e.Life = 3 ' lives for 3 seconds
-		e.SetPolarVelocity(PI/2, PI/3, 250, 50) ' points up with a spread of 60 degrees
+		e.SetPolarVelocity(-PI/2, -PI/3, 250, 50) ' points up with a spread of 60 degrees
 		e.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
 		e.ParticleImage = speck
 		e.SetParticleScale(1.5,2)
