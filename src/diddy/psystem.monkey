@@ -812,6 +812,7 @@ Private
 	
 	' constants for the group
 	Field forces:ArrayList<Force>
+	Field forcesArray:Object[]
 	
 Public
 ' Properties
@@ -888,6 +889,14 @@ Public
 	End
 
 	Method Update:Void(delta:Float)
+		' cache the force arraylist first
+		Local forceCount:Int = 0
+		If forcesArray.Length < forces.Size Then
+			forcesArray = forces.ToArray()
+			forceCount = forcesArray.Length
+		Else
+			forceCount = forces.FillArray(forcesArray)
+		End
 		' convert milliseconds to seconds
 		delta = delta/1000
 		deadCount = 0
@@ -897,12 +906,13 @@ Public
 			life[index] -= delta
 			If life[index] > 0 Then
 				' apply acceleration
-				If Not forces.IsEmpty() Then
+				If forceCount > 0 Then
 					' apply forces
-					For Local fi:Int = 0 Until forces.Size
-						Local f:Force = forces.Get(fi)
-						velocityX[index] += f.ApplyX(velocityX[index], mass[index]) * delta
-						velocityY[index] += f.ApplyY(velocityY[index], mass[index]) * delta
+					For Local fi:Int = 0 Until forceCount
+						If Force(forcesArray[fi]).enabled Then
+							velocityX[index] += Force(forcesArray[fi]).ApplyX(x[index], y[index]) * delta
+							velocityY[index] += Force(forcesArray[fi]).ApplyY(x[index], y[index]) * delta
+						End
 					Next
 					' TODO: terminal velocity
 				End
@@ -1052,12 +1062,23 @@ Public
 	End
 End
 
-Interface Force
-	Method ApplyX:Float(x:Float, mass:Float=-1)
-	Method ApplyY:Float(y:Float, mass:Float=-1)
+Class Force Abstract
+Private
+	Field enabled:Bool = True
+	
+Public
+	Method Enabled:Bool() Property
+		Return enabled
+	End
+	Method Enabled:Void(enabled:Bool) Property
+		Self.enabled = enabled
+	End
+	
+	Method ApplyX:Float(x:Float, y:Float) Abstract
+	Method ApplyY:Float(x:Float, y:Float) Abstract
 End
 
-Class ConstantForce Implements Force
+Class ConstantForce Extends Force
 Private
 	Field x:Float
 	Field y:Float
@@ -1081,15 +1102,60 @@ Public
 		Self.y = y
 	End
 	
-	Method ApplyX:Float(x:Float, mass:Float=-1)
+	Method ApplyX:Float(x:Float, y:Float)
 		Return Self.x
 	End
 	
-	Method ApplyY:Float(y:Float, mass:Float=-1)
+	Method ApplyY:Float(x:Float, y:Float)
 		Return Self.y
 	End
 End
 
+Class PointForce Extends Force
+Private
+	Field x:Float
+	Field y:Float
+	Field accel:Float
+Public
+	Method X:Float() Property
+		Return x
+	End
+	Method X:Void(x:Float) Property
+		Self.x = x
+	End
+	
+	Method Y:Float() Property
+		Return y
+	End
+	Method Y:Void(y:Float) Property
+		Self.y = y
+	End
+	
+	Method Acceleration:Float() Property
+		Return accel
+	End
+	Method Acceleration:Void(accel:Float) Property
+		Self.accel = accel
+	End
+	
+	Method New(x:Float, y:Float, accel:Float)
+		Self.x = x
+		Self.y = y
+		Self.accel = accel
+	End
+	
+	Method ApplyX:Float(x:Float, y:Float)
+		Local length:Float = Sqrt((x-Self.x)*(x-Self.x) + (y-Self.y)*(y-Self.y))
+		Local scale:Float = accel / length
+		Return (Self.x-x) * scale
+	End
+	
+	Method ApplyY:Float(x:Float, y:Float)
+		Local length:Float = Sqrt((x-Self.x)*(x-Self.x) + (y-Self.y)*(y-Self.y))
+		Local scale:Float = accel / length
+		Return (Self.y-y) * scale
+	End
+End
 Private
 
 Function SafeATanr:Float(dx:Float, dy:Float, def:Float=0)
