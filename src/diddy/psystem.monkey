@@ -1,5 +1,7 @@
 Import diddy
 
+' Due to complaints that the particle system actually uses real mathematics, the y-axis now points down
+' when rendering.  Note that this means polar velocity angles are inverted (clockwise from right).
 Class ParticleSystem
 Private
 ' Private fields
@@ -814,16 +816,8 @@ Private
 	Field forces:ArrayList<Force>
 	Field forcesArray:Object[]
 	
-	Field useMonkeyCoords:Bool = True
 Public
 ' Properties
-	Method UseMonkeyCoords:Bool() Property
-		Return useMonkeyCoords
-	End
-	Method UseMonkeyCoords:Void(use:Bool) Property
-		useMonkeyCoords = use
-	End
-
 	Method AliveParticles:Int() Property
 		Return aliveParticles
 	End
@@ -1042,6 +1036,7 @@ Public
 		Local r2d:Float = 180/PI
 		For Local i:Int = 0 Until aliveParticles
 			Local index:Int = alivePointers[i]
+			
 			SetColor(red[index], green[index], blue[index])
 			SetAlpha(alpha[index])
 			
@@ -1050,36 +1045,20 @@ Public
 			
 			If particleImage[index] <> Null Then
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
-					If useMonkeyCoords
-						DrawImage(particleImage[index], x[index], y[index], rotation[index]*r2d, scale[index], scale[index])
-					Else
-						DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index], rotation[index]*r2d, scale[index], scale[index])
-					End
+					DrawImage(particleImage[index], x[index], y[index], rotation[index]*r2d, scale[index], scale[index])
 				Else
-					If useMonkeyCoords
-						DrawImage(particleImage[index], x[index], y[index])
-					Else
-						DrawImage(particleImage[index], x[index], SCREEN_HEIGHT-y[index])
-					End
+					DrawImage(particleImage[index], x[index], y[index])
 				End
 			Else
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
 					PushMatrix
-					If useMonkeyCoords
-						Translate(x[index]-1, y[index]-1)
-					Else
-						Translate(x[index]-1, SCREEN_HEIGHT-y[index]-1)
-					End
+					Translate(x[index]-1, y[index]-1)
 					If scale[index] <> 1 Then Scale(scale[index], scale[index])
 					If rotation[index] <> 0 Then Rotate(rotation[index] * r2d)
 					DrawRect(0, 0, 3, 3)
 					PopMatrix
 				Else
-					If useMonkeyCoords
-						DrawRect(x[index]-1, y[index]-1, 3, 3)						
-					Else
-						DrawRect(x[index]-1, SCREEN_HEIGHT-y[index]-1, 3, 3)
-					End
+					DrawRect(x[index]-1, y[index]-1, 3, 3)
 				End
 			End
 		Next
