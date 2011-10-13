@@ -78,9 +78,6 @@ Class ParticleTestScreen Extends Screen
 			pf.Enabled = False
 			f.Enabled = True
 		End
-		If KeyHit(KEY_M) 
-			pg.UseMonkeyCoords = Not pg.UseMonkeyCoords
-		End
 	
 		If KeyHit(KEY_SPACE) Then emitting = Not emitting
 		If KeyHit(KEY_R) Then rendering = Not rendering
@@ -122,7 +119,7 @@ Class ParticleTestScreen Extends Screen
 		e = New Emitter
 		e.SetParticleRGBInterpolated(255,0,0,0,255,0) ' fade from red to green
 		e.Life = 3 ' lives for 3 seconds
-		e.SetPolarVelocity(-PI/2, -PI/3, 250, 50) ' points up with a spread of 60 degrees
+		e.SetPolarVelocity(-PI/2, PI/3, 250, 50) ' points up with a spread of 60 degrees
 		e.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
 		e.ParticleImage = speck
 		e.SetParticleScale(1.5,2)
