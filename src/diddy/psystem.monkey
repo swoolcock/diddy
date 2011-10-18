@@ -100,6 +100,7 @@ Public
 	End
 	Method VelocityX:Void(velocityX:Float) Property
 		Self.velocityX = velocityX
+		Self.usePolar = False
 	End
 	
 	' velocityXSpread
@@ -108,6 +109,7 @@ Public
 	End
 	Method VelocityX:Void(velocityXSpread:Float) Property
 		Self.velocityXSpread = velocityXSpread
+		Self.usePolar = False
 	End
 	
 	' velocityY
@@ -116,6 +118,7 @@ Public
 	End
 	Method VelocityY:Void(velocityY:Float) Property
 		Self.velocityY = velocityY
+		Self.usePolar = False
 	End
 	
 	' velocityYSpread
@@ -124,6 +127,7 @@ Public
 	End
 	Method VelocityY:Void(velocityYSpread:Float) Property
 		Self.velocityYSpread = velocityYSpread
+		Self.usePolar = False
 	End
 	
 	' polarVelocityAmplitude
@@ -132,6 +136,7 @@ Public
 	End
 	Method PolarVelocityAmplitude:Void(polarVelocityAmplitude:Float) Property
 		Self.polarVelocityAmplitude = polarVelocityAmplitude
+		Self.usePolar = True
 	End
 	
 	' polarVelocityAmplitudeSpread
@@ -140,6 +145,7 @@ Public
 	End
 	Method PolarVelocityAmplitudeSpread:Void(polarVelocityAmplitudeSpread:Float) Property
 		Self.polarVelocityAmplitudeSpread = polarVelocityAmplitudeSpread
+		Self.usePolar = True
 	End
 	
 	' polarVelocityAngle (property is degrees)
@@ -148,12 +154,14 @@ Public
 	End
 	Method PolarVelocityAngle:Void(polarVelocityAngle:Float) Property
 		Self.polarVelocityAngle = polarVelocityAngle * D2R
+		Self.usePolar = True
 	End
 	Method PolarVelocityAngleRadians:Float() Property
 		Return polarVelocityAngle
 	End
 	Method PolarVelocityAngleRadians:Void(polarVelocityAngle:Float) Property
 		Self.polarVelocityAngle = polarVelocityAngle
+		Self.usePolar = True
 	End
 	
 	' polarVelocityAngleSpread (property is degrees)
@@ -162,12 +170,14 @@ Public
 	End
 	Method PolarVelocityAngleSpread:Void(polarVelocityAngleSpread:Float) Property
 		Self.polarVelocityAngleSpread = polarVelocityAngleSpread * D2R
+		Self.usePolar = True
 	End
 	Method PolarVelocityAngleSpreadRadians:Float() Property
 		Return polarVelocityAngleSpread
 	End
 	Method PolarVelocityAngleSpreadRadians:Void(polarVelocityAngleSpread:Float) Property
 		Self.polarVelocityAngleSpread = polarVelocityAngleSpread
+		Self.usePolar = True
 	End
 	
 	' usePolar
@@ -283,7 +293,7 @@ Public
 		Return minStartRed
 	End
 	Method MinStartRed:Void(minStartRed:Int) Property
-		Self.minStartRed = minStartRed
+		Self.minStartRed = Min(Max(minStartRed,0),255)
 	End
 	
 	' maxStartRed
@@ -291,7 +301,7 @@ Public
 		Return maxStartRed
 	End
 	Method MaxStartRed:Void(maxStartRed:Int) Property
-		Self.maxStartRed = maxStartRed
+		Self.maxStartRed = Min(Max(maxStartRed,0),255)
 	End
 	
 	' minStartGreen
@@ -299,7 +309,7 @@ Public
 		Return minStartGreen
 	End
 	Method MinStartGreen:Void(minStartGreen:Int) Property
-		Self.minStartGreen = minStartGreen
+		Self.minStartGreen = Min(Max(minStartGreen,0),255)
 	End
 	
 	' maxStartGreen
@@ -307,7 +317,7 @@ Public
 		Return maxStartGreen
 	End
 	Method MaxStartGreen:Void(maxStartGreen:Int) Property
-		Self.maxStartGreen = maxStartGreen
+		Self.maxStartGreen = Min(Max(maxStartGreen,0),255)
 	End
 	
 	' minStartBlue
@@ -315,7 +325,7 @@ Public
 		Return minStartBlue
 	End
 	Method MinStartBlue:Void(minStartBlue:Int) Property
-		Self.minStartBlue = minStartBlue
+		Self.minStartBlue = Min(Max(minStartBlue,0),255)
 	End
 	
 	' maxStartBlue
@@ -323,7 +333,7 @@ Public
 		Return maxStartBlue
 	End
 	Method MaxStartBlue:Void(maxStartBlue:Int) Property
-		Self.maxStartBlue = maxStartBlue
+		Self.maxStartBlue = Min(Max(maxStartBlue,0),255)
 	End
 	
 	' minStartAlpha
@@ -331,7 +341,7 @@ Public
 		Return minStartAlpha
 	End
 	Method MinStartAlpha:Void(minStartAlpha:Float) Property
-		Self.minStartAlpha = minStartAlpha
+		Self.minStartAlpha = Min(Max(minStartAlpha,0),1)
 	End
 	
 	' maxStartAlpha
@@ -339,7 +349,7 @@ Public
 		Return maxStartAlpha
 	End
 	Method MaxStartAlpha:Void(maxStartAlpha:Float) Property
-		Self.maxStartAlpha = maxStartAlpha
+		Self.maxStartAlpha = Min(Max(maxStartAlpha,0),1)
 	End
 	
 	' minEndRed
@@ -347,7 +357,7 @@ Public
 		Return minEndRed
 	End
 	Method MinEndRed:Void(minEndRed:Int) Property
-		Self.minEndRed = minEndRed
+		Self.minEndRed = Min(Max(minEndRed,0),255)
 	End
 	
 	' maxEndRed
@@ -355,7 +365,7 @@ Public
 		Return maxEndRed
 	End
 	Method MaxEndRed:Void(maxEndRed:Int) Property
-		Self.maxEndRed = maxEndRed
+		Self.maxEndRed = Min(Max(maxEndRed,0),255)
 	End
 	
 	' minEndGreen
@@ -363,7 +373,7 @@ Public
 		Return minEndGreen
 	End
 	Method MinEndGreen:Void(minEndGreen:Int) Property
-		Self.minEndGreen = minEndGreen
+		Self.minEndGreen = Min(Max(minEndGreen,0),255)
 	End
 	
 	' maxEndGreen
@@ -371,7 +381,7 @@ Public
 		Return maxEndGreen
 	End
 	Method MaxEndGreen:Void(maxEndGreen:Int) Property
-		Self.maxEndGreen = maxEndGreen
+		Self.maxEndGreen = Min(Max(maxEndGreen,0),255)
 	End
 	
 	' minEndBlue
@@ -379,7 +389,7 @@ Public
 		Return minEndBlue
 	End
 	Method MinEndBlue:Void(minEndBlue:Int) Property
-		Self.minEndBlue = minEndBlue
+		Self.minEndBlue = Min(Max(minEndBlue,0),255)
 	End
 	
 	' maxEndBlue
@@ -387,7 +397,7 @@ Public
 		Return maxEndBlue
 	End
 	Method MaxEndBlue:Void(maxEndBlue:Int) Property
-		Self.maxEndBlue = maxEndBlue
+		Self.maxEndBlue = Min(Max(maxEndBlue,0),255)
 	End
 	
 	' minEndAlpha
@@ -395,7 +405,7 @@ Public
 		Return minEndAlpha
 	End
 	Method MinEndAlpha:Void(minEndAlpha:Float) Property
-		Self.minEndAlpha = minEndAlpha
+		Self.minEndAlpha = Min(Max(minEndAlpha,0),1)
 	End
 	
 	' maxEndAlpha
@@ -403,7 +413,7 @@ Public
 		Return maxEndAlpha
 	End
 	Method MaxEndAlpha:Void(maxEndAlpha:Float) Property
-		Self.maxEndAlpha = maxEndAlpha
+		Self.maxEndAlpha = Min(Max(maxEndAlpha,0),1)
 	End
 	
 	' particleImage
@@ -532,6 +542,132 @@ Public
 		Self.group = group
 	End
 
+' Convenience properties for static colours
+	Method Red:Float() Property
+		Return minStartRed
+	End
+	Method Red:Void(red:Float) Property
+		red = Min(Max(red,0),255)
+		Self.minStartRed = red
+		Self.maxStartRed = red
+		Self.minEndRed = red
+		Self.maxEndRed = red
+		Self.redInterpolation = INTERPOLATION_NONE
+		Self.redInterpolationTime = -1
+	End
+	
+	Method Green:Float() Property
+		Return minStartGreen
+	End
+	Method Green:Void(green:Float) Property
+		green = Min(Max(green,0),255)
+		Self.minStartGreen = green
+		Self.maxStartGreen = green
+		Self.minEndGreen = green
+		Self.maxEndGreen = green
+		Self.greenInterpolation = INTERPOLATION_NONE
+		Self.greenInterpolationTime = -1
+	End
+	
+	Method Blue:Float() Property
+		Return minStartBlue
+	End
+	Method Blue:Void(blue:Float) Property
+		blue = Min(Max(blue,0),255)
+		Self.minStartBlue = blue
+		Self.maxStartBlue = blue
+		Self.minEndBlue = blue
+		Self.maxEndBlue = blue
+		Self.blueInterpolation = INTERPOLATION_NONE
+		Self.blueInterpolationTime = -1
+	End
+	
+	Method Alpha:Float() Property
+		Return minStartAlpha
+	End
+	Method Alpha:Void(alpha:Float) Property
+		alpha = Min(Max(alpha,0),1)
+		Self.minStartAlpha = alpha
+		Self.maxStartAlpha = alpha
+		Self.minEndAlpha = 0
+		Self.maxEndAlpha = 0
+		Self.alphaInterpolation = INTERPOLATION_LINEAR
+		Self.alphaInterpolationTime = -1
+	End
+	
+' Convenience properties for interpolated colours
+	Method StartRed:Float() Property
+		Return minStartRed
+	End
+	Method StartRed:Void(startRed:Float) Property
+		startRed = Min(Max(startRed,0),255)
+		Self.minStartRed = startRed
+		Self.maxStartRed = startRed
+	End
+	
+	Method StartGreen:Float() Property
+		Return minStartGreen
+	End
+	Method StartGreen:Void(startGreen:Float) Property
+		startGreen = Min(Max(startGreen,0),255)
+		Self.minStartGreen = startGreen
+		Self.maxStartGreen = startGreen
+	End
+	
+	Method StartBlue:Float() Property
+		Return minStartBlue
+	End
+	Method StartBlue:Void(startBlue:Float) Property
+		startBlue = Min(Max(startBlue,0),255)
+		Self.minStartBlue = startBlue
+		Self.maxStartBlue = startBlue
+	End
+	
+	Method StartAlpha:Float() Property
+		Return minStartAlpha
+	End
+	Method StartAlpha:Void(startAlpha:Float) Property
+		startAlpha = Min(Max(startAlpha,0),1)
+		Self.minStartAlpha = startAlpha
+		Self.maxStartAlpha = startAlpha
+	End
+	
+	Method EndRed:Float() Property
+		Return minEndRed
+	End
+	Method EndRed:Void(endRed:Float) Property
+		endRed = Min(Max(endRed,0),255)
+		Self.minEndRed = endRed
+		Self.maxEndRed = endRed
+	End
+	
+	Method EndGreen:Float() Property
+		Return minEndGreen
+	End
+	Method EndGreen:Void(endGreen:Float) Property
+		endGreen = Min(Max(endGreen,0),255)
+		Self.minEndGreen = endGreen
+		Self.maxEndGreen = endGreen
+	End
+	
+	Method EndBlue:Float() Property
+		Return minEndBlue
+	End
+	Method EndBlue:Void(endBlue:Float) Property
+		endBlue = Min(Max(endBlue,0),255)
+		Self.minEndBlue = endBlue
+		Self.maxEndBlue = endBlue
+	End
+	
+	Method EndAlpha:Float() Property
+		Return minEndAlpha
+	End
+	Method EndAlpha:Void(endAlpha:Float) Property
+		endAlpha = Min(Max(endAlpha,0),1)
+		Self.minEndAlpha = endAlpha
+		Self.maxEndAlpha = endAlpha
+	End
+	
 ' Constructors
 	Method New()
 		deathEmitters = New ArrayList<Emitter>
@@ -540,6 +676,13 @@ Public
 
 ' Convenience setters
 	Method SetParticleRGBInterpolated:Void(startRed:Int, startGreen:Int, startBlue:Int, endRed:Int, endGreen:Int, endBlue:Int)
+		' clamp 0-255
+		startRed = Min(Max(startRed,0),255)
+		startGreen = Min(Max(startGreen,0),255)
+		startBlue = Min(Max(startBlue,0),255)
+		endRed = Min(Max(endRed,0),255)
+		endGreen = Min(Max(endGreen,0),255)
+		endBlue = Min(Max(endBlue,0),255)
 		minStartRed = startRed
 		maxStartRed = startRed
 		minEndRed = endRed
@@ -575,6 +718,10 @@ Public
 	End
 	
 	Method SetParticleRGB:Void(red:Int, green:Int, blue:Int)
+		' clamp 0-255
+		red = Min(Max(red,0),255)
+		green = Min(Max(green,0),255)
+		blue = Min(Max(blue,0),255)
 		minStartRed = red
 		maxStartRed = red
 		minEndRed = red
@@ -593,6 +740,8 @@ Public
 	End
 	
 	Method SetParticleAlpha:Void(alpha:Float, time:Int=-1)
+		' clamp 0-1
+		alpha = Min(Max(alpha,0),1)
 		minStartAlpha = alpha
 		maxStartAlpha = alpha
 		minEndAlpha = 0
@@ -826,7 +975,6 @@ Private
 	Field rotationSpeed:Float[]
 	Field scale:Float[]
 
-	
 	Field red:Int[]
 	Field green:Int[]
 	Field blue:Int[]
