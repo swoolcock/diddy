@@ -45,8 +45,8 @@ Private
 	Field velocityYSpread:Float                 ' the Y velocity random spread
 	Field polarVelocityAmplitude:Float          ' the default polar velocity amplitude
 	Field polarVelocityAmplitudeSpread:Float    ' the polar velocity amplitude random spread
-	Field polarVelocityAngle:Float              ' the default polar velocity angle
-	Field polarVelocityAngleSpread:Float        ' the polar velocity angle random spread
+	Field polarVelocityAngle:Float              ' the default polar velocity angle (radians)
+	Field polarVelocityAngleSpread:Float        ' the polar velocity angle random spread (radians)
 	Field usePolar:Bool                         ' whether we should use a polar velocity
 	Field spawnMinRange:Float                   ' the minimum distance to spawn from the emit point
 	Field spawnMaxRange:Float                   ' the maximum distance to spawn from the emit point
@@ -73,7 +73,6 @@ Private
 	Field minStartGreen:Int = 255, maxStartGreen:Int = 255
 	Field minStartBlue:Int = 255, maxStartBlue:Int = 255
 	Field minStartAlpha:Float = 1, maxStartAlpha:Float = 1
-	
 	Field minEndRed:Int = 255, maxEndRed:Int = 255
 	Field minEndGreen:Int = 255, maxEndGreen:Int = 255
 	Field minEndBlue:Int = 255, maxEndBlue:Int = 255
@@ -82,11 +81,11 @@ Private
 	Field particleImage:Image
 	
 ' Emitter info
-	Field x:Float
-	Field y:Float
-	Field amplitude:Float = 10
-	Field angle:Float
-	Field group:ParticleGroup
+	Field x:Float               ' the x position of the emitter (if we don't pass it into the Emit methods)
+	Field y:Float               ' the y position of the emitter (if we don't pass it into the Emit methods)
+	Field amplitude:Float = 10  ' the polar amplitude of the emitter (unused for now)
+	Field angle:Float           ' the polar angle of the emitter (unused for now) (radians)
+	Field group:ParticleGroup   ' the source group for this emitter (important for death emitters)
 	
 ' Death emitters
 	Field deathEmitters:ArrayList<Emitter>      ' the death emitters will fire at the particle's point of death
@@ -143,19 +142,31 @@ Public
 		Self.polarVelocityAmplitudeSpread = polarVelocityAmplitudeSpread
 	End
 	
-	' polarVelocityAngle
+	' polarVelocityAngle (property is degrees)
 	Method PolarVelocityAngle:Float() Property
-		Return polarVelocityAngle
+		Return polarVelocityAngle * R2D
 	End
 	Method PolarVelocityAngle:Void(polarVelocityAngle:Float) Property
+		Self.polarVelocityAngle = polarVelocityAngle * D2R
+	End
+	Method PolarVelocityAngleRadians:Float() Property
+		Return polarVelocityAngle
+	End
+	Method PolarVelocityAngleRadians:Void(polarVelocityAngle:Float) Property
 		Self.polarVelocityAngle = polarVelocityAngle
 	End
 	
-	' polarVelocityAngleSpread
+	' polarVelocityAngleSpread (property is degrees)
 	Method PolarVelocityAngleSpread:Float() Property
-		Return polarVelocityAngleSpread
+		Return polarVelocityAngleSpread * R2D
 	End
 	Method PolarVelocityAngleSpread:Void(polarVelocityAngleSpread:Float) Property
+		Self.polarVelocityAngleSpread = polarVelocityAngleSpread * D2R
+	End
+	Method PolarVelocityAngleSpreadRadians:Float() Property
+		Return polarVelocityAngleSpread
+	End
+	Method PolarVelocityAngleSpreadRadians:Void(polarVelocityAngleSpread:Float) Property
 		Self.polarVelocityAngleSpread = polarVelocityAngleSpread
 	End
 	
@@ -403,35 +414,59 @@ Public
 		Self.particleImage = particleImage
 	End
 	
-	' rotation
+	' rotation (property is degrees)
 	Method Rotation:Float() Property
-		Return rotation
+		Return rotation * R2D
 	End
 	Method Rotation:Void(rotation:Float) Property
+		Self.rotation = rotation * D2R
+	End
+	Method RotationRadians:Float() Property
+		Return rotation
+	End
+	Method RotationRadians:Void(rotation:Float) Property
 		Self.rotation = rotation
 	End
 	
-	' rotationSpread
+	' rotationSpread (property is degrees)
 	Method RotationSpread:Float() Property
-		Return rotationSpread
+		Return rotationSpread * R2D
 	End
 	Method RotationSpread:Void(rotationSpread:Float) Property
+		Self.rotationSpread = rotationSpread * D2R
+	End
+	Method RotationSpreadRadians:Float() Property
+		Return rotationSpread
+	End
+	Method RotationSpreadRadians:Void(rotationSpread:Float) Property
 		Self.rotationSpread = rotationSpread
 	End
 	
-	' rotationSpeed
+	' rotationSpeed (property is degrees)
 	Method RotationSpeed:Float() Property
-		Return rotationSpeed
+		Return rotationSpeed * R2D
 	End
 	Method RotationSpeed:Void(rotationSpeed:Float) Property
+		Self.rotationSpeed = rotationSpeed * D2R
+	End
+	Method RotationSpeedRadians:Float() Property
+		Return rotationSpeed
+	End
+	Method RotationSpeedRadians:Void(rotationSpeed:Float) Property
 		Self.rotationSpeed = rotationSpeed
 	End
 	
-	' rotationSpeedSpread
+	' rotationSpeedSpread (property is degrees)
 	Method RotationSpeedSpread:Float() Property
-		Return rotationSpeedSpread
+		Return rotationSpeedSpread * R2D
 	End
 	Method RotationSpeedSpread:Void(rotationSpeedSpread:Float) Property
+		Self.rotationSpeedSpread = rotationSpeedSpread * D2R
+	End
+	Method RotationSpeedSpreadRadians:Float() Property
+		Return rotationSpeedSpread
+	End
+	Method RotationSpeedSpreadRadians:Void(rotationSpeedSpread:Float) Property
 		Self.rotationSpeedSpread = rotationSpeedSpread
 	End
 	
@@ -467,11 +502,17 @@ Public
 		Self.y = y
 	End
 	
-	' angle
+	' angle (property is degrees)
 	Method Angle:Float() Property
-		Return angle
+		Return angle * R2D
 	End
 	Method Angle:Void(angle:Float) Property
+		Self.angle = angle * D2R
+	End
+	Method AngleRadians:Float() Property
+		Return angle
+	End
+	Method AngleRadians:Void(angle:Float) Property
 		Self.angle = angle
 	End
 	
@@ -490,7 +531,7 @@ Public
 	Method Group:Void(group:ParticleGroup) Property
 		Self.group = group
 	End
-	
+
 ' Constructors
 	Method New()
 		deathEmitters = New ArrayList<Emitter>
@@ -573,11 +614,21 @@ Public
 		Self.velocityYSpread = velocityYSpread
 	End
 	
+	' Degrees
 	Method SetPolarVelocity:Void(polarVelocityAngle:Float, polarVelocityAmplitude:Float)
-		SetPolarVelocity(polarVelocityAngle, 0, polarVelocityAmplitude, 0)
+		SetPolarVelocityRadians(polarVelocityAngle*D2R, 0, polarVelocityAmplitude, 0)
 	End
 	
+	Method SetPolarVelocityRadians:Void(polarVelocityAngle:Float, polarVelocityAmplitude:Float)
+		SetPolarVelocityRadians(polarVelocityAngle, 0, polarVelocityAmplitude, 0)
+	End
+	
+	' Degrees
 	Method SetPolarVelocity:Void(polarVelocityAngle:Float, polarVelocityAngleSpread:Float, polarVelocityAmplitude:Float, polarVelocityAmplitudeSpread:Float)
+		SetPolarVelocityRadians(polarVelocityAngle*D2R, polarVelocityAngleSpread*D2R, polarVelocityAmplitude, polarVelocityAmplitudeSpread)
+	End
+	
+	Method SetPolarVelocityRadians:Void(polarVelocityAngle:Float, polarVelocityAngleSpread:Float, polarVelocityAmplitude:Float, polarVelocityAmplitudeSpread:Float)
 		usePolar = True
 		Self.polarVelocityAngle = polarVelocityAngle
 		Self.polarVelocityAngleSpread = polarVelocityAngleSpread
@@ -586,6 +637,10 @@ Public
 	End
 	
 	Method SetParticleRotation:Void(rotation:Float, rotationSpread:Float=0, rotationSpeed:Float=0, rotationSpeedSpread:Float=0)
+		SetParticleRotationRadians(rotation * D2R, rotationSpread * D2R, rotationSpeed * D2R, rotationSpeedSpread * D2R)
+	End
+	
+	Method SetParticleRotationRadians:Void(rotation:Float, rotationSpread:Float=0, rotationSpeed:Float=0, rotationSpeedSpread:Float=0)
 		Self.rotation = rotation
 		Self.rotationSpread = rotationSpread
 		Self.rotationSpeed = rotationSpeed
@@ -620,18 +675,26 @@ Public
 	
 ' Emits	
 	Method Emit:Void(amount:Int, group:ParticleGroup=Null)
-		EmitAtAngle(amount, x, y, angle, group)
+		EmitAtAngleRadians(amount, x, y, angle, group)
 	End
 	
 	Method EmitAt:Void(amount:Int, emitX:Float, emitY:Float, group:ParticleGroup=Null)
-		EmitAtAngle(amount, emitX, emitY, angle, group)
+		EmitAtAngleRadians(amount, emitX, emitY, angle, group)
 	End
 	
 	Method EmitAngle:Void(amount:Int, emitAngle:Float, emitAmplitude:Float, group:ParticleGroup=Null)
-		'EmitAtAngle(group, amount, x, y, emitAngle, group)
+		'EmitAtAngleRadians(group, amount, x, y, emitAngle, group)
+	End
+	
+	Method EmitAngleRadians:Void(amount:Int, emitAngle:Float, emitAmplitude:Float, group:ParticleGroup=Null)
+		'EmitAtAngleRadians(group, amount, x, y, emitAngle, group)
 	End
 	
 	Method EmitAtAngle:Void(amount:Int, emitX:Float, emitY:Float, emitAngle:Float, group:ParticleGroup=Null)
+		EmitAtAngleRadians(amount, emitX, emitY, emitAngle * D2R, group)
+	End
+	
+	Method EmitAtAngleRadians:Void(amount:Int, emitX:Float, emitY:Float, emitAngle:Float, group:ParticleGroup=Null)
 		' if not passed a group, use the assigned one
 		If group = Null Then group = Self.group
 		' create "amount" number of particles
@@ -829,7 +892,7 @@ Public
 	Method Forces:ArrayList<Force>() Property
 		Return forces
 	End
-	
+
 ' Constructors
 	Method New(maxParticles:Int)
 		Self.maxParticles = maxParticles
@@ -912,8 +975,10 @@ Public
 					' apply forces
 					For Local fi:Int = 0 Until forceCount
 						If Force(forcesArray[fi]).enabled Then
-							velocityX[index] += Force(forcesArray[fi]).ApplyX(x[index], y[index]) * delta
-							velocityY[index] += Force(forcesArray[fi]).ApplyY(x[index], y[index]) * delta
+							Local f:Force = Force(forcesArray[fi])
+							f.Calculate(x[index], y[index])
+							velocityX[index] += f.outDX * delta
+							velocityY[index] += f.outDY * delta
 						End
 					Next
 					' TODO: terminal velocity
@@ -1033,10 +1098,8 @@ Public
 	End
 	
 	Method Render:Void()
-		Local r2d:Float = 180/PI
 		For Local i:Int = 0 Until aliveParticles
 			Local index:Int = alivePointers[i]
-			
 			SetColor(red[index], green[index], blue[index])
 			SetAlpha(alpha[index])
 			
@@ -1045,7 +1108,7 @@ Public
 			
 			If particleImage[index] <> Null Then
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
-					DrawImage(particleImage[index], x[index], y[index], rotation[index]*r2d, scale[index], scale[index])
+					DrawImage(particleImage[index], x[index], y[index], rotation[index]*R2D, scale[index], scale[index])
 				Else
 					DrawImage(particleImage[index], x[index], y[index])
 				End
@@ -1054,7 +1117,7 @@ Public
 					PushMatrix
 					Translate(x[index]-1, y[index]-1)
 					If scale[index] <> 1 Then Scale(scale[index], scale[index])
-					If rotation[index] <> 0 Then Rotate(rotation[index] * r2d)
+					If rotation[index] <> 0 Then Rotate(rotation[index] * R2D)
 					DrawRect(0, 0, 3, 3)
 					PopMatrix
 				Else
@@ -1069,6 +1132,9 @@ Class Force Abstract
 Private
 	Field enabled:Bool = True
 	
+	Field outDX:Float
+	Field outDY:Float
+	
 Public
 	Method Enabled:Bool() Property
 		Return enabled
@@ -1076,21 +1142,21 @@ Public
 	Method Enabled:Void(enabled:Bool) Property
 		Self.enabled = enabled
 	End
-	
-	Method ApplyX:Float(x:Float, y:Float) Abstract
-	Method ApplyY:Float(x:Float, y:Float) Abstract
+	Method Calculate:Void(x:Float, y:Float) Abstract
 End
 
 Class ConstantForce Extends Force
 Private
 	Field x:Float
 	Field y:Float
+	
 Public
 	Method X:Float() Property
 		Return x
 	End
 	Method X:Void(x:Float) Property
 		Self.x = x
+		Self.outDX = x
 	End
 	
 	Method Y:Float() Property
@@ -1098,19 +1164,18 @@ Public
 	End
 	Method Y:Void(y:Float) Property
 		Self.y = y
+		Self.outDY = y
 	End
 	
 	Method New(x:Float, y:Float)
 		Self.x = x
 		Self.y = y
+		Self.outDX = x
+		Self.outDY = y
 	End
-	
-	Method ApplyX:Float(x:Float, y:Float)
-		Return Self.x
-	End
-	
-	Method ApplyY:Float(x:Float, y:Float)
-		Return Self.y
+
+	Method Calculate:Void(x:Float, y:Float)
+		' doesn't need to do anything
 	End
 End
 
@@ -1118,7 +1183,8 @@ Class PointForce Extends Force
 Private
 	Field x:Float
 	Field y:Float
-	Field accel:Float
+	Field acceleration:Float
+	
 Public
 	Method X:Float() Property
 		Return x
@@ -1135,50 +1201,55 @@ Public
 	End
 	
 	Method Acceleration:Float() Property
-		Return accel
+		Return acceleration
 	End
-	Method Acceleration:Void(accel:Float) Property
-		Self.accel = accel
+	Method Acceleration:Void(acceleration:Float) Property
+		Self.acceleration = acceleration
 	End
-	
-	Method New(x:Float, y:Float, accel:Float)
+
+	Method New(x:Float, y:Float, acceleration:Float)
 		Self.x = x
 		Self.y = y
-		Self.accel = accel
+		Self.acceleration = acceleration
 	End
 	
-	Method ApplyX:Float(x:Float, y:Float)
+	Method Calculate:Void(x:Float, y:Float)
+		' check if the particle is at the same point (yes, it happens, and the whole system dies due to div by 0)
+		If x = Self.x And y = Self.y Then
+			outDX = 0
+			outDY = 0
+			Return
+		End
 		Local length:Float = Sqrt((x-Self.x)*(x-Self.x) + (y-Self.y)*(y-Self.y))
-		Local scale:Float = accel / length
-		Return (Self.x-x) * scale
-	End
-	
-	Method ApplyY:Float(x:Float, y:Float)
-		Local length:Float = Sqrt((x-Self.x)*(x-Self.x) + (y-Self.y)*(y-Self.y))
-		Local scale:Float = accel / length
-		Return (Self.y-y) * scale
+		Local scale:Float = acceleration / length
+		outDX = (Self.x-x) * scale
+		outDY = (Self.y-y) * scale
 	End
 End
+
 Private
+
+Const R2D:Float = 180/PI
+Const D2R:Float = PI/180
 
 Function SafeATanr:Float(dx:Float, dy:Float, def:Float=0)
 	' technically a default angle shouldn't be necessary
 	Local angle:Float = def
 	If dy = 0 And dx >= 0 Then ' 0
 		angle = 0
-	Elseif dy = 0 And dx < 0 Then ' 180
+	ElseIf dy = 0 And dx < 0 Then ' 180
 		angle = PI
-	Elseif dy > 0 And dx = 0 Then ' 90
+	ElseIf dy > 0 And dx = 0 Then ' 90
 		angle = PI/2
-	Elseif dy < 0 And dx = 0 Then ' 270
+	ElseIf dy < 0 And dx = 0 Then ' 270
 		angle = 3*PI / 2
-	Elseif dy > 0 And dx > 0 Then ' Acute
+	ElseIf dy > 0 And dx > 0 Then ' Acute
 		angle = ATanr(dy / dx)
-	Elseif dy > 0 And dx < 0 Then ' Obtuse
+	ElseIf dy > 0 And dx < 0 Then ' Obtuse
 		angle = PI - ATanr(dy / -dx)
-	Elseif dy < 0 And dx < 0 Then ' Reflex < 270
+	ElseIf dy < 0 And dx < 0 Then ' Reflex < 270
 		angle = PI + ATanr(dy / dx)
-	Elseif dy < 0 And dx > 0 Then ' Reflex > 270
+	ElseIf dy < 0 And dx > 0 Then ' Reflex > 270
 		angle = 2*PI - ATanr(-dy / dx)
 	End
 	Return angle
