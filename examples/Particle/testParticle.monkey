@@ -67,11 +67,11 @@ Class ParticleTestScreen Extends Screen
 		pf.X = game.mouseX
 		pf.Y = game.mouseY
 		If KeyDown(KEY_CONTROL) Then
-			pf.Acceleration = 300
+			pf.Acceleration = Abs(pf.Acceleration)
 			pf.Enabled = True
 			f.Enabled = False
 		Elseif KeyDown(KEY_SHIFT) Then
-			pf.Acceleration = -300
+			pf.Acceleration = -Abs(pf.Acceleration)
 			pf.Enabled = True
 			f.Enabled = False
 		Else
@@ -106,32 +106,15 @@ Class ParticleTestScreen Extends Screen
 	End
 	
 	Method CreateSystem:Void()
-		ps = New ParticleSystem()
-		
-		pg = New ParticleGroup(5000) ' group of 5000 particles
-		ps.Groups.Add(pg)
-		
-		f = New ConstantForce(0,150) ' constant downward force of 150 pixels per second per second
-		pg.Forces.Add(f)
-		pf = New PointForce(0, 0, 0)
-		pg.Forces.Add(pf)
-		
-		e = New Emitter
-		e.SetParticleRGBInterpolated(255,0,0,0,255,0) ' fade from red to green
-		e.Life = 3 ' lives for 3 seconds
-		e.SetPolarVelocity(-90, 60, 250, 50) ' points up with a spread of 60 degrees
-		e.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
+		Local parser:XMLParser = New XMLParser
+		Local doc:XMLDocument = parser.ParseFile("psystem.xml")
+		ps = New ParticleSystem(doc)
+		pg = ps.GetGroup("group1")
+		f = ConstantForce(pg.GetForce("gravity"))
+		pf = PointForce(pg.GetForce("point"))
+		e = ps.GetEmitter("emit1")
 		e.ParticleImage = speck
-		e.SetParticleScale(1.5,2)
-		e.Group = pg
-		
-		e2 = New Emitter
-		e2.Life = 3 ' lives for 3 seconds
-		e2.AlphaInterpolationTime = 0.5 ' will start fading out when there is half a second of life left
-		e2.SetPolarVelocity(0,360,50,10) ' points right with a spread of 360 degrees (a full circle)
-		e2.SetParticleRGBInterpolated(0,255,255,0,255,0) ' fade from cyan to green
-		e2.SetParticleScale(2,2)
-		e2.SetParticleRotation(0, 22.5, 0, 90)
-		e.AddDeathEmitter(e2, 0.05) ' 5% chance to fire off this emitter when a particle from other emitter dies
+		e2 = ps.GetEmitter("emit2")
+		e.AddDeathEmitter(e2, 0.05)
 	End
 End
