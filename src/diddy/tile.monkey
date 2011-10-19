@@ -433,46 +433,26 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Next
 	End
 	
-	#rem
-	Method WorldToMap:TPoint(worldPoint:TPoint)
-		If worldPoint.X < 0 Or worldPoint.Y < 0 Or worldPoint.X > Width * TileWidth Or worldPoint.Y > Height * TileHeight Then
-			' out of range!
-			Return Null
-		EndIf
-		Local rv:TPoint = New TPoint.CreatePoint(worldPoint.X / TileWidth, worldPoint.Y / TileHeight)
-		If worldPoint.X = Width * TileWidth Then rv.X:-1
-		If worldPoint.Y = Height * TileHeight Then rv.Y:-1
-		Return rv
-	End
-	#End
-	
 	Method GetAllObjects:ArrayList<TileMapObject>()
-		#rem
-		Local layer:TTiledLayer
-		Local obj:TTiledObject
-		Local rv:TList = New TList
-		For layer = EachIn Layers
-			If TTiledObjectLayer(layer) <> Null Then
-				For obj = EachIn TTiledObjectLayer(layer).Objects
-					rv.AddLast(obj)
+		Local rv:ArrayList<TileMapObject> = New ArrayList<TileMapObject>
+		For Local layer:TileMapLayer = EachIn layers
+			If TileMapObjectLayer(layer) <> Null Then
+				For Local obj:TileMapObject = EachIn TileMapObjectLayer(layer).objects
+					rv.Add(obj)
 				Next
-			EndIf
+			End
 		Next
 		Return rv
-		#End
 	End
 	
 	Method FindObjectByName:TileMapObject(name:String)
-		#rem
-		Local layer:TTiledLayer, obj:TTiledObject
-		For layer = EachIn Layers
-			If TTiledObjectLayer(layer) <> Null Then
-				For obj = EachIn TTiledObjectLayer(layer).Objects
-					If obj.Name = name Then Return obj
+		For Local layer:TileMapLayer = EachIn layers
+			If TileMapObjectLayer(layer) <> Null Then
+				For Local obj:TileMapObject = EachIn TileMapObjectLayer(layer).objects
+					If obj.name = name Then Return obj
 				Next
 			EndIf
 		Next
-		#End
 		Return Null
 	End
 	
