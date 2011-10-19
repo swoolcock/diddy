@@ -2,10 +2,11 @@ Import diddy
 
 ' Due to complaints that the particle system actually uses real mathematics, the y-axis now points down
 ' when rendering.  Note that this means polar velocity angles are inverted (clockwise from right).
-Class ParticleSystem
+Class ParticleSystem Implements IPSReader
 Private
 ' Private fields
 	Field groups:ArrayList<ParticleGroup>
+	Field emitters:ArrayList<Emitter>
 	
 Public
 ' Properties
@@ -13,12 +14,47 @@ Public
 		Return groups
 	End
 	
+	Method Emitters:ArrayList<Emitter>() Property
+		Return emitters
+	End
+	
 ' Constructors
 	Method New()
 		groups = New ArrayList<ParticleGroup>
+		emitters = New ArrayList<Emitter>
+	End
+	
+	Method New(doc:XMLDocument)
+		groups = New ArrayList<ParticleGroup>
+		emitters = New ArrayList<Emitter>
+		ReadXML(doc.Root)
+	End
+	
+	Method New(node:XMLElement)
+		groups = New ArrayList<ParticleGroup>
+		emitters = New ArrayList<Emitter>
+		ReadXML(node)
 	End
 	
 ' Public methods
+	Method GetGroup:ParticleGroup(name:String)
+		For Local i:Int = 0 Until groups.Size
+			If groups.Get(i).Name = name Then
+				Return groups.Get(i)
+			End
+		Next
+		Return Null
+	End
+	
+	Method GetEmitter:Emitter(name:String)
+		For Local i:Int = 0 Until emitters.Size
+			If emitters.Get(i).Name = name Then
+				Return emitters.Get(i)
+			End
+		Next
+		Return Null
+	End
+	
 	Method Render:Void()
 		Local rgb:Float[] = GetColor()
 		Local alpha:Float = GetAlpha()
@@ -34,9 +70,42 @@ Public
 			groups.Get(i).Update(delta)
 		Next
 	End
+	
+	Method ReadXML:Void(node:XMLElement)
+		' read from a <psystem> node
+		Local children:ArrayList<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Size
+			If children.Get(i).Name = "groups" Then
+				' parse groups
+				Local groupNodes:ArrayList<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until groupNodes.Size
+					Local groupNode:XMLElement = groupNodes.Get(j)
+					If groupNode.Name = "group" Then
+						Local group:ParticleGroup = New ParticleGroup(groupNode)
+						groups.Add(group)
+					End
+				Next
+			ElseIf children.Get(i).Name = "emitters" Then
+				' parse emitters
+				Local emitterNodes:ArrayList<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until emitterNodes.Size
+					Local emitterNode:XMLElement = emitterNodes.Get(j)
+					If emitterNode.Name = "emitter" Then
+						Local emitter:Emitter = New Emitter(emitterNode)
+						emitters.Add(emitter)
+					End
+				Next
+			End
+		Next
+		' go through the emitters and set the groups by name
+		For Local i:Int = 0 Until emitters.Size
+			Local group:ParticleGroup = GetGroup(emitters.Get(i).groupName)
+			If group <> Null Then emitters.Get(i).Group = group
+		Next
+	End
 End
 
-Class Emitter
+Class Emitter Implements IPSReader
 Private
 ' Property fields
 	Field velocityX:Float                       ' the default X velocity
@@ -81,12 +150,14 @@ Private
 	Field particleImage:Image
 	
 ' Emitter info
+	Field name:String
 	Field x:Float               ' the x position of the emitter (if we don't pass it into the Emit methods)
 	Field y:Float               ' the y position of the emitter (if we don't pass it into the Emit methods)
 	Field amplitude:Float = 10  ' the polar amplitude of the emitter (unused for now)
 	Field angle:Float           ' the polar angle of the emitter (unused for now) (radians)
 	Field group:ParticleGroup   ' the source group for this emitter (important for death emitters)
-	
+	Field groupName:String      ' temporary, only for reading XML
+
 ' Death emitters
 	Field deathEmitters:ArrayList<Emitter>      ' the death emitters will fire at the particle's point of death
 	                                            ' using the particle's normalised velocity
@@ -107,7 +178,7 @@ Public
 	Method VelocityXSpread:Float() Property
 		Return velocityXSpread
 	End
-	Method VelocityX:Void(velocityXSpread:Float) Property
+	Method VelocityXSpread:Void(velocityXSpread:Float) Property
 		Self.velocityXSpread = velocityXSpread
 		Self.usePolar = False
 	End
@@ -125,7 +196,7 @@ Public
 	Method VelocityYSpread:Float() Property
 		Return velocityYSpread
 	End
-	Method VelocityY:Void(velocityYSpread:Float) Property
+	Method VelocityYSpread:Void(velocityYSpread:Float) Property
 		Self.velocityYSpread = velocityYSpread
 		Self.usePolar = False
 	End
@@ -341,7 +412,7 @@ Public
 		Return minStartAlpha
 	End
 	Method MinStartAlpha:Void(minStartAlpha:Float) Property
-		Self.minStartAlpha = Min(Max(minStartAlpha,0),1)
+		Self.minStartAlpha = Min(Max(minStartAlpha,0.0),1.0)
 	End
 	
 	' maxStartAlpha
@@ -349,7 +420,7 @@ Public
 		Return maxStartAlpha
 	End
 	Method MaxStartAlpha:Void(maxStartAlpha:Float) Property
-		Self.maxStartAlpha = Min(Max(maxStartAlpha,0),1)
+		Self.maxStartAlpha = Min(Max(maxStartAlpha,0.0),1.0)
 	End
 	
 	' minEndRed
@@ -405,7 +476,7 @@ Public
 		Return minEndAlpha
 	End
 	Method MinEndAlpha:Void(minEndAlpha:Float) Property
-		Self.minEndAlpha = Min(Max(minEndAlpha,0),1)
+		Self.minEndAlpha = Min(Max(minEndAlpha,0.0),1.0)
 	End
 	
 	' maxEndAlpha
@@ -413,7 +484,7 @@ Public
 		Return maxEndAlpha
 	End
 	Method MaxEndAlpha:Void(maxEndAlpha:Float) Property
-		Self.maxEndAlpha = Min(Max(maxEndAlpha,0),1)
+		Self.maxEndAlpha = Min(Max(maxEndAlpha,0.0),1.0)
 	End
 	
 	' particleImage
@@ -496,6 +567,14 @@ Public
 		Self.scaleSpread = scaleSpread
 	End
 	
+	' name
+	Method Name:String() Property
+		Return name
+	End
+	Method Name:Void(name:String) Property
+		Self.name = name
+	End
+	
 	' x
 	Method X:Float() Property
 		Return x
@@ -543,10 +622,10 @@ Public
 	End
 
 ' Convenience properties for static colours
-	Method Red:Float() Property
+	Method Red:Int() Property
 		Return minStartRed
 	End
-	Method Red:Void(red:Float) Property
+	Method Red:Void(red:Int) Property
 		red = Min(Max(red,0),255)
 		Self.minStartRed = red
 		Self.maxStartRed = red
@@ -556,10 +635,10 @@ Public
 		Self.redInterpolationTime = -1
 	End
 	
-	Method Green:Float() Property
+	Method Green:Int() Property
 		Return minStartGreen
 	End
-	Method Green:Void(green:Float) Property
+	Method Green:Void(green:Int) Property
 		green = Min(Max(green,0),255)
 		Self.minStartGreen = green
 		Self.maxStartGreen = green
@@ -569,10 +648,10 @@ Public
 		Self.greenInterpolationTime = -1
 	End
 	
-	Method Blue:Float() Property
+	Method Blue:Int() Property
 		Return minStartBlue
 	End
-	Method Blue:Void(blue:Float) Property
+	Method Blue:Void(blue:Int) Property
 		blue = Min(Max(blue,0),255)
 		Self.minStartBlue = blue
 		Self.maxStartBlue = blue
@@ -586,7 +665,7 @@ Public
 		Return minStartAlpha
 	End
 	Method Alpha:Void(alpha:Float) Property
-		alpha = Min(Max(alpha,0),1)
+		alpha = Min(Max(alpha,0.0),1.0)
 		Self.minStartAlpha = alpha
 		Self.maxStartAlpha = alpha
 		Self.minEndAlpha = 0
@@ -596,28 +675,28 @@ Public
 	End
 	
 ' Convenience properties for interpolated colours
-	Method StartRed:Float() Property
+	Method StartRed:Int() Property
 		Return minStartRed
 	End
-	Method StartRed:Void(startRed:Float) Property
+	Method StartRed:Void(startRed:Int) Property
 		startRed = Min(Max(startRed,0),255)
 		Self.minStartRed = startRed
 		Self.maxStartRed = startRed
 	End
 	
-	Method StartGreen:Float() Property
+	Method StartGreen:Int() Property
 		Return minStartGreen
 	End
-	Method StartGreen:Void(startGreen:Float) Property
+	Method StartGreen:Void(startGreen:Int) Property
 		startGreen = Min(Max(startGreen,0),255)
 		Self.minStartGreen = startGreen
 		Self.maxStartGreen = startGreen
 	End
 	
-	Method StartBlue:Float() Property
+	Method StartBlue:Int() Property
 		Return minStartBlue
 	End
-	Method StartBlue:Void(startBlue:Float) Property
+	Method StartBlue:Void(startBlue:Int) Property
 		startBlue = Min(Max(startBlue,0),255)
 		Self.minStartBlue = startBlue
 		Self.maxStartBlue = startBlue
@@ -627,33 +706,33 @@ Public
 		Return minStartAlpha
 	End
 	Method StartAlpha:Void(startAlpha:Float) Property
-		startAlpha = Min(Max(startAlpha,0),1)
+		startAlpha = Min(Max(startAlpha,0.0),1.0)
 		Self.minStartAlpha = startAlpha
 		Self.maxStartAlpha = startAlpha
 	End
 	
-	Method EndRed:Float() Property
+	Method EndRed:Int() Property
 		Return minEndRed
 	End
-	Method EndRed:Void(endRed:Float) Property
+	Method EndRed:Void(endRed:Int) Property
 		endRed = Min(Max(endRed,0),255)
 		Self.minEndRed = endRed
 		Self.maxEndRed = endRed
 	End
 	
-	Method EndGreen:Float() Property
+	Method EndGreen:Int() Property
 		Return minEndGreen
 	End
-	Method EndGreen:Void(endGreen:Float) Property
+	Method EndGreen:Void(endGreen:Int) Property
 		endGreen = Min(Max(endGreen,0),255)
 		Self.minEndGreen = endGreen
 		Self.maxEndGreen = endGreen
 	End
 	
-	Method EndBlue:Float() Property
+	Method EndBlue:Int() Property
 		Return minEndBlue
 	End
-	Method EndBlue:Void(endBlue:Float) Property
+	Method EndBlue:Void(endBlue:Int) Property
 		endBlue = Min(Max(endBlue,0),255)
 		Self.minEndBlue = endBlue
 		Self.maxEndBlue = endBlue
@@ -663,7 +742,7 @@ Public
 		Return minEndAlpha
 	End
 	Method EndAlpha:Void(endAlpha:Float) Property
-		endAlpha = Min(Max(endAlpha,0),1)
+		endAlpha = Min(Max(endAlpha,0.0),1.0)
 		Self.minEndAlpha = endAlpha
 		Self.maxEndAlpha = endAlpha
 	End
@@ -672,6 +751,12 @@ Public
 	Method New()
 		deathEmitters = New ArrayList<Emitter>
 		deathEmitterChances = New FloatArrayList
+	End
+	
+	Method New(node:XMLElement)
+		deathEmitters = New ArrayList<Emitter>
+		deathEmitterChances = New FloatArrayList
+		ReadXML(node)
 	End
 
 ' Convenience setters
@@ -741,7 +826,7 @@ Public
 	
 	Method SetParticleAlpha:Void(alpha:Float, time:Int=-1)
 		' clamp 0-1
-		alpha = Min(Max(alpha,0),1)
+		alpha = Min(Max(alpha,0.0),1.0)
 		minStartAlpha = alpha
 		maxStartAlpha = alpha
 		minEndAlpha = 0
@@ -958,9 +1043,88 @@ Public
 			End
 		Next
 	End
+	
+	' Reads attributes from an emitter node.  Note that properties are used so that
+	' the convenience ones can can do their magic.
+	Method ReadXML:Void(node:XMLElement)
+		' convenience colour properties
+		If node.HasAttribute("Red")        Then Red        = Float(node.GetAttribute("Red"))
+		If node.HasAttribute("Green")      Then Green      = Float(node.GetAttribute("Green"))
+		If node.HasAttribute("Blue")       Then Blue       = Float(node.GetAttribute("Blue"))
+		If node.HasAttribute("Alpha")      Then Alpha      = Float(node.GetAttribute("Alpha"))
+		If node.HasAttribute("StartRed")   Then StartRed   = Float(node.GetAttribute("StartRed"))
+		If node.HasAttribute("StartGreen") Then StartGreen = Float(node.GetAttribute("StartGreen"))
+		If node.HasAttribute("StartBlue")  Then StartBlue  = Float(node.GetAttribute("StartBlue"))
+		If node.HasAttribute("StartAlpha") Then StartAlpha = Float(node.GetAttribute("StartAlpha"))
+		If node.HasAttribute("EndRed")     Then EndRed     = Float(node.GetAttribute("EndRed"))
+		If node.HasAttribute("EndGreen")   Then EndGreen   = Float(node.GetAttribute("EndGreen"))
+		If node.HasAttribute("EndBlue")    Then EndBlue    = Float(node.GetAttribute("EndBlue"))
+		If node.HasAttribute("EndAlpha")   Then EndAlpha   = Float(node.GetAttribute("EndAlpha"))
+		' direct colour properties
+		If node.HasAttribute("MinStartRed")   Then MinStartRed   = Float(node.GetAttribute("MinStartRed"))
+		If node.HasAttribute("MaxStartRed")   Then MaxStartRed   = Float(node.GetAttribute("MaxStartRed"))
+		If node.HasAttribute("MinEndRed")     Then MinEndRed     = Float(node.GetAttribute("MinEndRed"))
+		If node.HasAttribute("MaxEndRed")     Then MaxEndRed     = Float(node.GetAttribute("MaxEndRed"))
+		If node.HasAttribute("MinStartGreen") Then MinStartGreen = Float(node.GetAttribute("MinStartGreen"))
+		If node.HasAttribute("MaxStartGreen") Then MaxStartGreen = Float(node.GetAttribute("MaxStartGreen"))
+		If node.HasAttribute("MinEndGreen")   Then MinEndGreen   = Float(node.GetAttribute("MinEndGreen"))
+		If node.HasAttribute("MaxEndGreen")   Then MaxEndGreen   = Float(node.GetAttribute("MaxEndGreen"))
+		If node.HasAttribute("MinStartBlue")  Then MinStartBlue  = Float(node.GetAttribute("MinStartBlue"))
+		If node.HasAttribute("MaxStartBlue")  Then MaxStartBlue  = Float(node.GetAttribute("MaxStartBlue"))
+		If node.HasAttribute("MinEndBlue")    Then MinEndBlue    = Float(node.GetAttribute("MinEndBlue"))
+		If node.HasAttribute("MaxEndBlue")    Then MaxEndBlue    = Float(node.GetAttribute("MaxEndBlue"))
+		If node.HasAttribute("MinStartAlpha") Then MinStartAlpha = Float(node.GetAttribute("MinStartAlpha"))
+		If node.HasAttribute("MaxStartAlpha") Then MaxStartAlpha = Float(node.GetAttribute("MaxStartAlpha"))
+		If node.HasAttribute("MinEndAlpha")   Then MinEndAlpha   = Float(node.GetAttribute("MinEndAlpha"))
+		If node.HasAttribute("MaxEndAlpha")   Then MaxEndAlpha   = Float(node.GetAttribute("MaxEndAlpha"))
+		' interpolation
+		If node.HasAttribute("RedInterpolation")       Then RedInterpolation       = InterpolationFromString(node.GetAttribute("RedInterpolation"))
+		If node.HasAttribute("GreenInterpolation")     Then GreenInterpolation     = InterpolationFromString(node.GetAttribute("GreenInterpolation"))
+		If node.HasAttribute("BlueInterpolation")      Then BlueInterpolation      = InterpolationFromString(node.GetAttribute("BlueInterpolation"))
+		If node.HasAttribute("AlphaInterpolation")     Then AlphaInterpolation     = InterpolationFromString(node.GetAttribute("AlphaInterpolation"))
+		If node.HasAttribute("RedInterpolationTime")   Then RedInterpolationTime   = Float(node.GetAttribute("RedInterpolationTime"))
+		If node.HasAttribute("GreenInterpolationTime") Then GreenInterpolationTime = Float(node.GetAttribute("GreenInterpolationTime"))
+		If node.HasAttribute("BlueInterpolationTime")  Then BlueInterpolationTime  = Float(node.GetAttribute("BlueInterpolationTime"))
+		If node.HasAttribute("AlphaInterpolationTime") Then AlphaInterpolationTime = Float(node.GetAttribute("AlphaInterpolationTime"))
+		' polar velocity
+		If node.HasAttribute("PolarVelocityAngle")              Then PolarVelocityAngle              = Float(node.GetAttribute("PolarVelocityAngle"))
+		If node.HasAttribute("PolarVelocityAngleRadians")       Then PolarVelocityAngleRadians       = Float(node.GetAttribute("PolarVelocityAngleRadians"))
+		If node.HasAttribute("PolarVelocityAngleSpread")        Then PolarVelocityAngleSpread        = Float(node.GetAttribute("PolarVelocityAngleSpread"))
+		If node.HasAttribute("PolarVelocityAngleSpreadRadians") Then PolarVelocityAngleSpreadRadians = Float(node.GetAttribute("PolarVelocityAngleSpreadRadians"))
+		If node.HasAttribute("PolarVelocityAmplitude")          Then PolarVelocityAmplitude          = Float(node.GetAttribute("PolarVelocityAmplitude"))
+		If node.HasAttribute("PolarVelocityAmplitudeSpread")    Then PolarVelocityAmplitudeSpread    = Float(node.GetAttribute("PolarVelocityAmplitudeSpread"))
+		' cartesian velocity
+		If node.HasAttribute("VelocityX")       Then VelocityX       = Float(node.GetAttribute("VelocityX"))
+		If node.HasAttribute("VelocityXSpread") Then VelocityXSpread = Float(node.GetAttribute("VelocityXSpread"))
+		If node.HasAttribute("VelocityY")       Then VelocityY       = Float(node.GetAttribute("VelocityY"))
+		If node.HasAttribute("VelocityYSpread") Then VelocityYSpread = Float(node.GetAttribute("VelocityYSpread"))
+		' emitter settings
+		If node.HasAttribute("Name")         Then Name         = node.GetAttribute("Name")
+		If node.HasAttribute("X")            Then X            = Float(node.GetAttribute("X"))
+		If node.HasAttribute("Y")            Then Y            = Float(node.GetAttribute("Y"))
+		If node.HasAttribute("Angle")        Then Angle        = Float(node.GetAttribute("Angle"))
+		If node.HasAttribute("AngleRadians") Then AngleRadians = Float(node.GetAttribute("AngleRadians"))
+		If node.HasAttribute("Group")        Then groupName    = node.GetAttribute("Group")
+		
+		If node.HasAttribute("SpawnMinRange") Then SpawnMinRange = Float(node.GetAttribute("SpawnMinRange"))
+		If node.HasAttribute("SpawnMaxRange") Then SpawnMaxRange = Float(node.GetAttribute("SpawnMaxRange"))
+		If node.HasAttribute("Life")          Then Life = Float(node.GetAttribute("Life"))
+		If node.HasAttribute("LifeSpread")    Then LifeSpread = Float(node.GetAttribute("LifeSpread"))
+		If node.HasAttribute("Scale")         Then Scale = Float(node.GetAttribute("Scale"))
+		If node.HasAttribute("ScaleSpread")   Then ScaleSpread = Float(node.GetAttribute("ScaleSpread"))
+		
+		If node.HasAttribute("Rotation")                   Then Rotation = Float(node.GetAttribute("Rotation"))
+		If node.HasAttribute("RotationRadians")            Then RotationRadians = Float(node.GetAttribute("RotationRadians"))
+		If node.HasAttribute("RotationSpread")             Then RotationSpread = Float(node.GetAttribute("RotationSpread"))
+		If node.HasAttribute("RotationSpreadRadians")      Then RotationSpreadRadians = Float(node.GetAttribute("RotationSpreadRadians"))
+		If node.HasAttribute("RotationSpeed")              Then RotationSpeed = Float(node.GetAttribute("RotationSpeed"))
+		If node.HasAttribute("RotationSpeedRadians")       Then RotationSpeedRadians = Float(node.GetAttribute("RotationSpeedRadians"))
+		If node.HasAttribute("RotationSpeedSpread")        Then RotationSpeedSpread = Float(node.GetAttribute("RotationSpeedSpread"))
+		If node.HasAttribute("RotationSpeedSpreadRadians") Then RotationSpeedSpreadRadians = Float(node.GetAttribute("RotationSpeedSpreadRadians"))
+	End
 End
 
-Class ParticleGroup
+Class ParticleGroup Implements IPSReader
 Private
 	' fields for each particle (more efficient to have multiple large arrays than incredible amounts of Particle objects
 	Field x:Float[]
@@ -1027,22 +1191,9 @@ Private
 	Field forces:ArrayList<Force>
 	Field forcesArray:Object[]
 	
-Public
-' Properties
-	Method AliveParticles:Int() Property
-		Return aliveParticles
-	End
+	Field name:String
 	
-	Method MaxParticles:Int() Property
-		Return maxParticles
-	End
-	
-	Method Forces:ArrayList<Force>() Property
-		Return forces
-	End
-
-' Constructors
-	Method New(maxParticles:Int)
+	Method Init(maxParticles:Int)
 		Self.maxParticles = maxParticles
 		forces = New ArrayList<Force>
 		
@@ -1099,6 +1250,46 @@ Public
 		deadVelocityY = New Float[maxParticles]
 		
 		ResetParticles()
+	End
+	
+Public
+' Properties
+	Method AliveParticles:Int() Property
+		Return aliveParticles
+	End
+	
+	Method MaxParticles:Int() Property
+		Return maxParticles
+	End
+	
+	Method Forces:ArrayList<Force>() Property
+		Return forces
+	End
+	
+	Method Name:String() Property
+		Return name
+	End
+	Method Name:Void(name:String) Property
+		Self.name = name
+	End
+
+	Method GetForce:Force(name:String)
+		For Local i:Int = 0 Until forces.Size
+			If forces.Get(i).Name = name Then
+				Return forces.Get(i)
+			End
+		Next
+		Return Null
+	End
+	
+' Constructors
+	Method New(maxParticles:Int, name:String="")
+		Self.name = name
+		Init(maxParticles)
+	End
+	
+	Method New(node:XMLElement)
+		ReadXML(node)
 	End
 
 	Method Update:Void(delta:Float)
@@ -1274,22 +1465,67 @@ Public
 			End
 		Next
 	End
+	
+	Method ReadXML:Void(node:XMLElement)
+		' get the maximum number of particles
+		Local maxParts:Int = 10000
+		If node.HasAttribute("MaxParticles") Then maxParts = Int(node.GetAttribute("MaxParticles"))
+		' call Init with the max particles
+		Init(maxParts)
+		' read the rest of the properties
+		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
+		' read the forces
+		Local children:ArrayList<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Size
+			'If children.Get(i).Name = "forces" Then
+			'	For Local j:Int = 0 Until children.Get(i).Children.Size
+					Local forceNode:XMLElement = children.Get(i)'.Children.Get(j)
+					If forceNode.Name = "constantforce" Then
+						' constant
+						Local cf:ConstantForce = New ConstantForce(forceNode)
+						forces.Add(cf)
+					ElseIf forceNode.Name = "pointforce" Then
+						' point
+						Local pf:PointForce = New PointForce(forceNode)
+						forces.Add(pf)
+					End
+			'	Next
+			'End
+		Next
+	End
 End
 
-Class Force Abstract
+Class Force Implements IPSReader Abstract
 Private
 	Field enabled:Bool = True
 	
 	Field outDX:Float
 	Field outDY:Float
 	
+	Field name:String
+	
 Public
+' Properties
 	Method Enabled:Bool() Property
 		Return enabled
 	End
 	Method Enabled:Void(enabled:Bool) Property
 		Self.enabled = enabled
 	End
+	
+	Method Name:String() Property
+		Return name
+	End
+	Method Name:Void(name:String) Property
+		Self.name = name
+	End
+	
+' Methods
+	Method ReadXML:Void(node:XMLElement)
+		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
+		If node.HasAttribute("Enabled") Then Enabled = Bool(node.GetAttribute("Enabled"))
+	End
+	
 	Method Calculate:Void(x:Float, y:Float) Abstract
 End
 
@@ -1322,8 +1558,18 @@ Public
 		Self.outDY = y
 	End
 
+	Method New(node:XMLElement)
+		ReadXML(node)
+	End
+	
 	Method Calculate:Void(x:Float, y:Float)
 		' doesn't need to do anything
+	End
+	
+	Method ReadXML:Void(node:XMLElement)
+		Super.ReadXML(node)
+		If node.HasAttribute("X") Then X = Float(node.GetAttribute("X"))
+		If node.HasAttribute("Y") Then Y = Float(node.GetAttribute("Y"))
 	End
 End
 
@@ -1361,6 +1607,10 @@ Public
 		Self.acceleration = acceleration
 	End
 	
+	Method New(node:XMLElement)
+		ReadXML(node)
+	End
+	
 	Method Calculate:Void(x:Float, y:Float)
 		' check if the particle is at the same point (yes, it happens, and the whole system dies due to div by 0)
 		If x = Self.x And y = Self.y Then
@@ -1373,6 +1623,17 @@ Public
 		outDX = (Self.x-x) * scale
 		outDY = (Self.y-y) * scale
 	End
+	
+	Method ReadXML:Void(node:XMLElement)
+		Super.ReadXML(node)
+		If node.HasAttribute("X") Then X = Float(node.GetAttribute("X"))
+		If node.HasAttribute("Y") Then Y = Float(node.GetAttribute("Y"))
+		If node.HasAttribute("Acceleration") Then Acceleration = Float(node.GetAttribute("Acceleration"))
+	End
+End
+
+Interface IPSReader
+	Method ReadXML:Void(node:XMLElement)
 End
 
 Private
