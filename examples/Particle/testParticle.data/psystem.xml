@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <psystem>
 	<groups>
-		<group Name="group1" MaxParticles="10000">
+		<group Name="group1" MaxParticles="50000">
 			<constantforce Name="gravity" X="0" Y="150" Enabled="true" />
-			<pointforce Name="point" X="0" Y="0" Acceleration="300" Enabled="false" />
+			<pointforce Name="point" Acceleration="300" Enabled="false" />
 		</group>
 	</groups>
 	<emitters>
 		<emitter Name="emit1"
-				Group="group1" X="0" Y="0" Angle="0" Amplitude="0"
-				StartRed="255" EndRed="0"
-				StartGreen="0" EndGreen="255"
-				Blue="0"
+				Group="group1"
+				StartHue="0.0" EndHue="1.0"
+				Saturation="1.0"
+				Brightness="1.0"
 				Life="3"
-				RedInterpolation="linear"
-				GreenInterpolation="linear"
 				AlphaInterpolationTime="0.5"
 				ParticleImage="speck"
 				Scale="1.5"
@@ -28,7 +26,6 @@
 				Green="255"
 				StartBlue="255" EndBlue="0"
 				Life="3"
-				BlueInterpolation="linear"
 				AlphaInterpolationTime="0.5"
 				Scale="2"
 				ScaleSpread="2"
