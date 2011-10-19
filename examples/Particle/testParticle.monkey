@@ -58,7 +58,7 @@ Class ParticleTestScreen Extends Screen
 #Else
 		DrawText("Space: toggle emitter, R: toggle rendering",0,20)
 		DrawText("Hold Shift: Cursor repels, Hold Control: Cursor attracts",0,35)
-		DrawText("Up/Down arrows increase/decrease emit count from 1-20. Current: "+emitCount,0,50)
+		DrawText("Up/Down arrows increase/decrease emit count from 1-100. Current: "+emitCount,0,50)
 		DrawText("pg.AliveParticles="+pg.AliveParticles,0,65)
 #End
 	End
@@ -93,7 +93,7 @@ Class ParticleTestScreen Extends Screen
 		If KeyHit(KEY_UP) Then emitCount+=1
 		If KeyHit(KEY_DOWN) Then emitCount-=1
 		If emitCount < 1 Then emitCount = 1
-		If emitCount > 20 Then emitCount = 20
+		If emitCount > 100 Then emitCount = 100
 		
 		If emitting Then
 			e.EmitAt(emitCount, game.mouseX, game.mouseY)
