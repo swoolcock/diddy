@@ -125,6 +125,10 @@ Class MyGame Extends DiddyApp
 		DrawText "MilliSeconds = "+GetMilliSeconds(), 10, 320
 		DrawText "GetLatitiude = "+GetLatitiude(), 10, 340
 		DrawText "GetLongitude = "+GetLongitude(), 10, 360
+		DrawText "GetBrowserName    = "+GetBrowserName(), 10, 380
+		DrawText "GetBrowserVersion = "+GetBrowserVersion(), 10, 400
+		DrawText "GetBrowserOS      = "+GetBrowserOS(), 10, 420
+		
 		Return 0
 	End
 		
