@@ -380,10 +380,10 @@ Function Interpolate:Float(type:Int, startValue:Float, endValue:Float, alpha:Flo
 			rv = startValue + range - range*alpha
 			
 		Case INTERPOLATION_HALF_SINE
-			rv = startValue + range * Sin(alpha*PI)
+			rv = startValue + range * Sinr(alpha*PI)
 			
 		Case INTERPOLATION_HALF_COSINE
-			rv = startValue + range * Cos(alpha*PI)
+			rv = startValue + range * Cosr(alpha*PI)
 	End
 	' clip to start/end
 	If startValue < endValue And rv < startValue Or startValue > endValue And rv > startValue Then
@@ -401,6 +401,102 @@ Function InterpolationFromString:Int(interp:String)
 	If interp = "inverselinear" Then Return INTERPOLATION_INVERSE_LINEAR
 	If interp = "halfsine" Then Return INTERPOLATION_HALF_SINE
 	If interp = "halfcosine" Then Return INTERPOLATION_HALF_COSINE
+End
+
+' colour conversions (hsb is range 0-1, return is RGB as a single int)
+' Monkey conversion of java.awt.Color.HSBtoRGB
+Function HSBtoRGB:Int(hue:Float, saturation:Float, brightness:Float, rgbArray:Int[] = [])
+	Local r:Int = 0, g:Int = 0, b:Int = 0
+    If saturation = 0 Then
+		r = Int(brightness * 255.0 + 0.5)
+	    g = r
+		b = r
+	Else
+		Local h:Float = (hue - Float(Floor(hue))) * 6.0
+		Local f:Float = h - Float(Floor(h))
+		Local p:Float = brightness * (1.0 - saturation)
+		Local q:Float = brightness * (1.0 - saturation * f)
+		Local t:Float = brightness * (1.0 - (saturation * (1.0 - f)))
+		Select Int(h)
+			Case 0
+				r = Int(brightness * 255.0 + 0.5)
+				g = Int(t * 255.0 + 0.5)
+				b = Int(p * 255.0 + 0.5)
+
+			Case 1
+				r = Int(q * 255.0 + 0.5)
+				g = Int(brightness * 255.0 + 0.5)
+				b = Int(p * 255.0 + 0.5)
+
+			Case 2
+				r = Int(p * 255.0 + 0.5)
+				g = Int(brightness * 255.0 + 0.5)
+				b = Int(t * 255.0 + 0.5)
+
+			Case 3
+				r = Int(p * 255.0 + 0.5)
+				g = Int(q * 255.0 + 0.5)
+				b = Int(brightness * 255.0 + 0.5)
+
+			Case 4
+				r = Int(t * 255.0 + 0.5)
+				g = Int(p * 255.0 + 0.5)
+				b = Int(brightness * 255.0 + 0.5)
+			
+			Case 5
+				r = Int(brightness * 255.0 + 0.5)
+				g = Int(p * 255.0 + 0.5)
+				b = Int(q * 255.0 + 0.5)
+		End
+	End
+	If rgbArray.Length = 3 Then
+		rgbArray[0] = r
+		rgbArray[1] = g
+		rgbArray[2] = b
+	End
+	Return $ff000000 | (r Shl 16) | (g Shl 8) | (b Shl 0)
+End
+
+' Monkey conversion of java.awt.Color.RGBtoHSB
+Function RGBtoHSB:Float[](r:Int, g:Int, b:Int, hsbvals:Float[] = [])
+	Local hue:Float, saturation:Float, brightness:Float
+	If hsbvals.Length <> 3 Then hsbvals = New Float[3]
+	
+	Local cmax:Int = g
+	If r > g Then cmax = r
+	If b > cmax Then cmax = b
+	
+	Local cmin:Int = g
+	If r < g Then cmin = r
+	If b < cmin Then cmin = b
+
+	brightness = Float(cmax) / 255.0
+	If cmax <> 0 Then
+		saturation = Float(cmax - cmin) / Float(cmax)
+	Else
+		saturation = 0
+	End
+	
+	If saturation = 0 Then
+		hue = 0
+	Else
+		Local redc:Float = Float(cmax - r) / Float(cmax - cmin)
+		Local greenc:Float = Float(cmax - g) / Float(cmax - cmin)
+		Local bluec:Float = Float(cmax - b) / Float(cmax - cmin)
+		If r = cmax Then
+			hue = bluec - greenc
+		ElseIf g = cmax Then
+			hue = 2.0 + redc - bluec
+		Else
+			hue = 4.0 + greenc - redc
+		End
+		hue = hue / 6.0
+		If hue < 0 Then hue += 1.0
+	End
+	hsbvals[0] = hue
+	hsbvals[1] = saturation
+	hsbvals[2] = brightness
+	return hsbvals;
 End
 
 ' constants
