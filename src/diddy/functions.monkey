@@ -394,6 +394,15 @@ Function Interpolate:Float(type:Int, startValue:Float, endValue:Float, alpha:Flo
 	Return rv
 End
 
+' arghhhh monkey needs enums!!!
+Function InterpolationFromString:Int(interp:String)
+	If interp = "" Or interp = "none" Then Return INTERPOLATION_NONE
+	If interp = "linear" Then Return INTERPOLATION_LINEAR
+	If interp = "inverselinear" Then Return INTERPOLATION_INVERSE_LINEAR
+	If interp = "halfsine" Then Return INTERPOLATION_HALF_SINE
+	If interp = "halfcosine" Then Return INTERPOLATION_HALF_COSINE
+End
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
