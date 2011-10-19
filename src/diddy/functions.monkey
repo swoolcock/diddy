@@ -65,10 +65,28 @@ Extern
 		Function GetInputString:String()="diddy.getInputString"
 	#End
 	
+	#If TARGET="html5" Then
+		Function GetBrowserName:String()="diddy.getBrowserName"
+		Function GetBrowserVersion:String()="diddy.getBrowserVersion"
+		Function GetBrowserOS:String()="diddy.getBrowserOS"
+	#End
+	
 	#If LANG="java" Then
 		Function BuildString:String(arr:Int[], offset:Int, length:Int) = "diddy.buildString"
 	#End
 Public
+
+#If TARGET<>"html5" Then
+	Function GetBrowserName:String()
+		Return ""
+	End
+	Function GetBrowserVersion:String()
+		Return ""
+	End
+	Function GetBrowserOS:String()
+		Return ""
+	End
+#End
 
 #If LANG <> "java" Then
 	Function BuildString:String(arr:Int[], offset:Int, length:Int)
