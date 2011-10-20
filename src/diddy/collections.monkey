@@ -316,9 +316,9 @@ Public
 	' Overrides ListEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
-		lastIndex = index		
-		index += 1		
-		Return alst.elements[lastIndex]
+		lastIndex = index
+		index += 1
+		Return E(alst.elements[lastIndex])
 	End
 	
 	' Overrides ListEnumerator
@@ -326,7 +326,7 @@ Public
 		CheckConcurrency()
 		index -= 1
 		lastIndex = index
-		Return alst.elements[lastIndex]
+		Return E(alst.elements[lastIndex])
 	End
 End
 
