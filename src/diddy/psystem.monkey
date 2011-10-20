@@ -1426,20 +1426,20 @@ Public
 			group.usePolar[index] = usePolar
 			If usePolar Then
 				' TODO: adjust for src speed
-				group.polarVelocityAngle[index] = emitAngle + polarVelocityAngle - polarVelocityAngleSpread/2 + Rnd() * polarVelocityAngleSpread
-				group.polarVelocityAmplitude[index] = polarVelocityAmplitude - polarVelocityAmplitudeSpread/2 + Rnd() * polarVelocityAmplitudeSpread
+				group.polarVelocityAngle[index] = emitAngle + polarVelocityAngle - polarVelocityAngleSpread*0.5 + Rnd() * polarVelocityAngleSpread
+				group.polarVelocityAmplitude[index] = polarVelocityAmplitude - polarVelocityAmplitudeSpread*0.5 + Rnd() * polarVelocityAmplitudeSpread
 				group.UpdateCartesian(index)
 			Else
 				' TODO: adjust for src angle and speed
-				group.velocityX[index] = velocityX - velocityXSpread/2 + Rnd() * velocityXSpread
-				group.velocityY[index] = velocityY - velocityYSpread/2 + Rnd() * velocityYSpread
+				group.velocityX[index] = velocityX - velocityXSpread*0.5 + Rnd() * velocityXSpread
+				group.velocityY[index] = velocityY - velocityYSpread*0.5 + Rnd() * velocityYSpread
 			End
 			group.sourceEmitter[index] = Self
 			group.alive[index] = True
-			group.life[index] = life - lifeSpread/2 + Rnd() * lifeSpread
-			group.rotation[index] = rotation - rotationSpread/2 + Rnd() * rotationSpread
-			group.rotationSpeed[index] = rotationSpeed - rotationSpeedSpread/2 + Rnd() * rotationSpeedSpread
-			group.scale[index] = scale - scaleSpread/2 + Rnd() * scaleSpread
+			group.life[index] = life - lifeSpread*0.5 + Rnd() * lifeSpread
+			group.rotation[index] = rotation - rotationSpread*0.5 + Rnd() * rotationSpread
+			group.rotationSpeed[index] = rotationSpeed - rotationSpeedSpread*0.5 + Rnd() * rotationSpeedSpread
+			group.scale[index] = scale - scaleSpread*0.5 + Rnd() * scaleSpread
 			
 			' image
 			group.particleImage[index] = particleImage
@@ -1492,6 +1492,7 @@ Public
 					group.redInterpolation[index] = redInterpolation
 					group.redInterpolationTime[index] = redInterpolationTime
 					If group.redInterpolationTime[index] < 0 Then group.redInterpolationTime[index] = group.life[index]
+					group.redInterpolationTimeInv[index] = 1 / group.redInterpolationTime[index]
 				End
 				If group.startGreen[index] = group.endGreen[index] Then
 					group.greenInterpolation[index] = INTERPOLATION_NONE
@@ -1499,6 +1500,7 @@ Public
 					group.greenInterpolation[index] = greenInterpolation
 					group.greenInterpolationTime[index] = greenInterpolationTime
 					If group.greenInterpolationTime[index] < 0 Then group.greenInterpolationTime[index] = group.life[index]
+					group.greenInterpolationTimeInv[index] = 1 / group.greenInterpolationTime[index]
 				End
 				If group.startBlue[index] = group.endBlue[index] Then
 					group.blueInterpolation[index] = INTERPOLATION_NONE
@@ -1506,6 +1508,7 @@ Public
 					group.blueInterpolation[index] = blueInterpolation
 					group.blueInterpolationTime[index] = blueInterpolationTime
 					If group.blueInterpolationTime[index] < 0 Then group.blueInterpolationTime[index] = group.life[index]
+					group.blueInterpolationTimeInv[index] = 1 / group.blueInterpolationTime[index]
 				End
 			Else
 				' start colours
@@ -1553,6 +1556,7 @@ Public
 					group.hueInterpolation[index] = hueInterpolation
 					group.hueInterpolationTime[index] = hueInterpolationTime
 					If group.hueInterpolationTime[index] < 1.0 Then group.hueInterpolationTime[index] = group.life[index]
+					group.hueInterpolationTimeInv[index] = 1 / group.hueInterpolationTime[index]
 				End
 				If group.startSaturation[index] = group.endSaturation[index] Then
 					group.saturationInterpolation[index] = INTERPOLATION_NONE
@@ -1560,6 +1564,7 @@ Public
 					group.saturationInterpolation[index] = saturationInterpolation
 					group.saturationInterpolationTime[index] = saturationInterpolationTime
 					If group.saturationInterpolationTime[index] < 1.0 Then group.saturationInterpolationTime[index] = group.life[index]
+					group.saturationInterpolationTimeInv[index] = 1 / group.saturationInterpolationTime[index]
 				End
 				If group.startBrightness[index] = group.endBrightness[index] Then
 					group.brightnessInterpolation[index] = INTERPOLATION_NONE
@@ -1567,6 +1572,7 @@ Public
 					group.brightnessInterpolation[index] = brightnessInterpolation
 					group.brightnessInterpolationTime[index] = brightnessInterpolationTime
 					If group.brightnessInterpolationTime[index] < 1.0 Then group.brightnessInterpolationTime[index] = group.life[index]
+					group.brightnessInterpolationTimeInv[index] = 1 / group.brightnessInterpolationTime[index]
 				End
 			End
 			
@@ -1588,6 +1594,7 @@ Public
 				group.alphaInterpolation[index] = alphaInterpolation
 				group.alphaInterpolationTime[index] = alphaInterpolationTime
 				If group.alphaInterpolationTime[index] < 0 Then group.alphaInterpolationTime[index] = group.life[index]
+				group.alphaInterpolationTimeInv[index] = 1 / group.alphaInterpolationTime[index]
 			End
 		Next
 	End
@@ -1737,12 +1744,16 @@ Private
 	
 	Field redInterpolation:Int[]
 	Field redInterpolationTime:Float[]
+	Field redInterpolationTimeInv:Float[]
 	Field greenInterpolation:Int[]
 	Field greenInterpolationTime:Float[]
+	Field greenInterpolationTimeInv:Float[]
 	Field blueInterpolation:Int[]
 	Field blueInterpolationTime:Float[]
+	Field blueInterpolationTimeInv:Float[]
 	Field alphaInterpolation:Int[]
 	Field alphaInterpolationTime:Float[]
+	Field alphaInterpolationTimeInv:Float[]
 	
 	Field hue:Float[]
 	Field saturation:Float[]
@@ -1758,10 +1769,13 @@ Private
 	
 	Field hueInterpolation:Int[]
 	Field hueInterpolationTime:Float[]
+	Field hueInterpolationTimeInv:Float[]
 	Field saturationInterpolation:Int[]
 	Field saturationInterpolationTime:Float[]
+	Field saturationInterpolationTimeInv:Float[]
 	Field brightnessInterpolation:Int[]
 	Field brightnessInterpolationTime:Float[]
+	Field brightnessInterpolationTimeInv:Float[]
 	
 	Field life:Float[]
 	Field alive:Bool[]
@@ -1830,12 +1844,16 @@ Private
 		
 		redInterpolation = New Int[maxParticles]
 		redInterpolationTime = New Float[maxParticles]
+		redInterpolationTimeInv = New Float[maxParticles]
 		greenInterpolation = New Int[maxParticles]
 		greenInterpolationTime = New Float[maxParticles]
+		greenInterpolationTimeInv = New Float[maxParticles]
 		blueInterpolation = New Int[maxParticles]
 		blueInterpolationTime = New Float[maxParticles]
+		blueInterpolationTimeInv = New Float[maxParticles]
 		alphaInterpolation = New Int[maxParticles]
 		alphaInterpolationTime = New Float[maxParticles]
+		alphaInterpolationTimeInv = New Float[maxParticles]
 		
 		hue = New Float[maxParticles]
 		saturation = New Float[maxParticles]
@@ -1851,10 +1869,13 @@ Private
 		
 		hueInterpolation = New Int[maxParticles]
 		hueInterpolationTime = New Float[maxParticles]
+		hueInterpolationTimeInv = New Float[maxParticles]
 		saturationInterpolation = New Int[maxParticles]
 		saturationInterpolationTime = New Float[maxParticles]
+		saturationInterpolationTimeInv = New Float[maxParticles]
 		brightnessInterpolation = New Int[maxParticles]
 		brightnessInterpolationTime = New Float[maxParticles]
+		brightnessInterpolationTimeInv = New Float[maxParticles]
 
 		reversePointer = New Int[maxParticles]
 		alivePointers = New Int[maxParticles]
@@ -1920,7 +1941,7 @@ Public
 			forceCount = forces.FillArray(forcesArray)
 		End
 		' convert milliseconds to seconds
-		delta = delta/1000
+		delta = delta*0.001
 		deadCount = 0
 		' loop through all living particles
 		For Local i:Int = 0 Until aliveParticles
@@ -1955,28 +1976,28 @@ Public
 				' interpolate colours
 				If Not useHSB[index] Then
 					If startRed[index] <> endRed[index] And life[index] < redInterpolationTime[index] Then
-						red[index] = Int(Interpolate(redInterpolation[index], startRed[index], endRed[index], 1 - life[index]/redInterpolationTime[index]))
+						red[index] = Int(Interpolate(redInterpolation[index], startRed[index], endRed[index], 1 - life[index]*redInterpolationTimeInv[index]))
 					End
 					If startGreen[index] <> endGreen[index] And life[index] < greenInterpolationTime[index] Then
-						green[index] = Int(Interpolate(greenInterpolation[index], startGreen[index], endGreen[index], 1 - life[index]/greenInterpolationTime[index]))
+						green[index] = Int(Interpolate(greenInterpolation[index], startGreen[index], endGreen[index], 1 - life[index]*greenInterpolationTimeInv[index]))
 					End
 					If startBlue[index] <> endBlue[index] And life[index] < blueInterpolationTime[index] Then
-						blue[index] = Int(Interpolate(blueInterpolation[index], startBlue[index], endBlue[index], 1 - life[index]/blueInterpolationTime[index]))
+						blue[index] = Int(Interpolate(blueInterpolation[index], startBlue[index], endBlue[index], 1 - life[index]*blueInterpolationTimeInv[index]))
 					End
 				Else
 					If startHue[index] <> endHue[index] And life[index] < hueInterpolationTime[index] Then
-						hue[index] = Interpolate(hueInterpolation[index], startHue[index], endHue[index], 1 - life[index]/hueInterpolationTime[index])
+						hue[index] = Interpolate(hueInterpolation[index], startHue[index], endHue[index], 1 - life[index]*hueInterpolationTimeInv[index])
 					End
 					If startSaturation[index] <> endSaturation[index] And life[index] < saturationInterpolationTime[index] Then
-						saturation[index] = Interpolate(saturationInterpolation[index], startSaturation[index], endSaturation[index], 1 - life[index]/saturationInterpolationTime[index])
+						saturation[index] = Interpolate(saturationInterpolation[index], startSaturation[index], endSaturation[index], 1 - life[index]*saturationInterpolationTimeInv[index])
 					End
 					If startBrightness[index] <> endBrightness[index] And life[index] < brightnessInterpolationTime[index] Then
-						brightness[index] = Interpolate(brightnessInterpolation[index], startBrightness[index], endBrightness[index], 1 - life[index]/brightnessInterpolationTime[index])
+						brightness[index] = Interpolate(brightnessInterpolation[index], startBrightness[index], endBrightness[index], 1 - life[index]*brightnessInterpolationTimeInv[index])
 					End
 					UpdateRGB(index)
 				End
 				If startAlpha[index] <> endAlpha[index] And life[index] < alphaInterpolationTime[index] Then
-					alpha[index] = Interpolate(alphaInterpolation[index], startAlpha[index], endAlpha[index], 1 - life[index]/alphaInterpolationTime[index])
+					alpha[index] = Interpolate(alphaInterpolation[index], startAlpha[index], endAlpha[index], 1 - life[index]*alphaInterpolationTimeInv[index])
 				End
 			Else
 				alive[index] = False
@@ -2287,9 +2308,9 @@ Function SafeATanr:Float(dx:Float, dy:Float, def:Float=0)
 	ElseIf dy = 0 And dx < 0 Then ' 180
 		angle = PI
 	ElseIf dy > 0 And dx = 0 Then ' 90
-		angle = PI/2
+		angle = PI*0.5
 	ElseIf dy < 0 And dx = 0 Then ' 270
-		angle = 3*PI / 2
+		angle = 3*PI*0.5
 	ElseIf dy > 0 And dx > 0 Then ' Acute
 		angle = ATanr(dy / dx)
 	ElseIf dy > 0 And dx < 0 Then ' Obtuse
