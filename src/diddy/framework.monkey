@@ -154,7 +154,23 @@ Public
 		Return 0
 	End
 	
+	Method ReadInputs:Void()
+		mouseX = MouseX() / SCREENX_RATIO
+		mouseY = MouseY() / SCREENY_RATIO
+		mouseHit = MouseHit()
+		inputCache.ReadInput()
+		inputCache.HandleEvents(currentScreen)
+		
+		If debugKeyOn
+			If KeyHit(debugKey)
+				debugOn = Not debugOn
+			End
+		End
+	End
+	
 	Method OnUpdate:Int()
+		ReadInputs()
+	
 		OverrideUpdate()
 		if useFixedRateLogic
 			local now:Int = Millisecs()
@@ -192,19 +208,7 @@ Public
 		if useFixedRateLogic
 			dt.delta = fixedRateLogicDelta
 		End
-		inputCache.ReadInput()
-		inputCache.HandleEvents(currentScreen)
-		
-		If debugKeyOn
-			If KeyHit(debugKey)
-				debugOn = Not debugOn
-			End
-		End
-		
-		mouseX = MouseX() / SCREENX_RATIO
-		mouseY = MouseY() / SCREENY_RATIO
-		mouseHit = MouseHit()
- 
+
 		If screenFade.active then screenFade.Update()
 		currentScreen.Update()	
 	End
@@ -638,6 +642,10 @@ Class GameImage
 			image.SetHandle(0, 0)
 			Self.midhandled=0
 		End 
+	End
+	
+	Method SetHandle:Void(handleX:Float, handleY:Float)
+		image.SetHandle(handleX, handleY)
 	End
 	
 	Method MidHandle:Bool() Property
