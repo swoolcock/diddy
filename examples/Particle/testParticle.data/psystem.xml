@@ -11,7 +11,7 @@
 				Group="group1"
 				StartHue="0.0" EndHue="1.0"
 				Saturation="1.0"
-				Brightness="1.0"
+				Luminance="0.5"
 				Life="3"
 				AlphaInterpolationTime="0.5"
 				ParticleImage="speck"
