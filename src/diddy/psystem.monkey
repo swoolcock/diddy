@@ -127,7 +127,7 @@ Private
 	Field rotationSpeedSpread:Float
 	Field scale:Float = 1
 	Field scaleSpread:Float
-	Field useHSB:Bool = False
+	Field useHSL:Bool = False
 	
 	' RGBA interpolation
 	Field redInterpolation:Int = INTERPOLATION_NONE     ' interpolates the particle's red based on life
@@ -149,21 +149,21 @@ Private
 	Field minEndBlue:Int = 255, maxEndBlue:Int = 255
 	Field minEndAlpha:Float = 0, maxEndAlpha:Float = 0
 	
-	' HSB interpolation
+	' HSL interpolation
 	Field hueInterpolation:Int = INTERPOLATION_NONE        ' interpolates the particle's hue based on life
 	Field hueInterpolationTime:Float = -1                  ' the number of seconds to interpolate across (if <0, defaults to life)
 	Field saturationInterpolation:Int = INTERPOLATION_NONE ' interpolates the particle's saturation based on life
 	Field saturationInterpolationTime:Float = -1           ' the number of seconds to interpolate across (if <0, defaults to life)
-	Field brightnessInterpolation:Int = INTERPOLATION_NONE ' interpolates the particle's brightness based on life
-	Field brightnessInterpolationTime:Float = -1           ' the number of seconds to interpolate across (if <0, defaults to life)
+	Field luminanceInterpolation:Int = INTERPOLATION_NONE ' interpolates the particle's luminance based on life
+	Field luminanceInterpolationTime:Float = -1           ' the number of seconds to interpolate across (if <0, defaults to life)
 	
-	' HSB ranges
-	Field minStartHue:Float = 1, maxStartHue:Float = 1
+	' HSL ranges
+	Field minStartHue:Float = 0, maxStartHue:Float = 0
 	Field minStartSaturation:Float = 1, maxStartSaturation:Float = 1
-	Field minStartBrightness:Float = 1, maxStartBrightness:Float = 1
-	Field minEndHue:Float = 1, maxEndHue:Float = 1
+	Field minStartLuminance:Float = 0.5, maxStartLuminance:Float = 0.5
+	Field minEndHue:Float = 0, maxEndHue:Float = 0
 	Field minEndSaturation:Float = 1, maxEndSaturation:Float = 1
-	Field minEndBrightness:Float = 1, maxEndBrightness:Float = 1
+	Field minEndLuminance:Float = 0.5, maxEndLuminance:Float = 0.5
 	
 	Field particleImage:Image
 	
@@ -316,7 +316,7 @@ Public
 	Method RedInterpolation:Void(redInterpolation:Int) Property
 		AssertRangeInt(redInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid RedInterpolation")
 		Self.redInterpolation = redInterpolation
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	' redInterpolationTime
@@ -325,7 +325,7 @@ Public
 	End
 	Method RedInterpolationTime:Void(redInterpolationTime:Float) Property
 		Self.redInterpolationTime = redInterpolationTime
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then redInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -336,7 +336,7 @@ Public
 	Method GreenInterpolation:Void(greenInterpolation:Int) Property
 		AssertRangeInt(greenInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid GreenInterpolation")
 		Self.greenInterpolation = greenInterpolation
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	' greenInterpolationTime
@@ -345,7 +345,7 @@ Public
 	End
 	Method GreenInterpolationTime:Void(greenInterpolationTime:Float) Property
 		Self.greenInterpolationTime = greenInterpolationTime
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then greenInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -356,7 +356,7 @@ Public
 	Method BlueInterpolation:Void(blueInterpolation:Int) Property
 		AssertRangeInt(blueInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid BlueInterpolation")
 		Self.blueInterpolation = blueInterpolation
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	' blueInterpolationTime
@@ -365,7 +365,7 @@ Public
 	End
 	Method BlueInterpolationTime:Void(blueInterpolationTime:Float) Property
 		Self.blueInterpolationTime = blueInterpolationTime
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then blueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -393,7 +393,7 @@ Public
 	End
 	Method MinStartRed:Void(minStartRed:Int) Property
 		Self.minStartRed = Min(Max(minStartRed,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then redInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -403,7 +403,7 @@ Public
 	End
 	Method MaxStartRed:Void(maxStartRed:Int) Property
 		Self.maxStartRed = Min(Max(maxStartRed,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then redInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -413,7 +413,7 @@ Public
 	End
 	Method MinStartGreen:Void(minStartGreen:Int) Property
 		Self.minStartGreen = Min(Max(minStartGreen,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then greenInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -423,7 +423,7 @@ Public
 	End
 	Method MaxStartGreen:Void(maxStartGreen:Int) Property
 		Self.maxStartGreen = Min(Max(maxStartGreen,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then greenInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -433,7 +433,7 @@ Public
 	End
 	Method MinStartBlue:Void(minStartBlue:Int) Property
 		Self.minStartBlue = Min(Max(minStartBlue,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then blueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -443,7 +443,7 @@ Public
 	End
 	Method MaxStartBlue:Void(maxStartBlue:Int) Property
 		Self.maxStartBlue = Min(Max(maxStartBlue,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then blueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -471,7 +471,7 @@ Public
 	End
 	Method MinEndRed:Void(minEndRed:Int) Property
 		Self.minEndRed = Min(Max(minEndRed,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then redInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -481,7 +481,7 @@ Public
 	End
 	Method MaxEndRed:Void(maxEndRed:Int) Property
 		Self.maxEndRed = Min(Max(maxEndRed,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then redInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -491,7 +491,7 @@ Public
 	End
 	Method MinEndGreen:Void(minEndGreen:Int) Property
 		Self.minEndGreen = Min(Max(minEndGreen,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then greenInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -501,7 +501,7 @@ Public
 	End
 	Method MaxEndGreen:Void(maxEndGreen:Int) Property
 		Self.maxEndGreen = Min(Max(maxEndGreen,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then greenInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -511,7 +511,7 @@ Public
 	End
 	Method MinEndBlue:Void(minEndBlue:Int) Property
 		Self.minEndBlue = Min(Max(minEndBlue,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then blueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -521,7 +521,7 @@ Public
 	End
 	Method MaxEndBlue:Void(maxEndBlue:Int) Property
 		Self.maxEndBlue = Min(Max(maxEndBlue,0),255)
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then blueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -550,7 +550,7 @@ Public
 	Method HueInterpolation:Void(hueInterpolation:Int) Property
 		AssertRangeInt(hueInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid HueInterpolation")
 		Self.hueInterpolation = hueInterpolation
-		Self.useHSB = True
+		Self.useHSL = True
 	End
 	
 	' hueInterpolationTime
@@ -559,7 +559,7 @@ Public
 	End
 	Method HueInterpolationTime:Void(hueInterpolationTime:Float) Property
 		Self.hueInterpolationTime = hueInterpolationTime
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then hueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -570,7 +570,7 @@ Public
 	Method SaturationInterpolation:Void(saturationInterpolation:Int) Property
 		AssertRangeInt(saturationInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid SaturationInterpolation")
 		Self.saturationInterpolation = saturationInterpolation
-		Self.useHSB = True
+		Self.useHSL = True
 	End
 	
 	' saturationInterpolationTime
@@ -579,28 +579,28 @@ Public
 	End
 	Method SaturationInterpolationTime:Void(saturationInterpolationTime:Float) Property
 		Self.saturationInterpolationTime = saturationInterpolationTime
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then saturationInterpolation = INTERPOLATION_LINEAR
 	End
 	
-	' brightnessInterpolation
-	Method BrightnessInterpolation:Int() Property
-		Return brightnessInterpolation
+	' luminanceInterpolation
+	Method LuminanceInterpolation:Int() Property
+		Return luminanceInterpolation
 	End
-	Method BrightnessInterpolation:Void(brightnessInterpolation:Int) Property
-		AssertRangeInt(brightnessInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid BrightnessInterpolation")
-		Self.brightnessInterpolation = brightnessInterpolation
-		Self.useHSB = True
+	Method LuminanceInterpolation:Void(luminanceInterpolation:Int) Property
+		AssertRangeInt(luminanceInterpolation, INTERPOLATION_NONE, INTERPOLATION_COUNT, "Invalid LuminanceInterpolation")
+		Self.luminanceInterpolation = luminanceInterpolation
+		Self.useHSL = True
 	End
 	
-	' brightnessInterpolationTime
-	Method BrightnessInterpolationTime:Float() Property
-		Return brightnessInterpolationTime
+	' luminanceInterpolationTime
+	Method LuminanceInterpolationTime:Float() Property
+		Return luminanceInterpolationTime
 	End
-	Method BrightnessInterpolationTime:Void(brightnessInterpolationTime:Float) Property
-		Self.brightnessInterpolationTime = brightnessInterpolationTime
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then brightnessInterpolation = INTERPOLATION_LINEAR
+	Method LuminanceInterpolationTime:Void(luminanceInterpolationTime:Float) Property
+		Self.luminanceInterpolationTime = luminanceInterpolationTime
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then luminanceInterpolation = INTERPOLATION_LINEAR
 	End
 	
 	' minStartHue
@@ -609,7 +609,7 @@ Public
 	End
 	Method MinStartHue:Void(minStartHue:Float) Property
 		Self.minStartHue = Min(Max(minStartHue,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then hueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -619,7 +619,7 @@ Public
 	End
 	Method MaxStartHue:Void(maxStartHue:Float) Property
 		Self.maxStartHue = Min(Max(maxStartHue,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then hueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -629,7 +629,7 @@ Public
 	End
 	Method MinStartSaturation:Void(minStartSaturation:Float) Property
 		Self.minStartSaturation = Min(Max(minStartSaturation,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then saturationInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -639,28 +639,28 @@ Public
 	End
 	Method MaxStartSaturation:Void(maxStartSaturation:Float) Property
 		Self.maxStartSaturation = Min(Max(maxStartSaturation,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then saturationInterpolation = INTERPOLATION_LINEAR
 	End
 	
-	' minStartBrightness
-	Method MinStartBrightness:Float() Property
-		Return minStartBrightness
+	' minStartLuminance
+	Method MinStartLuminance:Float() Property
+		Return minStartLuminance
 	End
-	Method MinStartBrightness:Void(minStartBrightness:Float) Property
-		Self.minStartBrightness = Min(Max(minStartBrightness,0.0),1.0)
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then brightnessInterpolation = INTERPOLATION_LINEAR
+	Method MinStartLuminance:Void(minStartLuminance:Float) Property
+		Self.minStartLuminance = Min(Max(minStartLuminance,0.0),1.0)
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then luminanceInterpolation = INTERPOLATION_LINEAR
 	End
 	
-	' maxStartBrightness
-	Method MaxStartBrightness:Float() Property
-		Return maxStartBrightness
+	' maxStartLuminance
+	Method MaxStartLuminance:Float() Property
+		Return maxStartLuminance
 	End
-	Method MaxStartBrightness:Void(maxStartBrightness:Float) Property
-		Self.maxStartBrightness = Min(Max(maxStartBrightness,0.0),1.0)
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then brightnessInterpolation = INTERPOLATION_LINEAR
+	Method MaxStartLuminance:Void(maxStartLuminance:Float) Property
+		Self.maxStartLuminance = Min(Max(maxStartLuminance,0.0),1.0)
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then luminanceInterpolation = INTERPOLATION_LINEAR
 	End
 	
 	' minEndHue
@@ -669,7 +669,7 @@ Public
 	End
 	Method MinEndHue:Void(minEndHue:Float) Property
 		Self.minEndHue = Min(Max(minEndHue,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then hueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -679,7 +679,7 @@ Public
 	End
 	Method MaxEndHue:Void(maxEndHue:Float) Property
 		Self.maxEndHue = Min(Max(maxEndHue,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then hueInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -689,7 +689,7 @@ Public
 	End
 	Method MinEndSaturation:Void(minEndSaturation:Float) Property
 		Self.minEndSaturation = Min(Max(minEndSaturation,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then saturationInterpolation = INTERPOLATION_LINEAR
 	End
 	
@@ -699,36 +699,36 @@ Public
 	End
 	Method MaxEndSaturation:Void(maxEndSaturation:Float) Property
 		Self.maxEndSaturation = Min(Max(maxEndSaturation,0.0),1.0)
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then saturationInterpolation = INTERPOLATION_LINEAR
 	End
 	
-	' minEndBrightness
-	Method MinEndBrightness:Float() Property
-		Return minEndBrightness
+	' minEndLuminance
+	Method MinEndLuminance:Float() Property
+		Return minEndLuminance
 	End
-	Method MinEndBrightness:Void(minEndBrightness:Float) Property
-		Self.minEndBrightness = Min(Max(minEndBrightness,0.0),1.0)
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then brightnessInterpolation = INTERPOLATION_LINEAR
-	End
-	
-	' maxEndBrightness
-	Method MaxEndBrightness:Float() Property
-		Return maxEndBrightness
-	End
-	Method MaxEndBrightness:Void(maxEndBrightness:Float) Property
-		Self.maxEndBrightness = Min(Max(maxEndBrightness,0.0),1.0)
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then brightnessInterpolation = INTERPOLATION_LINEAR
+	Method MinEndLuminance:Void(minEndLuminance:Float) Property
+		Self.minEndLuminance = Min(Max(minEndLuminance,0.0),1.0)
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then luminanceInterpolation = INTERPOLATION_LINEAR
 	End
 	
-	' useHSB
-	Method UseHSB:Bool() Property
-		Return useHSB
+	' maxEndLuminance
+	Method MaxEndLuminance:Float() Property
+		Return maxEndLuminance
 	End
-	Method UseHSB:Void(useHSB:Bool) Property
-		Self.useHSB = useHSB
+	Method MaxEndLuminance:Void(maxEndLuminance:Float) Property
+		Self.maxEndLuminance = Min(Max(maxEndLuminance,0.0),1.0)
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then luminanceInterpolation = INTERPOLATION_LINEAR
+	End
+	
+	' useHSL
+	Method UseHSL:Bool() Property
+		Return useHSL
+	End
+	Method UseHSL:Void(useHSL:Bool) Property
+		Self.useHSL = useHSL
 	End
 	
 	' particleImage
@@ -877,7 +877,7 @@ Public
 		Self.maxEndRed = red
 		Self.redInterpolation = INTERPOLATION_NONE
 		Self.redInterpolationTime = -1
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	Method Green:Int() Property
@@ -891,7 +891,7 @@ Public
 		Self.maxEndGreen = green
 		Self.greenInterpolation = INTERPOLATION_NONE
 		Self.greenInterpolationTime = -1
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	Method Blue:Int() Property
@@ -905,7 +905,7 @@ Public
 		Self.maxEndBlue = blue
 		Self.blueInterpolation = INTERPOLATION_NONE
 		Self.blueInterpolationTime = -1
-		Self.useHSB = False
+		Self.useHSL = False
 	End
 	
 	Method Alpha:Float() Property
@@ -932,7 +932,7 @@ Public
 		Self.maxEndHue = hue
 		Self.hueInterpolation = INTERPOLATION_NONE
 		Self.hueInterpolationTime = -1
-		Self.useHSB = True
+		Self.useHSL = True
 	End
 	
 	Method Saturation:Float() Property
@@ -946,21 +946,21 @@ Public
 		Self.maxEndSaturation = saturation
 		Self.saturationInterpolation = INTERPOLATION_NONE
 		Self.saturationInterpolationTime = -1
-		Self.useHSB = True
+		Self.useHSL = True
 	End
 	
-	Method Brightness:Float() Property
-		Return minStartBrightness
+	Method Luminance:Float() Property
+		Return minStartLuminance
 	End
-	Method Brightness:Void(brightness:Float) Property
-		brightness = Min(Max(brightness,0.0),1.0)
-		Self.minStartBrightness = brightness
-		Self.maxStartBrightness = brightness
-		Self.minEndBrightness = brightness
-		Self.maxEndBrightness = brightness
-		Self.brightnessInterpolation = INTERPOLATION_NONE
-		Self.brightnessInterpolationTime = -1
-		Self.useHSB = True
+	Method Luminance:Void(luminance:Float) Property
+		luminance = Min(Max(luminance,0.0),1.0)
+		Self.minStartLuminance = luminance
+		Self.maxStartLuminance = luminance
+		Self.minEndLuminance = luminance
+		Self.maxEndLuminance = luminance
+		Self.luminanceInterpolation = INTERPOLATION_NONE
+		Self.luminanceInterpolationTime = -1
+		Self.useHSL = True
 	End
 	
 ' Convenience properties for interpolated colours
@@ -971,7 +971,7 @@ Public
 		startRed = Min(Max(startRed,0),255)
 		Self.minStartRed = startRed
 		Self.maxStartRed = startRed
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then
 			redInterpolation = INTERPOLATION_LINEAR
 			redInterpolationTime = -1
@@ -985,7 +985,7 @@ Public
 		startGreen = Min(Max(startGreen,0),255)
 		Self.minStartGreen = startGreen
 		Self.maxStartGreen = startGreen
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then
 			greenInterpolation = INTERPOLATION_LINEAR
 			greenInterpolationTime = -1
@@ -999,7 +999,7 @@ Public
 		startBlue = Min(Max(startBlue,0),255)
 		Self.minStartBlue = startBlue
 		Self.maxStartBlue = startBlue
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then
 			blueInterpolation = INTERPOLATION_LINEAR
 			blueInterpolationTime = -1
@@ -1026,7 +1026,7 @@ Public
 		endRed = Min(Max(endRed,0),255)
 		Self.minEndRed = endRed
 		Self.maxEndRed = endRed
-		Self.useHSB = False
+		Self.useHSL = False
 		If redInterpolation = INTERPOLATION_NONE Then
 			redInterpolation = INTERPOLATION_LINEAR
 			redInterpolationTime = -1
@@ -1040,7 +1040,7 @@ Public
 		endGreen = Min(Max(endGreen,0),255)
 		Self.minEndGreen = endGreen
 		Self.maxEndGreen = endGreen
-		Self.useHSB = False
+		Self.useHSL = False
 		If greenInterpolation = INTERPOLATION_NONE Then
 			greenInterpolation = INTERPOLATION_LINEAR
 			greenInterpolationTime = -1
@@ -1054,7 +1054,7 @@ Public
 		endBlue = Min(Max(endBlue,0),255)
 		Self.minEndBlue = endBlue
 		Self.maxEndBlue = endBlue
-		Self.useHSB = False
+		Self.useHSL = False
 		If blueInterpolation = INTERPOLATION_NONE Then
 			blueInterpolation = INTERPOLATION_LINEAR
 			blueInterpolationTime = -1
@@ -1081,7 +1081,7 @@ Public
 		startHue = Min(Max(startHue,0.0),1.0)
 		Self.minStartHue = startHue
 		Self.maxStartHue = startHue
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then
 			hueInterpolation = INTERPOLATION_LINEAR
 			hueInterpolationTime = -1
@@ -1095,24 +1095,24 @@ Public
 		startSaturation = Min(Max(startSaturation,0.0),1.0)
 		Self.minStartSaturation = startSaturation
 		Self.maxStartSaturation = startSaturation
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then
 			saturationInterpolation = INTERPOLATION_LINEAR
 			saturationInterpolationTime = -1
 		End
 	End
 	
-	Method StartBrightness:Float() Property
-		Return minStartBrightness
+	Method StartLuminance:Float() Property
+		Return minStartLuminance
 	End
-	Method StartBrightness:Void(startBrightness:Float) Property
-		startBrightness = Min(Max(startBrightness,0.0),1.0)
-		Self.minStartBrightness = startBrightness
-		Self.maxStartBrightness = startBrightness
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then
-			brightnessInterpolation = INTERPOLATION_LINEAR
-			brightnessInterpolationTime = -1
+	Method StartLuminance:Void(startLuminance:Float) Property
+		startLuminance = Min(Max(startLuminance,0.0),1.0)
+		Self.minStartLuminance = startLuminance
+		Self.maxStartLuminance = startLuminance
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then
+			luminanceInterpolation = INTERPOLATION_LINEAR
+			luminanceInterpolationTime = -1
 		End
 	End
 	
@@ -1123,7 +1123,7 @@ Public
 		endHue = Min(Max(endHue,0.0),1.0)
 		Self.minEndHue = endHue
 		Self.maxEndHue = endHue
-		Self.useHSB = True
+		Self.useHSL = True
 		If hueInterpolation = INTERPOLATION_NONE Then
 			hueInterpolation = INTERPOLATION_LINEAR
 			hueInterpolationTime = -1
@@ -1137,24 +1137,24 @@ Public
 		endSaturation = Min(Max(endSaturation,0.0),1.0)
 		Self.minEndSaturation = endSaturation
 		Self.maxEndSaturation = endSaturation
-		Self.useHSB = True
+		Self.useHSL = True
 		If saturationInterpolation = INTERPOLATION_NONE Then
 			saturationInterpolation = INTERPOLATION_LINEAR
 			saturationInterpolationTime = -1
 		End
 	End
 	
-	Method EndBrightness:Float() Property
-		Return minEndBrightness
+	Method EndLuminance:Float() Property
+		Return minEndLuminance
 	End
-	Method EndBrightness:Void(endBrightness:Float) Property
-		endBrightness = Min(Max(endBrightness,0.0),1.0)
-		Self.minEndBrightness = endBrightness
-		Self.maxEndBrightness = endBrightness
-		Self.useHSB = True
-		If brightnessInterpolation = INTERPOLATION_NONE Then
-			brightnessInterpolation = INTERPOLATION_LINEAR
-			brightnessInterpolationTime = -1
+	Method EndLuminance:Void(endLuminance:Float) Property
+		endLuminance = Min(Max(endLuminance,0.0),1.0)
+		Self.minEndLuminance = endLuminance
+		Self.maxEndLuminance = endLuminance
+		Self.useHSL = True
+		If luminanceInterpolation = INTERPOLATION_NONE Then
+			luminanceInterpolation = INTERPOLATION_LINEAR
+			luminanceInterpolationTime = -1
 		End
 	End
 	
@@ -1212,7 +1212,7 @@ Public
 			blueInterpolation = INTERPOLATION_NONE
 		End
 		
-		useHSB = False
+		useHSL = False
 	End
 	
 	Method SetParticleRGB:Void(red:Int, green:Int, blue:Int)
@@ -1235,17 +1235,17 @@ Public
 		minEndBlue = blue
 		maxEndBlue = blue
 		blueInterpolation = INTERPOLATION_NONE
-		useHSB = False
+		useHSL = False
 	End
 	
-	Method SetParticleHSBInterpolated:Void(startHue:Float, startSaturation:Float, startBrightness:Float, endHue:Float, endSaturation:Float, endBrightness:Float)
+	Method SetParticleHSLInterpolated:Void(startHue:Float, startSaturation:Float, startLuminance:Float, endHue:Float, endSaturation:Float, endLuminance:Float)
 		' clamp 0.0-1.0
 		startHue = Min(Max(startHue,0.0),1.0)
 		startSaturation = Min(Max(startSaturation,0.0),1.0)
-		startBrightness = Min(Max(startBrightness,0.0),1.0)
+		startLuminance = Min(Max(startLuminance,0.0),1.0)
 		endHue = Min(Max(endHue,0.0),1.0)
 		endSaturation = Min(Max(endSaturation,0.0),1.0)
-		endBrightness = Min(Max(endBrightness,0.0),1.0)
+		endLuminance = Min(Max(endLuminance,0.0),1.0)
 		minStartHue = startHue
 		maxStartHue = startHue
 		minEndHue = endHue
@@ -1268,25 +1268,25 @@ Public
 			saturationInterpolation = INTERPOLATION_NONE
 		End
 		
-		minStartBrightness = startBrightness
-		maxStartBrightness = startBrightness
-		minEndBrightness = endBrightness
-		maxEndBrightness = endBrightness
-		If startBrightness <> endBrightness Then
-			brightnessInterpolation = INTERPOLATION_LINEAR
-			brightnessInterpolationTime = -1
+		minStartLuminance = startLuminance
+		maxStartLuminance = startLuminance
+		minEndLuminance = endLuminance
+		maxEndLuminance = endLuminance
+		If startLuminance <> endLuminance Then
+			luminanceInterpolation = INTERPOLATION_LINEAR
+			luminanceInterpolationTime = -1
 		Else
-			brightnessInterpolation = INTERPOLATION_NONE
+			luminanceInterpolation = INTERPOLATION_NONE
 		End
 		
-		useHSB = True
+		useHSL = True
 	End
 	
-	Method SetParticleHSB:Void(hue:Float, saturation:Float, brightness:Float)
+	Method SetParticleHSL:Void(hue:Float, saturation:Float, luminance:Float)
 		' clamp 0.0-1.0
 		hue = Min(Max(hue,0.0),1.0)
 		saturation = Min(Max(saturation,0.0),1.0)
-		brightness = Min(Max(brightness,0.0),1.0)
+		luminance = Min(Max(luminance,0.0),1.0)
 		minStartHue = hue
 		maxStartHue = hue
 		minEndHue = hue
@@ -1297,12 +1297,12 @@ Public
 		minEndSaturation = saturation
 		maxEndSaturation = saturation
 		saturationInterpolation = INTERPOLATION_NONE
-		minStartBrightness = brightness
-		maxStartBrightness = brightness
-		minEndBrightness = brightness
-		maxEndBrightness = brightness
-		brightnessInterpolation = INTERPOLATION_NONE
-		useHSB = True
+		minStartLuminance = luminance
+		maxStartLuminance = luminance
+		minEndLuminance = luminance
+		maxEndLuminance = luminance
+		luminanceInterpolation = INTERPOLATION_NONE
+		useHSL = True
 	End
 	
 	Method SetParticleAlpha:Void(alpha:Float, time:Int=-1)
@@ -1445,8 +1445,8 @@ Public
 			group.particleImage[index] = particleImage
 			
 			' colours
-			group.useHSB[index] = useHSB
-			If Not useHSB Then
+			group.useHSL[index] = useHSL
+			If Not useHSL Then
 				' start colours
 				If minStartRed <> maxStartRed Then
 					group.startRed[index] = Max(0,Min(255,Int(minStartRed + Rnd() * (maxStartRed-minStartRed))))
@@ -1491,7 +1491,7 @@ Public
 				Else
 					group.redInterpolation[index] = redInterpolation
 					group.redInterpolationTime[index] = redInterpolationTime
-					If group.redInterpolationTime[index] < 0 Then group.redInterpolationTime[index] = group.life[index]
+					If group.redInterpolationTime[index] <= 0 Then group.redInterpolationTime[index] = group.life[index]
 					group.redInterpolationTimeInv[index] = 1 / group.redInterpolationTime[index]
 				End
 				If group.startGreen[index] = group.endGreen[index] Then
@@ -1499,7 +1499,7 @@ Public
 				Else
 					group.greenInterpolation[index] = greenInterpolation
 					group.greenInterpolationTime[index] = greenInterpolationTime
-					If group.greenInterpolationTime[index] < 0 Then group.greenInterpolationTime[index] = group.life[index]
+					If group.greenInterpolationTime[index] <= 0 Then group.greenInterpolationTime[index] = group.life[index]
 					group.greenInterpolationTimeInv[index] = 1 / group.greenInterpolationTime[index]
 				End
 				If group.startBlue[index] = group.endBlue[index] Then
@@ -1507,46 +1507,46 @@ Public
 				Else
 					group.blueInterpolation[index] = blueInterpolation
 					group.blueInterpolationTime[index] = blueInterpolationTime
-					If group.blueInterpolationTime[index] < 0 Then group.blueInterpolationTime[index] = group.life[index]
+					If group.blueInterpolationTime[index] <= 0 Then group.blueInterpolationTime[index] = group.life[index]
 					group.blueInterpolationTimeInv[index] = 1 / group.blueInterpolationTime[index]
 				End
 			Else
 				' start colours
 				If minStartHue <> maxStartHue Then
-					group.startHue[index] = Max(1.0,Min(1.0,minStartHue + Rnd() * (maxStartHue-minStartHue)))
+					group.startHue[index] = Max(0.0,Min(1.0,minStartHue + Rnd() * (maxStartHue-minStartHue)))
 				Else
 					group.startHue[index] = minStartHue
 				End
 				If minStartSaturation <> maxStartSaturation Then
-					group.startSaturation[index] = Max(1.0,Min(1.0,minStartSaturation + Rnd() * (maxStartHue-minStartSaturation)))
+					group.startSaturation[index] = Max(0.0,Min(1.0,minStartSaturation + Rnd() * (maxStartHue-minStartSaturation)))
 				Else
 					group.startSaturation[index] = minStartSaturation
 				End
-				If minStartBrightness <> maxStartBrightness Then
-					group.startBrightness[index] = Max(1.0,Min(1.0,minStartBrightness + Rnd() * (maxStartBrightness-minStartBrightness)))
+				If minStartLuminance <> maxStartLuminance Then
+					group.startLuminance[index] = Max(0.0,Min(1.0,minStartLuminance + Rnd() * (maxStartLuminance-minStartLuminance)))
 				Else
-					group.startBrightness[index] = minStartBrightness
+					group.startLuminance[index] = minStartLuminance
 				End
 				
 				group.hue[index] = group.startHue[index]
 				group.saturation[index] = group.startSaturation[index]
-				group.brightness[index] = group.startBrightness[index]
+				group.luminance[index] = group.startLuminance[index]
 				
 				' end colours
 				If minEndHue <> maxEndHue Then
-					group.endHue[index] = Max(1.0,Min(1.0,minEndHue + Rnd() * (maxEndHue-minEndHue)))
+					group.endHue[index] = Max(0.0,Min(1.0,minEndHue + Rnd() * (maxEndHue-minEndHue)))
 				Else
 					group.endHue[index] = minEndHue
 				End
 				If minEndSaturation <> maxEndSaturation Then
-					group.endSaturation[index] = Max(1.0,Min(1.0,minEndSaturation + Rnd() * (maxEndHue-minEndSaturation)))
+					group.endSaturation[index] = Max(0.0,Min(1.0,minEndSaturation + Rnd() * (maxEndHue-minEndSaturation)))
 				Else
 					group.endSaturation[index] = minEndSaturation
 				End
-				If minEndBrightness <> maxEndBrightness Then
-					group.endBrightness[index] = Max(1.0,Min(1.0,minEndBrightness + Rnd() * (maxEndBrightness-minEndBrightness)))
+				If minEndLuminance <> maxEndLuminance Then
+					group.endLuminance[index] = Max(0.0,Min(1.0,minEndLuminance + Rnd() * (maxEndLuminance-minEndLuminance)))
 				Else
-					group.endBrightness[index] = minEndBrightness
+					group.endLuminance[index] = minEndLuminance
 				End
 				
 				' interpolation
@@ -1555,7 +1555,7 @@ Public
 				Else
 					group.hueInterpolation[index] = hueInterpolation
 					group.hueInterpolationTime[index] = hueInterpolationTime
-					If group.hueInterpolationTime[index] < 1.0 Then group.hueInterpolationTime[index] = group.life[index]
+					If group.hueInterpolationTime[index] <= 0.0 Then group.hueInterpolationTime[index] = group.life[index]
 					group.hueInterpolationTimeInv[index] = 1 / group.hueInterpolationTime[index]
 				End
 				If group.startSaturation[index] = group.endSaturation[index] Then
@@ -1563,20 +1563,20 @@ Public
 				Else
 					group.saturationInterpolation[index] = saturationInterpolation
 					group.saturationInterpolationTime[index] = saturationInterpolationTime
-					If group.saturationInterpolationTime[index] < 1.0 Then group.saturationInterpolationTime[index] = group.life[index]
+					If group.saturationInterpolationTime[index] <= 0.0 Then group.saturationInterpolationTime[index] = group.life[index]
 					group.saturationInterpolationTimeInv[index] = 1 / group.saturationInterpolationTime[index]
 				End
-				If group.startBrightness[index] = group.endBrightness[index] Then
-					group.brightnessInterpolation[index] = INTERPOLATION_NONE
+				If group.startLuminance[index] = group.endLuminance[index] Then
+					group.luminanceInterpolation[index] = INTERPOLATION_NONE
 				Else
-					group.brightnessInterpolation[index] = brightnessInterpolation
-					group.brightnessInterpolationTime[index] = brightnessInterpolationTime
-					If group.brightnessInterpolationTime[index] < 1.0 Then group.brightnessInterpolationTime[index] = group.life[index]
-					group.brightnessInterpolationTimeInv[index] = 1 / group.brightnessInterpolationTime[index]
+					group.luminanceInterpolation[index] = luminanceInterpolation
+					group.luminanceInterpolationTime[index] = luminanceInterpolationTime
+					If group.luminanceInterpolationTime[index] <= 0.0 Then group.luminanceInterpolationTime[index] = group.life[index]
+					group.luminanceInterpolationTimeInv[index] = 1 / group.luminanceInterpolationTime[index]
 				End
 			End
 			
-			' alpha is independent of RGB/HSB
+			' alpha is independent of RGB/HSL
 			If minStartAlpha <> maxStartAlpha Then
 				group.startAlpha[index] = Max(0.0,Min(1.0,minStartAlpha + Rnd() * (maxStartAlpha-minStartAlpha)))
 			Else
@@ -1593,7 +1593,7 @@ Public
 			Else
 				group.alphaInterpolation[index] = alphaInterpolation
 				group.alphaInterpolationTime[index] = alphaInterpolationTime
-				If group.alphaInterpolationTime[index] < 0 Then group.alphaInterpolationTime[index] = group.life[index]
+				If group.alphaInterpolationTime[index] <= 0 Then group.alphaInterpolationTime[index] = group.life[index]
 				group.alphaInterpolationTimeInv[index] = 1 / group.alphaInterpolationTime[index]
 			End
 		Next
@@ -1641,17 +1641,17 @@ Public
 		If node.HasAttribute("GreenInterpolationTime") Then GreenInterpolationTime = Float(node.GetAttribute("GreenInterpolationTime"))
 		If node.HasAttribute("BlueInterpolationTime")  Then BlueInterpolationTime  = Float(node.GetAttribute("BlueInterpolationTime"))
 		If node.HasAttribute("AlphaInterpolationTime") Then AlphaInterpolationTime = Float(node.GetAttribute("AlphaInterpolationTime"))
-		' HSB convenience colour properties
+		' HSL convenience colour properties
 		If node.HasAttribute("Hue")             Then Hue             = Float(node.GetAttribute("Hue"))
 		If node.HasAttribute("Saturation")      Then Saturation      = Float(node.GetAttribute("Saturation"))
-		If node.HasAttribute("Brightness")      Then Brightness      = Float(node.GetAttribute("Brightness"))
+		If node.HasAttribute("Luminance")      Then Luminance      = Float(node.GetAttribute("Luminance"))
 		If node.HasAttribute("StartHue")        Then StartHue        = Float(node.GetAttribute("StartHue"))
 		If node.HasAttribute("StartSaturation") Then StartSaturation = Float(node.GetAttribute("StartSaturation"))
-		If node.HasAttribute("StartBrightness") Then StartBrightness = Float(node.GetAttribute("StartBrightness"))
+		If node.HasAttribute("StartLuminance") Then StartLuminance = Float(node.GetAttribute("StartLuminance"))
 		If node.HasAttribute("EndHue")          Then EndHue          = Float(node.GetAttribute("EndHue"))
 		If node.HasAttribute("EndSaturation")   Then EndSaturation   = Float(node.GetAttribute("EndSaturation"))
-		If node.HasAttribute("EndBrightness")   Then EndBrightness   = Float(node.GetAttribute("EndBrightness"))
-		' HSB direct colour properties
+		If node.HasAttribute("EndLuminance")   Then EndLuminance   = Float(node.GetAttribute("EndLuminance"))
+		' HSL direct colour properties
 		If node.HasAttribute("MinStartHue")        Then MinStartHue        = Float(node.GetAttribute("MinStartHue"))
 		If node.HasAttribute("MaxStartHue")        Then MaxStartHue        = Float(node.GetAttribute("MaxStartHue"))
 		If node.HasAttribute("MinEndHue")          Then MinEndHue          = Float(node.GetAttribute("MinEndHue"))
@@ -1660,17 +1660,17 @@ Public
 		If node.HasAttribute("MaxStartSaturation") Then MaxStartSaturation = Float(node.GetAttribute("MaxStartSaturation"))
 		If node.HasAttribute("MinEndSaturation")   Then MinEndSaturation   = Float(node.GetAttribute("MinEndSaturation"))
 		If node.HasAttribute("MaxEndSaturation")   Then MaxEndSaturation   = Float(node.GetAttribute("MaxEndSaturation"))
-		If node.HasAttribute("MinStartBrightness") Then MinStartBrightness = Float(node.GetAttribute("MinStartBrightness"))
-		If node.HasAttribute("MaxStartBrightness") Then MaxStartBrightness = Float(node.GetAttribute("MaxStartBrightness"))
-		If node.HasAttribute("MinEndBrightness")   Then MinEndBrightness   = Float(node.GetAttribute("MinEndBrightness"))
-		If node.HasAttribute("MaxEndBrightness")   Then MaxEndBrightness   = Float(node.GetAttribute("MaxEndBrightness"))
-		' HSB interpolation
+		If node.HasAttribute("MinStartLuminance") Then MinStartLuminance = Float(node.GetAttribute("MinStartLuminance"))
+		If node.HasAttribute("MaxStartLuminance") Then MaxStartLuminance = Float(node.GetAttribute("MaxStartLuminance"))
+		If node.HasAttribute("MinEndLuminance")   Then MinEndLuminance   = Float(node.GetAttribute("MinEndLuminance"))
+		If node.HasAttribute("MaxEndLuminance")   Then MaxEndLuminance   = Float(node.GetAttribute("MaxEndLuminance"))
+		' HSL interpolation
 		If node.HasAttribute("HueInterpolation")            Then HueInterpolation            = InterpolationFromString(node.GetAttribute("HueInterpolation"))
 		If node.HasAttribute("SaturationInterpolation")     Then SaturationInterpolation     = InterpolationFromString(node.GetAttribute("SaturationInterpolation"))
-		If node.HasAttribute("BrightnessInterpolation")     Then BrightnessInterpolation     = InterpolationFromString(node.GetAttribute("BrightnessInterpolation"))
+		If node.HasAttribute("LuminanceInterpolation")     Then LuminanceInterpolation     = InterpolationFromString(node.GetAttribute("LuminanceInterpolation"))
 		If node.HasAttribute("HueInterpolationTime")        Then HueInterpolationTime        = Float(node.GetAttribute("HueInterpolationTime"))
 		If node.HasAttribute("SaturationInterpolationTime") Then SaturationInterpolationTime = Float(node.GetAttribute("SaturationInterpolationTime"))
-		If node.HasAttribute("BrightnessInterpolationTime") Then BrightnessInterpolationTime = Float(node.GetAttribute("BrightnessInterpolationTime"))
+		If node.HasAttribute("LuminanceInterpolationTime") Then LuminanceInterpolationTime = Float(node.GetAttribute("LuminanceInterpolationTime"))
 		' polar velocity
 		If node.HasAttribute("PolarVelocityAngle")              Then PolarVelocityAngle              = Float(node.GetAttribute("PolarVelocityAngle"))
 		If node.HasAttribute("PolarVelocityAngleRadians")       Then PolarVelocityAngleRadians       = Float(node.GetAttribute("PolarVelocityAngleRadians"))
@@ -1723,7 +1723,7 @@ Private
 	Field rotation:Float[]
 	Field rotationSpeed:Float[]
 	Field scale:Float[]
-	Field useHSB:Bool[]
+	Field useHSL:Bool[]
 
 	Field red:Int[]
 	Field green:Int[]
@@ -1757,15 +1757,15 @@ Private
 	
 	Field hue:Float[]
 	Field saturation:Float[]
-	Field brightness:Float[]
+	Field luminance:Float[]
 	
 	Field startHue:Float[]
 	Field startSaturation:Float[]
-	Field startBrightness:Float[]
+	Field startLuminance:Float[]
 	
 	Field endHue:Float[]
 	Field endSaturation:Float[]
-	Field endBrightness:Float[]
+	Field endLuminance:Float[]
 	
 	Field hueInterpolation:Int[]
 	Field hueInterpolationTime:Float[]
@@ -1773,9 +1773,9 @@ Private
 	Field saturationInterpolation:Int[]
 	Field saturationInterpolationTime:Float[]
 	Field saturationInterpolationTimeInv:Float[]
-	Field brightnessInterpolation:Int[]
-	Field brightnessInterpolationTime:Float[]
-	Field brightnessInterpolationTimeInv:Float[]
+	Field luminanceInterpolation:Int[]
+	Field luminanceInterpolationTime:Float[]
+	Field luminanceInterpolationTimeInv:Float[]
 	
 	Field life:Float[]
 	Field alive:Bool[]
@@ -1817,7 +1817,7 @@ Private
 		polarVelocityAmplitude = New Float[maxParticles]
 		polarVelocityAngle = New Float[maxParticles]
 		usePolar = New Bool[maxParticles]
-		useHSB = New Bool[maxParticles]
+		useHSL = New Bool[maxParticles]
 		sourceEmitter = New Emitter[maxParticles]
 		life = New Float[maxParticles]
 		alive = New Bool[maxParticles]
@@ -1857,15 +1857,15 @@ Private
 		
 		hue = New Float[maxParticles]
 		saturation = New Float[maxParticles]
-		brightness = New Float[maxParticles]
+		luminance = New Float[maxParticles]
 
 		startHue = New Float[maxParticles]
 		startSaturation = New Float[maxParticles]
-		startBrightness = New Float[maxParticles]
+		startLuminance = New Float[maxParticles]
 		
 		endHue = New Float[maxParticles]
 		endSaturation = New Float[maxParticles]
-		endBrightness = New Float[maxParticles]
+		endLuminance = New Float[maxParticles]
 		
 		hueInterpolation = New Int[maxParticles]
 		hueInterpolationTime = New Float[maxParticles]
@@ -1873,9 +1873,9 @@ Private
 		saturationInterpolation = New Int[maxParticles]
 		saturationInterpolationTime = New Float[maxParticles]
 		saturationInterpolationTimeInv = New Float[maxParticles]
-		brightnessInterpolation = New Int[maxParticles]
-		brightnessInterpolationTime = New Float[maxParticles]
-		brightnessInterpolationTimeInv = New Float[maxParticles]
+		luminanceInterpolation = New Int[maxParticles]
+		luminanceInterpolationTime = New Float[maxParticles]
+		luminanceInterpolationTimeInv = New Float[maxParticles]
 
 		reversePointer = New Int[maxParticles]
 		alivePointers = New Int[maxParticles]
@@ -1954,9 +1954,18 @@ Public
 					For Local fi:Int = 0 Until forceCount
 						If Force(forcesArray[fi]).enabled Then
 							Local f:Force = Force(forcesArray[fi])
-							f.Calculate(x[index], y[index])
-							velocityX[index] += f.outDX * delta
-							velocityY[index] += f.outDY * delta
+							' set particle info in the force
+							f.partX = x[index]
+							f.partY = y[index]
+							f.partVX = velocityX[index]
+							f.partVY = velocityY[index]
+							' apply the force
+							f.Apply(delta)
+							' read it back
+							x[index] = f.partX
+							y[index] = f.partY
+							velocityX[index] = f.partVX
+							velocityY[index] = f.partVY
 						End
 					Next
 					' TODO: terminal velocity
@@ -1974,7 +1983,7 @@ Public
 					rotation[index] += 2*PI
 				End
 				' interpolate colours
-				If Not useHSB[index] Then
+				If Not useHSL[index] Then
 					If startRed[index] <> endRed[index] And life[index] < redInterpolationTime[index] Then
 						red[index] = Int(Interpolate(redInterpolation[index], startRed[index], endRed[index], 1 - life[index]*redInterpolationTimeInv[index]))
 					End
@@ -1991,8 +2000,8 @@ Public
 					If startSaturation[index] <> endSaturation[index] And life[index] < saturationInterpolationTime[index] Then
 						saturation[index] = Interpolate(saturationInterpolation[index], startSaturation[index], endSaturation[index], 1 - life[index]*saturationInterpolationTimeInv[index])
 					End
-					If startBrightness[index] <> endBrightness[index] And life[index] < brightnessInterpolationTime[index] Then
-						brightness[index] = Interpolate(brightnessInterpolation[index], startBrightness[index], endBrightness[index], 1 - life[index]*brightnessInterpolationTimeInv[index])
+					If startLuminance[index] <> endLuminance[index] And life[index] < luminanceInterpolationTime[index] Then
+						luminance[index] = Interpolate(luminanceInterpolation[index], startLuminance[index], endLuminance[index], 1 - life[index]*luminanceInterpolationTimeInv[index])
 					End
 					UpdateRGB(index)
 				End
@@ -2045,7 +2054,7 @@ Public
 	End
 	
 	Method UpdateRGB:Void(index:Int)
-		HSBtoRGB(hue[index], saturation[index], brightness[index], rgbArray)
+		HSLtoRGB(hue[index], saturation[index], luminance[index], rgbArray)
 		red[index] = rgbArray[0]
 		green[index] = rgbArray[1]
 		blue[index] = rgbArray[2]
@@ -2136,20 +2145,16 @@ Public
 		' read the forces
 		Local children:ArrayList<XMLElement> = node.Children
 		For Local i:Int = 0 Until children.Size
-			'If children.Get(i).Name = "forces" Then
-			'	For Local j:Int = 0 Until children.Get(i).Children.Size
-					Local forceNode:XMLElement = children.Get(i)'.Children.Get(j)
-					If forceNode.Name = "constantforce" Then
-						' constant
-						Local cf:ConstantForce = New ConstantForce(forceNode)
-						forces.Add(cf)
-					ElseIf forceNode.Name = "pointforce" Then
-						' point
-						Local pf:PointForce = New PointForce(forceNode)
-						forces.Add(pf)
-					End
-			'	Next
-			'End
+			Local forceNode:XMLElement = children.Get(i)
+			If forceNode.Name = "constantforce" Then
+				' constant
+				Local cf:ConstantForce = New ConstantForce(forceNode)
+				forces.Add(cf)
+			ElseIf forceNode.Name = "pointforce" Then
+				' point
+				Local pf:PointForce = New PointForce(forceNode)
+				forces.Add(pf)
+			End
 		Next
 	End
 End
@@ -2158,8 +2163,10 @@ Class Force Implements IPSReader Abstract
 Private
 	Field enabled:Bool = True
 	
-	Field outDX:Float
-	Field outDY:Float
+	Field partX:Float
+	Field partY:Float
+	Field partVX:Float
+	Field partVY:Float
 	
 	Field name:String
 	
@@ -2185,7 +2192,7 @@ Public
 		If node.HasAttribute("Enabled") Then Enabled = Bool(node.GetAttribute("Enabled"))
 	End
 	
-	Method Calculate:Void(x:Float, y:Float) Abstract
+	Method Apply:Void(delta:Float) Abstract
 End
 
 Class ConstantForce Extends Force
@@ -2199,7 +2206,6 @@ Public
 	End
 	Method X:Void(x:Float) Property
 		Self.x = x
-		Self.outDX = x
 	End
 	
 	Method Y:Float() Property
@@ -2207,22 +2213,20 @@ Public
 	End
 	Method Y:Void(y:Float) Property
 		Self.y = y
-		Self.outDY = y
 	End
 	
 	Method New(x:Float, y:Float)
 		Self.x = x
 		Self.y = y
-		Self.outDX = x
-		Self.outDY = y
 	End
 
 	Method New(node:XMLElement)
 		ReadXML(node)
 	End
 	
-	Method Calculate:Void(x:Float, y:Float)
-		' doesn't need to do anything
+	Method Apply:Void(delta:Float)
+		partVX += x * delta
+		partVY += y * delta
 	End
 	
 	Method ReadXML:Void(node:XMLElement)
@@ -2270,17 +2274,14 @@ Public
 		ReadXML(node)
 	End
 	
-	Method Calculate:Void(x:Float, y:Float)
+	Method Apply:Void(delta:Float)
 		' check if the particle is at the same point (yes, it happens, and the whole system dies due to div by 0)
-		If x = Self.x And y = Self.y Then
-			outDX = 0
-			outDY = 0
-			Return
-		End
-		Local length:Float = Sqrt((x-Self.x)*(x-Self.x) + (y-Self.y)*(y-Self.y))
+		If partX = Self.x And partY = Self.y Then Return
+		
+		Local length:Float = Sqrt((partX-Self.x)*(partX-Self.x) + (partY-Self.y)*(partY-Self.y))
 		Local scale:Float = acceleration / length
-		outDX = (Self.x-x) * scale
-		outDY = (Self.y-y) * scale
+		partVX += (Self.x-partX) * scale * delta
+		partVY += (Self.y-partY) * scale * delta
 	End
 	
 	Method ReadXML:Void(node:XMLElement)

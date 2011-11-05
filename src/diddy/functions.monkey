@@ -421,100 +421,108 @@ Function InterpolationFromString:Int(interp:String)
 	If interp = "halfcosine" Then Return INTERPOLATION_HALF_COSINE
 End
 
-' colour conversions (hsb is range 0-1, return is RGB as a single int)
-' Monkey conversion of java.awt.Color.HSBtoRGB
-Function HSBtoRGB:Int(hue:Float, saturation:Float, brightness:Float, rgbArray:Int[] = [])
-	Local r:Int = 0, g:Int = 0, b:Int = 0
-    If saturation = 0 Then
-		r = Int(brightness * 255.0 + 0.5)
-	    g = r
-		b = r
+' colour conversions (hsl is range 0-1, return is RGB as a single int)
+' Monkey conversion of http://www.geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm
+Function HSLtoRGB:Int(hue:Float, saturation:Float, luminance:Float, rgbArray:Int[] = [])
+	Local r:Float = luminance, g:Float = luminance, b:Float = luminance
+	Local v:Float = 0
+	If luminance <= 0.5 Then
+		v = luminance * (1.0 + saturation)
 	Else
-		Local h:Float = (hue - Float(Floor(hue))) * 6.0
-		Local f:Float = h - Float(Floor(h))
-		Local p:Float = brightness * (1.0 - saturation)
-		Local q:Float = brightness * (1.0 - saturation * f)
-		Local t:Float = brightness * (1.0 - (saturation * (1.0 - f)))
-		Select Int(h)
+		v = luminance + saturation - luminance * saturation
+	End
+	If v > 0 Then
+		Local m:Float = luminance + luminance - v
+		Local sv:Float = (v - m) / v
+		hue *= 6
+		Local sextant:Int = Int(hue)
+		Local fract:Float = hue - sextant
+		Local vsf:Float = v * sv * fract
+		Local mid1:Float = m + vsf
+		Local mid2:Float = v - vsf
+		
+		Select sextant
 			Case 0
-				r = Int(brightness * 255.0 + 0.5)
-				g = Int(t * 255.0 + 0.5)
-				b = Int(p * 255.0 + 0.5)
+				r = v
+				g = mid1
+				b = m
 
 			Case 1
-				r = Int(q * 255.0 + 0.5)
-				g = Int(brightness * 255.0 + 0.5)
-				b = Int(p * 255.0 + 0.5)
+				r = mid2
+				g = v
+				b = m
 
 			Case 2
-				r = Int(p * 255.0 + 0.5)
-				g = Int(brightness * 255.0 + 0.5)
-				b = Int(t * 255.0 + 0.5)
+				r = m
+				g = v
+				b = mid1
 
 			Case 3
-				r = Int(p * 255.0 + 0.5)
-				g = Int(q * 255.0 + 0.5)
-				b = Int(brightness * 255.0 + 0.5)
+				r = m
+				g = mid2
+				b = v
 
 			Case 4
-				r = Int(t * 255.0 + 0.5)
-				g = Int(p * 255.0 + 0.5)
-				b = Int(brightness * 255.0 + 0.5)
+				r = mid1
+				g = m
+				b = v
 			
 			Case 5
-				r = Int(brightness * 255.0 + 0.5)
-				g = Int(p * 255.0 + 0.5)
-				b = Int(q * 255.0 + 0.5)
+				r = v
+				g = m
+				b = mid2
 		End
 	End
 	If rgbArray.Length = 3 Then
-		rgbArray[0] = r
-		rgbArray[1] = g
-		rgbArray[2] = b
+		rgbArray[0] = Int(r*255)
+		rgbArray[1] = Int(g*255)
+		rgbArray[2] = Int(b*255)
 	End
-	Return $ff000000 | (r Shl 16) | (g Shl 8) | (b Shl 0)
+	Return $ff000000 | (Int(r*255) Shl 16) | (Int(g*255) Shl 8) | (Int(b*255) Shl 0)
 End
 
-' Monkey conversion of java.awt.Color.RGBtoHSB
-Function RGBtoHSB:Float[](r:Int, g:Int, b:Int, hsbvals:Float[] = [])
-	Local hue:Float, saturation:Float, brightness:Float
-	If hsbvals.Length <> 3 Then hsbvals = New Float[3]
+' colour conversions (rgb is 0-255, return is a float array, reusing the hslvals array if it was big enough)
+' Monkey conversion of http://www.geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm
+Function RGBtoHSL:Float[](red:Int, green:Int, blue:Int, hslvals:Float[] = [])
+	If hslvals.Length <> 3 Then hslvals = New Float[3]
+	Local r:Float = red/255.0, g:Float = green/255.0, b:Float = blue/255.0
+	hslvals[0] = 0
+	hslvals[1] = 0
+	hslvals[2] = 0
 	
-	Local cmax:Int = g
-	If r > g Then cmax = r
-	If b > cmax Then cmax = b
+	' calculate luminance
+	Local v:Float = Max(Max(r,g),b)
+	Local m:Float = Min(Min(r,g),b)
+	hslvals[2] = (m + v) / 2.0
+	' die if it's black
+	If hslvals[2] <= 0 Then Return hslvals
 	
-	Local cmin:Int = g
-	If r < g Then cmin = r
-	If b < cmin Then cmin = b
-
-	brightness = Float(cmax) / 255.0
-	If cmax <> 0 Then
-		saturation = Float(cmax - cmin) / Float(cmax)
+	' precalculate saturation
+	Local vm:Float = v - m
+	hslvals[1] = vm
+	' die if it's grey
+	If hslvals[1] <= 0 Then Return hslvals
+	
+	' finish saturation
+	If hslvals[2] <= 0.5 Then
+		hslvals[1] /= v + m
 	Else
-		saturation = 0
+		hslvals[1] /= 2 - v - m
 	End
 	
-	If saturation = 0 Then
-		hue = 0
+	Local r2:Float = (v - r) / vm
+	Local g2:Float = (v - g) / vm
+	Local b2:Float = (v - b) / vm
+	If r = v Then
+		If g = m Then hslvals[0] = 5 + b2 Else hslvals[0] = 1 - g2
+	ElseIf g = v Then
+		If b = m Then hslvals[0] = 1 + r2 Else hslvals[0] = 3 - b2
 	Else
-		Local redc:Float = Float(cmax - r) / Float(cmax - cmin)
-		Local greenc:Float = Float(cmax - g) / Float(cmax - cmin)
-		Local bluec:Float = Float(cmax - b) / Float(cmax - cmin)
-		If r = cmax Then
-			hue = bluec - greenc
-		ElseIf g = cmax Then
-			hue = 2.0 + redc - bluec
-		Else
-			hue = 4.0 + greenc - redc
-		End
-		hue = hue / 6.0
-		If hue < 0 Then hue += 1.0
+		If r = m Then hslvals[0] = 3 + g2 Else hslvals[0] = 5 - r2
 	End
-	hsbvals[0] = hue
-	hsbvals[1] = saturation
-	hsbvals[2] = brightness
-	return hsbvals;
+	hslvals[0] /= 6.0
+	
+	Return hslvals
 End
 
 ' constants
