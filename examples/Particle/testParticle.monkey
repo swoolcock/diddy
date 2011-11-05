@@ -32,6 +32,7 @@ Class ParticleTestScreen Extends Screen
 	Field emitting:Bool = True
 	Field emitCount:Int = 3
 	Field rendering:Bool = True
+	Field gravity:Bool = True
 	
 	Method New()
 		name = "Particle System Test"
@@ -56,7 +57,7 @@ Class ParticleTestScreen Extends Screen
 		DrawText("Tap top half to toggle emitter, bottom half to toggle rendering",0,20)
 		DrawText("pg.AliveParticles="+pg.AliveParticles,0,35)
 #Else
-		DrawText("Space: toggle emitter, R: toggle rendering",0,20)
+		DrawText("Space: toggle emitter, R: toggle rendering, G: toggle gravity",0,20)
 		DrawText("Hold Shift: Cursor repels, Hold Control: Cursor attracts",0,35)
 		DrawText("Up/Down arrows increase/decrease emit count from 1-100. Current: "+emitCount,0,50)
 		DrawText("pg.AliveParticles="+pg.AliveParticles,0,65)
@@ -76,10 +77,11 @@ Class ParticleTestScreen Extends Screen
 			f.Enabled = False
 		Else
 			pf.Enabled = False
-			f.Enabled = True
+			f.Enabled = gravity
 		End
-	
+		
 		If KeyHit(KEY_SPACE) Then emitting = Not emitting
+		If KeyHit(KEY_G) Then gravity = Not gravity
 		If KeyHit(KEY_R) Then rendering = Not rendering
 		
 		If TouchHit() Then
@@ -90,8 +92,8 @@ Class ParticleTestScreen Extends Screen
 			End
 		End
 		
-		If KeyHit(KEY_UP) Then emitCount+=1
-		If KeyHit(KEY_DOWN) Then emitCount-=1
+		If KeyDown(KEY_UP) Then emitCount+=1
+		If KeyDown(KEY_DOWN) Then emitCount-=1
 		If emitCount < 1 Then emitCount = 1
 		If emitCount > 100 Then emitCount = 100
 		
