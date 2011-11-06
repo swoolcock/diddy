@@ -119,4 +119,12 @@ class diddy
 	{
 		return "";
 	}
+	
+	static int getPixel(int x, int y)
+	{
+		unsigned char pix[4];
+		glReadPixels(x, app->graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
+		// returning ARGB
+		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
+	}
 };

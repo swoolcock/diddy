@@ -36,6 +36,7 @@ Extern
 		Function GetLongitude:String()="diddy::getLongitude"
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy::showAlertDialog"
 		Function GetInputString:String()="diddy::getInputString"
+		Function GetColorPixel:Int(x:Int, y:Int)="diddy::getPixel"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -63,6 +64,7 @@ Extern
 		Function GetLongitude:String()="diddy.getLongitude"
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy.showAlertDialog"
 		Function GetInputString:String()="diddy.getInputString"
+		Function GetColorPixel:Int(x:Int, y:Int)="diddy.getPixel"
 	#End
 	
 	#If TARGET="html5" Then
@@ -107,6 +109,18 @@ Function SetGraphics:Void(w:Int, h:Int)
 	SCREEN_WIDTH = w
 	SCREEN_WIDTH2 = SCREEN_WIDTH / 2
 	SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
+End
+
+Function GetPixel:Int[](x:Int, y:Int)
+	Local colorArr:Int[4]
+	Local color:Int = GetColorPixel(x, y)
+	'Print color
+	colorArr[0] = (color Shr 16) & $ff
+	colorArr[1] = (color Shr 8) & $ff
+	colorArr[2] = color & $ff
+	colorArr[3] = (color Shr 24) & $ff
+
+	Return colorArr
 End
 
 Function ExitApp:Void()

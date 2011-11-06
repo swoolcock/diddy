@@ -23,7 +23,10 @@ class diddy
 	{
 		return gxtkApp.game.app.updateRate;
 	}
-	
+	public static int getPixel(int x, int y)
+	{
+		return 0;
+	}	
 	public static void showMouse()
 	{
 		gxtkApp.game.IsMouseVisible=true;
