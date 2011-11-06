@@ -231,6 +231,16 @@ diddy.getBrowserOS=function(){
 	return BrowserDetect.OS;
 };
 
+diddy.getPixel=function(x, y){
+	var tcanvas=document.getElementById("GameCanvas").getContext("2d")
+	if (tcanvas==null)
+		return 0;
+	var img = tcanvas.getImageData(x, y, 1, 1); 
+	var pix = img.data;
+//	game_console.value = "alpha="+pix[3]+"\n"
+	return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) | pix[2];
+};
+
 
 diddy.hideMouse=function()
 {

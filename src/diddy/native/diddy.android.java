@@ -33,6 +33,51 @@ class diddy
 		}
 	}
 	
+	static int getPixel(int x, int y)
+	{
+		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
+		pixelBuffer.order(ByteOrder.LITTLE_ENDIAN); 
+		GL11 gl = MonkeyGame.app.graphics.gl;
+		if (gl!=null) {
+			gl.glReadPixels((int)x, (int)MonkeyGame.app.graphics.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
+			
+			int red = pixelBuffer.get(0) & 0xff;
+			int green = pixelBuffer.get(1) & 0xff;
+			int blue = pixelBuffer.get(2) & 0xff;
+			int alpha = pixelBuffer.get(3) & 0xff;
+			// returning ARGB
+			return (alpha<<24) | (red<<16) | (green<<8) |  blue;
+		}
+		return 0;
+	}
+	
+	static int getPixel1(int x, int y)
+	{
+		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4); 
+		pixelBuffer.order(ByteOrder.nativeOrder()); 
+		GL11 gl = MonkeyGame.app.graphics.gl;
+		if (gl!=null) {
+			gl.glReadPixels((int)x, (int)MonkeyGame.app.graphics.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
+			
+			int red = pixelBuffer.get(0) &0xff;
+			int green = pixelBuffer.get(1) & 0xff;
+			int blue = pixelBuffer.get(2) & 0xff;
+			int alpha = pixelBuffer.get(3) & 0xff;
+/*			
+			if (red < 0)
+				red += 256;
+			if (green < 0)
+				green += 256;
+			if (blue < 0)
+				blue += 256;
+			if (alpha < 0)
+				alpha += 256;
+	*/			
+			return (alpha<<24) | (red<<16) | (green<<8) |  blue;
+		}
+		return 0;
+	}
+	
 	public static int getUpdateRate()
 	{
 		return MonkeyGame.app.updateRate;

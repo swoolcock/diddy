@@ -2,6 +2,26 @@ import flash.ui.Mouse;
 
 class diddy
 {
+	static public function getPixel(x:int, y:int):int{
+		var alpha:Number = 0;
+		var red:Number = 0;
+		var green:Number = 0;
+		var blue:Number = 0;
+		
+		var bmd:BitmapData = new BitmapData(1, 1);
+		var matrix:Matrix = new Matrix();
+		matrix.translate(-x, -y);
+		bmd.draw(game.stage, matrix);
+		var pixel:uint = bmd.getPixel(0, 0);
+
+		alpha = pixel >> 24 & 0xFF;		
+		red = pixel >> 16 & 0xFF;
+		green = pixel >> 8 & 0xFF;
+		blue = pixel & 0xFF;
+
+		return pixel;//alpha << 24 | red << 16 | green << 8 | blue;
+	}
+
 	static public function systemMillisecs():Number
 	{
 		return (new Date).getTime();
