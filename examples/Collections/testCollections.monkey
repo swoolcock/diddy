@@ -14,7 +14,7 @@ Class Test Implements IComparable
 		Return a - Test(o).a
 	End
 	
-	Method CompareBool:Bool(o:Object)
+	Method Equals:Bool(o:Object)
 		Return Self = o Or a = Test(o).a
 	End
 End
@@ -53,12 +53,8 @@ Function Main:Int()
 	Next
 	
 	'Print(lst.Size)
-	'Print("Testing AbstractList using ArrayList")
+	'Print("Testing IList using ArrayList")
 	'TestLists(New ArrayList<StringObject>, New ArrayList<StringObject>)
-	'Print("Testing AbstractList using LinkedList")
-	'TestLists(New LinkedList<StringObject>, New LinkedList<StringObject>)
-	'Print("Testing AbstractDeque using LinkedList")
-	'TestLinkedList()
 	'TestArrayListSorting()
 	'SpeedComparison()
 	'ArrayListSortingSpeed(10000)
@@ -103,14 +99,14 @@ Function TestLists:Void(l1:ArrayList<StringObject>, l2:ArrayList<StringObject>)
 		Print("value="+so.value)
 	Next
 	
-	Print("Looping on l1 manually with AbstractEnumerator...")
-	Local oe:AbstractEnumerator<StringObject> = l1.Enumerator()
+	Print("Looping on l1 manually with IEnumerator...")
+	Local oe:IEnumerator<StringObject> = l1.Enumerator()
 	While oe.HasNext()
 		Local val:StringObject = oe.NextObject()
 		Print("value="+val.value)
 	End
 	
-	Print("Jumping to end of AbstractEnumerator and looping in reverse...")
+	Print("Jumping to end of IEnumerator and looping in reverse...")
 	oe = l1.Enumerator()
 	oe.Last()
 	While oe.HasPrevious()
@@ -123,7 +119,7 @@ Function TestLists:Void(l1:ArrayList<StringObject>, l2:ArrayList<StringObject>)
 		Print("value="+val.value)
 	End
 	
-	Print("Testing removing items with AbstractEnumerator (forward)...")
+	Print("Testing removing items with IEnumerator (forward)...")
 	Print("We'll remove the item 'test1'")
 	oe = l1.Enumerator()
 	While oe.HasNext()
@@ -143,37 +139,15 @@ Function TestLists:Void(l1:ArrayList<StringObject>, l2:ArrayList<StringObject>)
 	End
 	
 	Print("Testing concurrency checks by removing within an EachIn loop (uncomment to test)...")
-	
+	#Rem
 	For Local so:StringObject = EachIn l1
 		Print("value="+so.value)
 		Print("Manually removing it...")
 		l1.RemoveAt(0)
 		Print("Next call to HasNext should fail.")
 	End
-
+	#End
 End	
-
-Function TestLinkedList:Void()
-	Local ad:LinkedList<StringObject> = New LinkedList<StringObject>
-	ad.AddLast(New StringObject("test1"))
-	ad.AddLast(New StringObject("test2"))
-	ad.AddLast(New StringObject("test3"))
-	ad.AddLast(New StringObject("test4"))
-	ad.AddLast(New StringObject("test5"))
-	Print("size="+ad.Size)
-	ad.RemoveFirst()
-	Print("size="+ad.Size)
-	
-	Local enum:AbstractEnumerator<StringObject> = ad.ObjectEnumerator()
-	While enum.HasNext()
-		Local so:StringObject = enum.NextObject()
-		Print(so.value)
-	End
-	
-	'For Local so:StringObject = EachIn ad
-	'	Print(so.value)
-	'Next
-End
 
 Function TestArrayListSorting:Void()
 	Local al:ArrayList<IntObject> = New ArrayList<IntObject>()
@@ -370,14 +344,3 @@ Function ArrayListSortingSpeed:Void(numToTest:Int=1000)
 		Print(fal.Get(i).value)
 	Next
 End
-
-
-
-
-
-
-
-
-
-
-

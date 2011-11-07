@@ -578,7 +578,7 @@ Public
 	Method Dispose:Void(recursing:Bool = False)
 		' we do an empty check first to save creating an enumerator object
 		If Not children.IsEmpty() Then
-			Local enum:AbstractEnumerator<Component> = children.Enumerator()
+			Local enum:IEnumerator<Component> = children.Enumerator()
 			While enum.HasNext()
 				Local c:Component = enum.NextObject()
 				c.Dispose(True)

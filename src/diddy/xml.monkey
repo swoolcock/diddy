@@ -493,7 +493,7 @@ Public
 	
 	Method Dispose:Void(removeSelf:Bool = True)
 		' dispose children
-		Local en:AbstractEnumerator<XMLElement> = children.Enumerator()
+		Local en:IEnumerator<XMLElement> = children.Enumerator()
 		While en.HasNext()
 			Local element:XMLElement = en.NextObject()
 			element.Dispose(False)
