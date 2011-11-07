@@ -62,18 +62,18 @@ Class GameScreen Extends Screen
 		Next
 
 		SetColor pixel[0], pixel[1], pixel[2]
-		DrawOval 0, 0, 50, 50
+		DrawRect game.mouseX+12, game.mouseY+12, 50, 50
+		SetColor pixel[0], pixel[1], pixel[2]
+		DrawOval game.mouseX+12, game.mouseY+62, 50, 50
+		
 		SetColor 255,255,255
 
-		DrawText "Red   = " + pixel[0], 0, 60
-		DrawText "Green = " + pixel[1], 0, 70
-		DrawText "Blue  = " + pixel[2], 0, 80
+		DrawText "Red   = " + pixel[0], 10, 60
+		DrawText "Green = " + pixel[1], 10, 70
+		DrawText "Blue  = " + pixel[2], 10, 80
 		
 		If MouseDown()
 			pixel = GetPixel(game.mouseX, game.mouseY)
-		'	Print "Red   = " + pixel[0]
-		'	Print "Green = " + pixel[1]
-		'	Print "Blue  = " + pixel[2]
 		End
 	End
 
