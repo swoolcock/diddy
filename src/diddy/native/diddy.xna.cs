@@ -25,6 +25,26 @@ class diddy
 	}
 	public static int getPixel(int x, int y)
 	{
+		if ((x > 0 && y > 0 && x < gxtkApp.game.app.graphics.Width()) && (y < gxtkApp.game.app.graphics.Height()))
+		{
+			Texture2D backBufferData = new Texture2D(
+				gxtkApp.game.app.graphics.device,
+				gxtkApp.game.app.graphics.Width(),
+				gxtkApp.game.app.graphics.Height());
+
+			Rectangle sourceRectangle =	new Rectangle(x, y, 1, 1);
+
+			Color[] retrievedColor = new Color[1];
+
+			backBufferData.GetData<Color>(
+				0,
+				sourceRectangle,
+				retrievedColor,
+				0,
+				1);
+				
+			bb_std_lang.Print("x="+x+",y="+y+" col="+retrievedColor[0].ToString());
+		}
 		return 0;
 	}	
 	public static void showMouse()
