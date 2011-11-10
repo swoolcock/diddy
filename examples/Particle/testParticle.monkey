@@ -117,6 +117,5 @@ Class ParticleTestScreen Extends Screen
 		e = ps.GetEmitter("emit1")
 		e.ParticleImage = speck
 		e2 = ps.GetEmitter("emit2")
-		e.AddDeathEmitter(e2, 0.05)
 	End
 End
