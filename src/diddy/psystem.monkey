@@ -97,11 +97,70 @@ Public
 				Next
 			End
 		Next
-		' go through the emitters and set the groups by name
+		' go through the emitters and set the groups and death emitters by name
 		For Local i:Int = 0 Until emitters.Size
 			Local group:ParticleGroup = GetGroup(emitters.Get(i).groupName)
 			If group <> Null Then emitters.Get(i).Group = group
+			For Local j:Int = 0 Until emitters.Get(i).deathEmitterLinks.Size
+				Local deathEmitter:Emitter = GetEmitter(emitters.Get(i).deathEmitterLinks.Get(j).name)
+				If deathEmitter <> Null Then emitters.Get(i).deathEmitterLinks.Get(j).deathEmitter = deathEmitter
+			Next
 		Next
+	End
+End
+
+Class DeathEmitterLink Implements IPSReader
+Private
+	Field name:String
+	Field chance:Float
+	Field count:Int
+	
+	Field deathEmitter:Emitter
+	
+Public
+	Method Name:String() Property
+		Return name
+	End
+	Method Name:Void(name:String) Property
+		Self.name = name
+	End
+	
+	Method Chance:Float() Property
+		Return chance
+	End
+	Method Chance:Void(chance:Float) Property
+		Self.chance = chance
+	End
+	
+	Method Count:Int() Property
+		Return count
+	End
+	Method Count:Void(count:Int) Property
+		Self.count = count
+	End
+	
+	Method DeathEmitter:Emitter() Property
+		Return deathEmitter
+	End
+	Method DeathEmitter:Void(deathEmitter:Emitter) Property
+		Self.deathEmitter = deathEmitter
+	End
+	
+	Method New(deathEmitter:Emitter, chance:Float, count:Int)
+		Self.deathEmitter = deathEmitter
+		Self.chance = chance
+		Self.count = count
+		Self.name = deathEmitter.Name
+	End
+	
+	Method New(node:XMLElement)
+		ReadXML(node)
+	End
+	
+	Method ReadXML:Void(node:XMLElement)
+		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
+		If node.HasAttribute("Chance") Then Chance = Float(node.GetAttribute("Chance"))
+		If node.HasAttribute("Count") Then Count = Int(node.GetAttribute("Count"))
 	End
 End
 
@@ -177,10 +236,8 @@ Private
 	Field groupName:String      ' temporary, only for reading XML
 
 ' Death emitters
-	Field deathEmitters:ArrayList<Emitter>      ' the death emitters will fire at the particle's point of death
-	                                            ' using the particle's normalised velocity
-	Field deathEmitterChances:FloatArrayList    ' 0-1 random chance as to whether the death emitter will fire
-	
+	Field deathEmitterLinks:ArrayList<DeathEmitterLink> ' the death emitters will fire at the particle's point of death
+	                                                    ' using the particle's normalised velocity
 Public
 ' Properties
 	' velocityX
@@ -1158,15 +1215,17 @@ Public
 		End
 	End
 	
+	Method DeathEmitterLinks:ArrayList<DeathEmitterLink>() Property
+		Return deathEmitterLinks
+	End
+	
 ' Constructors
 	Method New()
-		deathEmitters = New ArrayList<Emitter>
-		deathEmitterChances = New FloatArrayList
+		deathEmitterLinks = New ArrayList<DeathEmitterLink>
 	End
 	
 	Method New(node:XMLElement)
-		deathEmitters = New ArrayList<Emitter>
-		deathEmitterChances = New FloatArrayList
+		deathEmitterLinks = New ArrayList<DeathEmitterLink>
 		ReadXML(node)
 	End
 
@@ -1366,28 +1425,7 @@ Public
 		Self.scale = scale
 		Self.scaleSpread = scaleSpread
 	End
-	
-' Death emitter methods
-	Method AddDeathEmitter(emitter:Emitter, chance:Float)
-		deathEmitters.Add(emitter)
-		deathEmitterChances.AddFloat(chance)
-	End
-	
-	Method RemoveDeathEmitter(emitter:Emitter)
-		Local idx:Int = deathEmitters.IndexOf(emitter)
-		If idx >= 0 Then
-			deathEmitters.RemoveAt(idx)
-			deathEmitterChances.RemoveAt(idx)
-		End
-	End
-	
-	Method SetDeathEmitterChance(emitter:Emitter, chance:Float)
-		Local idx:Int = deathEmitters.IndexOf(emitter)
-		If idx >= 0 Then
-			deathEmitterChances.SetFloat(idx, chance)
-		End
-	End
-	
+
 ' Emits	
 	Method Emit:Void(amount:Int, group:ParticleGroup=Null)
 		EmitAtAngleRadians(amount, x, y, angle, group)
@@ -1706,6 +1744,15 @@ Public
 		If node.HasAttribute("RotationSpeedRadians")       Then RotationSpeedRadians = Float(node.GetAttribute("RotationSpeedRadians"))
 		If node.HasAttribute("RotationSpeedSpread")        Then RotationSpeedSpread = Float(node.GetAttribute("RotationSpeedSpread"))
 		If node.HasAttribute("RotationSpeedSpreadRadians") Then RotationSpeedSpreadRadians = Float(node.GetAttribute("RotationSpeedSpreadRadians"))
+		
+		' death emitters
+		For Local i:Int = 0 Until node.Children.Size
+			Local childNode:XMLElement = node.Children.Get(i)
+			If childNode.Name = "deathemitter" Then
+				Local del:DeathEmitterLink = New DeathEmitterLink(childNode)
+				deathEmitterLinks.Add(del)
+			End
+		Next
 	End
 End
 
@@ -2026,15 +2073,16 @@ Public
 		Next
 		' now fire off any emitters
 		For Local i:Int = 0 Until deadCount
-			For Local j:Int = 0 Until deadEmitters[i].deathEmitterChances.Size
-				Local c:Float = deadEmitters[i].deathEmitterChances.Get(j)
+			For Local j:Int = 0 Until deadEmitters[i].deathEmitterLinks.Size
+				Local del:DeathEmitterLink = deadEmitters[i].deathEmitterLinks.Get(j)
+				Local c:Float = del.chance
 				If c = 1 Or c > 0 And Rnd() <= c Then
-					Local e:Emitter = deadEmitters[i].deathEmitters.Get(j)
+					Local e:Emitter = del.deathEmitter
 					' if the emitter has no group assigned, we use Self
 					If e.group = Null Then
-						e.EmitAtAngle(30, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]), Self)
+						e.EmitAtAngle(del.count, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]), Self)
 					Else
-						e.EmitAtAngle(30, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]))
+						e.EmitAtAngle(del.count, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]))
 					End
 				End
 			Next

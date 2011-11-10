@@ -20,7 +20,9 @@
 				PolarVelocityAngle="-90"
 				PolarVelocityAngleSpread="60"
 				PolarVelocityAmplitude="250"
-				PolarVelocityAmplitudeSpread="50" />
+				PolarVelocityAmplitudeSpread="50">
+			<deathemitter Name="emit2" Chance="0.05" Count="30" />
+		</emitter>
 		<emitter Name="emit2"
 				Red="0"
 				Green="255"
