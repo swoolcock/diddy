@@ -861,7 +861,13 @@ Class GameSound
 			loopChannelList.Clear()
 		End
 	End
-	
+
+	Method IsPlaying:Int()
+		#if TARGET="flash"
+			Return 0
+		#end
+		Return(ChannelState(channel))
+	End
 End
 
 Class SoundPlayer
