@@ -40,7 +40,15 @@ Class DiddyApp Extends App
 	Field aspectRatio:Float
 	Field multi:Float
 	Field widthBorder:Float				' Size of border at sides
-	Field heightBorder:Float				' Size of border at top/bottom
+	Field heightBorder:Float			' Size of border at top/bottom
+	
+	Field deviceChanged:Int				' Device size changed
+	Field lastDeviceWidth:Int			' For device change detection
+	Field lastDeviceHeight:Int			' For device change detection
+	Field virtualScaledW:Float
+	Field virtualScaledH:Float
+	Field virtualXOff:Float
+	Field virtualYOff:Float
 	
 	Field FPS:Int = 60
 	
@@ -86,6 +94,7 @@ Class DiddyApp Extends App
 	Field lastTime:Float
 Private
 	Field useFixedRateLogic:Bool = False
+	Field vsx:Float, vsy:Float, vsw:Float, vsh:Float
 	
 Public
 	Method New()
@@ -145,39 +154,48 @@ Public
 		If virtualResOn
 			PushMatrix
 			If aspectRatioOn
-				Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
-				If deviceRatio >= aspectRatio
-					multi = DEVICE_WIDTH / SCREEN_WIDTH
-					heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
-					widthBorder = 0
-				Else
-					multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
-					widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
-					heightBorder = 0
+				If (DEVICE_WIDTH <> lastDeviceWidth) Or (DEVICE_HEIGHT <> lastDeviceHeight)
+					lastDeviceWidth = DeviceWidth()
+					lastDeviceHeight = DeviceHeight()
+					deviceChanged = True
 				End
+				If deviceChanged
+					Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
+					If deviceRatio >= aspectRatio
+						multi = DEVICE_WIDTH / SCREEN_WIDTH
+						heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
+						widthBorder = 0
+					Else
+						multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
+						widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
+						heightBorder = 0
+					End
+				
+					vsx = Max(0.0, widthBorder )
+					vsy = Max(0.0, heightBorder )
+					vsw = Min(DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
+					vsh = Min(DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
+					
+					virtualScaledW = (SCREEN_WIDTH * multi)
+					virtualScaledH = (SCREEN_HEIGHT * multi)
+					
+					virtualXOff = (DEVICE_WIDTH - virtualScaledW) * 0.5
+					virtualYOff = (DEVICE_HEIGHT - virtualScaledH) * 0.5
+					
+					virtualXOff = virtualXOff / multi
+					virtualYOff = virtualYOff/ multi
+					
+					deviceChanged = False
+				End
+				
 				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
 				Cls 0, 0, 0
-				Local sx:Float, sy:Float, sw:Float, sh:Float
 				
-				sx = Max (0.0, widthBorder )
-				sy = Max (0.0, heightBorder )
-				sw = Min (DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
-				sh = Min (DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
-
-				SetScissor sx, sy, sw, sh
+				SetScissor vsx, vsy, vsw, vsh
 	
 				Scale multi, multi
 
-				Local scaledW:Float = (SCREEN_WIDTH * multi)
-				Local scaledH:Float = (SCREEN_HEIGHT * multi)
-				
-				Local xoff:Float = (DEVICE_WIDTH - scaledW) * 0.5
-				Local yoff:Float = (DEVICE_HEIGHT - scaledH) * 0.5
-				
-				xoff = xoff / multi
-				yoff = yoff / multi
-				
-				Translate xoff, yoff
+				Translate virtualXOff, virtualYOff 
 			Else
 				Scale SCREENX_RATIO, SCREENY_RATIO
 			End
