@@ -6,8 +6,8 @@ Import collections
 Import inputcache
 
 'Device width and height
-Global DEVICE_WIDTH:Int
-Global DEVICE_HEIGHT:Int
+Global DEVICE_WIDTH:Float
+Global DEVICE_HEIGHT:Float
 
 ' Screen width and height
 Global SCREEN_WIDTH:Float
@@ -35,6 +35,12 @@ Class DiddyApp Extends App
 	Field debugKey:Int = KEY_F1
 	
 	Field virtualResOn:Bool = True
+	Field aspectRatioOn:Bool = False
+
+	Field aspectRatio:Float
+	Field multi:Float
+	Field widthBorder:Float				' Size of border at sides
+	Field heightBorder:Float				' Size of border at top/bottom
 	
 	Field FPS:Int = 60
 	
@@ -47,8 +53,8 @@ Class DiddyApp Extends App
 	' used for fading
 	Field screenFade:ScreenFade
 	' scroll
-	field scrollX:Float
-	field scrollY:Float
+	Field scrollX:Float
+	Field scrollY:Float
 	
 	' mouse
 	Field mouseX:Int, mouseY:Int
@@ -112,13 +118,13 @@ Public
 		Particle.Cache()
 		
 		' fixed rate logic timing
-		if useFixedRateLogic
+		If useFixedRateLogic
 			ResetFixedRateLogic()
 		End
 		Return 0
 	End
 	
-	Method SetScreenSize:Void(w:Float, h:Float)
+	Method SetScreenSize:Void(w:Float, h:Float, useAspectRatio:Bool = False)
 		SCREEN_WIDTH = w
 		SCREEN_HEIGHT = h
 		SCREEN_WIDTH2 = SCREEN_WIDTH / 2
@@ -129,21 +135,66 @@ Public
 		
 		If SCREENX_RATIO <> 1 Or SCREENY_RATIO <> 1
 			virtualResOn = True
+			aspectRatioOn = useAspectRatio
+			aspectRatio = h / w
 		End
 	End
 		
 	Method OnRender:Int()
 		FPSCounter.Update()
 		If virtualResOn
-			PushMatrix 
-			Scale SCREENX_RATIO, SCREENY_RATIO
+			PushMatrix
+			If aspectRatioOn
+				Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
+				If deviceRatio >= aspectRatio
+					multi = DEVICE_WIDTH / SCREEN_WIDTH
+					heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
+					widthBorder = 0
+				Else
+					multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
+					widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
+					heightBorder = 0
+				End
+				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
+				Cls 0, 0, 0
+				Local sx:Float, sy:Float, sw:Float, sh:Float
+				
+				sx = Max (0.0, widthBorder )
+				sy = Max (0.0, heightBorder )
+				sw = Min (DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
+				sh = Min (DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
+
+				SetScissor sx, sy, sw, sh
+	
+				Scale multi, multi
+
+				Local scaledW:Float = (SCREEN_WIDTH * multi)
+				Local scaledH:Float = (SCREEN_HEIGHT * multi)
+				
+				Local xoff:Float = (DEVICE_WIDTH - scaledW) * 0.5
+				Local yoff:Float = (DEVICE_HEIGHT - scaledH) * 0.5
+				
+				xoff = xoff / multi
+				yoff = yoff / multi
+				
+				Translate xoff, yoff
+			Else
+				Scale SCREENX_RATIO, SCREENY_RATIO
+			End
 		End
-			currentScreen.Render()
-		if virtualResOn
+		
+		' render the screen
+		currentScreen.Render()
+		
+		If virtualResOn
+			If aspectRatioOn
+				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT
+			End
 			PopMatrix
 		End
+		
 		currentScreen.ExtraRender()
-		If screenFade.active then screenFade.Render()
+		If screenFade.active Then screenFade.Render()
 		currentScreen.DebugRender()
 		If debugOn
 			DrawDebug()
@@ -155,8 +206,17 @@ Public
 	End
 	
 	Method ReadInputs:Void()
-		mouseX = MouseX() / SCREENX_RATIO
-		mouseY = MouseY() / SCREENY_RATIO
+		If aspectRatioOn
+			Local mouseOffsetX:Float = MouseX() - DEVICE_WIDTH * 0.5
+			Local x:Float = (mouseOffsetX / multi) / 1 + (SCREEN_WIDTH * 0.5)
+			mouseX = x
+			Local mouseOffsetY:Float = MouseY() - DEVICE_HEIGHT * 0.5
+			Local y:Float = (mouseOffsetY / multi) / 1 + (SCREEN_HEIGHT * 0.5)
+			mouseY = y
+		Else
+			mouseX = MouseX() / SCREENX_RATIO
+			mouseY = MouseY() / SCREENY_RATIO
+		End
 		mouseHit = MouseHit()
 		inputCache.ReadInput()
 		inputCache.HandleEvents(currentScreen)
@@ -172,19 +232,19 @@ Public
 		ReadInputs()
 	
 		OverrideUpdate()
-		if useFixedRateLogic
-			local now:Int = Millisecs()
+		If useFixedRateLogic
+			Local now:Int = Millisecs()
 			If now < lastTime
 				numTicks = lastNumTicks
-			else
+			Else
 				tmpMs = now - lastTime
-				if tmpMs > maxMs tmpMs = maxMs
+				If tmpMs > maxMs tmpMs = maxMs
 				numTicks = tmpMs / ms
 			Endif
 		
 			lastTime = now
 			lastNumTicks = numTicks
-			For local i:Int = 1 to Floor(numTicks)
+			For Local i:Int = 1 To Floor(numTicks)
 				Update(1)
 			Next
 			
@@ -205,11 +265,11 @@ Public
 
 	Method Update:Void(fixedRateLogicDelta:Float)
 		dt.UpdateDelta()
-		if useFixedRateLogic
+		If useFixedRateLogic
 			dt.delta = fixedRateLogicDelta
 		End
 
-		If screenFade.active then screenFade.Update()
+		If screenFade.active Then screenFade.Update()
 		currentScreen.Update()	
 	End
 
@@ -260,7 +320,7 @@ Public
 		musicFile = file
 		
 		musicOkay = PlayMusic("music/"+musicFile, flags)
-		if musicOkay = -1
+		If musicOkay = -1
 			Print "Error Playing Music - Music must be in the data\music folder"
 		End
 	End
@@ -306,7 +366,7 @@ Public
 		numTicks = 0
 		lastNumTicks = 1
 		lastTime = Millisecs()
-		if dt <> null
+		If dt <> Null
 			dt.delta = 1
 		End
 	End
@@ -333,7 +393,7 @@ Class ScreenFade
 		Else
 			ratio = 0
 			' set the music volume to zero if fading in the music
-			if Self.fadeMusic
+			If Self.fadeMusic
 				game.SetMojoMusicVolume(0)
 			End			
 		End
@@ -352,11 +412,11 @@ Class ScreenFade
 		If fadeMusic Then
 			game.SetMojoMusicVolume((ratio) * (game.musicVolume / 100.0))
 		End
-		if counter > fadeTime
-			active = false
-			if fadeOut			
+		If counter > fadeTime
+			active = False
+			If fadeOut			
 				game.currentScreen.PostFadeOut()
-			else
+			Else
 				game.currentScreen.PostFadeIn()
 			End
 		End
@@ -366,13 +426,13 @@ Class ScreenFade
 		ratio = counter/fadeTime
 		If ratio < 0
 			ratio = 0
-			if fadeMusic
+			If fadeMusic
 				game.SetMojoMusicVolume(0)
 			End
 		End
 		If ratio > 1
 			ratio = 1
-			if fadeMusic
+			If fadeMusic
 				game.SetMojoMusicVolume(game.musicVolume / 100.0)
 			End
 		End
@@ -383,7 +443,6 @@ Class ScreenFade
 	
 	Method Render:Void()
 		If Not active Return
-		
 		SetAlpha 1 - ratio
 		SetColor 0, 0, 0
 		DrawRect 0, 0, DEVICE_WIDTH, DEVICE_HEIGHT
@@ -413,7 +472,7 @@ Class Screen Abstract
 	Field name$ = ""
 	
 	Method PreStart:Void()
-		game.currentScreen = self
+		game.currentScreen = Self
 		Start()
 	End
 	
@@ -509,7 +568,7 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Field path$ = "graphics/"
 	
-	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=true, ignoreCache:Bool=False)
+	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=True, ignoreCache:Bool=False)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -525,7 +584,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Return i
 	End
 	
-	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=true, ignoreCache:Bool=False, nameoverride:String = "")
+	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=True, ignoreCache:Bool=False, nameoverride:String = "")
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -573,7 +632,7 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Method PreCache:Void()
 		Local gi:GameImage
-		For Local key:String = EachIn self.Keys()
+		For Local key:String = Eachin Self.Keys()
 			gi = Self.Get(key)
 			gi.PreCache()
 		Next
@@ -653,7 +712,7 @@ Class GameImage
 	End
 	
 	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
-		DrawImage(self.image, x, y, rotation, scaleX, scaleY, frame)
+		DrawImage(Self.image, x, y, rotation, scaleX, scaleY, frame)
 	End
 	
 	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
@@ -676,13 +735,13 @@ Class GameImage
 	
 	Method DrawGrid:Void(x:Float, y:Float, rw:Float, rh:Float, frame:Int = 0)
 		' draw top left corner
-		DrawImageRect(self.image, x, y, 0, 0, leftMargin, topMargin, frame)
+		DrawImageRect(Self.image, x, y, 0, 0, leftMargin, topMargin, frame)
 		' draw top right corner
-		DrawImageRect(self.image, x+rw-rightMargin, y, w-rightMargin, 0, rightMargin, topMargin, frame)
+		DrawImageRect(Self.image, x+rw-rightMargin, y, w-rightMargin, 0, rightMargin, topMargin, frame)
 		' draw bottom left corner
-		DrawImageRect(self.image, x, y+rh-bottomMargin, 0, h-bottomMargin, leftMargin, bottomMargin, frame)
+		DrawImageRect(Self.image, x, y+rh-bottomMargin, 0, h-bottomMargin, leftMargin, bottomMargin, frame)
 		' draw bottom right corner
-		DrawImageRect(self.image, x+rw-rightMargin, y+rh-bottomMargin, w-rightMargin, h-bottomMargin, rightMargin, bottomMargin, frame)
+		DrawImageRect(Self.image, x+rw-rightMargin, y+rh-bottomMargin, w-rightMargin, h-bottomMargin, rightMargin, bottomMargin, frame)
 		
 		' work out how many horizontal and vertical tiles
 		Local tileWidth% = (w-leftMargin-rightMargin)
@@ -694,22 +753,22 @@ Class GameImage
 		
 		' tile top and bottom edges
 		For Local i% = 0 Until tileXCount
-			DrawImageRect(self.image, leftMargin+i*tileWidth,0,leftMargin,0,tileWidth,topMargin,frame)
-			DrawImageRect(self.image, leftMargin+i*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileWidth,bottomMargin,frame)
+			DrawImageRect(Self.image, leftMargin+i*tileWidth,0,leftMargin,0,tileWidth,topMargin,frame)
+			DrawImageRect(Self.image, leftMargin+i*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileWidth,bottomMargin,frame)
 		Next
 		If tileXOverflow > 0 Then
-			DrawImageRect(self.image, leftMargin+tileXCount*tileWidth,0,leftMargin,0,tileXOverflow,topMargin,frame)
-			DrawImageRect(self.image, leftMargin+tileXCount*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileXOverflow,bottomMargin,frame)
+			DrawImageRect(Self.image, leftMargin+tileXCount*tileWidth,0,leftMargin,0,tileXOverflow,topMargin,frame)
+			DrawImageRect(Self.image, leftMargin+tileXCount*tileWidth,rh-bottomMargin,leftMargin,h-bottomMargin,tileXOverflow,bottomMargin,frame)
 		End
 		
 		' tile left and right edges
 		For Local i% = 0 Until tileYCount
-			DrawImageRect(self.image, 0, topMargin+i*tileHeight,0,topMargin,leftMargin,tileHeight,frame)
-			DrawImageRect(self.image, rw-rightMargin,topMargin+i*tileHeight,w-rightMargin,topMargin,rightMargin,tileHeight,frame)
+			DrawImageRect(Self.image, 0, topMargin+i*tileHeight,0,topMargin,leftMargin,tileHeight,frame)
+			DrawImageRect(Self.image, rw-rightMargin,topMargin+i*tileHeight,w-rightMargin,topMargin,rightMargin,tileHeight,frame)
 		Next
 		If tileYOverflow > 0 Then
-			DrawImageRect(self.image, 0, topMargin+tileYCount*tileHeight,0,topMargin,leftMargin,tileYOverflow,frame)
-			DrawImageRect(self.image, rw-rightMargin,topMargin+tileYCount*tileHeight,w-rightMargin,topMargin,rightMargin,tileYOverflow,frame)
+			DrawImageRect(Self.image, 0, topMargin+tileYCount*tileHeight,0,topMargin,leftMargin,tileYOverflow,frame)
+			DrawImageRect(Self.image, rw-rightMargin,topMargin+tileYCount*tileHeight,w-rightMargin,topMargin,rightMargin,tileYOverflow,frame)
 		End
 		
 		' tile centre
@@ -777,7 +836,7 @@ Class GameImage
 	End
 	
 	Method PreCache:Void()
-		DrawImage self.image, -self.w-50, -self.h-50
+		DrawImage Self.image, -Self.w-50, -Self.h-50
 	End
 End
 
@@ -845,14 +904,14 @@ Class GameSound
 	
 	Method Play:Void(playChannel:Int = -1)
 		channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
-		if loop = 1
+		If loop = 1
 			loopChannelList.Add(channel)
 		End
 	End
 	
 	Method Stop:Void()
 		SoundPlayer.PlayerStopChannel(channel)
-		if loopChannelList.Size > 0
+		If loopChannelList.Size > 0
 			Local ch:Int
 			For Local i:Int = 0 Until loopChannelList.Size
 				ch = loopChannelList.GetInt(i)
@@ -876,7 +935,7 @@ Class SoundPlayer
 	Global playerChannelState:Int[] = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ' 32 indexes - (0 to 31)
 	
 	Function StopChannels:Void()
-		For Local i:Int = 0 to MAX_CHANNELS
+		For Local i:Int = 0 To MAX_CHANNELS
 			StopChannel(i)
 			playerChannelState[i] = 0
 		Next
@@ -888,7 +947,7 @@ Class SoundPlayer
 	End
 	
 	Function PlayFx:Int(s:Sound, pan:Float=0, rate:Float=1, volume:Float=1, loop:Int = 0, playChannel:Int = -1)
-		if playChannel = -1
+		If playChannel = -1
 			Local cnt:Int = 0
 			channel += 1
 			If (channel > MAX_CHANNELS) Then channel = 0
@@ -896,7 +955,7 @@ Class SoundPlayer
 				channel += 1
 				If (channel > MAX_CHANNELS) Then channel = 0
 				cnt=+1
-				if cnt > MAX_CHANNELS * 2 Then Exit ' stop infinite loop if case all channels are playing
+				If cnt > MAX_CHANNELS * 2 Then Exit ' stop infinite loop if case all channels are playing
 			Wend
 		Else
 			channel = playChannel
@@ -908,7 +967,7 @@ Class SoundPlayer
 		SetChannelPan(channel, pan)
 		SetChannelRate(channel, rate)
 		SetChannelVolume(channel, volume)
-		if loop
+		If loop
 			playerChannelState[channel] = 1		
 		End
 		Return channel
@@ -939,9 +998,9 @@ Class Sprite
 	Field frameStart:Int
 	Field frameEnd:Int
 	Field frameSpeed:Int = 0 
-	Field reverse:Bool = false
-	Field pingPong:Bool = false
-	Field loop:Bool = true
+	Field reverse:Bool = False
+	Field pingPong:Bool = False
+	Field loop:Bool = True
 	Field ping:Int
 	
 	' Scale
@@ -962,8 +1021,8 @@ Class Sprite
 		Self.image = img
 		Self.x = x
 		Self.y = y
-		self.alpha = 1
-		self.SetHitBox(-img.w2, -img.h2, img.w, img.h)
+		Self.alpha = 1
+		Self.SetHitBox(-img.w2, -img.h2, img.w, img.h)
 		Self.visible = True
 	End
 	
@@ -993,8 +1052,8 @@ Class Sprite
 	End
 	
 	Method SetScaleXY:Void(sx:Float, sy:Float)
-		self.scaleX = sx
-		self.scaleY = sy
+		Self.scaleX = sx
+		Self.scaleY = sy
 	End
 	
 	Method Move:Void()
@@ -1032,31 +1091,31 @@ Class Sprite
 		Move()
 	End
 
-	Method SetFrame:Void(startFrame:Int=0, endFrame:Int=0, speed:Int=125, pingPong:Bool = false, loop:Bool = true)
+	Method SetFrame:Void(startFrame:Int=0, endFrame:Int=0, speed:Int=125, pingPong:Bool = False, loop:Bool = True)
 		frame = startFrame
 		frameStart = startFrame
 		frameEnd = endFrame
-		if startFrame > endFrame
-			reverse = true
-		else
-			reverse = false
+		If startFrame > endFrame
+			reverse = True
+		Else
+			reverse = False
 		End
-		self.pingPong = pingPong
-		self.loop = loop
+		Self.pingPong = pingPong
+		Self.loop = loop
 		frameSpeed = speed
 		frameTimer = Millisecs()
 		ping = 0
 	End
 	
 	Method UpdateAnimation:Void()
-		if frameSpeed > 0
+		If frameSpeed > 0
 			If Millisecs() > frameTimer + frameSpeed
-				if not reverse
+				If Not reverse
 					frame+=1
 					If frame > frameEnd
 						ResetAnim()
 					End
-				else
+				Else
 					frame-=1
 					If frame < frameEnd
 						ResetAnim()
@@ -1064,29 +1123,29 @@ Class Sprite
 				End
 				frameTimer = Millisecs()
 			End	
-		end
+		End
 	End
 	
 	Method ResetAnim:Void()
-		if loop then
-			if pingPong
+		If loop Then
+			If pingPong
 				reverse = Not reverse
 				frame = frameEnd
-				local ts% = frameStart
+				Local ts% = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
-			else
+			Else
 				frame = frameStart
 			End
-		else
-			if pingPong and ping <1
+		Else
+			If pingPong And ping <1
 				reverse = Not reverse
 				frame = frameEnd
-				local ts% = frameStart
+				Local ts% = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
 				ping+=1
-			else
+			Else
 				frame = frameEnd
 			End
 		End
@@ -1100,13 +1159,13 @@ Class Sprite
 		Draw(0,0, rounded)
 	End
 	
-	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0, rounded:Bool = false)
+	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0, rounded:Bool = False)
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
 		SetAlpha Self.alpha
 		SetColor red, green, blue
-		if rounded
+		If rounded
 			DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y- offsety + 0.5), rotation, scaleX, scaleY, frame)
 		Else
 			DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
@@ -1159,7 +1218,7 @@ Class Particle Extends Sprite
 	Field active:Int = 0
 	
 	Function Cache:Void()
-		For Local i:Int = 0 to MAX_PARTICLES - 1
+		For Local i:Int = 0 To MAX_PARTICLES - 1
 			particles[i] = New Particle()
 		Next
 	End
@@ -1192,7 +1251,7 @@ Class Particle Extends Sprite
 	End
 	
 	Function Clear:Void()
-		For Local i:Int = 0 to MAX_PARTICLES - 1
+		For Local i:Int = 0 To MAX_PARTICLES - 1
 			particles[i].alpha = 0
 			particles[i].active = False
 		Next
@@ -1204,9 +1263,9 @@ Class Particle Extends Sprite
 	
 	Function DrawAll:Void()
 		If minIndex < 0 Or maxIndex < 0 Then Return
-		For Local i% = minIndex to maxIndex
-			if particles[i] <> null And particles[i].image <> null
-				If particles[i].fadeCounter > 0 and particles[i].active Then
+		For Local i% = minIndex To maxIndex
+			If particles[i] <> Null And particles[i].image <> Null
+				If particles[i].fadeCounter > 0 And particles[i].active Then
 					If particles[i].fadeIn Then
 						particles[i].alpha = particles[i].fadeCounter/particles[i].fadeInLength
 					Else
@@ -1222,8 +1281,8 @@ Class Particle Extends Sprite
 		If minIndex < 0 Or maxIndex < 0 Then Return
 		Local newMinIndex:Int = -1
 		Local newMaxIndex:Int = -1
-		For Local i:Int = minIndex to maxIndex
-			if particles[i] <> null And particles[i].image <> null
+		For Local i:Int = minIndex To maxIndex
+			If particles[i] <> Null And particles[i].image <> Null
 				If particles[i].active
 					particles[i].Update()
 					If particles[i].active Then
@@ -1251,7 +1310,7 @@ Class Particle Extends Sprite
 				fadeIn = 0
 				alpha = 1
 			End
-		ElseIf fadeCounter>0 Then
+		Elseif fadeCounter>0 Then
 			fadeCounter-=dt.delta
 			If fadeCounter <= 0 Then
 				alpha = 0
