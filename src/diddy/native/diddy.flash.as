@@ -1,4 +1,5 @@
 import flash.ui.Mouse;
+import flash.external.ExternalInterface;
 
 class diddy
 {
@@ -130,5 +131,10 @@ class diddy
 	static public function getInputString():String
 	{
 		return "";
+	}
+	
+	static public function getCurrentURL():String
+	{
+		return ExternalInterface.call('window.location.href.toString');
 	}
 }
