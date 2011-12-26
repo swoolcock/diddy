@@ -71,9 +71,10 @@ Extern
 		Function GetBrowserName:String()="diddy.getBrowserName"
 		Function GetBrowserVersion:String()="diddy.getBrowserVersion"
 		Function GetBrowserOS:String()="diddy.getBrowserOS"
-	#End
-	
-	#If LANG="java" Then
+		Function GetCurrentURL:String()="function (){return document.URL;}"
+	#ElseIf TARGET="flash" Then
+		Function GetCurrentURL:String()="diddy.getCurrentURL"
+	#ElseIf LANG="java" Then
 		Function BuildString:String(arr:Int[], offset:Int, length:Int) = "diddy.buildString"
 	#End
 Public
@@ -88,6 +89,11 @@ Public
 	Function GetBrowserOS:String()
 		Return ""
 	End
+	#If TARGET<>"flash" Then
+		Function GetCurrentURL:String()
+			Return ""
+		End
+	#End
 #End
 
 #If LANG <> "java" Then
