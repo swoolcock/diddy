@@ -545,6 +545,33 @@ Function RGBtoHSL:Float[](red:Int, green:Int, blue:Int, hslvals:Float[] = [])
 	Return hslvals
 End
 
+Function DecToHex:String(dec:Int)
+	Local rv:String = ""
+	If dec <= 0 Then Return "0"
+	While dec > 0
+		If dec Mod 16 < 10 Then
+			rv += dec Mod 16
+		Else
+			rv += String.FromChar(ASC_LOWER_A+(dec Mod 16)-10)
+		End
+		dec = dec / 16
+	End
+	Return rv
+End
+
+Function HexToDec:Int(hx:String)
+	Local rv:Int = 0
+	Local lookup:String = "0123456789abcdef"
+	hx = hx.ToLower()
+	For Local i:Int = 0 Until hx.Length()
+		rv *= 16
+		Local idx:Int = lookup.Find(hx[i..i+1])
+		If idx < 0 Then Error("Error parsing Hex string!")
+		rv += idx
+	Next
+	Return rv
+End
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
