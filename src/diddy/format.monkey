@@ -2,32 +2,21 @@ Strict
 
 Import functions
 
-Function B:Object(v:Int)
-	Return IntObject(v)
+' Monkey converts primitives to strings when calling this function.
+Function Format:String(fmt:String, arg1:String="", arg2:String="", arg3:String="", arg4:String="", arg5:String="", arg6:String="", arg7:String="", arg8:String="", arg9:String="", arg10:String="")
+	Return FormatImpl(fmt, StringObject(arg1), StringObject(arg2), StringObject(arg3), StringObject(arg4), StringObject(arg5), StringObject(arg6), StringObject(arg7), StringObject(arg8), StringObject(arg9), StringObject(arg10))
 End
 
-Function B:Object(v:Float)
-	Return FloatObject(v)
-End
-
-Function B:Object(v:String)
-	Return StringObject(v)
-End
+Private
 
 ' This is a very simple implementation of sprintf.  I can't guarantee that it'll be bulletproof at this time, so use at your own risk!
-' Monkey does not currently support autoboxing directly to Object, so unfortunately we need to manually do it.  Use the B() function for this.
-' In other languages you might do the following:
-'   sprintf(str, "%3d", 10); // C, C-like
-'   str = String.format("%3d", 10); // Java
-' But here you'll need to do this:
-'   str = Format("%3d", B(10))
 ' Note that due to Monkey's lack of varargs, Format accepts a maximum of 10 optional arguments.  Arguments are parsed up until the first Null.
 ' TODO: round floats rather than truncating them
-Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Object=Null, arg4:Object=Null, arg5:Object=Null, arg6:Object=Null, arg7:Object=Null, arg8:Object=Null, arg9:Object=Null, arg10:Object=Null)
+Function FormatImpl:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Object=Null, arg4:Object=Null, arg5:Object=Null, arg6:Object=Null, arg7:Object=Null, arg8:Object=Null, arg9:Object=Null, arg10:Object=Null)
 	Local args:Object[] = [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10]
 	Local argcount:Int = 0
 	For Local i:Int = 0 Until args.Length
-		If args[i] = Null Then
+		If args[i] = Null Or StringObject(args[i]) = "" Then
 			argcount = i
 			Exit
 		End
@@ -121,7 +110,7 @@ Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Obje
 			If formatDPStr <> "" Then formatDP = Int(formatDPStr)
 			
 			If formatType = "d" Then
-				Local ds:String = String(IntObject(args[argnum]))
+				Local ds:String = ArgToString(args[argnum])
 				While ds.Length() < formatLength
 					If foundPadding Then
 						ds = "0"+ds
@@ -133,7 +122,7 @@ Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Obje
 				End
 				rv += ds
 			ElseIf formatType = "f" Then
-				Local df:Float = FloatObject(args[argnum])
+				Local df:Float = ArgToFloat(args[argnum])
 				' TODO: round float instead of truncating
 				Local ds:String = df
 				Local dp:Int = ds.Find(".")
@@ -159,10 +148,10 @@ Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Obje
 				rv += ds
 			ElseIf formatType = "c" Then
 				If foundPadding Or foundMinus Then Error "Error parsing format string!"
-				rv += String.FromChar(IntObject(args[argnum]))
+				rv += String.FromChar(ArgToInt(args[argnum]))
 			ElseIf formatType = "s" Or formatType = "S" Then
 				If foundPadding Then Error "Error parsing format string!"
-				Local ds:String = StringObject(args[argnum])
+				Local ds:String = ArgToString(args[argnum])
 				If formatType = "S" Then ds = ds.ToUpper()
 				While ds.Length() < formatLength
 					If foundMinus Then
@@ -173,7 +162,7 @@ Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Obje
 				End
 				rv += ds
 			ElseIf formatType = "x" Or formatType = "X" Then
-				Local ds:String = DecToHex(IntObject(args[argnum])).ToLower()
+				Local ds:String = DecToHex(ArgToInt(args[argnum])).ToLower()
 				If formatType = "X" Then ds = ds.ToUpper()
 				While ds.Length() < formatLength
 					If foundPadding Then
@@ -192,8 +181,27 @@ Function Format:String(fmt:String, arg1:Object=Null, arg2:Object=Null, arg3:Obje
 	Return rv
 End
 
-Private
-
 Function IsValidFormat:Bool(chr:String)
 	Return chr = "d" Or chr = "f" Or chr = "s" Or chr = "S" Or chr = "c" Or chr = "x" Or chr = "X"
+End
+
+Function ArgToFloat:Float(arg:Object)
+	If FloatObject(arg) Then Return FloatObject(arg)
+	If IntObject(arg) Then Return IntObject(arg)
+	If StringObject(arg) Then Return Float(StringObject(arg).value)
+	Return 0
+End
+
+Function ArgToInt:Int(arg:Object)
+	If FloatObject(arg) Then Return FloatObject(arg)
+	If IntObject(arg) Then Return IntObject(arg)
+	If StringObject(arg) Then Return Int(StringObject(arg).value)
+	Return 0
+End
+
+Function ArgToString:String(arg:Object)
+	If FloatObject(arg) Then Return String(FloatObject(arg).value)
+	If IntObject(arg) Then Return String(IntObject(arg).value)
+	If StringObject(arg) Then Return StringObject(arg)
+	Return ""
 End
