@@ -64,7 +64,7 @@ class diddy
 	public static void showKeyboard()
 	{
 	}
-	public static void launchBrowser(String address)
+	public static void launchBrowser(String address, String windowName)
 	{
 #if WINDOWS
 		System.Diagnostics.Process.Start(address);
