@@ -37,7 +37,7 @@ class diddy
 	static void showKeyboard()
 	{
 	}
-	static void launchBrowser(String address)
+	static void launchBrowser(String address, String windowName)
 	{
 		NSString *NSstrURL = address.ToNSString();
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:NSstrURL]];

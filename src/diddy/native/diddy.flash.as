@@ -51,10 +51,10 @@ class diddy
 	{
 	}
 	
-	static public function launchBrowser(address:String):void
+	static public function launchBrowser(address:String, windowName:String):void
 	{
 		var adobeURL:URLRequest = new URLRequest(address);
-		navigateToURL(adobeURL);
+		navigateToURL(adobeURL, windowName);
 	}
 	
 	static public function launchEmail(email:String, subject:String, text:String):void

@@ -17,7 +17,7 @@ Extern
 		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
-		Function LaunchBrowser:Void(address:String) = "diddy::launchBrowser"
+		Function LaunchNativeBrowser:Void(address:String, windowName:String) = "diddy::launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy::launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy::setGraphics"
 		Function RealMod:Float(value:Float, amount:Float) = "diddy::realMod"
@@ -45,7 +45,7 @@ Extern
 		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
 		Function ShowKeyboard:Void() = "diddy.showKeyboard"
-		Function LaunchBrowser:Void(address:String) = "diddy.launchBrowser"
+		Function LaunchNativeBrowser:Void(address:String, windowName:String) = "diddy.launchBrowser"
 		Function LaunchEmail:Void(email:String, subject:String, text:String) = "diddy.launchEmail"
 		Function SetNativeGraphicsSize:Void(w:Int, h:Int) = "diddy.setGraphics"
 		Function RealMod:Float(value:Float, amount:Float) = "diddy.realMod"
@@ -106,6 +106,14 @@ Public
 		Return rv
 	End
 #End
+
+Function LaunchBrowser(address:String, openNewWindow:Bool = True)
+	Local windowName:String = "_self"
+	If openNewWindow
+		windowName = "_blank"
+	End
+	LaunchNativeBrowser(address, windowName)
+End
 
 Function SetGraphics:Void(w:Int, h:Int)
 	SetNativeGraphicsSize(w, h)
@@ -371,7 +379,7 @@ Function DecodeBase64Bytes:Int[](src:String)
 	Local len:Int = 3*(srclen/4)
 	If srclen Mod 4 = 0 Then
 		len -= padding
-	ElseIf padding = 0 Then
+	Elseif padding = 0 Then
 		If srclen Mod 4 >= 2 Then len += 1
 		If srclen Mod 4 = 3 Then len += 1
 	End
@@ -426,7 +434,7 @@ Function Interpolate:Float(type:Int, startValue:Float, endValue:Float, alpha:Flo
 	' clip to start/end
 	If startValue < endValue And rv < startValue Or startValue > endValue And rv > startValue Then
 		rv = startValue
-	ElseIf startValue < endValue And rv > endValue Or startValue > endValue And rv < endValue Then
+	Elseif startValue < endValue And rv > endValue Or startValue > endValue And rv < endValue Then
 		rv = endValue
 	End
 	Return rv
@@ -535,7 +543,7 @@ Function RGBtoHSL:Float[](red:Int, green:Int, blue:Int, hslvals:Float[] = [])
 	Local b2:Float = (v - b) / vm
 	If r = v Then
 		If g = m Then hslvals[0] = 5 + b2 Else hslvals[0] = 1 - g2
-	ElseIf g = v Then
+	Elseif g = v Then
 		If b = m Then hslvals[0] = 1 + r2 Else hslvals[0] = 3 - b2
 	Else
 		If r = m Then hslvals[0] = 3 + g2 Else hslvals[0] = 5 - r2

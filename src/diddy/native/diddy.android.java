@@ -141,7 +141,7 @@ class diddy
 		return inputString;
 	}
 	
-	static void launchBrowser(String address) {
+	static void launchBrowser(String address, String windowName) {
 		android.net.Uri uriUrl = android.net.Uri.parse(address);
 		android.content.Intent launchBrowserActivity = new android.content.Intent(android.content.Intent.ACTION_VIEW, uriUrl);
 		MonkeyGame.activity.startActivity(launchBrowserActivity);

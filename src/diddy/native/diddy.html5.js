@@ -32,9 +32,9 @@ diddy.setMouse=function(x, y)
 diddy.showKeyboard=function()
 {
 }
-diddy.launchBrowser=function(address)
+diddy.launchBrowser=function(address, windowName)
 {
-	window.open(address);
+	window.open(address, windowName);
 }
 diddy.launchEmail=function(email, subject, text)
 {
