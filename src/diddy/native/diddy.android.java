@@ -37,18 +37,13 @@ class diddy
 	{
 		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
 		pixelBuffer.order(ByteOrder.LITTLE_ENDIAN); 
-		GL11 gl = MonkeyGame.app.graphics.gl;
-		if (gl!=null) {
-			gl.glReadPixels((int)x, (int)MonkeyGame.app.graphics.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
-			
-			int red = pixelBuffer.get(0) & 0xff;
-			int green = pixelBuffer.get(1) & 0xff;
-			int blue = pixelBuffer.get(2) & 0xff;
-			int alpha = pixelBuffer.get(3) & 0xff;
-			// returning ARGB
-			return (alpha<<24) | (red<<16) | (green<<8) |  blue;
-		}
-		return 0;
+		GLES11.glReadPixels((int)x, (int)MonkeyGame.app.graphics.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
+		int red = pixelBuffer.get(0) & 0xff;
+		int green = pixelBuffer.get(1) & 0xff;
+		int blue = pixelBuffer.get(2) & 0xff;
+		int alpha = pixelBuffer.get(3) & 0xff;
+		// returning ARGB
+		return (alpha<<24) | (red<<16) | (green<<8) |  blue;
 	}
 	
 	public static int getUpdateRate()
