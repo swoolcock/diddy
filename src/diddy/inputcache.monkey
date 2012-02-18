@@ -44,7 +44,7 @@ Public
 	Const FLING_THRESHOLD:Float = 250
 	Const IGNORE_CLICK_DISTANCE:Float = 20
 	Const LONG_PRESS_TIME:Int = 1000
-
+	
 	' TouchHit() for 0-31
 	Field touchHit:Int[] = New Int[TOUCH_COUNT]
 	' The time it was hit
@@ -344,6 +344,8 @@ Public
 			mouseDownCount = 0
 			mouseHitCount = 0
 			mouseReleasedCount = 0
+			mouseX = game.mouseX
+			mouseY = game.mouseY
 			For Local i:Int = 0 Until MOUSE_COUNT
 				' get the mouse hit
 				newval = MouseHit(i)
@@ -469,6 +471,48 @@ Public
 					touchData[pointer].firedLongPress = True
 				End
 			End
+		Next
+		
+		' keyhits
+		If keyHitCount > 0 Then screen.OnAnyKeyHit()
+		For Local i:Int = 0 Until keyHitCount
+			Local key:Int = currentKeysHit[i]
+			screen.OnKeyHit(key)
+		Next
+		
+		' keydowns
+		If keyDownCount > 0 Then screen.OnAnyKeyDown()
+		For Local i:Int = 0 Until keyDownCount
+			Local key:Int = currentKeysDown[i]
+			screen.OnKeyDown(key)
+		Next
+		
+		' keyreleases
+		If keyReleasedCount > 0 Then screen.OnAnyKeyReleased()
+		For Local i:Int = 0 Until keyReleasedCount
+			Local key:Int = currentKeysReleased[i]
+			screen.OnKeyReleased(key)
+		Next
+		
+		For Local i:Int = 0 Until mouseHitCount
+			Local button:Int = currentMouseHit[i]
+			Local x:Int = Int(mouseX)
+			Local y:Int = Int(mouseY)
+			screen.OnMouseHit(x, y, button)
+		Next
+		
+		For Local i:Int = 0 Until mouseDownCount
+			Local button:Int = currentMouseDown[i]
+			Local x:Int = Int(mouseX)
+			Local y:Int = Int(mouseY)
+			screen.OnMouseDown(x, y, button)
+		Next
+		
+		For Local i:Int = 0 Until mouseReleasedCount
+			Local button:Int = currentMouseReleased[i]
+			Local x:Int = Int(mouseX)
+			Local y:Int = Int(mouseY)
+			screen.OnMouseReleased(x, y, button)
 		Next
 	End
 End
