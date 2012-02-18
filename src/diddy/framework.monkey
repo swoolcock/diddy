@@ -539,7 +539,40 @@ Class Screen Abstract
 	' ie. velocitySpeed = Sqrt(velocityX*velocityX + velocityY*velocityY) in pixels per second
 	Method OnTouchFling:Void(releaseX:Int, releaseY:Int, velocityX:Float, velocityY:Float, velocitySpeed:Float, pointer:Int)
 	End
-End Class
+	
+	' fired once if any key was hit (before OnKeyHit)
+	Method OnAnyKeyHit:Void()
+	End
+	
+	' fired for each key that was hit
+	Method OnKeyHit:Void(key:Int)
+	End
+	
+	' fired once if any key is down (before OnKeyDown)
+	Method OnAnyKeyDown:Void()
+	End
+	
+	' fired for each key that is down
+	Method OnKeyDown:Void(key:Int)
+	End
+	
+	' fired once if any key was released (before OnKeyReleased)
+	Method OnAnyKeyReleased:Void()
+	End
+	
+	' fired for each key that was released
+	Method OnKeyReleased:Void(key:Int)
+	End
+	
+	Method OnMouseHit:Void(x:Int, y:Int, button:Int)
+	End
+	
+	Method OnMouseDown:Void(x:Int, y:Int, button:Int)
+	End
+	
+	Method OnMouseReleased:Void(x:Int, y:Int, button:Int)
+	End
+End
 
 Class FPSCounter Abstract
 	Global fpsCount:Int
@@ -965,7 +998,7 @@ Class SoundPlayer
 	End
 	
 	Function PlayFx:Int(s:Sound, pan:Float=0, rate:Float=1, volume:Float=1, loop:Int = 0, playChannel:Int = -1)
-		If playChannel = -1
+		If playChannel = -1 Then
 			Local cnt:Int = 0
 			channel += 1
 			If (channel > MAX_CHANNELS) Then channel = 0
@@ -974,7 +1007,7 @@ Class SoundPlayer
 				If (channel > MAX_CHANNELS) Then channel = 0
 				cnt=+1
 				If cnt > MAX_CHANNELS * 2 Then Exit ' stop infinite loop if case all channels are playing
-			Wend
+			End
 		Else
 			channel = playChannel
 			playerChannelState[playChannel] = 0
@@ -985,9 +1018,7 @@ Class SoundPlayer
 		SetChannelPan(channel, pan)
 		SetChannelRate(channel, rate)
 		SetChannelVolume(channel, volume)
-		If loop
-			playerChannelState[channel] = 1		
-		End
+		If loop Then playerChannelState[channel] = 1		
 		Return channel
 	End
 	
