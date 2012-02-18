@@ -171,6 +171,7 @@ Private
 	Field velocityXSpread:Float                 ' the X velocity random spread
 	Field velocityY:Float                       ' the default Y velocity
 	Field velocityYSpread:Float                 ' the Y velocity random spread
+	Field terminalVelocity:Float = -1
 	Field polarVelocityAmplitude:Float          ' the default polar velocity amplitude
 	Field polarVelocityAmplitudeSpread:Float    ' the polar velocity amplitude random spread
 	Field polarVelocityAngle:Float              ' the default polar velocity angle (radians)
@@ -274,6 +275,14 @@ Public
 	Method VelocityYSpread:Void(velocityYSpread:Float) Property
 		Self.velocityYSpread = velocityYSpread
 		Self.usePolar = False
+	End
+	
+	' terminalVelocity
+	Method TerminalVelocity:Float() Property
+		Return terminalVelocity
+	End
+	Method TerminalVelocity:Void(terminalVelocity:Float) Property
+		Self.terminalVelocity = terminalVelocity
 	End
 	
 	' polarVelocityAmplitude
@@ -1461,6 +1470,7 @@ Public
 			Local spawnDistance:Float = spawnMinRange + Rnd() * (spawnMaxRange-spawnMinRange)
 			group.x[index] = emitX + Cosr(spawnAngle) * spawnDistance
 			group.y[index] = emitY + Sinr(spawnAngle) * spawnDistance
+			group.terminalVelocity[index] = terminalVelocity
 			group.usePolar[index] = usePolar
 			If usePolar Then
 				' TODO: adjust for src speed
@@ -1721,6 +1731,7 @@ Public
 		If node.HasAttribute("VelocityXSpread") Then VelocityXSpread = Float(node.GetAttribute("VelocityXSpread"))
 		If node.HasAttribute("VelocityY")       Then VelocityY       = Float(node.GetAttribute("VelocityY"))
 		If node.HasAttribute("VelocityYSpread") Then VelocityYSpread = Float(node.GetAttribute("VelocityYSpread"))
+		If node.HasAttribute("TerminalVelocity") Then TerminalVelocity = Float(node.GetAttribute("TerminalVelocity"))
 		' emitter settings
 		If node.HasAttribute("Name")         Then Name         = node.GetAttribute("Name")
 		If node.HasAttribute("X")            Then X            = Float(node.GetAttribute("X"))
@@ -1763,6 +1774,7 @@ Private
 	Field y:Float[]
 	Field velocityX:Float[]
 	Field velocityY:Float[]
+	Field terminalVelocity:Float[]
 	Field polarVelocityAmplitude:Float[]
 	Field polarVelocityAngle:Float[] ' radians
 	Field usePolar:Bool[]
@@ -1861,6 +1873,7 @@ Private
 		y = New Float[maxParticles]
 		velocityX = New Float[maxParticles]
 		velocityY = New Float[maxParticles]
+		terminalVelocity = New Float[maxParticles]
 		polarVelocityAmplitude = New Float[maxParticles]
 		polarVelocityAngle = New Float[maxParticles]
 		usePolar = New Bool[maxParticles]
@@ -1995,31 +2008,45 @@ Public
 			Local index:Int = alivePointers[i]
 			life[index] -= delta
 			If life[index] > 0 Then
-				' apply acceleration
-				If forceCount > 0 Then
-					' apply forces
-					For Local fi:Int = 0 Until forceCount
-						If Force(forcesArray[fi]).enabled Then
-							Local f:Force = Force(forcesArray[fi])
-							' set particle info in the force
-							f.partX = x[index]
-							f.partY = y[index]
-							f.partVX = velocityX[index]
-							f.partVY = velocityY[index]
-							' apply the force
-							f.Apply(delta)
-							' read it back
-							x[index] = f.partX
-							y[index] = f.partY
-							velocityX[index] = f.partVX
-							velocityY[index] = f.partVY
+				' stop if terminal velocity = 0
+				If terminalVelocity[index] = 0 Then
+					velocityX[index] = 0
+					velocityY[index] = 0
+				Else
+					' apply acceleration
+					If forceCount > 0 Then
+						' apply forces
+						For Local fi:Int = 0 Until forceCount
+							If Force(forcesArray[fi]).enabled Then
+								Local f:Force = Force(forcesArray[fi])
+								' set particle info in the force
+								f.partX = x[index]
+								f.partY = y[index]
+								f.partVX = velocityX[index]
+								f.partVY = velocityY[index]
+								' apply the force
+								f.Apply(delta)
+								' read it back
+								x[index] = f.partX
+								y[index] = f.partY
+								velocityX[index] = f.partVX
+								velocityY[index] = f.partVY
+							End
+						Next
+					End
+					' apply terminal velocity
+					If terminalVelocity[index] > 0 Then
+						Local speed:Float = Sqrt(velocityX[index]*velocityX[index]+velocityY[index]*velocityY[index])
+						If speed > terminalVelocity[index] Then
+							Local speedRatio:Float = terminalVelocity[index] / speed
+							velocityX[index] *= speedRatio
+							velocityY[index] *= speedRatio
 						End
-					Next
-					' TODO: terminal velocity
+					End
+					' update position
+					x[index] += velocityX[index] * delta
+					y[index] += velocityY[index] * delta
 				End
-				' update position
-				x[index] += velocityX[index] * delta
-				y[index] += velocityY[index] * delta
 				' update rotation
 				rotation[index] += rotationSpeed[index] * delta
 				' clip rotation
