@@ -18,3 +18,4 @@ Import font
 Import filesystem
 Import i18n
 Import psystem
+Import stringbuilder
