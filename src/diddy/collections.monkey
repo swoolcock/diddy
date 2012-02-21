@@ -378,7 +378,7 @@ End
 
 Class StringListEnumerator Extends ListEnumerator<StringObject>
 ' Constructors
-	Method New(lst:IList<IntObject>)
+	Method New(lst:IList<StringObject>)
 		Super.New(lst)
 	End
 
@@ -967,13 +967,9 @@ Class StringArrayList Extends ArrayList<StringObject>
 	Method FillStringArray:Int(arr:String[])
 		AssertLessThanInt(arr.Length, size, "StringArrayList.FillStringArray: Array too small:")
 		For Local i:Int = 0 Until size
-			If StringObject(elements[i]).value = value Then
-				Remove(elements[i])
-				modCount += 1
-				Return True
-			End
+			arr[i] = StringObject(elements[i]).value
 		Next
-		Return False
+		Return size
 	End
 End
 
@@ -1068,7 +1064,7 @@ Private
 	Field indices:Int[]
 	Field size:Int
 	Field arraySize:Int
-	Field defaultValue:E
+	Field defaultValue:Int
 	
 	' resizes the arrays if necessary to ensure they can fit minCapacity elements
 	Method EnsureCapacity:Void(minCapacity:Int)
@@ -1136,7 +1132,7 @@ Public
 				Return oldVal
 			End
 		Next
-		ResizeArrays()
+		EnsureCapacity(size+1)
 		indices[size] = index
 		elements[size] = value
 		size += 1
@@ -1173,7 +1169,7 @@ Private
 	End
 	
 Public
-	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String=Null)
+	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String="")
 		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
 		elements = New String[defaultCapacity]
 		indices = New Int[defaultCapacity]
@@ -1227,7 +1223,7 @@ Public
 				Return oldVal
 			End
 		Next
-		ResizeArrays()
+		EnsureCapacity(size+1)
 		indices[size] = index
 		elements[size] = value
 		size += 1
@@ -1236,7 +1232,7 @@ Public
 	
 	Method Clear:Int()
 		For Local i% = 0 Until size
-			elements[i] = Null
+			elements[i] = ""
 		Next
 		Local oldSize:Int = size
 		size = 0
@@ -1266,7 +1262,7 @@ Private
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Float=0)
 		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
-		elements = New Int[defaultCapacity]
+		elements = New Float[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
 		Self.defaultValue = defaultValue
@@ -1318,7 +1314,7 @@ Public
 				Return oldVal
 			End
 		Next
-		ResizeArrays()
+		EnsureCapacity(size+1)
 		indices[size] = index
 		elements[size] = value
 		size += 1
