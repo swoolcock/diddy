@@ -59,7 +59,7 @@ Public
 		Mark()
 		Local rv:String = ReadChar()
 		Reset()
-		Return rv
+		Return rv[0]
 	End
 	
 	Method PeekString:String(length:Int)

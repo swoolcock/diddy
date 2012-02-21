@@ -544,8 +544,8 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Elseif orientation = MAP_ORIENTATION_ISOMETRIC Then
 			rv.x = -height * tileWidth / 2
 			rv.y = tileHeight - maxTileHeight
-			rv.w = (width - 2) * tileWidth / 2 + maxTileWidth - rv.X
-			rv.h = (width + height) * tileHeight / 2 - rv.Y
+			rv.w = (width - 2) * tileWidth / 2 + maxTileWidth - rv.x
+			rv.h = (width + height) * tileHeight / 2 - rv.y
 		Endif
 		Return rv
 	End
@@ -759,8 +759,8 @@ Public
 	End
 	
 	Method Set:Void(value:Float)
-		RawValue = value
-		ValueType = 1
+		rawValue = value
+		valueType = 1
 	End
 	
 	Method Set:Void(value:Bool)
@@ -769,7 +769,7 @@ Public
 		Else
 			rawValue = "false"
 		Endif
-		ValueType = 2
+		valueType = 2
 	End
 	
 	Method Set:Void(value:String)
