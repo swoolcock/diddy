@@ -1,33 +1,41 @@
 Import diddy
 
+Const VERTICAL:Int = 0
+Const HORIZONTAL:Int = 1
+	
 Class SimpleMenu Extends List<SimpleButton>
 	Field x:Float, y:Float
 	Field buttonGap:Int = 0
 	Field mouseOverName:String = ""
 	Field clickedName:String = ""
 	Field clearClickedName:Int = 1 
+	Field nextX:Int = 0
 	Field nextY:Int = 0
 	Field w:Int, h:Int
 	Field addGap:Int = 0
 	Field soundMouseOver:GameSound
 	Field soundClick:GameSound
 	Field useVirtualRes:Bool = False
+	Field orientation:Int = VERTICAL
 	
 	Method New()
 		Error "Please use a different constructor"
 	End
 	
-	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int, useVirtualRes:Bool)
-		Init(soundMouseOverFile, soundClickFile, x, y, gap, useVirtualRes)
+	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int, useVirtualRes:Bool, orientation:Int = VERTICAL)
+		Init(soundMouseOverFile, soundClickFile, x, y, gap, useVirtualRes, orientation)
 	End
 	
-	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int, useVirtualRes:Bool)
+	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int, useVirtualRes:Bool, orientation:Int)
 		Self.Clear()
 		Self.useVirtualRes = useVirtualRes
+		Self.orientation = orientation
 		Self.x = x
 		Self.y = y
+		nextX = x
 		nextY = y
 		Self.buttonGap = gap
+		w = 0
 		h = 0
 		mouseOverName = ""
 		clickedName = ""
@@ -136,7 +144,11 @@ Class SimpleMenu Extends List<SimpleButton>
 
 	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String="")
 		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name)
-		IncreaseHeight(b)
+		If orientation = VERTICAL
+			IncreaseHeight(b)
+		Else
+			IncreaseWidth(b)
+		End
 		Return b
 	End
 	
@@ -150,13 +162,30 @@ Class SimpleMenu Extends List<SimpleButton>
 			addGap = 1
 		End			
 	End
-	
+
+	Method IncreaseWidth:Void(b:SimpleButton)
+		nextX = nextX + b.image.w + buttonGap
+
+		w = w + b.image.w
+		If addGap Then
+			w = w + buttonGap
+		Else
+			addGap = 1
+		End
+	End
+
 	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String)
 		Local b:SimpleButton = New SimpleButton
 		b.Load(buttonImageFile, mouseOverFile)
 		b.useVirtualRes = Self.useVirtualRes
+		b.orientation = Self.orientation
 		If name <> "" Then b.name = name.ToUpper()
-		b.CentreX(nextY)
+		If orientation = VERTICAL
+			b.CentreX(nextY)
+		Else
+			b.MoveTo(nextX, nextY)
+		End
+		
 		b.soundMouseOver = soundMouseOver 
 		b.soundClick = soundClick 
 		AddLast(b)
@@ -218,6 +247,7 @@ Class SimpleButton Extends Sprite
 	Field soundClick:GameSound
 	Field imageMouseOver:GameImage
 	Field useVirtualRes:Bool = False
+	Field orientation:Int = VERTICAL
 	
 	Method Precache:Void()
 		If image<>null
@@ -252,6 +282,14 @@ Class SimpleButton Extends Sprite
 			MoveTo((DEVICE_WIDTH-image.w)/2, yCoord)
 		End
 		
+	End
+	
+	Method CentreY:Void(xCoord:Int)
+		If useVirtualRes
+			MoveTo((SCREEN_HEIGHT-image.h)/2, xCoord)
+		Else
+			MoveTo((DEVICE_HEIGHT-image.h)/2, xCoord)
+		End
 	End
 	
 	Method MoveBy:Void(dx:Float,dy:Float)
