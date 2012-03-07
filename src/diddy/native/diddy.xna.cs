@@ -86,45 +86,55 @@ class diddy
 	public static void stopVibrate()
 	{
 	}
+	
 	public static int getDayOfMonth()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Day;
 	}
 	
 	public static int getDayOfWeek()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return (int)(d.DayOfWeek);
 	}
 	
 	public static int getMonth()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Month;
 	}
 	
 	public static int getYear()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Year;
 	}
 	
 	public static int getHours()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Hour;
 	}
 	
 	public static int getMinutes()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Minute;
 	}
 	
 	public static int getSeconds()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Second;
 	}
 	
 	public static int getMilliSeconds()
 	{
-		return 0;
+		DateTime d = DateTime.Now;
+		return d.Millisecond;
 	}
+	
 	public static void startGps()
 	{
 	}

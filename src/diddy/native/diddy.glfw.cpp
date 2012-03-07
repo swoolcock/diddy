@@ -78,42 +78,58 @@ class diddy
 	
 	static int getDayOfMonth()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wDay;
 	}
 	
 	static int getDayOfWeek()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wDayOfWeek;
 	}
 	
 	static int getMonth()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wMonth;
 	}
 	
 	static int getYear()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wYear;
 	}
 	
 	static int getHours()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wHour;
 	}
 	
 	static int getMinutes()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wMinute;
 	}
 	
 	static int getSeconds()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wSecond;
 	}
 	
 	static int getMilliSeconds()
 	{
-		return 0;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return st.wMilliseconds;
 	}
 	
 	static void startGps()
