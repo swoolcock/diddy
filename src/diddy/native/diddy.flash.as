@@ -1,5 +1,6 @@
 import flash.ui.Mouse;
 import flash.external.ExternalInterface;
+import Date;
 
 class diddy
 {
@@ -75,43 +76,52 @@ class diddy
 	
 	static public function getDayOfMonth():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getDate();
 	}
 	
 	static public function getDayOfWeek():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getDay();
 	}
 	
 	static public function getMonth():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getMonth();
 	}
 
 	static public function getYear():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getFullYear();
 	}
 	
 	static public function getHours():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getHours();
 	}
 	
 	static public function getMinutes():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getMinutes();
 	}
 	
 	static public function getSeconds():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getSeconds();
 	}
 	
 	static public function getMilliSeconds():int
 	{
-		return 0;
+		var d:Date = new Date();
+		return d.getMilliseconds();
 	}
+	
 	static public function startGps():void
 	{
 	}
