@@ -65,6 +65,7 @@ Public
 			End
 		Next
 		Error("Couldn't find field" + name)
+		Return 0
 	End
 	
 	Method ReadFloat:Float(name:String)
@@ -75,6 +76,7 @@ Public
 			End
 		Next
 		Error("Couldn't find field" + name)
+		Return 0
 	End
 	
 	Method ReadString:String(name:String)
@@ -85,6 +87,7 @@ Public
 			End
 		Next
 		Error("Couldn't find field" + name)
+		Return ""
 	End
 	
 	Method ReadSerializable:ISerializable(name:String)
@@ -110,6 +113,7 @@ Public
 			End
 		Next
 		Error("Couldn't find field" + name)
+		Return Null
 	End
 	
 	Method SerializeObject:XMLElement(name:String, value:ISerializable)
