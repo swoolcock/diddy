@@ -603,7 +603,7 @@ Public
 	
 	' Overrides IList
 	Method RemoveFirst:E()
-		Return Remove(0)
+		Return RemoveAt(0)
 	End
 	
 	' Overrides IList

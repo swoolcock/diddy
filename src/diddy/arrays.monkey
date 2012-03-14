@@ -112,7 +112,7 @@ Class Arrays<T>
 		Local length:Int = endIndex-startIndex
 		Local rv:T[] = New T[length]
 		For Local i:Int = 0 Until length
-			rv[i] = arr[start+i]
+			rv[i] = arr[startIndex+i]
 		Next
 		Return rv
 	End
