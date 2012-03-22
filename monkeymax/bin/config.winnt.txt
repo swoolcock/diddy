@@ -1,0 +1,104 @@
+'--------------------
+' BlitzMax path
+'
+BMAX_PATH="C:\Apps\BlitzMax\bin\bmk.exe"
+
+'--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+'for opening .html files...
+'
+HTML_PLAYER="${TRANSDIR}\mserver_winnt.exe"
+'--------------------
+
+'--------------------
+'Ant build tool path
+'
+'Must be set to a valid dir for ANDROID target support
+'
+'Ant is currently available here: 
+'	http://ant.apache.org/bindownload.cgi
+'
+ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.8.2"
+ANT_PATH="${SYSTEMDRIVE}\ant"
+'--------------------
+
+'--------------------
+'MinGW path.
+'
+'Must be set to a valid dir for STDCPP target support.
+'
+'MinGW is currently available here:
+'	http://tdm-gcc.tdragon.net/download
+'
+MINGW_PATH="${SYSTEMDRIVE}\MinGW32"
+MINGW_PATH="${SYSTEMDRIVE}\MinGW"
+'--------------------
+
+'--------------------
+'Java dev kit path
+'
+'Must be set to a valid dir for ANDROID and FLASH target support
+'
+'Make sure to install the 32 bit JDK, even on 64 bit Windows!
+'
+'The Java JDK is currently available here:
+'	http://www.oracle.com/technetwork/java/javase/downloads/index.html
+'
+JDK_PATH="${PROGRAMFILES}\Java\jdk1.7.0_02"
+JDK_PATH="${PROGRAMFILES}\Java\jdk1.6.0_23"
+JDK_PATH="${PROGRAMFILES}\Java\jdk1.6.0_21"
+JDK_PATH="${PROGRAMFILES}\Java\jdk1.6.0_19"
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support
+'
+'The Android SDK is currently available here:
+'	http://developer.android.com/sdk/index.html
+'
+ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
+'--------------------
+
+'--------------------
+'Flex SDK and flash player path.
+'
+'FLEX_PATH Must be set for FLASH target support.
+'
+'Either HTML_PLAYER or FLASH_PLAYER must be set for FLASH target support.
+'
+'The Flex SDK is currently available here:
+'	http://opensource.adobe.com/wiki/display/flexsdk/Flex+SDK
+'
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.6"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.5"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1.0.16076"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
+'
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="${SYSTEMDRIVE}\flex_sdk_4.0\flashplayer_10_sa_debug.exe"
+'
+'--------------------
+
+'--------------------
+'MSBUILD path.
+'
+'Must be set for XNA and GLFW target support.
+'
+'Visual C++ 2010 Express is required for GLFW target support and is currently available here:
+'	http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+'
+'Visual C# 2010 Express and XNA 4.0 are requred for XNA target support and are currently available here:
+'	http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-csharp-express
+'	http://www.microsoft.com/download/en/details.aspx?id=23714
+'
+MSBUILD_PATH="${WINDIR}\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
+'--------------------
