@@ -206,10 +206,16 @@ Type gxtkGraphics
 	EndMethod
 	
 	Method SetScissor:Int(x:int, y:int, w:int, h:int)
+    'TO-DO
 		Return 0
 	EndMethod
 	
-	Method SetMatrix:Int(x:float,iy:float,jx:float,jy:float,tx:float,ty:float)
+	Method SetMatrix:Int(ix:float,iy:float,jx:float,jy:float,tx:float,ty:float)
+		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
+		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
+		Local rot:Float = Atan2( jx, ix )
+		SetTransform( rot, sx, sy )
+		SetOrigin( tx, ty )
 		Return 0
 	EndMethod
 	
