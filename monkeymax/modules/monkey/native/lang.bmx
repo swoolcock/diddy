@@ -12,13 +12,17 @@ Function popErr()
 EndFunction
 
 Function error( err:String )
-	RuntimeError err;
+	If err = "" Then
+		End
+	Else
+		RuntimeError err;
+	EndIf
 EndFunction
 
-Function resize_string_array:String[]( arr:String[], leng:int )
+Function resize_string_array:String[]( arr:String[], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[0..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
 	While( i<leng )
 		arr[i]="";
 		i:+1
@@ -26,10 +30,10 @@ Function resize_string_array:String[]( arr:String[], leng:int )
 	Return arr;
 EndFunction
 
-Function resize_float_array:Float[]( arr:Float[], leng:int )
+Function resize_float_array:Float[]( arr:Float[], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[0..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
 	While( i<leng )
 		arr[i]=0;
 		i:+1
@@ -37,10 +41,10 @@ Function resize_float_array:Float[]( arr:Float[], leng:int )
 	Return arr;
 EndFunction
 
-Function resize_int_array:Int[]( arr:int[], leng:int )
+Function resize_int_array:Int[]( arr:Int[], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[0..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
 	While( i<leng )
 		arr[i]=0;
 		i:+1
@@ -48,32 +52,21 @@ Function resize_int_array:Int[]( arr:int[], leng:int )
 	Return arr;
 EndFunction
 
-function resize_object_array:Object[]( arr:Object[],leng:int )
-	Local i:int=arr.length;
+Function resize_object_array:Object[]( arr:Object[],leng:Int )
+	Local i:Int=arr.length;
 	arr=arr[0..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
 	While( i<leng )
-		arr[i]=null;
+		arr[i]=Null;
 		i:+1
 	Wend
 	Return arr;
 EndFunction
 
-Function resize_array_array_Int:Int[][]( arr:int[][], leng:int )
+Function resize_array_array_Int:Int[][]( arr:Int[][], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[..leng];
-	if( leng<=i ) return arr;
-	While( i<leng )
-		arr[0][i]=0;
-		i:+1
-	Wend
-	Return arr;
-EndFunction
-
-Function resize_array_array_Float:Float[][]( arr:Float[][], leng:int )
-	Local i:Int = arr.length;
-	arr = arr[..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
 	While( i<leng )
 		arr[0][i]=0;
 		i:+1
@@ -81,10 +74,21 @@ Function resize_array_array_Float:Float[][]( arr:Float[][], leng:int )
 	Return arr;
 EndFunction
 
-Function resize_array_array_String:String[][]( arr:String[][], leng:int )
+Function resize_array_array_Float:Float[][]( arr:Float[][], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[..leng];
-	if( leng<=i ) return arr;
+	If( leng<=i ) Return arr;
+	While( i<leng )
+		arr[0][i]=0;
+		i:+1
+	Wend
+	Return arr;
+EndFunction
+
+Function resize_array_array_String:String[][]( arr:String[][], leng:Int )
+	Local i:Int = arr.length;
+	arr = arr[..leng];
+	If( leng<=i ) Return arr;
 	While( i<leng )
 		arr[0][i]="";
 		i:+1
