@@ -202,19 +202,19 @@ Type gxtkGraphics
 	
 	Method Height:Int()
 		'TO-DO
-		Return 600
+		Return 480
 	EndMethod
 	
 	Method SetScissor:Int(x:int, y:int, w:int, h:int)
-    'TO-DO
 		Return 0
 	EndMethod
-	
+
 	Method SetMatrix:Int(ix:float,iy:float,jx:float,jy:float,tx:float,ty:float)
-		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
-		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
-		Local rot:Float = Atan2( jx, ix )
-		SetTransform( rot, sx, sy )
+'		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
+'		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
+'		Local rot:Float = Atan2( jx, ix )
+'		SetTransform( rot, sx, sy )
+		SetTransform( 0, ix, jy )
 		SetOrigin( tx, ty )
 		Return 0
 	EndMethod
@@ -225,15 +225,7 @@ Type gxtkGraphics
 	EndMethod
 	
 	Method DrawSurface2:Int(surface:gxtkSurface,x:Float,y:Float, srcx:int, srcy:int, srcw:int, srch:int )
-
-	'	Print "x = "+x
-	'	Print "y = "+y
-	'	Print "srcx = "+srcx
-	'	Print "srcy = "+srcy
-	'	Print "srcw = "+srcw
-	'	Print "srch = "+srch
-		DrawSubImageRect(surface.image, x, y, srcw, srch, srcx, srcy, srcw, srch)
-		
+		DrawSubImageRect(surface.image, x, y, srcw, srch, srcx, srcy, srcw, srch)		
 		Return 0
 	EndMethod
 	
@@ -260,18 +252,24 @@ EndType
 
 Type gxtkInput
 	Method MouseX:Float()
-		return 0
+		return BRL.PolledInput.MouseX()
 	EndMethod
 
 	Method MouseY:Float()
-		return 0
+		return BRL.PolledInput.MouseY()
 	EndMethod
 	
 	Method KeyDown:Int( key:Int )
+		If( key >= 1 And key <= 3 )
+			Return BRL.PolledInput.MouseDown( key )
+		Endif
 		return BRL.PolledInput.KeyDown( key )
 	EndMethod
 
 	Method KeyHit:Int( key:Int )
+		If( key >= 1 And key <= 3 )
+			Return BRL.PolledInput.MouseHit( key )
+		Endif
 		return BRL.PolledInput.KeyHit( key )
 	EndMethod
 
@@ -376,7 +374,12 @@ Function BlitzMaxSetColor(r:Int, g:Int, b:Int)
 EndFunction
 
 Function BlitzMaxSetBlend(blend:Int)
-	SetBlend(blend)
+	Select blend
+		Case 0
+			SetBlend( ALPHABLEND )
+		Case 1
+			SetBlend( LIGHTBLEND )
+	End Select
 EndFunction
 
 Function BlitzMaxSetAlpha(a:Float)

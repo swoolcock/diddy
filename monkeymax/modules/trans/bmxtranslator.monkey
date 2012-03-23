@@ -206,11 +206,12 @@ Class BmxTranslator Extends CTranslator
 		Else If IntType( dst )
 			If BoolType( src ) Return Bra( texpr )
 			If IntType( src ) Return texpr
-			If FloatType( src ) Return Bra( texpr )
+			If FloatType( src ) Return "Int("+Bra( texpr )+")"
 '			If StringType( src ) Return Bra( texpr )
 			If StringType( src ) Return "Int("+Bra( texpr )+")"
 		Else If FloatType( dst )
-			If NumericType( src ) Return texpr
+'			If NumericType( src ) Return texpr
+			If NumericType( src ) Return "Float("+texpr+")"
 			If StringType( src ) 	Return texpr
 		Else If StringType( dst )
 			If NumericType( src ) Return texpr
@@ -230,7 +231,12 @@ Class BmxTranslator Extends CTranslator
 	Method TransUnaryExpr$( expr:UnaryExpr )
 		Local pri=ExprPri( expr )
 		Local t_expr$=TransSubExpr( expr.expr,pri )
-		Return TransUnaryOp( expr.op )+t_expr
+'		Return TransUnaryOp( expr.op )+t_expr
+		If( expr.op = "not" )
+			Return "(" + TransUnaryOp( expr.op )+t_expr + ")"
+		Else
+			Return TransUnaryOp( expr.op )+t_expr
+		Endif
 	End
 	
 	Method TransBinaryExpr$( expr:BinaryExpr )
@@ -239,7 +245,12 @@ Class BmxTranslator Extends CTranslator
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
 		Local t_expr$=t_lhs+TransBinaryOp( expr.op,t_rhs )+t_rhs
 		If expr.op="/" And IntType( expr.exprType ) t_expr=Bra( Bra(t_expr)+"|0" )
-		Return t_expr
+'		Return t_expr
+		If( expr.op="and" Or expr.op="or" )
+			Return "(" + t_expr + ")"
+		Else
+			Return t_expr
+		Endif
 	End
 	
 	Method TransIndexExpr$( expr:IndexExpr )
@@ -267,7 +278,8 @@ Class BmxTranslator Extends CTranslator
 		Endif
 		If expr.from t_args=expr.from.Trans()
 '		If expr.term t_args+=","+expr.term.Trans()
-		If expr.term t_args+="..("+expr.term.Trans()+")"
+		t_args+=".."
+		If expr.term t_args+="("+expr.term.Trans()+")"
 '		Return t_expr+".slice("+t_args+")"
 		Return t_expr+"["+t_args+"]"
 	End
@@ -566,7 +578,7 @@ Class BmxTranslator Extends CTranslator
 	End
 	
 Method Enquote$( str$ )
-	str=str.Replace( "\","\\" )
+'	str=str.Replace( "\","\\" )
 	str=str.Replace( "~q","~~q" )
 	str=str.Replace( "~n","~~n" )
 	str=str.Replace( "~r","~~r" )
@@ -694,7 +706,7 @@ End
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.munged
 
-'		Print "superid ="+superid
+'		Print "superid = "+superid + " " + classid
 		
 		If classDecl.IsInterface() 
 
@@ -728,10 +740,11 @@ End
 
 		Local bases$
 		For Local iface:=Eachin classDecl.implments
-			If bases bases+="," Else bases=" implements "
+'			If bases bases+="," Else bases=" implements "
+			If bases bases+="," Else bases=" extends "
 			bases+=iface.munged
 		Next
-		
+
 		Local ab$=""
 		If classDecl.IsAbstract()
 			ab="Abstract"
@@ -739,6 +752,8 @@ End
 		
 		If superid<>"Object"
 			Emit "Type "+classid+" extends "+superid+bases + " " + ab
+		Elseif bases<>""
+			Emit "Type "+classid+bases + " " + ab
 		Else
 			Emit "Type "+classid + " " + ab
 		Endif
