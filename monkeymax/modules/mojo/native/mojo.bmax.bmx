@@ -7,31 +7,28 @@ Type gxtkApp
 	Field gaudio:gxtkAudio;
 	Field ggraphics:gxtkGraphics;
 
-	Field dead:int=0;
-	Field suspended:int=0;
-	Field vloading:int=0;
-	Field maxloading:int=0;
-	Field updateRate:int=0;
+	Field dead:Int=0;
+	Field suspended:Int=0;
+	Field vloading:Int=0;
+	Field maxloading:Int=0;
+	Field updateRate:Int=0;
 	Field nextUpdate:Float=0;
 	Field updatePeriod:Float=0;
 	Field startMillis:Float=0;
 	
 	Method New()' gxtkApp()
-		app=self;
-		ggraphics=new gxtkGraphics;
+		app=Self;
+		ggraphics=New gxtkGraphics;
 	EndMethod
 	
 	Method Setup()
-		
-		ginput=new gxtkInput;
-		gaudio=new gxtkAudio;
+		ginput=New gxtkInput;
+		gaudio=New gxtkAudio;
 
 		bb_input_SetInputDevice(ginput);
 		bb_audio_SetAudioDevice(gaudio);
 		
 		startMillis=BlitzMaxMillisecs()
-		
-		'game.stage.addEventListener( Event.ENTER_FRAME,OnEnterFrame );
 		
 		SetFrameRate( 0 );
 		
@@ -42,55 +39,55 @@ Type gxtkApp
 	
 	Method Update()
 		While Not AppTerminate()
-			local updates:Int = 0
+			Local updates:Int = 0
 			
-			local cont:int = 1
+			Local cont:Int = 1
 			While (cont)
 				nextUpdate:+updatePeriod
 				InvokeOnUpdate()
-				if not updatePeriod then cont = 0
-				if nextUpdate>BlitzMaxMillisecs() then cont = 0
+				If Not updatePeriod Then cont = 0
+				If nextUpdate>BlitzMaxMillisecs() Then cont = 0
 				updates:+1
-				if updates = 7 then
+				If updates = 7 Then
 					nextUpdate = BlitzMaxMillisecs()
 					cont = 0
-				endif
+				EndIf
 			Wend
 			InvokeOnRender()
 		Wend
 	EndMethod
 	
 	Method InvokeOnCreate()
-		if dead return
+		If dead Return
 		dead = 1
 		OnCreate()
 		dead = 0
 	EndMethod
 
 	Method InvokeOnUpdate()
-		if dead or suspended or not updateRate or vloading return
+		If dead Or suspended Or Not updateRate Or vloading Return
 		OnUpdate()
 	EndMethod
 	
 	Method InvokeOnRender()
-		if dead or suspended return
+		If dead Or suspended Return
 		ggraphics.BeginRender()
-		if vloading
+		If vloading
 			OnLoading()
-		else
+		Else
 			OnRender()
-		Endif
+		EndIf
 		ggraphics.EndRender()
 	EndMethod
 	
 	
-	Method SetFrameRate( fps:int )
-		if fps
+	Method SetFrameRate( fps:Int )
+		If fps
 			updatePeriod=1000.0/fps;
 			nextUpdate=BlitzMaxMillisecs() +updatePeriod;
-		else
+		Else
 			updatePeriod=0
-		endif
+		EndIf
 	EndMethod
 	
 	Method LoadString:String( path:String )
@@ -112,42 +109,42 @@ Type gxtkApp
 		Return gaudio
 	EndMethod
 
-	Method SetUpdateRate:int(hertz:int)
+	Method SetUpdateRate:Int(hertz:Int)
 		updateRate = hertz
-		if not vloading then SetFrameRate(updateRate)
+		If Not vloading Then SetFrameRate(updateRate)
 		Return 0
 	EndMethod
 	
 	Method MilliSecs:Int()
-		return BlitzMaxMillisecs() - startMillis
+		Return BlitzMaxMillisecs() - startMillis
 	EndMethod
 	
-	Method Loading:int()
-		return vloading;
+	Method Loading:Int()
+		Return vloading;
 	EndMethod
 
-	Method OnCreate:int()
-		return 0;
+	Method OnCreate:Int()
+		Return 0;
 	EndMethod
 
-	Method OnUpdate:int()
-		return 0;
+	Method OnUpdate:Int()
+		Return 0;
 	EndMethod
 	
-	Method OnSuspend:int()
-		return 0;
+	Method OnSuspend:Int()
+		Return 0;
 	EndMethod
 	
-	Method OnResume:int()
-		return 0;
+	Method OnResume:Int()
+		Return 0;
 	EndMethod
 	
-	Method OnRender:int()
-		return 0;
+	Method OnRender:Int()
+		Return 0;
 	EndMethod
 	
-	Method OnLoading:int()
-		return 0;
+	Method OnLoading:Int()
+		Return 0;
 	EndMethod
 EndType
 
@@ -155,22 +152,22 @@ Type gxtkGraphics
 	Field gmode:Int = 1
 
 	Method Mode:Int()
-		return gmode
+		Return gmode
 	EndMethod
 	
-	Method Cls:Int(r:int = 0, g:int = 0, b:int = 0)
+	Method Cls:Int(r:Int = 0, g:Int = 0, b:Int = 0)
 		BlitzMaxCls(r, g, b)
 		Return 0
 	EndMethod
 	
 	Method LoadSurface:gxtkSurface(path:String)
-		local image:TImage = LoadImage("data/"+path)
-		if image then
-			local gs:gxtkSurface = new gxtkSurface
+		Local image:TImage = LoadImage("data/"+path)
+		If image Then
+			Local gs:gxtkSurface = New gxtkSurface
 			gs.setImage(image)
-			return gs
-		endif
-		return null
+			Return gs
+		EndIf
+		Return Null
 	EndMethod
 	
 	Method BeginRender()
@@ -182,17 +179,17 @@ Type gxtkGraphics
 	
 	Method SetColor:Int(r:Int, g:Int, b:Int)
 		BlitzMaxSetColor(r, g, b)
-		return 0
+		Return 0
 	EndMethod
 	
 	Method SetAlpha:Int(a:Float)
 		BlitzMaxSetAlpha(a)
-		return 0
+		Return 0
 	EndMethod
 	
 	Method SetBlend:Int(blend:Int)
 		BlitzMaxSetBlend(blend)
-		return 0
+		Return 0
 	EndMethod
 	
 	Method Width:Int()
@@ -205,11 +202,11 @@ Type gxtkGraphics
 		Return 480
 	EndMethod
 	
-	Method SetScissor:Int(x:int, y:int, w:int, h:int)
+	Method SetScissor:Int(x:Int, y:Int, w:Int, h:Int)
 		Return 0
 	EndMethod
 
-	Method SetMatrix:Int(ix:float,iy:float,jx:float,jy:float,tx:float,ty:float)
+	Method SetMatrix:Int(ix:Float,iy:Float,jx:Float,jy:Float,tx:Float,ty:Float)
 '		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
 '		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
 '		Local rot:Float = Atan2( jx, ix )
@@ -224,7 +221,7 @@ Type gxtkGraphics
 		Return 0
 	EndMethod
 	
-	Method DrawSurface2:Int(surface:gxtkSurface,x:Float,y:Float, srcx:int, srcy:int, srcw:int, srch:int )
+	Method DrawSurface2:Int(surface:gxtkSurface,x:Float,y:Float, srcx:Int, srcy:Int, srcw:Int, srch:Int )
 		DrawSubImageRect(surface.image, x, y, srcw, srch, srcx, srcy, srcw, srch)		
 		Return 0
 	EndMethod
@@ -252,49 +249,49 @@ EndType
 
 Type gxtkInput
 	Method MouseX:Float()
-		return BRL.PolledInput.MouseX()
+		Return BRL.PolledInput.MouseX()
 	EndMethod
 
 	Method MouseY:Float()
-		return BRL.PolledInput.MouseY()
+		Return BRL.PolledInput.MouseY()
 	EndMethod
 	
 	Method KeyDown:Int( key:Int )
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseDown( key )
-		Endif
-		return BRL.PolledInput.KeyDown( key )
+		EndIf
+		Return BRL.PolledInput.KeyDown( key )
 	EndMethod
 
 	Method KeyHit:Int( key:Int )
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseHit( key )
-		Endif
-		return BRL.PolledInput.KeyHit( key )
+		EndIf
+		Return BRL.PolledInput.KeyHit( key )
 	EndMethod
 
 	Method GetChar:Int()
-		return BRL.PolledInput.GetChar()
+		Return BRL.PolledInput.GetChar()
 	EndMethod
 
 	Method JoyX:Int( index:Int )
-		return Pub.FreeJoy.JoyX( index )
+		Return Pub.FreeJoy.JoyX( index )
 	EndMethod
 
 	Method JoyY:Int( index:Int )
-		return Pub.FreeJoy.JoyY( index )
+		Return Pub.FreeJoy.JoyY( index )
 	EndMethod
 
 	Method JoyZ:Int( index:Int )
-		return Pub.FreeJoy.JoyZ( index )
+		Return Pub.FreeJoy.JoyZ( index )
 	EndMethod
 
 	Method TouchX:Float( index:Int )
-		return 0
+		Return 0
 	EndMethod
 
 	Method TouchY:Float( index:Int )
-		return 0
+		Return 0
 	EndMethod
 EndType
 
@@ -305,11 +302,11 @@ Type gxtkAudio
 '		If( musicState = 1 And music.isPlaying() = False )
 '			musicState = 0;
 '		Endif
-		return amusicState;
+		Return amusicState;
 	EndMethod
 	
-	Method PlayMusic:Int( path:String, flags:int )
-		return 0
+	Method PlayMusic:Int( path:String, flags:Int )
+		Return 0
 	EndMethod
 	
 	Method StopMusic()
@@ -366,7 +363,7 @@ Function BlitzMaxDrawLine:Int( x1:Float,y1:Float,x2:Float,y2:Float )
 EndFunction
 
 Function BlitzMaxMillisecs:Int()
-	return MilliSecs()
+	Return MilliSecs()
 EndFunction
 
 Function BlitzMaxSetColor(r:Int, g:Int, b:Int)
@@ -396,15 +393,15 @@ Type gxtkSurface
 	Field image:TImage
 	
 	Method setImage(image:TImage)
-		self.image = image
+		Self.image = image
 	EndMethod
 	
 	Method Width:Int()
-		return image.Width
+		Return image.Width
 	EndMethod
 	
 	Method Height:Int()
-		return image.Height
+		Return image.Height
 	EndMethod
 	
 	Method Discard()
