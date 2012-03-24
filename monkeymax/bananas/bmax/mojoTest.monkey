@@ -16,23 +16,36 @@ End
 Class MyGame Extends App
 	Field spr:Ship
 	Field img:Image
+	Field lazer:Sound
 	
 	Method OnCreate:Int()
 		SetUpdateRate 60
 		Print "millisec = "+Millisecs()
 		spr = New Ship (LoadImage("Ship1.png", 64, 64, 6), 100, 100)
 		img = LoadImage("Ship1.png")
+		lazer = LoadSound("lazer.ogg")
+		
 		Return 0
 	End
 	
 	Method OnUpdate:Int()
 		spr.Update()
+		If KeyHit(KEY_ESCAPE) Then Error""
+		If KeyHit(KEY_SPACE) Then
+			Print "SPACE MAN"
+			PlaySound (lazer, 0)
+		Endif
+		
+		If MouseHit(MOUSE_LEFT) Then Print "MOUSE"
 		Return 0		
 	End
 	
 	Method OnRender:Int()
 		Cls(100,100,100)
+		SetBlend AlphaBlend
+		SetAlpha 0.7
 		DrawText("HELLO", DeviceWidth()/2, 10, .5, .5)
+
 		DrawImage(img, 10, 64)
 		SetColor(255,255,0)
 		spr.Draw()
@@ -45,6 +58,8 @@ Class MyGame Extends App
 		DrawPoly tri
 		SetColor(255,0,0)
 		DrawRect(100,300,100,50)
+		SetAlpha 1
+
 		SetColor(255,255,255)
 		DrawImageRect(img, 10, 128, 32, 0, 64, 64)
 		
@@ -100,7 +115,9 @@ Class Ship Extends Sprite
 				reverse = False
 			End
 		End
-		x+=.5
-		y+=.2
+		If KeyDown(KEY_UP) Then y-=2
+		If KeyDown(KEY_DOWN) Then y+=2
+		If KeyDown(KEY_LEFT) Then x-=2
+		If KeyDown(KEY_RIGHT) Then x+=2
 	End
 End
