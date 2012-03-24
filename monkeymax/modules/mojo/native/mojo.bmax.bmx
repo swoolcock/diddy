@@ -1,39 +1,39 @@
 ' ***** Start mojo.bmax.bmx ******
 
-Global app:gxtkApp;
+Global app:gxtkApp
 
 Type gxtkApp
-	Field ginput:gxtkInput;
-	Field gaudio:gxtkAudio;
-	Field ggraphics:gxtkGraphics;
+	Field ginput:gxtkInput
+	Field gaudio:gxtkAudio
+	Field ggraphics:gxtkGraphics
 
-	Field dead:Int=0;
-	Field suspended:Int=0;
-	Field vloading:Int=0;
-	Field maxloading:Int=0;
-	Field updateRate:Int=0;
-	Field nextUpdate:Float=0;
-	Field updatePeriod:Float=0;
-	Field startMillis:Float=0;
+	Field dead:Int=0
+	Field suspended:Int=0
+	Field vloading:Int=0
+	Field maxloading:Int=0
+	Field updateRate:Int=0
+	Field nextUpdate:Float=0
+	Field updatePeriod:Float=0
+	Field startMillis:Float=0
 	
 	Method New()' gxtkApp()
-		app=Self;
-		ggraphics=New gxtkGraphics;
+		app=Self
+		ggraphics=New gxtkGraphics
 	EndMethod
 	
 	Method Setup()
-		ginput=New gxtkInput;
-		gaudio=New gxtkAudio;
+		ginput=New gxtkInput
+		gaudio=New gxtkAudio
 
-		bb_input_SetInputDevice(ginput);
-		bb_audio_SetAudioDevice(gaudio);
+		bb_input_SetInputDevice(ginput)
+		bb_audio_SetAudioDevice(gaudio)
 		
 		startMillis=BlitzMaxMillisecs()
 		
-		SetFrameRate( 0 );
+		SetFrameRate( 0 )
 		
-		InvokeOnCreate();
-		InvokeOnRender();
+		InvokeOnCreate()
+		InvokeOnRender()
 		Update()
 	EndMethod
 	
@@ -83,15 +83,30 @@ Type gxtkApp
 	
 	Method SetFrameRate( fps:Int )
 		If fps
-			updatePeriod=1000.0/fps;
-			nextUpdate=BlitzMaxMillisecs() +updatePeriod;
+			updatePeriod=1000.0/fps
+			nextUpdate=BlitzMaxMillisecs() +updatePeriod
 		Else
 			updatePeriod=0
 		EndIf
 	EndMethod
+
+	Method LoadState:String()
+'		var file:SharedObject=SharedObject.getLocal( "gxtkapp" );
+'		var state:String=file.data.state;
+'		file.close();
+'		if( state ) return state;
+		Return ""
+	EndMethod
+	
+	Method SaveState:Int( state:String )
+'		var file:SharedObject=SharedObject.getLocal( "gxtkapp" );
+'		file.data.state=state;
+'		file.close();
+		Return 0
+	EndMethod
 	
 	Method LoadString:String( path:String )
-		path = "data/" + path;
+		path = "data/" + path
 		Return LoadText( path )
 	EndMethod
 	
@@ -120,31 +135,31 @@ Type gxtkApp
 	EndMethod
 	
 	Method Loading:Int()
-		Return vloading;
+		Return vloading
 	EndMethod
 
 	Method OnCreate:Int()
-		Return 0;
+		Return 0
 	EndMethod
 
 	Method OnUpdate:Int()
-		Return 0;
+		Return 0
 	EndMethod
 	
 	Method OnSuspend:Int()
-		Return 0;
+		Return 0
 	EndMethod
 	
 	Method OnResume:Int()
-		Return 0;
+		Return 0
 	EndMethod
 	
 	Method OnRender:Int()
-		Return 0;
+		Return 0
 	EndMethod
 	
 	Method OnLoading:Int()
-		Return 0;
+		Return 0
 	EndMethod
 EndType
 
@@ -158,6 +173,10 @@ Type gxtkGraphics
 	Method Cls:Int(r:Int = 0, g:Int = 0, b:Int = 0)
 		BlitzMaxCls(r, g, b)
 		Return 0
+	EndMethod
+	
+	Method DrawPoint:Int(x:Float, y:Float)
+		Plot x, y
 	EndMethod
 	
 	Method LoadSurface:gxtkSurface(path:String)
@@ -285,10 +304,26 @@ Type gxtkInput
 	EndMethod
 
 	Method TouchX:Float( index:Int )
-		Return 0
+		Return BRL.PolledInput.MouseX()
 	EndMethod
 
 	Method TouchY:Float( index:Int )
+		Return BRL.PolledInput.MouseY()
+	EndMethod
+	
+	Method AccelX:Int()
+		return 0
+	EndMethod
+	
+	Method AccelY:Int()
+		return 0
+	EndMethod
+	
+	Method AccelZ:Int()
+		return 0
+	EndMethod
+	
+	Method SetKeyboardEnabled:Int( enabled:int )
 		Return 0
 	EndMethod
 EndType
@@ -307,8 +342,8 @@ Type gxtkChannel
 EndType
 
 Type gxtkAudio
-	Field amusicState:Int = 0;
-	Field channels:gxtkChannel[] = New gxtkChannel[33];
+	Field amusicState:Int = 0
+	Field channels:gxtkChannel[] = New gxtkChannel[33]
 	
 	Method New()
 		For local i:Int = 0 To 33 - 1
@@ -320,11 +355,15 @@ Type gxtkAudio
 '		If( musicState = 1 And music.isPlaying() = False )
 '			musicState = 0;
 '		Endif
-		Return amusicState;
+		Return amusicState
 	EndMethod
 	
 	Method PlayMusic:Int( path:String, flags:Int )
 		Return 0
+	EndMethod
+	
+	Method ChannelState:int( channel:int )
+		Return -1
 	EndMethod
 	
 	Method StopMusic()
@@ -355,6 +394,14 @@ Type gxtkAudio
 	Method SetRate( channel:Int, rate:Float )
 		Local chan:gxtkChannel = channels[channel]
 		chan.channel.SetRate(rate)
+	EndMethod
+
+	Method PauseMusic:Int()
+		Return 0
+	EndMethod
+
+	Method ResumeMusic:Int()
+		Return 0
 	EndMethod
 
 	Method SetMusicVolume:Int( volume:Float )
