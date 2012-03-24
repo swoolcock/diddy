@@ -41,7 +41,7 @@ Class BmaxTarget Extends Target
 
 			Select ENV_CONFIG
 				Case "release"
-					Execute BMAX_PATH+" makeapp -r MonkeyGame.bmx"
+					Execute BMAX_PATH+" makeapp -a -r -v -t gui MonkeyGame.bmx"
 				Case "debug"
 					Execute BMAX_PATH+" makeapp -d MonkeyGame.bmx"
 			End
