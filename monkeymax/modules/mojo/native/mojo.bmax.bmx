@@ -274,6 +274,8 @@ Type gxtkInput
 	EndMethod
 	
 	Method KeyDown:Int( key:Int )
+		if( key = 384 ) key = 1 ' change TOUCH0 to MOUSE_LMB
+
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseDown( key )
 		EndIf
@@ -285,6 +287,7 @@ Type gxtkInput
 	EndMethod
 
 	Method KeyHit:Int( key:Int )
+		if( key = 384 ) key = 1 ' change TOUCH0 to MOUSE_LMB
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseHit( key )
 		EndIf
