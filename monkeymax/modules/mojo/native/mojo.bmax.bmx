@@ -426,11 +426,16 @@ Type gxtkAudio
 	EndMethod
 	
 	Method LoadSample:gxtkSample( path:String )
-		Local sound:TSound = LoadSound("data/"+path)
-		If sound Then
-			Local gs:gxtkSample = New gxtkSample
-			gs.setSound(sound)
-			Return gs
+		Local extension:String = ExtractExt( path)
+		If extension = "ogg" Or extension = "wav" Then
+			Local sound:TSound = LoadSound("data/"+path)
+			If sound Then
+				Local gs:gxtkSample = New gxtkSample
+				gs.setSound(sound)
+				Return gs
+			EndIf
+		Else
+			RuntimeError "BlitzMax can only use ogg and wav file formats"
 		EndIf
 		Return Null
 	EndMethod
