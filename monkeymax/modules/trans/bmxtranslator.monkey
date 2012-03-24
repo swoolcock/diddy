@@ -332,7 +332,7 @@ Class BmxTranslator Extends CTranslator
 		Case "findlast" Return texpr+".FindLast"+Bra( arg0 )
 		Case "findlast2" Return texpr+".FindLast"+Bra( arg0+","+arg1 )
 		Case "trim" Return texpr+".Trim()"
-		Case "join" Return texpr+".Joing"+Bra(arg0)
+		Case "join" Return texpr+".Join"+Bra(arg0)
 		Case "split" Return texpr+".Split"+Bra( arg0 )
 		Case "replace" Return texpr+".Replace"+Bra(arg0+","+arg1)
 		Case "tolower" Return texpr+".ToLower()"
