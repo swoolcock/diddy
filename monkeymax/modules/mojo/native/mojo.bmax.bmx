@@ -193,16 +193,15 @@ Type gxtkGraphics
 	EndMethod
 	
 	Method Width:Int()
-		'TO-DO
-		Return 800
+		Return GraphicsWidth()
 	EndMethod
 	
 	Method Height:Int()
-		'TO-DO
-		Return 480
+		Return GraphicsHeight()
 	EndMethod
 	
 	Method SetScissor:Int(x:Int, y:Int, w:Int, h:Int)
+		SetViewport(x, y, w, h) ' NOT TESTED!
 		Return 0
 	EndMethod
 
