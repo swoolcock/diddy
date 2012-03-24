@@ -207,11 +207,10 @@ Type gxtkGraphics
 	EndMethod
 
 	Method SetMatrix:Int(ix:Float,iy:Float,jx:Float,jy:Float,tx:Float,ty:Float)
-'		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
-'		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
-'		Local rot:Float = Atan2( jx, ix )
-'		SetTransform( rot, sx, sy )
-		SetTransform( 0, ix, jy )
+		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
+		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
+		Local rot:Float = -Atan2( jx, ix )
+		SetTransform( rot, sx, sy )
 		SetOrigin( tx, ty )
 		Return 0
 	EndMethod
