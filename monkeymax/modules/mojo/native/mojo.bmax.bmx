@@ -295,9 +295,29 @@ Type gxtkInput
 	EndMethod
 EndType
 
+Type gxtkChannel
+	Field channel:TChannel	' null then not playing
+	Field sample:gxtkSample
+	Field loops:int
+	'Field transform:SoundTransform=new SoundTransform()
+	'Field pausepos:Number
+	Field state:int
+	
+	Method New()
+		channel = New TChannel
+	EndMethod
+EndType
+
 Type gxtkAudio
 	Field amusicState:Int = 0;
-
+	Field channels:gxtkChannel[] = New gxtkChannel[33];
+	
+	Method New()
+		For local i:Int = 0 To 33 - 1
+			channels[i] = New gxtkChannel
+		Next
+	EndMethod
+	
 	Method MusicState:Int()
 '		If( musicState = 1 And music.isPlaying() = False )
 '			musicState = 0;
@@ -316,12 +336,27 @@ Type gxtkAudio
 	EndMethod
 
 	Method PlaySample( sound:gxtkSample, channel:Int, flags:Int )
+		Local chan:gxtkChannel = channels[channel]
+		
+		'If chan.state <> 0 Then chan.channel.Stop() <-- this crashes after the first play!?
+		
+		chan.sample = sound
+		'chan.loops = flags ? 0x7fffffff : 0;
+		'chan.channel = sample.sound.play( 0,chan.loops,chan.transform );
+		'chan.channel = sound
+		chan.state=1
+	
+		PlaySound( sound.sound, chan.channel )
 	EndMethod
 
 	Method SetPan( channel:Int, pan:Float )
+		Local chan:gxtkChannel = channels[channel]
+		chan.channel.SetPan(pan)
 	EndMethod
 
 	Method SetRate( channel:Int, rate:Float )
+		Local chan:gxtkChannel = channels[channel]
+		chan.channel.SetRate(rate)
 	EndMethod
 
 	Method SetMusicVolume:Int( volume:Float )
@@ -329,16 +364,31 @@ Type gxtkAudio
 	EndMethod
 
 	Method SetVolume:Int( channel:Int, volume:Float )
+		Local chan:gxtkChannel = channels[channel]
+		chan.channel.SetVolume(volume)
 		Return 0
 	EndMethod
 	
 	Method LoadSample:gxtkSample( path:String )
+		Local sound:TSound = LoadSound("data/"+path)
+		If sound Then
+			Local gs:gxtkSample = New gxtkSample
+			gs.setSound(sound)
+			Return gs
+		EndIf
 		Return Null
 	EndMethod
 EndType
 
 Type gxtkSample
+	Field sound:TSound
+	
+	Method setSound(sound:TSound)
+		Self.sound = sound
+	EndMethod
+	
 	Method Discard()
+		Self.sound = null
 	EndMethod
 EndType
 
