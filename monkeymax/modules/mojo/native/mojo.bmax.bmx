@@ -277,14 +277,22 @@ Type gxtkInput
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseDown( key )
 		EndIf
-		Return BRL.PolledInput.KeyDown( key )
+		If key < 256
+			Return BRL.PolledInput.KeyDown( key )
+		Else
+			Return 0
+		EndIf
 	EndMethod
 
 	Method KeyHit:Int( key:Int )
 		If( key >= 1 And key <= 3 )
 			Return BRL.PolledInput.MouseHit( key )
 		EndIf
-		Return BRL.PolledInput.KeyHit( key )
+		If key < 256
+			Return BRL.PolledInput.KeyHit( key )
+		Else
+			Return 0
+		EndIf
 	EndMethod
 
 	Method GetChar:Int()
