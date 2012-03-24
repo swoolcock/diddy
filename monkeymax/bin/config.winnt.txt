@@ -1,7 +1,7 @@
 '--------------------
 ' BlitzMax path
 '
-BMAX_PATH="C:\Apps\BlitzMax\bin\bmk.exe"
+BMAX_PATH="E:\Dropbox\Dropbox\CodeMax\BlitzMax\1.44b\bin\bmk.exe"
 
 '--------------------
 'HTML player path.
