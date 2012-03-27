@@ -32,6 +32,9 @@ Function KludgeInterfaces( app:AppDecl )
 	idecl.superTy=Type.objectType
 	idecl.superClass=odecl
 	idecl.objectType=New ObjectType( idecl )
+
+	Local inull:=New ConstExpr
+	inull.exprType=idecl.objectType
 	
 	'find all interfaces/methods
 	'
@@ -54,6 +57,7 @@ Function KludgeInterfaces( app:AppDecl )
 			fdecl.retType=idecl.objectType
 			idecl.InsertDecl fdecl
 			icasts.Set fdecl.munged,fdecl
+			fdecl.AddStmt New ReturnStmt( inull )
 				
 			For Local decl:=Eachin cdecl.Semanted
 				Local fdecl:=FuncDecl( decl )
@@ -80,6 +84,11 @@ Function KludgeInterfaces( app:AppDecl )
 					fdecl.scope=Null
 					idecl.InsertDecl fdecl
 					fdecl.attrs&=~DECL_ABSTRACT
+					If Not VoidType( fdecl.retType )
+						Local expr:=New ConstExpr
+						expr.exprType=fdecl.retType
+						fdecl.AddStmt New ReturnStmt( expr )
+					Endif
 					'
 				Endif
 			Next
@@ -113,9 +122,9 @@ Function KludgeInterfaces( app:AppDecl )
 				fdecl.retType=idecl.objectType
 				fdecl.overrides=icasts.Get( fdecl.munged )
 				cdecl.InsertDecl fdecl
-				_env=fdecl
-				fdecl.AddStmt New ReturnStmt( New SelfExpr().Semant() )
-				_env=Null
+				Local expr:=New SelfExpr
+				expr.exprType=cdecl.objectType
+				fdecl.AddStmt New ReturnStmt( expr )
 			Next
 			
 			'fix method overrides
@@ -143,7 +152,6 @@ Function KludgeInterfaces( app:AppDecl )
 	app.allSemantedDecls.AddFirst idecl
 	
 End
-
 
 Class BmxTranslator Extends CTranslator
 
