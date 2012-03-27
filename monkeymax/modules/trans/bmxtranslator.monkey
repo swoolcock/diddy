@@ -1,10 +1,149 @@
 
-' Module trans.astranslator
+' Module trans.bmxtranslator
 '
 ' Placed into the public domain 24/02/2011.
 ' No warranty implied; use at your own risk.
 
 Import trans
+
+Const KLUDGE_INTERFACES:=True
+
+'To be used after reflection/semant immediately before translate
+'
+Function KludgeInterfaces( app:AppDecl )
+
+	'find Object decl
+	'
+	Local odecl:ClassDecl
+	For Local decl:=Eachin app.allSemantedDecls
+		Local cdecl:=ClassDecl( decl )
+		If cdecl And cdecl.munged="Object"
+			odecl=cdecl
+			Exit
+		Endif
+	Next
+	
+	'create Kludge class
+	'
+	Local idecl:=New ClassDecl
+	idecl.ident="_Object"
+	idecl.munged="_Object"
+	idecl.attrs=DECL_SEMANTED
+	idecl.superTy=Type.objectType
+	idecl.superClass=odecl
+	idecl.objectType=New ObjectType( idecl )
+	
+	'find all interfaces/methods
+	'
+	Local ifaces:=New List<ClassDecl>
+	Local icasts:=New StringMap<FuncDecl>
+	Local imethods:=New StringMap<List<FuncDecl>>
+
+	For Local decl:=Eachin app.Semanted
+	
+		Local cdecl:=ClassDecl( decl )
+		
+		If cdecl And cdecl.IsInterface()
+
+			'create 'To' casting method...
+			'
+			Local fdecl:=New FuncDecl
+			fdecl.ident="_To"+cdecl.ident
+			fdecl.munged="_To"+cdecl.ident
+			fdecl.attrs=DECL_SEMANTED|FUNC_METHOD
+			fdecl.retType=idecl.objectType
+			idecl.InsertDecl fdecl
+			icasts.Set fdecl.munged,fdecl
+				
+			For Local decl:=Eachin cdecl.Semanted
+				Local fdecl:=FuncDecl( decl )
+				If fdecl
+					Local list:=imethods.Get( fdecl.ident )
+					If list
+						Local found:=False
+						For Local fdecl2:=Eachin list
+							If fdecl.EqualsFunc( fdecl2 )
+								found=True
+								Exit
+							Endif
+						Next
+						If found Continue
+					Else
+						list=New List<FuncDecl>
+						imethods.Set fdecl.ident,list
+					Endif
+					'
+					list.AddLast fdecl
+					'					
+					'move decl to Kludge object...
+					'
+					fdecl.scope=Null
+					idecl.InsertDecl fdecl
+					fdecl.attrs&=~DECL_ABSTRACT
+					'
+				Endif
+			Next
+		Endif
+	Next
+	
+	'update method overrides
+	'
+	For Local decl:=Eachin app.Semanted
+	
+		Local cdecl:=ClassDecl( decl )
+		
+		If cdecl And Not cdecl.IsInterface()
+		
+			'change super class to kludge class
+			'
+			If cdecl.superClass=odecl
+				cdecl.superClass=idecl
+			Endif
+			
+			'create cast ops for implemented interfaces
+			'
+			Local mdone:=New StringSet
+			For Local iface:=Eachin cdecl.implmentsAll
+				If mdone.Contains( iface.ident ) Continue
+				mdone.Insert iface.ident
+				Local fdecl:=New FuncDecl
+				fdecl.ident="_To"+iface.ident
+				fdecl.munged="_To"+iface.ident
+				fdecl.attrs=DECL_SEMANTED|FUNC_METHOD
+				fdecl.retType=idecl.objectType
+				fdecl.overrides=icasts.Get( fdecl.munged )
+				cdecl.InsertDecl fdecl
+				_env=fdecl
+				fdecl.AddStmt New ReturnStmt( New SelfExpr().Semant() )
+				_env=Null
+			Next
+			
+			'fix method overrides
+			'
+			For Local decl:=Eachin cdecl.Semanted
+				Local fdecl:=FuncDecl( decl )
+				If fdecl And fdecl.IsMethod() And Not fdecl.overrides
+					Local list:=imethods.Get( fdecl.ident )
+					If list
+						For Local fdecl2:=Eachin list
+							If fdecl.EqualsFunc( fdecl2 )
+								fdecl.overrides=fdecl2
+								Exit
+							Endif
+						Next
+					Endif
+				Endif
+			Next
+		Endif
+	Next
+	
+	app.mainModule.InsertDecl idecl
+
+	app.Semanted.AddFirst idecl
+	app.allSemantedDecls.AddFirst idecl
+	
+End
+
 
 Class BmxTranslator Extends CTranslator
 
@@ -15,7 +154,13 @@ Class BmxTranslator Extends CTranslator
 		If FloatType( ty ) Return "Float"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return TransType( ArrayType(ty).elemType )+"[]"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.munged
+		If ObjectType( ty )
+			Local cdecl:=ty.GetClass()
+			If KLUDGE_INTERFACES
+				If cdecl.IsInterface() Or cdecl.munged="Object" Return "_Object"
+			Endif
+			Return cdecl.munged
+		Endif
 		InternalErr
 	End
 	
@@ -216,15 +361,31 @@ Class BmxTranslator Extends CTranslator
 		Else If StringType( dst )
 			If NumericType( src ) Return texpr
 			If StringType( src )  Return texpr
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().ExtendsClass( dst.GetClass() )
+				Return texpr
+			Else If KLUDGE_INTERFACES And dst.GetClass().IsInterface()
+				Return texpr+"._To"+dst.GetClass().ident+"()"
+			Else
+				Return Bra( "(" + TransType( dst ) + ")(" + texpr + ")" )
+			Endif
+		
 		Endif
+#rem	
 		
 		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
 		Else If dst.GetClass().ExtendsClass( src.GetClass() )
+ 			'
+			If KLUDGE_INTERFACES And dst.GetClass().IsInterface()
+				Return texpr+"._To"+dst.GetClass().ident+"()"
+			Endif
+			'
+
 '			Return Bra( texpr + " as "+TransType( dst ) )
 			Return Bra( "(" + TransType( dst ) + ")(" + texpr + ")" )
 		Endif
-
+#end
 		Err "BMax translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -698,6 +859,10 @@ End
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
+
+		If KLUDGE_INTERFACES
+			If classDecl.IsInterface() Return
+		Endif
 	
 '		If classDecl.IsTemplateInst()
 '			InternalErr
@@ -711,10 +876,13 @@ End
 		If classDecl.IsInterface() 
 
 			Local bases$
-			For Local iface:=Eachin classDecl.implments
-				If bases bases+="," Else bases=" extends "
-				bases+=iface.munged
-			Next
+
+			If Not KLUDGE_INTERFACES
+				For Local iface:=Eachin classDecl.implments
+					If bases bases+="," Else bases=" extends "
+					bases+=iface.munged
+				Next
+			Endif
 
 			Local ab$=""
 			If classDecl.IsAbstract()
@@ -739,11 +907,14 @@ End
 		Endif
 
 		Local bases$
-		For Local iface:=Eachin classDecl.implments
-'			If bases bases+="," Else bases=" implements "
-			If bases bases+="," Else bases=" extends "
-			bases+=iface.munged
-		Next
+
+		If Not KLUDGE_INTERFACES
+			For Local iface:=Eachin classDecl.implments
+  '			If bases bases+="," Else bases=" implements "
+				If bases bases+="," Else bases=" extends "
+				bases+=iface.munged
+			Next
+		Endif
 
 		Local ab$=""
 		If classDecl.IsAbstract()
@@ -854,7 +1025,11 @@ End
 	End
 
 	Method TransApp$( app:AppDecl )
-		
+
+		If KLUDGE_INTERFACES	
+			KludgeInterfaces app
+		Endif
+
 '		app.mainFunc.munged="bbMain"
 		app.mainFunc.munged="bbMain2"
 		
