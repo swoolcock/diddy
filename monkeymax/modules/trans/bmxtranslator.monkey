@@ -491,7 +491,7 @@ Class BmxTranslator Extends CTranslator
 			If FloatType( ty ) Return "resize_float_array"+Bra( texpr+","+arg0 ) ' done
 			If StringType( ty ) Return "resize_string_array"+Bra( texpr+","+arg0 ) ' done
 			If ArrayType( ty ) Return "resize_array_array_"+ArrayType( ty ).elemType+Bra( texpr+","+arg0 )
-			If ObjectType( ty ) Return "resize_object_array"+Bra( texpr+","+arg0 )
+			If ObjectType( ty ) Return "resize_object_array"+Bra( TransType(ty )+Bra (texpr)+","+arg0 )
 			InternalErr
 
 		'string methods
@@ -1111,6 +1111,83 @@ End
 		Emit "EndFunction"
 		
 		Return JoinLines()
+	End
+	
+	Method MungDecl( decl:Decl )
+
+		If decl.munged Return
+
+		Local fdecl:FuncDecl=FuncDecl( decl )
+		If fdecl And fdecl.IsMethod() Return MungMethodDecl( fdecl )
+		
+		Local mscope$,cscope$
+		If decl.ClassScope() cscope=decl.ClassScope().munged
+		If decl.ModuleScope() mscope=decl.ModuleScope().munged
+		
+		Local id:=decl.ident,munged$,scope$
+		
+		If LocalDecl( decl )
+			scope="$"
+			munged="t_"+id
+		Else If FieldDecl( decl )
+			scope=cscope
+			munged="f_"+id
+		Else If GlobalDecl( decl ) Or FuncDecl( decl )
+			If cscope And ENV_LANG<>"js"
+				scope=cscope
+				munged="g_"+id
+			Else If cscope
+				munged=cscope+"_"+id
+			Else
+				munged=mscope+"_"+id
+			Endif
+		Else If ClassDecl( decl )
+			munged=mscope+"_"+id
+		Else If ModuleDecl( decl )
+			munged="bb_"+id
+		Else
+			Print "OOPS1"
+			InternalErr
+		Endif
+
+		''' Modify the "munged" variable to help case insensitive
+		''' append all uppercase characters with _1
+		
+		Local newmunged:String
+		For Local i:Int = 0 Until munged.Length
+			Local c:Int = munged[i]
+			If c = "_1" Then
+				newmunged += "_1" + "_1"
+			ElseIf c>=65 And c<=90 Then
+				newmunged += "_1" + String.FromChar(c)
+			Else
+				newmunged += String.FromChar(c)
+			End
+		Next
+		munged = newmunged
+
+		Local set:=mungedScopes.Get( scope )
+		If set
+			If set.Contains( munged )
+				Local id=1
+				Repeat
+					id+=1
+					Local t$=munged+String(id)
+					If set.Contains(t) Continue
+					munged=t
+					Exit
+				Forever
+			Endif
+		Else
+			If scope="$"
+				Print "OOPS2"
+				InternalErr
+			Endif
+			set=New StringSet
+			mungedScopes.Set scope,set
+		Endif
+		set.Insert munged
+		decl.munged=munged
 	End
 	
 End

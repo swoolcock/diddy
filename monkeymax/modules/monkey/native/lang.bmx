@@ -52,7 +52,7 @@ Function resize_int_array:Int[]( arr:Int[], leng:Int )
 	Return arr;
 EndFunction
 
-Function resize_object_array:Object[]( arr:Object[],leng:Int )
+Function resize_object_array:Object[]( arr:_Object[],leng:Int )
 	Local i:Int=arr.length;
 	arr=arr[0..leng];
 	If( leng<=i ) Return arr;
