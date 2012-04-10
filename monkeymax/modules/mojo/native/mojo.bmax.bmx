@@ -25,8 +25,8 @@ Type gxtkApp
 		ginput=New gxtkInput
 		gaudio=New gxtkAudio
 
-		bb_input_SetInputDevice(ginput)
-		bb_audio_SetAudioDevice(gaudio)
+		bb_input__1Set_1Input_1Device(ginput)
+		bb_audio__1Set_1Audio_1Device(gaudio)
 		
 		startMillis=BlitzMaxMillisecs()
 		
