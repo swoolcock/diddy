@@ -165,7 +165,9 @@ EndType
 
 Type gxtkGraphics
 	Field gmode:Int = 1
-
+	Field ix:Float=1,iy:Float,jx:Float,jy:Float=1,tx:Float,ty:Float
+	Field sx:Float=1,sy:Float=1,rot:Float=0
+	
 	Method Mode:Int()
 		Return gmode
 	EndMethod
@@ -176,7 +178,9 @@ Type gxtkGraphics
 	EndMethod
 	
 	Method DrawPoint:Int(x:Float, y:Float)
-		Plot x, y
+		Local nx:Float = TransX(x,y)
+		Local ny:Float = TransY(x,y)
+		Plot nx, ny
 	EndMethod
 	
 	Method LoadSurface:gxtkSurface(path:String)
@@ -224,42 +228,70 @@ Type gxtkGraphics
 		Return 0
 	EndMethod
 
+	Method TransX:Float(x:Float, y:Float)
+		Return ix*x + jx*y + tx
+	EndMethod
+	
+	Method TransY:Float(x:Float, y:Float)
+		Return iy*x + jy*y + ty
+	EndMethod
+	
 	Method SetMatrix:Int(ix:Float,iy:Float,jx:Float,jy:Float,tx:Float,ty:Float)
-		Local sx:Float = Sqr( (ix*ix) + (jx*jx) )
-		Local sy:Float = Sqr( (iy*iy) + (jy*jy) )
-		Local rot:Float = -Atan2( jx, ix )
+		Self.ix = ix ; Self.iy = iy
+		Self.jx = jx ; Self.jy = jy
+		Self.tx = tx ; Self.ty = ty
+		sx = Sqr( (ix*ix) + (jx*jx) )
+		sy = Sqr( (iy*iy) + (jy*jy) )
+		rot = -Atan2( jx, ix )
 		SetTransform( rot, sx, sy )
-		SetOrigin( tx, ty )
 		Return 0
 	EndMethod
 	
 	Method DrawSurface:Int(surface:gxtkSurface,x:Float,y:Float)
-		DrawImage(surface.image, x, y, 0)
+		Local nx:Float = TransX(x,y)
+		Local ny:Float = TransY(x,y)
+		DrawImage(surface.image, nx, ny, 0)
 		Return 0
 	EndMethod
 	
 	Method DrawSurface2:Int(surface:gxtkSurface,x:Float,y:Float, srcx:Int, srcy:Int, srcw:Int, srch:Int )
-		DrawSubImageRect(surface.image, x, y, srcw, srch, srcx, srcy, srcw, srch)		
+		Local nx:Float = TransX(x,y)
+		Local ny:Float = TransY(x,y)
+		DrawSubImageRect(surface.image, nx, ny, srcw, srch, srcx, srcy, srcw, srch)		
 		Return 0
 	EndMethod
 	
 	Method DrawLine:Int( x1:Float,y1:Float,x2:Float,y2:Float )
-		BlitzMaxDrawLine(x1, y1, x2, y2)
+		Local nx1:Float = TransX(x1,y1)
+		Local ny1:Float = TransY(x1,y1)
+		Local nx2:Float = TransX(x2,y2)
+		Local ny2:Float = TransY(x2,y2)
+		' Need to reset transform so that BlitzMax doesn't try to apply rotation
+		SetTransform( 0, 1, 1 )
+		BlitzMaxDrawLine(nx1, ny1, nx2, ny2)
+		SetTransform( rot, sx, sy )
 		Return 0
 	EndMethod
 	
 	Method DrawOval:Int( x:Float, y:Float, w:Float, h:Float )
-		BlitzMaxDrawOval(x, y, w, h)
+		Local nx:Float = TransX(x,y)
+		Local ny:Float = TransY(x,y)
+		BlitzMaxDrawOval(nx, ny, w, h)
 		Return 0
 	EndMethod
 	
 	Method DrawPoly:Int(vertices:Float[])
+		' setting the origin to use the current rotation translation
+		SetOrigin(TransX(0,0), TransY(0,0))
 		BlitzMaxDrawPoly( vertices )
+		SetOrigin(0, 0)
 		Return 0
 	EndMethod
 	
 	Method DrawRect:Int( x:Float, y:Float, w:Float, h:Float )
-		BlitzMaxDrawRect(x, y, w, h)
+		Local nx:Float = TransX(x,y)
+		Local ny:Float = TransY(x,y)
+		BlitzMaxDrawRect(nx, ny, w, h)
 		Return 0
 	EndMethod
 EndType
