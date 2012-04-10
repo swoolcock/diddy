@@ -491,7 +491,8 @@ Class BmxTranslator Extends CTranslator
 			If FloatType( ty ) Return "resize_float_array"+Bra( texpr+","+arg0 ) ' done
 			If StringType( ty ) Return "resize_string_array"+Bra( texpr+","+arg0 ) ' done
 			If ArrayType( ty ) Return "resize_array_array_"+ArrayType( ty ).elemType+Bra( texpr+","+arg0 )
-			If ObjectType( ty ) Return "resize_object_array"+Bra( TransType(ty )+Bra (texpr)+","+arg0 )
+'			If ObjectType( ty ) Return "resize_object_array"+Bra( TransType(ty )+Bra (texpr)+","+arg0 )
+			If ObjectType( ty ) Return texpr+"[.."+arg0+"]"
 			InternalErr
 
 		'string methods
@@ -1150,15 +1151,15 @@ End
 			InternalErr
 		Endif
 
-		''' Modify the "munged" variable to help case insensitive
-		''' append all uppercase characters with _1
-		
+		''' Modify the "munged" variable:
+		''' Double escape the escape character (alt+0255 maybe)
+		''' Escape all uppercase characters
 		Local newmunged:String
 		For Local i:Int = 0 Until munged.Length
 			Local c:Int = munged[i]
 			If c = "_1" Then
 				newmunged += "_1" + "_1"
-			ElseIf c>=65 And c<=90 Then
+			Elseif c>=65 And c<=90 Then
 				newmunged += "_1" + String.FromChar(c)
 			Else
 				newmunged += String.FromChar(c)
