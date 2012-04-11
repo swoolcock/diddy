@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.30"
+Const VERSION$="1.32"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
@@ -86,13 +86,6 @@ Function LoadConfig()
 		Case "FLASH_PLAYER" 
 			FLASH_PLAYER=rhs
 		Case "BMAX_PATH"
-'			Print "BMAX_PATH"
-'			If Not BMAX_PATH
-'				Print "NOT BMAX_PATH"
-'			End
-'			Print "FileType( path )="+FileType( path )
-'			Print "FILETYPE_FILE    ="+FILETYPE_FILE
-'			Print "FILETYPE_DIR    ="+FILETYPE_DIR
 			If Not BMAX_PATH And FileType( path )=FILETYPE_FILE
 				BMAX_PATH=path
 			Endif
