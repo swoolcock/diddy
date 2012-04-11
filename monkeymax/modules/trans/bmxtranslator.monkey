@@ -365,7 +365,8 @@ Class BmxTranslator Extends CTranslator
 		Else If FloatType( dst )
 '			If NumericType( src ) Return texpr
 			If NumericType( src ) Return "Float("+texpr+")"
-			If StringType( src ) 	Return texpr
+			'If StringType( src ) 	Return texpr
+			If StringType( src ) Return "Float("+Bra( texpr )+")"
 		Else If StringType( dst )
 			If NumericType( src ) Return texpr
 			If StringType( src )  Return texpr
@@ -1113,7 +1114,7 @@ End
 		
 		Return JoinLines()
 	End
-	
+
 	Method MungDecl( decl:Decl )
 
 		If decl.munged Return
