@@ -471,6 +471,21 @@ Public
 	End
 	
 	Method FindScopeDecl:ScopeDecl( ident$ )
+		Local decl:=FindDecl( ident )
+		Local type:=Type( decl )
+		If type
+			If Not ObjectType( type ) Return
+			Return type.GetClass()
+		Endif
+		Local scope:=ScopeDecl( decl )
+		If scope
+			Local cdecl:=ClassDecl( scope )
+			If cdecl And cdecl.args Return
+			scope.AssertAccess
+			scope.Semant
+			Return scope
+		Endif
+#rem	
 		Local decl:=ScopeDecl( FindDecl( ident ) )
 		If Not decl Return
 		Local cdecl:=ClassDecl( decl )
@@ -478,6 +493,7 @@ Public
 		decl.AssertAccess
 		decl.Semant
 		Return decl
+#end
 	End
 	
 	Method FindModuleDecl:ModuleDecl( ident$ )
