@@ -819,6 +819,7 @@ End
 			Case "*=" Return " :*"
 			Case "/=" Return " :/"
 			Case "|=" Return " :|"
+			Case "&=" Return " :&"
 		End
 		Return op
 	End
