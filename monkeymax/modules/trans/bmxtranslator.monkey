@@ -749,12 +749,12 @@ Class BmxTranslator Extends CTranslator
 	End
 	
 Method Enquote$( str$ )
-'	str=str.Replace( "\","\\" )
+	str=str.Replace( "~~","~~~~" )
 	str=str.Replace( "~q","~~q" )
 	str=str.Replace( "~n","~~n" )
 	str=str.Replace( "~r","~~r" )
 	str=str.Replace( "~t","~~t" )
-	str=str.Replace( "~","~~~" )
+	
 	For Local i=0 Until str.Length
 		If str[i]>=32 And str[i]<128 Continue
 		Local t$,n=str[i]
