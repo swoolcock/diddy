@@ -12,7 +12,7 @@ Function Main:Int()
 	Print "~rTesting tilde r (return)~r"
 	Print "~tTesting tilde t (tab)~t"
 	Print "Global y="+y
-	
+	Print "Let print ~~"
 	
 	Loops()
 	
