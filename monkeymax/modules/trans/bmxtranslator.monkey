@@ -527,13 +527,13 @@ Class BmxTranslator Extends CTranslator
 		
 		'trig functions - radians
 		' Done all for BMax
-		Case "sinr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "cosr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "tanr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "asinr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "acosr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "atanr" Return id[..-1]+Bra(arg0)+"*D2R" 
-		Case "atan2r" Return id[..-1]+Bra(arg0)+"*D2R" 
+		Case "sinr" Return id[..-1]+Bra( Bra( arg0 +"*R2D") )
+		Case "cosr" Return id[..-1]+Bra( Bra( arg0 +"*R2D") )
+		Case "tanr" Return id[..-1]+Bra( Bra( arg0 +"*R2D") )
+		Case "asinr" Return id[..-1]+Bra( arg0 )+"*D2R"
+		Case "acosr" Return id[..-1]+Bra( arg0 )+"*D2R"
+		Case "atanr" Return id[..-1]+Bra( arg0 )+"*D2R"
+		Case "atan2r" Return id[..-1]+Bra(arg0+","+arg1)+"*D2R"
 
 		'misc math functions
 		' Done all for BMax
@@ -749,7 +749,7 @@ Class BmxTranslator Extends CTranslator
 	End
 	
 Method Enquote$( str$ )
-  str=str.Replace( "~~","~~~~" )
+	str=str.Replace( "~~","~~~~" )
 	str=str.Replace( "~q","~~q" )
 	str=str.Replace( "~n","~~n" )
 	str=str.Replace( "~r","~~r" )
@@ -1155,8 +1155,8 @@ End
 		Endif
 
 		''' Modify the "munged" variable:
-		''' Double escape the escape character (alt+0255 maybe)
-		''' Escape all uppercase characters
+		''' change uppercase characters to _1
+		
 		Local newmunged:String
 		For Local i:Int = 0 Until munged.Length
 			Local c:Int = munged[i]
