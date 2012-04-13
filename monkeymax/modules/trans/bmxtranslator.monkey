@@ -368,7 +368,7 @@ Class BmxTranslator Extends CTranslator
 			'If StringType( src ) 	Return texpr
 			If StringType( src ) Return "Float("+Bra( texpr )+")"
 		Else If StringType( dst )
-			If NumericType( src ) Return texpr
+			If NumericType( src ) Return "String("+texpr+")"
 			If StringType( src )  Return texpr
 		Else If ObjectType( dst ) And ObjectType( src )
 			If src.GetClass().ExtendsClass( dst.GetClass() )
@@ -749,7 +749,7 @@ Class BmxTranslator Extends CTranslator
 	End
 	
 Method Enquote$( str$ )
-	str=str.Replace( "~~","~~~~" )
+  str=str.Replace( "~~","~~~~" )
 	str=str.Replace( "~q","~~q" )
 	str=str.Replace( "~n","~~n" )
 	str=str.Replace( "~r","~~r" )

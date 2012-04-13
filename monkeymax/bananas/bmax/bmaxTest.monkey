@@ -15,6 +15,15 @@ Function Main:Int()
 	Print "Let print ~"
 	Print "Let print ~~"
 	Print "Let print ~~~"
+	
+	Local fl:Float = 1
+	Print "LENG = "+String(fl).Length
+	If String(fl).Length = 1
+		Print "YAY"
+	Else 
+		Print "BOO"
+	End
+	
 	'Print "~z"
 	Loops()
 	
@@ -29,7 +38,7 @@ Function Main:Int()
 	Lists()
 	
 	Error "Testing Error!!"
-	
+
 	Return 1
 End
 
