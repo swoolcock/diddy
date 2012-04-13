@@ -24,6 +24,29 @@ Function Main:Int()
 		Print "BOO"
 	End
 	
+	Local deg# = 15
+	Print "cos="+ Cos(deg)
+	Print "Sin="+Sin(deg)
+	Print "Tan="+Tan(deg)
+	
+	Local rad# = 0.3
+
+	Print "Tanr="+Tanr(rad)
+
+	Print "Cosr="+Cosr(rad)
+	Print "Sinr="+Sinr(rad)
+	Print "Tanr="+Tanr(rad)
+	Print"~n"
+	Print "ASin="+ASin(rad)
+	Print "ACos="+ACos(rad)
+	Print "ATan="+ATan(rad)
+
+	Print "ASinr="+ASinr(rad)
+	Print "ACosr="+ACosr(rad)
+	Print "ATanr="+ATanr(rad)
+	Print "ATan2="+ATan2(rad, rad)
+	Print "ATan2r="+ATan2r(rad, rad)
+	
 	'Print "~z"
 	Loops()
 	
