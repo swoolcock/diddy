@@ -39,21 +39,24 @@ Type gxtkApp
 	
 	Method Update()
 		While Not AppTerminate()
+			If Not updatePeriod return
 			Local updates:Int = 0
 			
-			Local cont:Int = 1
-			While (cont)
+			Repeat
 				nextUpdate:+updatePeriod
 				InvokeOnUpdate()
-				If Not updatePeriod Then cont = 0
-				If nextUpdate>BlitzMaxMillisecs() Then cont = 0
+				If Not updatePeriod Then Exit
+				If nextUpdate>BlitzMaxMillisecs() Then Exit
 				updates:+1
 				If updates = 7 Then
 					nextUpdate = BlitzMaxMillisecs()
-					cont = 0
+					Exit
 				EndIf
-			Wend
+			Forever
 			InvokeOnRender()
+			Local del:Int = nextUpdate - BlitzMaxMillisecs()
+			If del < 1 Then del = 1
+			Delay(del)
 		Wend
 	EndMethod
 	
