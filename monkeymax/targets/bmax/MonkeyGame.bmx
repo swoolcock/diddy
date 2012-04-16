@@ -3,7 +3,7 @@ SuperStrict
 Global _errStack:TList = New TList;
 Global _errInfo:String="";
 
-Graphics 800, 600
+Graphics 640, 480
 
 bbInit();
 bbMain();
