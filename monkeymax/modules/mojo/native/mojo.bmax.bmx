@@ -243,9 +243,14 @@ Type gxtkGraphics
 		Self.ix = ix ; Self.iy = iy
 		Self.jx = jx ; Self.jy = jy
 		Self.tx = tx ; Self.ty = ty
-		sx = Sqr( (ix*ix) + (jx*jx) )
-		sy = Sqr( (iy*iy) + (jy*jy) )
-		rot = -Atan2( jx, ix )
+		sx = Sqr(ix*ix+iy*iy)
+		sy = Sqr(jx*jx+jy*jy)
+		rot = Atan2( iy, ix )
+		If ix < 0 Then
+			sx = -sx
+			rot :+ 180
+		EndIf
+		If jy < 0 Then sy = -sy
 		SetTransform( rot, sx, sy )
 		Return 0
 	EndMethod
