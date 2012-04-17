@@ -24,6 +24,10 @@ Class MyGame Extends App
 		spr = New Ship (LoadImage("Ship1.png", 64, 64, 6), 100, 100)
 		img = LoadImage("Ship1.png")
 		lazer = LoadSound("lazer.ogg")
+		Local tst:=LoadString("testText.txt")
+		Print tst
+		tst = tst[..-4]
+		Print tst
 		
 		Return 0
 	End
