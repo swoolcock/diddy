@@ -439,7 +439,7 @@ Class BmxTranslator Extends CTranslator
 			Return t_expr+"["+t_index+"]"
 		Endif
 	End
-	
+#Rem
 	Method TransSliceExpr$( expr:SliceExpr )
 		Local t_expr$=TransSubExpr( expr.expr )
 		Local t_args$="0"
@@ -451,7 +451,50 @@ Class BmxTranslator Extends CTranslator
 		t_args+=".."
 		If expr.term t_args+="("+expr.term.Trans()+")"
 '		Return t_expr+".slice("+t_args+")"
-		Return t_expr+"["+t_args+"]"
+		If StringType( expr.exprType )
+		
+			Return "bb_std_lang.slice("+expr.exprType+","+expr.from+","+expr.term+")"
+		Endif
+		Return t_expr+"["+t_args+"]"		
+		InternalErr
+	End
+
+
+	Method TransSliceExpr$( expr:SliceExpr )
+		Local texpr$=expr.expr.Trans()
+		Local from$=",0",term$
+		If expr.from from=","+expr.from.Trans()
+		If expr.term term=","+expr.term.Trans()
+		If ArrayType( expr.exprType )
+			Return "(("+TransType( expr.exprType )+")bb_std_lang.sliceArray"+Bra( texpr+from+term )+")"
+		Else If StringType( expr.exprType )
+			Return "bb_std_lang.slice("+texpr+from+term+")"
+		Endif
+		InternalErr
+	End
+#End
+	Method TransSliceExpr$( expr:SliceExpr )
+		If ArrayType( expr.exprType )
+			Local t_expr$=TransSubExpr( expr.expr )
+			Local t_args$="0"
+			If Not expr.from And Not expr.term
+				Return t_expr+"[..]"
+			Endif
+			If expr.from t_args=expr.from.Trans()
+	'		If expr.term t_args+=","+expr.term.Trans()
+			t_args+=".."
+			If expr.term t_args+="("+expr.term.Trans()+")"
+	'		Return t_expr+".slice("+t_args+")"
+			Return t_expr+"["+t_args+"]"
+		Else If StringType( expr.exprType )
+			Local texpr$=expr.expr.Trans()
+			Local from$=",0",term$
+			If expr.from from=","+expr.from.Trans()
+			If expr.term term=","+expr.term.Trans()
+		
+			Return "slice_string("+texpr+from+term+")"
+		Endif
+		InternalErr
 	End
 	
 	Method TransArrayExpr$( expr:ArrayExpr )

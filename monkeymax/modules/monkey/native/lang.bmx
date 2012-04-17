@@ -96,6 +96,26 @@ Function resize_array_array_String:String[][]( arr:String[][], leng:Int )
 	Return arr;
 EndFunction
 
+Function slice_string:String(arr:String, from:Int, term:Int = 0)
+	Local le:Int = arr.Length
+
+	If from < 0
+		from :+ le
+		If from <0 Then from = 0
+	Else If from > le
+		from = le
+	EndIf
+	If term <= 0
+		term :+ le
+	Else If term > le
+		term = le
+	EndIf
+
+	If term <= from Return arr
+	Return Mid(arr, from,  term-from)
+
+EndFunction
+
 ' ***** End lang.bmx ******
 
 
