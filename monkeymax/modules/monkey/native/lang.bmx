@@ -112,7 +112,7 @@ Function slice_string:String(arr:String, from:Int, term:Int = 0)
 	EndIf
 
 	If term <= from Return arr
-	Return Mid(arr, from,  term-from)
+	Return Mid(arr, from + 1,  term - from)
 
 EndFunction
 
