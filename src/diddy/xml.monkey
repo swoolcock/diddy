@@ -563,6 +563,13 @@ Public
 		Return rv
 	End
 	
+	Method GetFirstChildByName:XMLElement(findName:String)
+		For Local element:XMLElement = EachIn children
+			If element.name = findName Then Return element
+		Next
+		Return Null
+	End
+	
 ' Properties
 	Method Children:ArrayList<XMLElement>() Property
 		Return children
