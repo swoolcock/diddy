@@ -21,12 +21,15 @@ Type ExtThread Extends _Object Abstract
 	
 	Method ExtCancel()
 		If Not m_started Then Return
-		m_thread.Detach()
 	EndMethod
 	
 	Method ExtJoin()
 		If Not m_started Then Return
 		m_thread.Wait()
+	EndMethod
+	
+	Method ExtRunning:Int()
+		Return m_thread.Running()
 	EndMethod
 EndType
 

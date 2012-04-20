@@ -7,8 +7,9 @@ public:
 	thread *m_thread;
 	int m_started;
 	int m_finished;
+	int m_cancelled;
 	
-	ExtThread() : m_started(0), m_finished(0) {
+	ExtThread() : m_started(0), m_finished(0), m_cancelled(0) {
 	}
 	
 	~ExtThread() {
@@ -21,6 +22,7 @@ public:
 	virtual void ExtRun() = 0;
 	
 	void ExtStart() {
+		if(m_cancelled || m_finished) return;
 		if(!m_started) {
 			m_started = 1;
 			m_thread = new thread(ExtThread::ExecuteThread, this);
@@ -33,8 +35,13 @@ public:
 	}
 	
 	void ExtJoin() {
-		if(!m_started) return;
+		if(!m_started || m_finished || m_cancelled) return;
 		m_thread->join();
+	}
+	
+	int ExtRunning() {
+		if(m_started && !m_finished && !m_cancelled) return 1;
+		return 0;
 	}
 	
 	static void ExecuteThread(void *arg) {
