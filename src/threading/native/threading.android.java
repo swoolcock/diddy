@@ -6,20 +6,27 @@ abstract class ExtThread {
 	Thread m_thread;
 	Runner m_runner;
 	boolean m_started;
-	boolean m_finished;
+	volatile boolean m_finished;
+	boolean m_cancelled;
 	Object[] m_runningSemaphore = new Object[0];
 	
 	private class Runner implements Runnable {
 		public void run() {
-			ExtRun();
+			m_cancelled = false;
+			try {
+				ExtRun();
+			} catch(RuntimeException e) {
+				m_cancelled = true;
+			}
 			synchronized(m_runningSemaphore) {
 				m_finished = true;
-				m_runningSemaphore.notify();
+				m_runningSemaphore.notifyAll();
 			}
 		}
 	}
 	
 	public void ExtStart() {
+		if(m_cancelled || m_finished) return;
 		if (!m_started) {
 			m_started = true;
 			m_runner = new Runner();
@@ -29,18 +36,28 @@ abstract class ExtThread {
 	}
 	
 	public void ExtCancel() {
-		// can't cancel in java?
+		if(!m_started || m_cancelled || m_finished) return;
+		try {
+			m_thread.interrupt();
+		} catch(SecurityException e) {
+		}
 	}
 	
 	public void ExtJoin() {
+		if(!m_started || m_cancelled || m_finished) return;
 		synchronized(m_runningSemaphore) {
-			try {
-				while(!m_finished) {
+			while(!m_finished && !m_cancelled) {
+				try {
 					m_runningSemaphore.wait(100);
+				} catch(InterruptedException e) {
+					throw new RuntimeException(e);
 				}
-			} catch(InterruptedException ex) {
 			}
 		}
+	}
+	
+	public int ExtRunning() {
+		return m_started && !m_finished && !m_cancelled ? 1 : 0;
 	}
 	
 	public abstract void ExtRun();
@@ -70,6 +87,9 @@ class ExtCondVar {
 	}
 	
 	public void ExtWait(ExtMutex mutex) {
+		if(Thread.currentThread().isInterrupted()) {
+			throw new RuntimeException(new InterruptedException());
+		}
 		try {
 			m_cond.await();
 		} catch(InterruptedException e) {
@@ -78,6 +98,9 @@ class ExtCondVar {
 	}
 	
 	public void ExtTimedWait(ExtMutex mutex, float timeout) {
+		if(Thread.currentThread().isInterrupted()) {
+			throw new RuntimeException(new InterruptedException());
+		}
 		try {
 			m_cond.await((long)timeout, TimeUnit.MILLISECONDS);
 		} catch(InterruptedException e) {

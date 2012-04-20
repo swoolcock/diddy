@@ -10,8 +10,8 @@ Class Foo Extends Thread
 	Field mut:Mutex
 	Field cond:CondVar
 	
-	Method New(mut:Mutex)
-		Self.mut = mut
+	Method New()
+		Self.mut = New Mutex
 		Self.cond = mut.CreateCondVar()
 	End
 	
@@ -45,8 +45,8 @@ Class MyApp Extends App
 	
 	Method OnCreate:Int()
 		SetUpdateRate(60)
-		t1 = New Foo(New Mutex)
-		t2 = New Foo(New Mutex)
+		t1 = New Foo
+		t2 = New Foo
 		t1.Start(100)
 		t2.Start(200)
 		Return 0
@@ -57,6 +57,11 @@ Class MyApp Extends App
 			shouldQuit = True
 			Error ""
 		End
+#If TARGET="android" Then
+		If TouchHit() Then
+			t1.Cancel()
+		End
+#End
 		Return 0
 	End
 	
@@ -65,15 +70,23 @@ Class MyApp Extends App
 		SetColor 255, 255, 255
 		Local val1#, val2#
 		
-		t1.mut.Lock()
-		val1 = t1.val
-		t1.cond.Signal()
-		t1.mut.Unlock()
+		If t1.Running() Then
+			t1.mut.Lock()
+			val1 = t1.val
+			t1.cond.Signal()
+			t1.mut.Unlock()
+		Else
+			val1 = t1.val
+		End
 		
-		t2.mut.Lock()
-		val2 = t2.val
-		t2.cond.Signal()
-		t2.mut.Unlock()
+		If t2.Running() Then
+			t2.mut.Lock()
+			val2 = t2.val
+			t2.cond.Signal()
+			t2.mut.Unlock()
+		Else
+			val2 = t2.val
+		End
 		
 		DrawText "val1="+val1, 10, 10
 		DrawText "val2="+val2, 10, 30
