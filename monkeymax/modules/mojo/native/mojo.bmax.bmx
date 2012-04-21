@@ -110,7 +110,11 @@ Type gxtkApp
 	
 	Method LoadString:String( path:String )
 		path = "data/" + path
-		Return LoadText( path )
+		Try
+			Return LoadText( path )
+		Catch ReadFail:Object
+			Return Null
+		EndTry
 	EndMethod
 	
 	' ***** GXTK API *****
