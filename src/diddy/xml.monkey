@@ -14,6 +14,7 @@ Class XMLParser
 	Const TAG_DEFAULT:Int = 0
 	Const TAG_COMMENT:Int = 1
 	Const TAG_CDATA:Int = 2
+	Const TAG_DOCTYPE:Int = 3
 	
 	Field str:String
 	Field tags:Int[] ' tag character indexes, alternating < and >
@@ -42,6 +43,7 @@ Class XMLParser
 		Local inQuote:Bool = False
 		Local inComment:Bool = False
 		Local inCdata:Bool = False
+		Local inDoctype:Bool = False
 		Local inPi:Bool = False
 		Local strlen:Int = str.Length
 		For Local i:Int = 0 Until strlen
@@ -71,17 +73,6 @@ Class XMLParser
 					tagCount += 1
 					inCdata = False
 				End
-			' if we're in a processing instruction, we're only looking for ?>
-			ElseIf inPi Then
-				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_QUESTION Then
-					If piCount = pisLength Then
-						pisLength *= 2
-						pis = pis.Resize(pisLength)
-					End
-					pis[piCount] = i
-					piCount += 1
-					inPi = False
-				End
 			' if we're in a quoted string, we're only looking for "
 			ElseIf inQuote Then
 				If str[i] = ASC_DOUBLE_QUOTE Then
@@ -102,6 +93,30 @@ Class XMLParser
 				quotes[quoteCount] = i
 				quoteCount += 1
 				inQuote = True
+			' if we're in a processing instruction, we're only looking for ?>
+			ElseIf inPi Then
+				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_QUESTION Then
+					If piCount = pisLength Then
+						pisLength *= 2
+						pis = pis.Resize(pisLength)
+					End
+					pis[piCount] = i
+					piCount += 1
+					inPi = False
+				End
+			' if we're in a doctype, we're only looking for >
+			ElseIf inDoctype Then
+				If str[i] = ASC_GREATER_THAN Then
+					If tagCount = tagsLength Then
+						tagsLength *= 2
+						tags = tags.Resize(tagsLength)
+						tagType = tagType.Resize(tagsLength)
+					End
+					tags[tagCount] = i
+					tagType[tagCount] = TAG_DOCTYPE
+					tagCount += 1
+					inDoctype = False
+				End
 			' less than
 			ElseIf str[i] = ASC_LESS_THAN Then
 				' if we're in a tag, die
@@ -121,11 +136,11 @@ Class XMLParser
 						inComment = True
 					' cdata?
 					ElseIf str[i+2] = ASC_OPEN_BRACKET And
-							str[i+3] = ASC_UPPER_C And
-							str[i+4] = ASC_UPPER_D And
-							str[i+5] = ASC_UPPER_A And
-							str[i+6] = ASC_UPPER_T And
-							str[i+7] = ASC_UPPER_A And
+							(str[i+3] = ASC_UPPER_C Or str[i+3] = ASC_LOWER_C) And
+							(str[i+4] = ASC_UPPER_D Or str[i+4] = ASC_LOWER_D) And
+							(str[i+5] = ASC_UPPER_A Or str[i+5] = ASC_LOWER_A) And
+							(str[i+6] = ASC_UPPER_T Or str[i+6] = ASC_LOWER_T) And
+							(str[i+7] = ASC_UPPER_A Or str[i+7] = ASC_LOWER_A) And
 							str[i+8] = ASC_OPEN_BRACKET Then
 						If tagCount = tagsLength Then
 							tagsLength *= 2
@@ -136,6 +151,23 @@ Class XMLParser
 						tagType[tagCount] = TAG_CDATA
 						tagCount += 1
 						inCdata = True
+					' doctype?
+					ElseIf (str[i+2] = ASC_UPPER_D Or str[i+2] = ASC_LOWER_D) And
+							(str[i+3] = ASC_UPPER_O Or str[i+3] = ASC_LOWER_O) And
+							(str[i+4] = ASC_UPPER_C Or str[i+4] = ASC_LOWER_C) And
+							(str[i+5] = ASC_UPPER_T Or str[i+5] = ASC_LOWER_T) And
+							(str[i+6] = ASC_UPPER_Y Or str[i+6] = ASC_LOWER_Y) And
+							(str[i+7] = ASC_UPPER_P Or str[i+7] = ASC_LOWER_P) And
+							(str[i+8] = ASC_UPPER_E Or str[i+8] = ASC_LOWER_E) Then
+						If tagCount = tagsLength Then
+							tagsLength *= 2
+							tags = tags.Resize(tagsLength)
+							tagType = tagType.Resize(tagsLength)
+						End
+						tags[tagCount] = i
+						tagType[tagCount] = TAG_DOCTYPE
+						tagCount += 1
+						inDoctype = True
 					Else
 						AssertError "Invalid prolog."
 					End
@@ -382,7 +414,13 @@ Class XMLParser
 				a = tags[index]+9 ' "![CDATA[".Length
 				b = tags[index+1]-2 ' "]]".Length
 				
-				' TODO: add a cdata element
+				' add a cdata element
+				newE = New XMLElement
+				newE.cdata = True
+				newE.value = str[a..b]
+				newE.parent = thisE
+				thisE.AddChild(newE)
+				newE = Null
 				
 			' otherwise we do normal tag stuff
 			Else
@@ -421,7 +459,7 @@ Class XMLParser
 					End
 					
 				' check if the last character is a slash (self closing tag)
-				ElseIf str[trimmed[1]] = ASC_SLASH Then
+				ElseIf str[trimmed[1]-1] = ASC_SLASH Then
 					' strip the slash
 					trimmed[1] -= 1
 					
