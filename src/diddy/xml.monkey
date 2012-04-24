@@ -9,6 +9,7 @@
 Import assert
 Import functions
 Import collections
+Import stringbuilder
 
 Class XMLParser
 	Const TAG_DEFAULT:Int = 0
@@ -774,22 +775,37 @@ Public
 	End
 End
 
-' TODO: disabled escaping for performance, will fix these in the next commit
-
+' hopefully this stringbuilder-based replace should be faster since it doesn't create intermediate string objects!
 Function EscapeXMLString:String(str:String)
-	'str = str.Replace("&", "&amp;")
-	'str = str.Replace("<", "&lt;")
-	'str = str.Replace(">", "&gt;")
-	'str = str.Replace("'", "&apos;")
-	'str = str.Replace("~q", "&quot;")
+	xmlsb.Length = 0
+	For Local i:Int = 0 Until str.Length
+		Select str[i]
+			Case ASC_AMPERSAND
+				xmlsb.Append("&amp;")
+			Case ASC_LESS_THAN
+				xmlsb.Append("&lt;")
+			Case ASC_GREATER_THAN
+				xmlsb.Append("&gt;")
+			Case ASC_SINGLE_QUOTE
+				xmlsb.Append("&apos;")
+			Case ASC_DOUBLE_QUOTE
+				xmlsb.Append("&quot;")
+			Default
+				xmlsb.AppendByte(str[i])
+		End
+	End
+	Return xmlsb.ToString()
+End
+
+' unescaping is rare so we won't bother using a stringbuilder
+Function UnescapeXMLString:String(str:String)
+	str = str.Replace("&quot;", "~q")
+	str = str.Replace("&apos;", "'")
+	str = str.Replace("&gt;", ">")
+	str = str.Replace("&lt;", "<")
+	str = str.Replace("&amp;", "&")
 	Return str
 End
 
-Function UnescapeXMLString:String(str:String)
-	'str = str.Replace("&quot;", "~q")
-	'str = str.Replace("&apos;", "'")
-	'str = str.Replace("&gt;", ">")
-	'str = str.Replace("&lt;", "<")
-	'str = str.Replace("&amp;", "&")
-	Return str
-End
+Private
+Global xmlsb:StringBuilder = New StringBuilder

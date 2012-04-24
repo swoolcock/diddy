@@ -151,6 +151,15 @@ Public
 		Return Self
 	End
 	
+	Method AppendByte:StringBuilder(value:Int)
+		dirty = True
+		Local temp:Int = length + 1
+		ResizeArray(temp)
+		characters[length] = value
+		length += 1
+		Return Self
+	End
+	
 ' Delete
 	Method Delete:StringBuilder(startIndex:Int, endIndex:Int)
 		If startIndex < 0 Or startIndex > length Then Error("Start index ("+startIndex+") out of range [0-"+(length-1)+"]")
