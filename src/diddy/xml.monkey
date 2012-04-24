@@ -6,74 +6,188 @@
 ' For now, exported indentation is hardcoded to 2 spaces.
 ' Written from scratch, using as little string manipulation as possible.
 
+Import assert
 Import functions
 Import collections
 
-' note that we don't define a separate method for checking whitespace, to improve performance on android
 Class XMLParser
-	Field str:String
+	Const TAG_DEFAULT:Int = 0
+	Const TAG_COMMENT:Int = 1
+	Const TAG_CDATA:Int = 2
 	
-	' find a string, ignoring quoted strings
-	Method FindUnquoted:Int(findit:String, start:Int)
-		' look for the string
-		Local a:Int = str.Find(findit, start)
-		
-		' look for a single or double quote
-		Local singleQuote:Int = str.Find("'", start)
-		Local doubleQuote:Int = str.Find("~q", start)
-		Local quoteToFind:String = ""
-		Local b:Int = -1
-		If singleQuote >= 0 And doubleQuote < 0 Or singleQuote >= 0 And singleQuote < doubleQuote Then
-			quoteToFind = "'"
-			b = singleQuote
-		ElseIf doubleQuote >= 0 And singleQuote < 0 Or doubleQuote >= 0 And doubleQuote < singleQuote Then
-			quoteToFind = "~q"
-			b = doubleQuote
-		End
-		
-		' while there's a quote to check
-		While b >= 0 And a >= 0 And a > b
-			' find the ending quote
-			b = str.Find(quoteToFind, b+1)
-			
-			' if not found, the quote doesn't end, so error
-			If b < 0 Then AssertError("Unclosed quote detected.")
-			
-			' find the next instance after b
-			a = str.Find(findit, b+1)
-			
-			' look for another starting quote
-			singleQuote = str.Find("'", b+1)
-			doubleQuote = str.Find("~q", b+1)
-			b = -1
-			If singleQuote >= 0 And doubleQuote < 0 Or singleQuote >= 0 And singleQuote < doubleQuote Then
-				quoteToFind = "'"
-				b = singleQuote
-			ElseIf doubleQuote >= 0 And singleQuote < 0 Or doubleQuote >= 0 And doubleQuote < singleQuote Then
-				quoteToFind = "~q"
-				b = doubleQuote
+	Field str:String
+	Field tags:Int[] ' tag character indexes, alternating < and >
+	Field tagType:Int[] 
+	Field tagCount:Int = 0
+	Field tagsLength:Int
+	Field quotes:Int[] ' quote character indexes, alternating opening and closing
+	Field quoteCount:Int = 0
+	Field quotesLength:Int
+	Field pis:Int[] ' pi character indexes, alternating <? And ?> (index is on <>)
+	Field piCount:Int = 0
+	Field pisLength:Int
+	
+	Method CacheControlCharacters:Void()
+		tagsLength = 128
+		quotesLength = 128
+		pisLength = 128
+		tags = New Int[tagsLength]
+		tagType = New Int[tagsLength]
+		quotes = New Int[quotesLength]
+		pis = New Int[quotesLength]
+		tagCount = 0
+		quoteCount = 0
+		piCount = 0
+		Local inTag:Bool = False
+		Local inQuote:Bool = False
+		Local inComment:Bool = False
+		Local inCdata:Bool = False
+		Local inPi:Bool = False
+		Local strlen:Int = str.Length
+		For Local i:Int = 0 Until strlen
+			' if we're in a comment, we're only looking for -->
+			If inComment Then
+				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_HYPHEN And str[i-2] = ASC_HYPHEN Then
+					If tagCount = tagsLength Then
+						tagsLength *= 2
+						tags = tags.Resize(tagsLength)
+						tagType = tagType.Resize(tagsLength)
+					End
+					tags[tagCount] = i
+					tagType[tagCount] = TAG_COMMENT
+					tagCount += 1
+					inComment = False
+				End
+			' if we're in a cdata, we're only looking for ]]>
+			ElseIf inCdata Then
+				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_CLOSE_BRACKET And str[i-2] = ASC_CLOSE_BRACKET Then
+					If tagCount = tagsLength Then
+						tagsLength *= 2
+						tags = tags.Resize(tagsLength)
+						tagType = tagType.Resize(tagsLength)
+					End
+					tags[tagCount] = i
+					tagType[tagCount] = TAG_CDATA
+					tagCount += 1
+					inCdata = False
+				End
+			' if we're in a processing instruction, we're only looking for ?>
+			ElseIf inPi Then
+				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_QUESTION Then
+					If piCount = pisLength Then
+						pisLength *= 2
+						pis = pis.Resize(pisLength)
+					End
+					pis[piCount] = i
+					piCount += 1
+					inPi = False
+				End
+			' if we're in a quoted string, we're only looking for "
+			ElseIf inQuote Then
+				If str[i] = ASC_DOUBLE_QUOTE Then
+					If quoteCount = quotesLength Then
+						quotesLength *= 2
+						quotes = quotes.Resize(quotesLength)
+					End
+					quotes[quoteCount] = i
+					quoteCount += 1
+					inQuote = False
+				End
+			' check if we should start a new quoted string
+			ElseIf str[i] = ASC_DOUBLE_QUOTE Then
+				If quoteCount = quotesLength Then
+					quotesLength *= 2
+					quotes = quotes.Resize(quotesLength)
+				End
+				quotes[quoteCount] = i
+				quoteCount += 1
+				inQuote = True
+			' less than
+			ElseIf str[i] = ASC_LESS_THAN Then
+				' if we're in a tag, die
+				If inTag Then AssertError "Invalid less than!"
+				' check for prolog
+				If str[i+1] = ASC_EXCLAMATION Then
+					' comment?
+					If str[i+2] = ASC_HYPHEN And str[i+3] = ASC_HYPHEN Then
+						If tagCount = tagsLength Then
+							tagsLength *= 2
+							tags = tags.Resize(tagsLength)
+							tagType = tagType.Resize(tagsLength)
+						End
+						tags[tagCount] = i
+						tagType[tagCount] = TAG_COMMENT
+						tagCount += 1
+						inComment = True
+					' cdata?
+					ElseIf str[i+2] = ASC_OPEN_BRACKET And
+							str[i+3] = ASC_UPPER_C And
+							str[i+4] = ASC_UPPER_D And
+							str[i+5] = ASC_UPPER_A And
+							str[i+6] = ASC_UPPER_T And
+							str[i+7] = ASC_UPPER_A And
+							str[i+8] = ASC_OPEN_BRACKET Then
+						If tagCount = tagsLength Then
+							tagsLength *= 2
+							tags = tags.Resize(tagsLength)
+							tagType = tagType.Resize(tagsLength)
+						End
+						tags[tagCount] = i
+						tagType[tagCount] = TAG_CDATA
+						tagCount += 1
+						inCdata = True
+					Else
+						AssertError "Invalid prolog."
+					End
+				' check for processing instruction
+				ElseIf str[i+1] = ASC_QUESTION Then
+					If piCount = pisLength Then
+						pisLength *= 2
+						pis = pis.Resize(pisLength)
+					End
+					pis[piCount] = i
+					piCount += 1
+					inPi = True
+				' finally, it must just be opening a tag
+				Else
+					If tagCount = tagsLength Then
+						tagsLength *= 2
+						tags = tags.Resize(tagsLength)
+						tagType = tagType.Resize(tagsLength)
+					End
+					tags[tagCount] = i
+					tagType[tagCount] = TAG_DEFAULT
+					tagCount += 1
+					inTag = True
+				End
+			' greater than
+			ElseIf str[i] = ASC_GREATER_THAN Then
+				If Not inTag Then AssertError "Invalid greater than!"
+				If tagCount = tagsLength Then
+					tagsLength *= 2
+					tags = tags.Resize(tagsLength)
+					tagType = tagType.Resize(tagsLength)
+				End
+				tags[tagCount] = i
+				tagType[tagCount] = TAG_DEFAULT
+				tagCount += 1
+				inTag = False
 			End
-		End
-		' done, so return a (it may be negative if not found)
-		Return a
+		Next
+		If inQuote Then AssertError "Unclosed quote!"
+		If inTag Then AssertError "Unclosed tag!"
+		If inComment Then AssertError "Unclosed comment!"
+		If inCdata Then AssertError "Unclosed cdata!"
+		If inPi Then AssertError "Unclosed processing instruction!"
 	End
 
 	' get the contents of a tag (given start and end)
 	Method GetTagContents:XMLElement(startIndex:Int, endIndex:Int)
-		' trim trailing whitespace
-		While endIndex > startIndex And (str[endIndex]=ASC_SPACE Or str[endIndex]=ASC_TAB Or str[endIndex]=ASC_LF Or str[endIndex]=ASC_CR)
-			endIndex += 1
-		End
 		' die if empty tag
 		If startIndex = endIndex Then AssertError("Empty tag detected.")
 		' our element
 		Local e:XMLElement = New XMLElement
 		Local a:Int, singleQuoted:Bool, doubleQuoted:Bool, key:String, value:String
-		
-		' trim leading whitespace
-		While str[startIndex]=ASC_SPACE Or str[startIndex]=ASC_TAB Or str[startIndex]=ASC_LF Or str[startIndex]=ASC_CR
-			startIndex += 1
-		End
 		
 		' get the name
 		a = startIndex
@@ -200,6 +314,28 @@ Class XMLParser
 		Return ParseString(LoadString(filename))
 	End
 	
+	Method TrimString:Void(startIdx:Int, endIdx:Int, trimmed:Int[])
+		Local trimStart:Int = startIdx, trimEnd:Int = endIdx
+		While trimEnd > trimStart
+			Local ch:Int = str[trimEnd-1]
+			If ch = ASC_CR Or ch = ASC_LF Or ch = ASC_SPACE Or ch = ASC_TAB Then
+				trimEnd -= 1
+			Else
+				Exit
+			End
+		End
+		While trimStart < trimEnd
+			Local ch:Int = str[trimStart]
+			If ch = ASC_CR Or ch = ASC_LF Or ch = ASC_SPACE Or ch = ASC_TAB Then
+				trimStart += 1
+			Else
+				Exit
+			End
+		End
+		trimmed[0] = trimStart
+		trimmed[1] = trimEnd
+	End
+	
 	' parses an xml doc, currently doesn't support nested PI or prolog
 	Method ParseString:XMLDocument(str:String)
 		Self.str = str
@@ -208,126 +344,138 @@ Class XMLParser
 		Local elements:ArrayList<XMLElement> = New ArrayList<XMLElement>
 		Local thisE:XMLElement = Null, newE:XMLElement = Null
 		Local index:Int = 0, a:Int, b:Int, c:Int, nextIndex:Int
+		Local trimmed:Int[] = New Int[2]
+		
+		' cache all the control characters
+		CacheControlCharacters()
 		
 		' find first opening tag
-		a = str.Find("<", index)
-		While a >= index
-			' read text between tags
-			If a > index And str[index..a].Trim() <> "" Then
-				If thisE <> Null Then
-					thisE.value += UnescapeXMLString(str[index..a].Trim())
-				Else
-					AssertError("Loose text outside of any tag!")
-				End
-			End
-			' check for PI
-			If str[a+1] = ASC_QUESTION Then
-				' die if the PI is inside the document
-				If thisE <> Null Then AssertError("Processing instruction detected inside main document tag.")
-				' create PI element up until next unquoted ?> after a
-				nextIndex = FindUnquoted("?>", a+2)
-				newE = GetTagContents(a+2, nextIndex)
+		If tagCount = 0 Then AssertError "Something seriously wrong... no tags!"
+		
+		' parse processing instructions
+		index = 0
+		a = pis[index]+2
+		b = pis[index+1]-1
+		While index < piCount
+			TrimString(a, b, trimmed)
+			If trimmed[0] <> trimmed[1] Then
+				newE = GetTagContents(trimmed[0], trimmed[1])
 				newE.pi = True
 				doc.pi.Add(newE)
 				newE = Null
-				nextIndex += 2
-			' check for prolog
-			ElseIf str[a+1] = ASC_EXCLAMATION Then
-				' if the next two chars are -- it's a comment
-				If str[a+2] = ASC_HYPHEN And str[a+3] = ASC_HYPHEN Then
-					' ignore everything until the next -->
-					nextIndex = str.Find("-->", a+4)
-					' if we couldn't find a comment end, die
-					If nextIndex < 0 Then AssertError("Unclosed comment detected.")
-					' XML specifications say that ---> is invalid
-					If str[nextIndex-1] = ASC_HYPHEN Then AssertError("Invalid comment close detected (too many hyphens).")
-					nextIndex += 3
-					
-				' if the next seven chars are [CDATA[ it's a cdata block
-				ElseIf str.Find("[CDATA[", a+2) = a+2 Then
-					' die if the CDATA is outside the document
-					If thisE = Null Then AssertError("CDATA detected outside main document tag.")
-					nextIndex = str.Find("]]>", a+9)
-					' die if it doesn't end
-					If nextIndex < 0 Then AssertError("Unclosed CDATA tag detected.")
-					newE = New XMLElement
-					newE.value = str[a+9..nextIndex]
-					newE.cdata = True
-					thisE.AddChild(newE)
-					newE = Null
-					nextIndex += 3
-					
-				' if the next seven chars are DOCTYPE it's a dtd tag
-				ElseIf str.Find("DOCTYPE", a+2) = a+2 Then
-					' die if the doctype is inside the document
-					If thisE <> Null Then AssertError("DOCTYPE detected inside main document tag.")
-					nextIndex = FindUnquoted(">", a+9)
-					newE = GetTagContents(a+9, nextIndex)
-					newE.prolog = True
-					doc.prologs.Add(newE)
-					newE = Null
-					nextIndex += 1
-				
-				' don't know!
-				Else
-					AssertError("Unknown prolog detected.")
-				End
-				
-			' check for closing tag
-			ElseIf str[a+1] = ASC_SLASH Then
-				' if no current element, die
-				If thisE = Null Then AssertError("Closing tag found outside main document tag.")
-				' find the next >
-				nextIndex = str.Find(">", a+2)
-				' if not found, the closing tag is broken
-				If nextIndex < 0 Then AssertError("Incomplete closing tag detected.")
-				' check that the tag name matches
-				If str[a+2..nextIndex].Trim() <> thisE.name Then AssertError("Closing tag ~q"+str[a+2..nextIndex].Trim()+"~q does not match opening tag ~q"+thisE.name+"~q")
-				If Not elements.IsEmpty() Then
-					thisE = elements.RemoveLast()
-				Else
-					doc.root = thisE
-					Exit
-				End
-				nextIndex += 1
-				
-			' check for opening tag
 			Else
-				' look for the end of the tag, and whether it's self-closing
-				b = FindUnquoted("/>", a+1)
-				c = FindUnquoted(">", a+1)
-				' if we couldn't find either
-				If c < 0 Then
-					AssertError("Incomplete opening tag detected.")
+				AssertError "Empty processing instruction."
+			End
+			index += 2
+		End
+		
+		' loop on tags
+		index = 0
+		While index+1 < tagCount
+			' we skip comments
+			If tagType[index] = TAG_COMMENT Then
+				' skip comments
+			
+			' if it's cdata
+			ElseIf tagType[index] = TAG_CDATA Then
+				' get the text between < and >
+				a = tags[index]+9 ' "![CDATA[".Length
+				b = tags[index+1]-2 ' "]]".Length
+				
+				' TODO: add a cdata element
+				
+			' otherwise we do normal tag stuff
+			Else
+				' get the text between < and >
+				a = tags[index]+1
+				b = tags[index+1]
+				
+				' trim the string
+				TrimString(a, b, trimmed)
+				
+				' if it's a completely empty tag name, die
+				If trimmed[0] = trimmed[1] Then AssertError "Empty tag."
+				
+				' check if the first character is a slash (end tag)
+				If str[trimmed[0]] = ASC_SLASH Then
+					' if no current element, die
+					If thisE = Null Then AssertError("Closing tag found outside main document tag.")
 					
-				' if it's not self-closing
-				ElseIf b < 0 Or c < b Then
-					' get the new one
-					newE = GetTagContents(a+1, c)
-					If thisE <> Null Then
-						' push the current element to the stack
-						elements.AddLast(thisE)
-						' add it as a child element
-						thisE.AddChild(newE)
+					' strip the slash
+					trimmed[0] += 1
+					
+					' check that the tag name length matches
+					If trimmed[1] - trimmed[0] <> thisE.name.Length Then AssertError("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
+					
+					' check that the tag name matches (manually so that we don't create an entire string slice when the first character could be wrong!)
+					For Local nameIdx:Int = 0 Until thisE.name.Length
+						If str[trimmed[0]+nameIdx] <> thisE.name[nameIdx] Then AssertError("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
+					Next
+					
+					' pop the element from the stack, or set the document root
+					If Not elements.IsEmpty() Then
+						thisE = elements.RemoveLast()
+					Else
+						'doc.root = thisE
+						Exit
 					End
-					thisE = newE
-					newE = Null
-					nextIndex = c+1
-				' it's self-closing
-				Else
-					newE = GetTagContents(a+1, b)
+					
+				' check if the last character is a slash (self closing tag)
+				ElseIf str[trimmed[1]] = ASC_SLASH Then
+					' strip the slash
+					trimmed[1] -= 1
+					
+					' create an element from the tag
+					newE = GetTagContents(trimmed[0], trimmed[1])
+					
+					' add as a child or set as the root
+					If doc.root = Null Then doc.root = newE
 					If thisE <> Null Then
 						thisE.AddChild(newE)
 					Else
-						doc.root = newE
+						'doc.root = newE
 						Exit
 					End
 					newE = Null
-					nextIndex = b+2
+					
+				' otherwise it's an opening tag
+				Else
+					' create an element from the tag
+					newE = GetTagContents(trimmed[0], trimmed[1])
+
+					If doc.root = Null Then doc.root = newE
+					
+					' add as a child if we already have an element
+					If thisE <> Null Then
+						thisE.AddChild(newE)
+					End
+					
+					' push this element
+					elements.AddLast(thisE)
+					
+					' and set as the current
+					thisE = newE
+					newE = Null
 				End
 			End
-			index = nextIndex
-			a = str.Find("<", index)
+			
+			' get any text between tags
+			index += 1
+			If index < tagCount Then
+				a = tags[index]+1
+				b = tags[index+1]
+				TrimString(a, b, trimmed)
+				If trimmed[0] <> trimmed[1] Then
+					If thisE <> Null Then
+						thisE.value += UnescapeXMLString(str[trimmed[0]..trimmed[1]])
+					Else
+						'AssertError("Loose text outside of any tag!") - Getting this for some reason, I'll fix it later :/
+					End
+				End
+			End
+			
+			' next tag
+			index += 1
 		End
 		If doc.root = Null Then AssertError("Error parsing XML: no document tag found.")
 		Return doc
@@ -557,14 +705,14 @@ Public
 	
 	Method GetChildrenByName:ArrayList<XMLElement>(findName:String)
 		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
-		For Local element:XMLElement = EachIn children
+		For Local element:XMLElement = Eachin children
 			If element.name = findName Then rv.Add(element)
 		Next
 		Return rv
 	End
 	
 	Method GetFirstChildByName:XMLElement(findName:String)
-		For Local element:XMLElement = EachIn children
+		For Local element:XMLElement = Eachin children
 			If element.name = findName Then Return element
 		Next
 		Return Null
@@ -588,31 +736,22 @@ Public
 	End
 End
 
+' TODO: disabled escaping for performance, will fix these in the next commit
+
 Function EscapeXMLString:String(str:String)
-	str = str.Replace("&", "&amp;")
-	str = str.Replace("<", "&lt;")
-	str = str.Replace(">", "&gt;")
-	str = str.Replace("'", "&apos;")
-	str = str.Replace("~q", "&quot;")
+	'str = str.Replace("&", "&amp;")
+	'str = str.Replace("<", "&lt;")
+	'str = str.Replace(">", "&gt;")
+	'str = str.Replace("'", "&apos;")
+	'str = str.Replace("~q", "&quot;")
 	Return str
 End
 
 Function UnescapeXMLString:String(str:String)
-	str = str.Replace("&quot;", "~q")
-	str = str.Replace("&apos;", "'")
-	str = str.Replace("&gt;", ">")
-	str = str.Replace("&lt;", "<")
-	str = str.Replace("&amp;", "&")
+	'str = str.Replace("&quot;", "~q")
+	'str = str.Replace("&apos;", "'")
+	'str = str.Replace("&gt;", ">")
+	'str = str.Replace("&lt;", "<")
+	'str = str.Replace("&amp;", "&")
 	Return str
 End
-
-
-
-
-
-
-
-
-
-
-
