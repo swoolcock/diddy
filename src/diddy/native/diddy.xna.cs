@@ -68,6 +68,11 @@ class diddy
 	{
 #if WINDOWS
 		System.Diagnostics.Process.Start(address);
+#elif WINDOWS_PHONE
+		MarketplaceDetailTask marketplaceDetailTask = new MarketplaceDetailTask();
+		marketplaceDetailTask.ContentIdentifier = address;
+		marketplaceDetailTask.ContentType = MarketplaceContentType.Applications;
+		marketplaceDetailTask.Show();
 #endif
 	}
 	public static void launchEmail(String email, String subject, String text)
