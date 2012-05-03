@@ -626,8 +626,9 @@ Class ImageBank Extends StringMap<GameImage>
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
+#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-		
+#end
 		Local i:GameImage = New GameImage
 		i.Load(path + name, midhandle)
 		i.name = storeKey
@@ -642,8 +643,9 @@ Class ImageBank Extends StringMap<GameImage>
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
+#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-		
+#end
 		Local i:GameImage = New GameImage
 		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle)
 		i.name = storeKey
@@ -658,8 +660,9 @@ Class ImageBank Extends StringMap<GameImage>
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
+#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-		
+#end		
 		' load the new one
 		Local i:GameImage = New GameImage
 		i.LoadTileset(path + name, tileWidth, tileHeight, tileMargin, tileSpacing, midhandle)
