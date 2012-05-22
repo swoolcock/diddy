@@ -27,6 +27,10 @@ Class FileSystem Extends DataConversion
 	
 	Method ReadFile:FileStream(filename:String)
 		filename = filename.ToLower()
+		
+		' Check existence
+		if Not Self.index.Contains(filename) Then Return Null
+		
 		Local f:FileStream
 		f = Self.index.ValueForKey(filename)
 		f.ptr = 0
@@ -139,12 +143,26 @@ Class FileStream Extends DataConversion
 	Field arr:String[]
 	Field delimiter:String
 	Field numElements:Int
+	Field errStr:String
 'Public
+
+	Method HadError:Bool()
+		Return errStr.Length() > 0
+	End
+	
+	Method GetLastError:String()
+		Return errStr
+	End
+
+	Method AtEOF:Bool()
+		Return Self.ptr >= Self.arr.Length()
+	End
 	
 	Method ReadInt:Int()
 		Local result:Int
 		if Self.ptr >= Self.arr.Length()
 			Self.EofError()
+			Return 0
 		EndIf
 
 		result = Int(Self.arr[Self.ptr])
@@ -164,6 +182,7 @@ Class FileStream Extends DataConversion
 		Local result:String
 		if Self.ptr >= Self.arr.Length()
 			Self.EofError()
+			Return ""
 		EndIf
 		result = Self.arr[Self.ptr]
 		Self.ptr+=1
@@ -182,6 +201,7 @@ Class FileStream Extends DataConversion
 		Local result:float
 		if Self.ptr >= Self.arr.Length()
 			Self.EofError()
+			Return 0.0
 		EndIf
 
 		result = Float(Self.arr[Self.ptr])
@@ -202,6 +222,7 @@ Class FileStream Extends DataConversion
 		Local result:Bool
 		if Self.ptr >= Self.arr.Length()
 			Self.EofError()
+			Return False
 		EndIf
 
 		if Self.arr[Self.ptr] = "0"
@@ -229,7 +250,12 @@ Class FileStream Extends DataConversion
 	End Method
 	
 	Method EofError:Void()
-		Error "End of file: " + Self.filename
+		errStr = "End of file: " + Self.filename
+		
+		#If CONFIG="debug"
+    	' how can we recover from an error if you stop the program?
+			Error errStr
+		#End
 	End Method
 End
 
