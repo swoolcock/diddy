@@ -98,6 +98,9 @@ Private
 	
 Public
 	Method New()
+		' DiddyApp now assigns itself to game, so you don't need to do: game = New MyGame()
+		' Assigning it manually will have no effect, but won't break anything.
+		game = Self
 		Self.exitScreen = New ExitScreen
 		Self.screenFade = New ScreenFade
 		Self.images = New ImageBank
@@ -388,6 +391,17 @@ Public
 			dt.delta = 1
 		End
 	End
+	
+	' convenience method that will trigger a fade in and call PreStart() on the screen (used for first screen)
+	Method Start:Void(firstScreen:Screen, autoFadeIn:Bool=True, fadeInTime:Float=50, fadeSound:Bool=False, fadeMusic:Bool=False)
+		firstScreen.autoFadeIn = autoFadeIn
+		If autoFadeIn Then
+			firstScreen.autoFadeInTime = fadeInTime
+			firstScreen.autoFadeInSound = fadeSound
+			firstScreen.autoFadeInMusic = fadeMusic
+		End
+		firstScreen.PreStart()
+	End
 End
 
 Class ScreenFade
@@ -487,10 +501,21 @@ Class ExitScreen Extends Screen
 End
 
 Class Screen Abstract
+Private
+	Field autoFadeIn:Bool = False
+	Field autoFadeInTime:Float = 50
+	Field autoFadeInSound:Bool = False
+	Field autoFadeInMusic:Bool = False
+	
+Public
 	Field name$ = ""
 	
 	Method PreStart:Void()
 		game.currentScreen = Self
+		If autoFadeIn Then
+			autoFadeIn = False
+			game.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic)
+		End
 		Start()
 	End
 	
@@ -571,6 +596,25 @@ Class Screen Abstract
 	End
 	
 	Method OnMouseReleased:Void(x:Int, y:Int, button:Int)
+	End
+	
+	' convenience methods
+	Method FadeToScreen:Void(screen:Screen, fadeTime:Float=50, fadeSound:Bool = False, fadeMusic:Bool = False)
+		' don't try to fade twice
+		If game.screenFade.active Then Return
+		
+		' if the screen is null, assume we're exiting
+		If Not screen Then screen = game.exitScreen
+		
+		' configure the autofade values
+		screen.autoFadeIn = True
+		screen.autoFadeInTime = fadeTime
+		screen.autoFadeInSound = fadeSound
+		screen.autoFadeInMusic = fadeMusic
+		
+		' trigger the fade out
+		game.nextScreen = screen
+		game.screenFade.Start(fadeTime, True, fadeSound, fadeMusic)
 	End
 End
 
