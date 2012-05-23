@@ -18,7 +18,7 @@ Class MyGame extends DiddyApp
 		LoadImages()
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
-		titleScreen.PreStart()
+		game.Start(titleScreen)
 		return 0
 	End
 	
@@ -39,7 +39,7 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
+		' game.Start forces an autofade, so we don't need to manually fade in anymore
 	End
 	
 	Method Render:Void()
@@ -51,13 +51,13 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		If MouseHit(MOUSE_LEFT)
-			game.screenFade.Start(50, true)
-			game.nextScreen = gameScreen
+			' triggers a fade out and configures the gameScreen so that it will auto fade in
+			FadeToScreen(gameScreen)
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			' fading to Null is the same as fading to game.exitScreen (which exits the game)
+			FadeToScreen(Null)
 		End
 	End
 End
@@ -71,8 +71,7 @@ Class GameScreen Extends Screen
 	
 	Method Start:Void()
 		spark = game.images.Find("spark")
-		
-		game.screenFade.Start(50, false)
+		' FadeToScreen forces an autofade, so we don't need to manually fade in anymore
 	End
 	
 	Method Render:Void()
@@ -85,8 +84,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 		If MouseDown(MOUSE_LEFT)
 			For Local i% = 1 To 3
