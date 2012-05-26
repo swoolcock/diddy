@@ -2107,9 +2107,9 @@ Public
 					Local e:Emitter = del.deathEmitter
 					' if the emitter has no group assigned, we use Self
 					If e.group = Null Then
-						e.EmitAtAngle(del.count, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]), Self)
+						e.EmitAtAngle(del.count, deadX[i], deadY[i], ATan2r(deadVelocityY[i], deadVelocityX[i]), Self)
 					Else
-						e.EmitAtAngle(del.count, deadX[i], deadY[i], SafeATanr(deadVelocityX[i], deadVelocityY[i]))
+						e.EmitAtAngle(del.count, deadX[i], deadY[i], ATan2r(deadVelocityY[i], deadVelocityX[i]))
 					End
 				End
 			Next
@@ -2118,7 +2118,7 @@ Public
 	End
 	
 	Method UpdatePolar:Void(index:Int)
-		Local angle:Float = SafeATanr(velocityX[index], velocityY[index], polarVelocityAngle[index])
+		Local angle:Float = ATan2r(velocityY[index], velocityX[index])
 		polarVelocityAngle[index] = angle
 		polarVelocityAmplitude[index] = Sqrt(velocityX[index]*velocityX[index] + velocityY[index]*velocityY[index])
 	End
@@ -2375,26 +2375,3 @@ Private
 
 Const R2D:Float = 180/PI
 Const D2R:Float = PI/180
-
-Function SafeATanr:Float(dx:Float, dy:Float, def:Float=0)
-	' technically a default angle shouldn't be necessary
-	Local angle:Float = def
-	If dy = 0 And dx >= 0 Then ' 0
-		angle = 0
-	ElseIf dy = 0 And dx < 0 Then ' 180
-		angle = PI
-	ElseIf dy > 0 And dx = 0 Then ' 90
-		angle = PI*0.5
-	ElseIf dy < 0 And dx = 0 Then ' 270
-		angle = 3*PI*0.5
-	ElseIf dy > 0 And dx > 0 Then ' Acute
-		angle = ATanr(dy / dx)
-	ElseIf dy > 0 And dx < 0 Then ' Obtuse
-		angle = PI - ATanr(dy / -dx)
-	ElseIf dy < 0 And dx < 0 Then ' Reflex < 270
-		angle = PI + ATanr(dy / dx)
-	ElseIf dy < 0 And dx > 0 Then ' Reflex > 270
-		angle = 2*PI - ATanr(-dy / dx)
-	End
-	Return angle
-End
