@@ -43,8 +43,6 @@ Class DiddyApp Extends App
 	Field heightBorder:Float			' Size of border at top/bottom
 	
 	Field deviceChanged:Int				' Device size changed
-	Field lastDeviceWidth:Int			' For device change detection
-	Field lastDeviceHeight:Int			' For device change detection
 	Field virtualScaledW:Float
 	Field virtualScaledH:Float
 	Field virtualXOff:Float
@@ -157,14 +155,12 @@ Public
 		If virtualResOn
 			PushMatrix
 			If aspectRatioOn
-				If (DEVICE_WIDTH <> lastDeviceWidth) Or (DEVICE_HEIGHT <> lastDeviceHeight)
-					lastDeviceWidth = DeviceWidth()
-					lastDeviceHeight = DeviceHeight()
+				deviceChanged = False
+				If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT)
 					DEVICE_WIDTH = DeviceWidth()
 					DEVICE_HEIGHT = DeviceHeight()
 					deviceChanged = True
-				End
-				If deviceChanged
+
 					Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
 					If deviceRatio >= aspectRatio
 						multi = DEVICE_WIDTH / SCREEN_WIDTH
@@ -189,8 +185,6 @@ Public
 					
 					virtualXOff = virtualXOff / multi
 					virtualYOff = virtualYOff/ multi
-					
-					deviceChanged = False
 				End
 				
 				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
