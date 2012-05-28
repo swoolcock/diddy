@@ -160,6 +160,8 @@ Public
 				If (DEVICE_WIDTH <> lastDeviceWidth) Or (DEVICE_HEIGHT <> lastDeviceHeight)
 					lastDeviceWidth = DeviceWidth()
 					lastDeviceHeight = DeviceHeight()
+					DEVICE_WIDTH = DeviceWidth()
+					DEVICE_HEIGHT = DeviceHeight()
 					deviceChanged = True
 				End
 				If deviceChanged
