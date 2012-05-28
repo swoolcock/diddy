@@ -770,8 +770,16 @@ Public
 		Return name
 	End
 	
+	Method Name:Void(name:String) Property
+		Self.name = name
+	End
+	
 	Method Value:String() Property
 		Return value
+	End
+	
+	Method Value:Void(value:String) Property
+		Self.value = value
 	End
 End
 
