@@ -857,7 +857,7 @@ End
 		Select op
 			Case "mod=" Return " :Mod "
 			Case "shl=" Return " :shl "
-			Case "shr=" Return " :shr "
+			Case "shr=" Return " :sar " ' Monkey's Shr is BlitzMax's Sar
 			Case "+=" Return " :+"
 			Case "-=" Return " :-"
 			Case "*=" Return " :*"
@@ -876,7 +876,7 @@ End
 			Return op
 		Case "*","/" Return op
 		Case "shl" Return op
-		Case "shr" Return op
+		Case "shr" Return "sar" ' Monkey's Shr is BlitzMax's Sar
 		Case "mod" Return op
 		Case "and" Return op
 		Case "or" Return op
@@ -887,7 +887,13 @@ End
 		Case "~~" Return "^"
 		End Select
 	#end
-	Return " " + op + " "
+		Select op
+			Case 
+				"shr" Return " sar " ' Monkey's Shr is BlitzMax's Sar
+			Default
+				Return " " + op + " "
+		End Select
+		
 		InternalErr
 	End
 	
