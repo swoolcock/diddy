@@ -27,6 +27,9 @@ Global game:DiddyApp
 ' Used for delta timing movement
 Global dt:DeltaTimer
 
+' Default fade time
+Global defaultFadeTime:Float = 1000
+
 Class DiddyApp Extends App
 
 	Field debugKeyOn:Bool = False
@@ -96,7 +99,7 @@ Private
 	
 Public
 	Method New()
-		' DiddyApp now assigns itself to game, so you don't need to do: game = New MyGame()
+		' DiddyApp now assigns itself to game, so you just need to do: New MyGame()
 		' Assigning it manually will have no effect, but won't break anything.
 		game = Self
 		Self.exitScreen = New ExitScreen
@@ -389,7 +392,7 @@ Public
 	End
 	
 	' convenience method that will trigger a fade in and call PreStart() on the screen (used for first screen)
-	Method Start:Void(firstScreen:Screen, autoFadeIn:Bool=True, fadeInTime:Float=50, fadeSound:Bool=False, fadeMusic:Bool=False)
+	Method Start:Void(firstScreen:Screen, autoFadeIn:Bool=True, fadeInTime:Float=defaultFadeTime, fadeSound:Bool=False, fadeMusic:Bool=False)
 		firstScreen.autoFadeIn = autoFadeIn
 		If autoFadeIn Then
 			firstScreen.autoFadeInTime = fadeInTime
@@ -412,7 +415,7 @@ Class ScreenFade
 	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False)
 		If active Then Return
 		active = True
-		Self.fadeTime = fadeTime	
+		Self.fadeTime = game.CalcAnimLength(fadeTime)
 		Self.fadeOut = fadeOut
 		Self.fadeMusic = fadeMusic
 		Self.fadeSound = fadeSound
@@ -595,7 +598,7 @@ Public
 	End
 	
 	' convenience methods
-	Method FadeToScreen:Void(screen:Screen, fadeTime:Float=50, fadeSound:Bool = False, fadeMusic:Bool = False)
+	Method FadeToScreen:Void(screen:Screen, fadeTime:Float=defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False)
 		' don't try to fade twice
 		If game.screenFade.active Then Return
 		
