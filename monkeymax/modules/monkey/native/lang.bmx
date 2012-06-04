@@ -67,6 +67,11 @@ Function resize_array_array_Int:Int[][]( arr:Int[][], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[..leng];
 	If( leng<=i ) Return arr;
+
+	For Local l:Int = 0 Until Len(arr)
+		arr[l] = arr[l][..leng]
+	Next
+
 	While( i<leng )
 		arr[0][i]=0;
 		i:+1
@@ -78,6 +83,11 @@ Function resize_array_array_Float:Float[][]( arr:Float[][], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[..leng];
 	If( leng<=i ) Return arr;
+
+	For Local l:Int = 0 Until Len(arr)
+		arr[l] = arr[l][..leng]
+	Next
+
 	While( i<leng )
 		arr[0][i]=0;
 		i:+1
@@ -89,6 +99,11 @@ Function resize_array_array_String:String[][]( arr:String[][], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[..leng];
 	If( leng<=i ) Return arr;
+
+	For Local l:Int = 0 Until Len(arr)
+		arr[l] = arr[l][..leng]
+	Next
+	
 	While( i<leng )
 		arr[0][i]="";
 		i:+1

@@ -188,26 +188,30 @@ Class BmxTranslator Extends CTranslator
 				Local t$="[0]"
 				Local arrayOfArrays?=False
 				Local count%=0
+				Local at$=""
 				While ArrayType( elemTy )
 					count+=1
 					elemTy=ArrayType( elemTy ).elemType
-					t+=",[0]"
 					arrayOfArrays=True
 				Wend
+			'	Print "count = "+count
+				For Local i:Int = 0 Until count
+					if i <> count-1 Then
+						at+="[]"
+					else
+						at+="[0]"
+					End
+				Next
+			'	Print "at = "+at
+				
 				If arrayOfArrays
-					'Return "["+t+"]"
-					t = "["+t+"]"
+					t = "[]"+at
 				Else
-					'Return t
 					t = t
 				End
-'				Print "elemTy = "+elemTy
-				If elemTy="Int" Or elemTy="Bool" Then
-					Return t
-				Else
-					Return "New "+TransType( elemTy )+t
-				Endif
 				
+				Return "New "+TransType( elemTy )+t
+								
 			Endif
 '			If ObjectType( ty ) Return "null"
 			If ObjectType( ty ) Return TransType( ty ) + "(null)"
