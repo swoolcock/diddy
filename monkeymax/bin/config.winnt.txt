@@ -75,14 +75,7 @@ ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
 'The Flex SDK is currently available here:
 '	http://opensource.adobe.com/wiki/display/flexsdk/Flex+SDK
 '
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.6"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.5"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1.0.16076"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4"
-FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
+FLEX_PATH="E:\Programming\flex_sdk_4.1"
 '
 'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
 'FLASH_PLAYER="${SYSTEMDRIVE}\flex_sdk_4.0\flashplayer_10_sa_debug.exe"
