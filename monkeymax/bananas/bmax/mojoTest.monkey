@@ -1,10 +1,6 @@
 Strict
 
-'#if TARGET="bmax"
-'Import mojomax
-'#else
 Import mojo
-'#end
 
 Global game:MyGame
 
@@ -13,10 +9,15 @@ Function Main:Int()
 	Return 0
 End
 
+Class Test
+	Field x# = 10
+End
+
 Class MyGame Extends App
 	Field spr:Ship
 	Field img:Image
 	Field lazer:Sound
+	Field soundLoop:Int = True
 	
 	Method OnCreate:Int()
 		SetUpdateRate 60
@@ -28,20 +29,67 @@ Class MyGame Extends App
 		Print tst
 		tst = tst[..-4]
 		Print tst
-		
-		Return 0
+		PlayMusic("Scheming Weasel faster.ogg", True)
+		Return 0	
 	End
 	
 	Method OnUpdate:Int()
 		spr.Update()
-		If KeyHit(KEY_ESCAPE) Then Error""
+		If KeyHit(KEY_ESCAPE) Then Error ""
+		If MouseHit(MOUSE_LEFT) Then Print "MOUSE"
+		MojoAudio()
+		
+		Return 0		
+	End
+	
+	Method MojoAudio:Void()
 		If KeyHit(KEY_SPACE) Then
 			Print "SPACE MAN"
-			PlaySound (lazer, 0)
+			soundLoop = Not soundLoop
+			PlaySound (lazer, 0, soundLoop)
+		Endif
+		If KeyHit(KEY_1) Then
+			PauseChannel(0)
+		Endif
+
+		If KeyHit(KEY_2) Then
+			ResumeChannel(0)
 		Endif
 		
-		If MouseHit(MOUSE_LEFT) Then Print "MOUSE"
-		Return 0		
+		If KeyHit(KEY_3) Then
+			PauseMusic()
+		Endif
+
+		If KeyHit(KEY_4) Then
+			ResumeMusic()
+		Endif
+		
+		Print "ChannelState(0) = "+ChannelState(0)
+		Print "MusicState(0) = "+MusicState()
+		
+		If KeyHit(KEY_5) Then
+			SetChannelPan(0, -1)
+		Endif
+
+		If KeyHit(KEY_6) Then
+			SetChannelRate(0, 2)
+		Endif
+		
+		If KeyHit(KEY_7) Then
+			SetChannelVolume(0, .5)
+		Endif
+		
+		If KeyHit(KEY_8) Then
+			SetMusicVolume(.5)
+		Endif
+		
+		If KeyHit(KEY_9) Then
+			StopChannel(0)
+		Endif
+		
+		If KeyHit(KEY_0) Then
+			StopMusic()
+		Endif
 	End
 	
 	Method OnRender:Int()
