@@ -399,44 +399,98 @@ EndType
 Type gxtkAudio
 	Field amusicState:Int = 0
 	Field channels:gxtkChannel[] = New gxtkChannel[33]
+	Const MUSIC_CHANNEL:Int = 32
+	Field music:gxtkSample
 	
 	Method New()
 		For local i:Int = 0 To 33 - 1
 			channels[i] = New gxtkChannel
+			channels[i].channel = AllocChannel()
 		Next
 	EndMethod
 	
 	Method MusicState:Int()
-'		If( musicState = 1 And music.isPlaying() = False )
-'			musicState = 0;
-'		Endif
-		Return amusicState
+		' Monkey Docs: 	0 if the music is currently stopped
+		'				1 if the music is currently playing
+		'				-1 if the music state cannot be determined
+
+		Local chan:gxtkChannel = channels[MUSIC_CHANNEL]
+		If chan.channel <> Null Then
+			If ChannelPlaying(chan.channel) Then Return 1 Else Return 0
+		EndIf
+		
+		Return -1
 	EndMethod
 	
 	Method PlayMusic:Int( path:String, flags:Int )
+		StopMusic()
+		music = LoadSample( path )
+		If Not music Then Return -1
+		
+		PlaySample(music, MUSIC_CHANNEL, flags)
+		Return 0
+	EndMethod
+	
+	Method StopMusic:Int()
+		StopChannel( MUSIC_CHANNEL )
+		
+		If music Then
+			music.Discard()
+			music = null
+		EndIf
 		Return 0
 	EndMethod
 	
 	Method ChannelState:int( channel:int )
+		' Monkey Docs: 	0 if the channel is currently stopped
+		'				1 if the channel is currently playing
+		'				2 if the channel is currently paused
+		'				-1 if the channel state cannot be determined
+		Local chan:gxtkChannel = channels[channel]
+		If chan.channel <> Null Then
+			If ChannelPlaying(chan.channel) Then Return 1 Else Return 0
+		EndIf
+		
 		Return -1
 	EndMethod
 	
-	Method StopMusic()
-	EndMethod
-	
 	Method StopChannel( channel:Int )
-	EndMethod
-
-	Method PlaySample( sound:gxtkSample, channel:Int, flags:Int )
 		Local chan:gxtkChannel = channels[channel]
 		
-		'If chan.state <> 0 Then chan.channel.Stop() <-- this crashes after the first play!?
+		If chan.state <> 0
+			chan.channel.Stop()
+			chan.channel=null
+			chan.sample=null
+			chan.state=0
+		EndIf
+	EndMethod
+	
+	Method PauseChannel:Int( channel:Int)
+		Local chan:gxtkChannel = channels[channel]
+		chan.channel.SetPaused(True)
+		Return 0
+	EndMethod
+	
+	Method ResumeChannel:Int( channel:Int)
+		Local chan:gxtkChannel = channels[channel]
+		chan.channel.SetPaused(False)
+		Return 0
+	EndMethod
+	
+	Method PlaySample( sound:gxtkSample, channel:Int, flags:Int )
+		Local chan:gxtkChannel = channels[channel]
+		If chan.state <> 0 Then chan.channel.SetPaused(True)
 		
 		chan.sample = sound
-		'chan.loops = flags ? 0x7fffffff : 0;
-		'chan.channel = sample.sound.play( 0,chan.loops,chan.transform );
-		'chan.channel = sound
-		chan.state=1
+		chan.loops = flags
+		chan.state = 1
+		
+		' if looping, we need to reload the sound with the looping flag
+		If flags <> sound.loop
+			Local smp:TSound = LoadSound(sound.path, flags)
+			sound.setSound(smp)
+			sound.loop = flags
+		EndIf
 	
 		PlaySound( sound.sound, chan.channel )
 	EndMethod
@@ -452,14 +506,19 @@ Type gxtkAudio
 	EndMethod
 
 	Method PauseMusic:Int()
+		Local chan:gxtkChannel = channels[MUSIC_CHANNEL]
+		chan.channel.SetPaused(True)
 		Return 0
 	EndMethod
 
 	Method ResumeMusic:Int()
+		Local chan:gxtkChannel = channels[MUSIC_CHANNEL]
+		chan.channel.SetPaused(False)
 		Return 0
 	EndMethod
 
 	Method SetMusicVolume:Int( volume:Float )
+		SetVolume( MUSIC_CHANNEL, volume )
 		Return 0
 	EndMethod
 
@@ -476,6 +535,7 @@ Type gxtkAudio
 			If sound Then
 				Local gs:gxtkSample = New gxtkSample
 				gs.setSound(sound)
+				gs.path = "data/"+path
 				Return gs
 			EndIf
 		Else
@@ -487,6 +547,8 @@ EndType
 
 Type gxtkSample
 	Field sound:TSound
+	Field path:String
+	Field loop:Int
 	
 	Method setSound(sound:TSound)
 		Self.sound = sound
