@@ -409,6 +409,24 @@ Type gxtkAudio
 		Next
 	EndMethod
 	
+	Method OnSuspend()
+		For Local i:Int = 0 To 33 - 1
+			Local chan:gxtkChannel = channels[i]
+			If chan.state = 1 Then
+				chan.channel.SetPaused(True)
+			EndIf
+		Next
+	End Method
+
+	Method OnResume()
+		For Local i:Int = 0 To 33 - 1
+			Local chan:gxtkChannel = channels[i]
+			If chan.state = 1 Then
+				chan.channel.SetPaused(False)
+			EndIf
+		Next
+	End Method
+	
 	Method MusicState:Int()
 		' Monkey Docs: 	0 if the music is currently stopped
 		'				1 if the music is currently playing
