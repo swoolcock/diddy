@@ -97,7 +97,7 @@ Class Arrays<T>
 		If srcPos + length > src.Length Then Error("Arrays.Copy: srcPos ("+srcPos+") + length ("+length+") > src.Length ("+src.Length+")")
 		If destPos + length > dest.Length Then Error("Arrays.Copy: destPos ("+destPos+") + length ("+length+") > dest.Length ("+dest.Length+")")
 		
-		' since we can't compare arrays, we must never assume that src and dest are different objects
+		' since we can't compare array object references, we must never assume that src and dest are different objects
 		' as such, we'll copy the src values into a temp array (wasted cycles, but oh well)
 		Local temp:T[] = New T[length]
 		For Local i:Int = 0 Until length
@@ -123,5 +123,13 @@ Class Arrays<T>
 			arr[i] = arr[arr.Length-i-1]
 			arr[arr.Length-i-1] = tmp
 		Next
+	End
+	
+	Function Equals:Bool(arr1:T[], arr2:T[])
+		If arr1.Length <> arr2.Length Then Return False
+		For Local i:Int = 0 Until arr1.Length
+			If arr1[i] <> arr2[i] Then Return False
+		Next
+		Return True
 	End
 End
