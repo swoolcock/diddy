@@ -18,6 +18,7 @@ Class MyGame Extends App
 	Field img:Image
 	Field lazer:Sound
 	Field soundLoop:Int = True
+	Field state:String
 	
 	Method OnCreate:Int()
 		SetUpdateRate 60
@@ -38,7 +39,9 @@ Class MyGame Extends App
 		If KeyHit(KEY_ESCAPE) Then Error ""
 		If MouseHit(MOUSE_LEFT) Then Print "MOUSE"
 		MojoAudio()
-		
+		If KeyHit(KEY_F1) Then SaveState(Rnd(100))
+		If KeyHit(KEY_F2) Then state = LoadState()
+
 		Return 0		
 	End
 	
@@ -63,9 +66,7 @@ Class MyGame Extends App
 		If KeyHit(KEY_4) Then
 			ResumeMusic()
 		Endif
-		
-		Print "ChannelState(0) = "+ChannelState(0)
-		Print "MusicState(0) = "+MusicState()
+
 		
 		If KeyHit(KEY_5) Then
 			SetChannelPan(0, -1)
@@ -97,7 +98,12 @@ Class MyGame Extends App
 		SetBlend AlphaBlend
 		SetAlpha 0.7
 		DrawText("HELLO", DeviceWidth()/2, 10, .5, .5)
-
+		
+		DrawText("ChannelState(0) = "+ChannelState(0), 10, 10)
+		DrawText("MusicState(0) = "+MusicState(), 10, 20)
+		DrawText("soundLoop = "+soundLoop , 10, 30)
+		DrawText("state = "+state , 10, 40)
+						
 		DrawImage(img, 10, 64)
 		SetColor(255,255,0)
 		spr.Draw()

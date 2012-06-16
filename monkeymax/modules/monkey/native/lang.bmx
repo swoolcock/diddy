@@ -19,6 +19,16 @@ Function error( err:String )
 	EndIf
 EndFunction
 
+Function debugLog:Int( str:String )
+	Print(str)
+	Return 0
+EndFunction
+
+Function debugStop:Int()
+	error("STOP")
+	Return 0
+EndFunction
+
 Function resize_string_array:String[]( arr:String[], leng:Int )
 	Local i:Int = arr.length;
 	arr = arr[0..leng];
