@@ -39,6 +39,16 @@ Type gxtkApp
 	
 	Method Update()
 		While Not AppTerminate()
+			While PeekEvent()
+				PollEvent()
+				Select EventID()
+					Case EVENT_APPSUSPEND
+						If Not suspended Then InvokeOnSuspend()
+					Case EVENT_APPRESUME
+						If suspended Then InvokeOnResume()
+				End Select
+			Wend
+
 			If Not updatePeriod return
 			Local updates:Int = 0
 			
@@ -83,6 +93,19 @@ Type gxtkApp
 		ggraphics.EndRender()
 	EndMethod
 	
+	Method InvokeOnSuspend()
+		If dead or suspended Return
+		suspended=1
+		OnSuspend()
+		gaudio.OnSuspend()
+	EndMethod
+	
+	Method InvokeOnResume()
+		If dead or Not suspended Return
+		gaudio.OnResume()
+		OnResume()
+		suspended=0
+	EndMethod
 	
 	Method SetFrameRate( fps:Int )
 		If fps

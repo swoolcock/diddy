@@ -20,6 +20,21 @@ Class MyGame Extends App
 	Field soundLoop:Int = True
 	Field state:String
 	
+	Method OnSuspend:Int()
+		Print "OnSuspend"
+		Return 0
+	End
+	
+	Method OnResume:Int()
+		Print "OnResume"
+		Return 0
+	End
+	
+	Method OnLoading:Int()
+		Print "OnLoading"
+		Return 0
+	End
+	
 	Method OnCreate:Int()
 		SetUpdateRate 60
 		Print "millisec = "+Millisecs()
