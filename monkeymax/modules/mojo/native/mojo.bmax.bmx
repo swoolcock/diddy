@@ -94,17 +94,15 @@ Type gxtkApp
 	EndMethod
 
 	Method LoadState:String()
-'		var file:SharedObject=SharedObject.getLocal( "gxtkapp" );
-'		var state:String=file.data.state;
-'		file.close();
-'		if( state ) return state;
-		Return ""
+		Try
+			Return LoadText(".monkeystate")
+		Catch ReadFail:Object
+			Return ""
+		EndTry
 	EndMethod
 	
 	Method SaveState:Int( state:String )
-'		var file:SharedObject=SharedObject.getLocal( "gxtkapp" );
-'		file.data.state=state;
-'		file.close();
+		SaveText(state, ".monkeystate")
 		Return 0
 	EndMethod
 	
