@@ -4,11 +4,6 @@ Import target
 Class BmaxTarget Extends Target
 
 	Function IsValid()
-'		Print "IsValid bmx"
-'		Print FileType( "bmax" )
-'		Print FILETYPE_DIR
-'		Print "BMAX_PATH = "+BMAX_PATH
-		'If BMAX_PATH Return True
 		If FileType( "bmax" )<>FILETYPE_DIR Return False
 		Return True
 	End
@@ -17,6 +12,14 @@ Class BmaxTarget Extends Target
 		ENV_TARGET="bmax"
 		ENV_LANG="bmx"
 		_trans=New BmxTranslator
+	End
+	
+	Method Config$()
+		Local config:=New StringStack
+		For Local kv:=Eachin Env
+			config.Push "CONST "+kv.Key+":String="+LangEnquote( kv.Value )
+		Next
+		Return config.Join( "~n" )
 	End
 	
 	Method MakeTarget()
@@ -31,7 +34,7 @@ Class BmaxTarget Extends Target
 		
 		main=ReplaceBlock( main,"TRANSCODE",transCode, "~n'" )
 '		main=ReplaceBlock( main,"METADATA",meta )
-'		main=ReplaceBlock( main,"CONFIG",Config() )
+		main=ReplaceBlock( main,"CONFIG",Config(), "~n'" )
 
 '		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		

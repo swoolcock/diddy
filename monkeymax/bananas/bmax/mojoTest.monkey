@@ -1,5 +1,10 @@
 Strict
 
+#BMAX_WINDOW_TITLE="Mojo Test"
+#BMAX_WINDOW_WIDTH=1024
+#BMAX_WINDOW_HEIGHT=768
+#BMAX_WINDOW_FULLSCREEN="True"
+
 Import mojo
 
 Global game:MyGame
