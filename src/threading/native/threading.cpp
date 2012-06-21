@@ -30,7 +30,7 @@ public:
 	}
 	
 	void ExtCancel() {
-		if(!m_started) return;
+		if(!m_started || m_finished || m_cancelled) return;
 		//TODO cancel thread
 	}
 	
@@ -40,8 +40,7 @@ public:
 	}
 	
 	int ExtRunning() {
-		if(m_started && !m_finished && !m_cancelled) return 1;
-		return 0;
+		return m_started && !m_finished && !m_cancelled ? 1 : 0;
 	}
 	
 	static void ExecuteThread(void *arg) {
