@@ -7,7 +7,8 @@ Strict
 
 Import thread
 
-Class Coroutine Extends Thread Abstract
+Public
+Class Coroutine Abstract
 Public
 	Const CREATED:Int = 0
 	Const YIELDED:Int = 1
@@ -15,16 +16,39 @@ Public
 	Const DEAD:Int = 3
 	
 Private
-	Field crYieldMutex:Mutex
-	Field crYieldCondVar:CondVar
-	Field yieldValue:Int
+	Field crThread:CoroutineThread
 	Field status:Int
 	
 Public
-	Method Status:Int() Property Return Self.status End
+	Method Status:Int() Property Final Return status End
 	
 	Method New()
 		status = CREATED
+		crThread = New CoroutineThread(Self)
+	End
+	
+	Method Yield:Int(param:Int=0) Final
+		Return crThread.Yield(param)
+	End
+	
+	Method Resume:Int(param:Int=0) Final
+		Return crThread.Resume(param)
+	End
+	
+	Method Run:Int(param:Int) Abstract
+End
+
+Private
+Class CoroutineThread Extends Thread Final
+Private
+	Field cr:Coroutine
+	Field crYieldMutex:Mutex
+	Field crYieldCondVar:CondVar
+	Field yieldValue:Int
+	
+Public
+	Method New(cr:Coroutine)
+		Self.cr = cr
 		crYieldMutex = New Mutex
 		crYieldCondVar = crYieldMutex.CreateCondVar()
 	End
@@ -34,9 +58,9 @@ Public
 		crYieldMutex.Lock()
 		crYieldMutex.Unlock()
 		' do the coroutine code!
-		yieldValue = Execute(yieldValue)
+		yieldValue = cr.Run(yieldValue)
 		' we're done
-		status = DEAD
+		cr.status = Coroutine.DEAD
 		' notify
 		crYieldMutex.Lock()
 			crYieldCondVar.Signal()
@@ -47,12 +71,12 @@ Public
 	
 	' SHOULD ONLY BE CALLED WITHIN THE COROUTINE!
 	Method Yield:Int(param:Int=0)
-		If status <> RUNNING Then
+		If cr.status <> Coroutine.RUNNING Then
 			' big problem!
 			Return -1
 		End
 		crYieldMutex.Lock()
-			status = YIELDED
+			cr.status = Coroutine.YIELDED
 			yieldValue = param
 			crYieldCondVar.Signal()
 			crYieldCondVar.Wait()
@@ -63,17 +87,17 @@ Public
 	
 	' SHOULD ONLY BE CALLED OUTSIDE THE COROUTINE!
 	Method Resume:Int(param:Int=0)
-		If status <> YIELDED And status <> CREATED Then
+		If cr.status <> Coroutine.YIELDED And cr.status <> Coroutine.CREATED Then
 			' big problem!
 			Return -1
 		End
 		crYieldMutex.Lock()
 			yieldValue = param
-			If status = CREATED Then
-				status = RUNNING
+			If cr.status = Coroutine.CREATED Then
+				cr.status = Coroutine.RUNNING
 				Start()
 			Else
-				status = RUNNING
+				cr.status = Coroutine.RUNNING
 				crYieldCondVar.Signal()
 			End
 			crYieldCondVar.Wait()
@@ -81,6 +105,4 @@ Public
 		crYieldMutex.Unlock()
 		Return param
 	End
-	
-	Method Execute:Int(param:Int) Abstract
 End
