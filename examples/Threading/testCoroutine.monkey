@@ -19,9 +19,9 @@ Class MyApp Extends App
 	
 	Method OnUpdate()
 		If KeyHit(KEY_ESCAPE) Error ""
-		counter1.Resume()
-		counter2.Resume()
-		counter3.Resume()
+		counter1.Resume() ' tell counter1 to continue its work
+		counter2.Resume() ' tell counter2 to continue its work
+		counter3.Resume() ' tell counter3 to continue its work
 	End
 	
 	Method OnRender()
@@ -36,11 +36,11 @@ End
 Class Counter Extends Coroutine
 	Field value:Int
 	
-	Method Execute:Int(param:Int)
+	Method Run:Int(param:Int)
 		Local i:Int = 0
 		Repeat
 			value = i
-			Yield()
+			Yield() ' return control to the thread that called Resume
 			i += 1
 		Forever
 	End
