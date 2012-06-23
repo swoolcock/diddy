@@ -16,26 +16,7 @@ Global gameScreen:GameScreen
 Class MyGame extends DiddyApp
 	Method OnCreate:Int()
 		Super.OnCreate()
-		
-#If TARGET="glfw"
-		'GLFW supports WAV only
-		musicExt=".wav"
-#Elseif TARGET="html5"
-		musicExt=".ogg" 'use M4a for IE...
-#Elseif TARGET="flash"
-		'Flash supports MP3, M4A online, but only MP3 embedded.
-		musicExt=".mp3"
-#Elseif TARGET="android"
-		'Android supports WAV, OGG, MP3, M4A (M4A only appears to work for music though)
-		musicExt=".ogg"
-#Elseif TARGET="xna"
-		'XNA supports WAV, MP3
-		musicExt=".wav"
-#Elseif TARGET="ios"
-		'iOS supports WAV, MP3, M4A
-		musicExt=".m4a"
-#End
-
+		musicExt=".ogg" 
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
 		titleScreen.PreStart()
