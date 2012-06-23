@@ -41,21 +41,7 @@ Class TitleScreen Extends Screen
 		b = menu.AddButton("continue.png", "continueMO.png")
 		b = menu.AddButton("options.png", "optionsMO.png")
 		b = menu.AddButton("quit.png", "quitMO.png")
-
-#If TARGET="glfw"
-		musicFormat="wav"
-#Elseif TARGET="html5"
 		musicFormat="ogg"
-#Elseif TARGET="flash"
-		musicFormat="mp3"
-#Elseif TARGET="android"
-		musicFormat="ogg"
-#Elseif TARGET="xna"
-		musicFormat="wav"
-#Elseif TARGET="ios"
-		musicFormat="m4a"
-#End		
-		
 		game.MusicPlay("happy."+musicFormat, True)
 		menu.Centre()
 	End
