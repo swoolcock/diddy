@@ -4,6 +4,7 @@ Import mojo
 Import functions
 Import collections
 Import inputcache
+Import xml
 
 'Device width and height
 Global DEVICE_WIDTH:Float
@@ -662,6 +663,37 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Field path$ = "graphics/"
 	
+	Method LoadAtlas:Void(fileName:String, midHandle:Bool=True)
+		Local parser:XMLParser = New XMLParser
+		Local str:String = LoadString(path + fileName)
+		' check to see if the file is valid
+		AssertNotEqualInt(str.Length(), 0, "Error loading Atlas "+ path + fileName)
+
+		' parse the xml
+		Local doc:XMLDocument = parser.ParseString(str)
+		Local rootElement:XMLElement = doc.Root
+		Local spriteFileName:String = rootElement.GetAttribute("imagePath")
+		
+		Local pointer:Image = LoadImage(path + spriteFileName)
+		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
+		
+		For Local node:XMLElement = Eachin rootElement.GetChildrenByName("SubTexture")
+			Local x:Int = Int(node.GetAttribute("x").Trim())
+			Local y:Int = Int(node.GetAttribute("y").Trim())
+			Local width:Int = Int(node.GetAttribute("width").Trim())
+			Local height:Int = Int(node.GetAttribute("height").Trim())
+			Local name:String = node.GetAttribute("name").Trim()
+			
+			Local gi:GameImage = New GameImage
+			gi.name = name.ToUpper()
+			gi.image = pointer.GrabImage(x, y, width, height)
+			gi.CalcSize()
+			gi.MidHandle(midHandle)
+			
+			Self.Set(gi.name, gi)
+		Next
+	End
+	
 	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=True, ignoreCache:Bool=False)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
@@ -755,7 +787,7 @@ Class GameImage
 	Field tileCountX:Int, tileCountY:Int
 	Field tileCount:Int
 	Field tileSpacing:Int, tileMargin:Int
-	
+
 	Method Load:Void(file$, midhandle:Bool=True)
 		name = StripAll(file.ToUpper())
 		image = LoadBitmap(file)	
