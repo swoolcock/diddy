@@ -116,6 +116,7 @@ Public
 		DEVICE_HEIGHT = DeviceHeight()
 		
 		SetScreenSize(DEVICE_WIDTH, DEVICE_HEIGHT)
+		deviceChanged = True
 		
 		' set the mouse x,y
 		mouseX = MouseX() / SCREENX_RATIO
@@ -152,18 +153,20 @@ Public
 			aspectRatioOn = useAspectRatio
 			aspectRatio = h / w
 		End
+		If DeviceWidth() <> SCREEN_WIDTH Or DeviceHeight() <> SCREEN_HEIGHT Then
+			deviceChanged = True
+		End
 	End
-		
+
 	Method OnRender:Int()
 		FPSCounter.Update()
 		If virtualResOn
 			PushMatrix
 			If aspectRatioOn
-				deviceChanged = False
-				If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT)
+				If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT) Or deviceChanged
 					DEVICE_WIDTH = DeviceWidth()
 					DEVICE_HEIGHT = DeviceHeight()
-					deviceChanged = True
+					deviceChanged = False
 
 					Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
 					If deviceRatio >= aspectRatio
@@ -225,7 +228,7 @@ Public
 		End
 		Return 0
 	End
-	
+
 	Method ReadInputs:Void()
 		If aspectRatioOn
 			Local mouseOffsetX:Float = MouseX() - DEVICE_WIDTH * 0.5
