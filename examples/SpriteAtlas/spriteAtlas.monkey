@@ -32,7 +32,8 @@ Class GameScreen Extends Screen
 	Field shipImage:GameImage
 	Field axeAltasImage:GameImage
 	Field longswordAltasImage:GameImage
-		
+	Field animImage:GameImage
+	
 	Method New()
 		name = "Game"
 	End
@@ -41,6 +42,7 @@ Class GameScreen Extends Screen
 		shipImage = game.images.Find("Ship1")
 		axeAltasImage = game.images.Find("axe")
 		longswordAltasImage = game.images.Find("longsword")
+		animImage = game.images.FindSet("shield_kite", 64, 64, 3)
 	End
 	
 	Method Render:Void()
@@ -50,6 +52,9 @@ Class GameScreen Extends Screen
 		shipImage.Draw(100, 100, 0, 1, 1, 3)
 		axeAltasImage.Draw(200, 100)
 		longswordAltasImage.Draw(300, 100)
+		For Local f:Int = 0 Until animImage.image.Frames()
+			animImage.Draw(100 + f * animImage.w, 200, 0, 1, 1, f)
+		Next
 	End
 	
 	Method Update:Void()
