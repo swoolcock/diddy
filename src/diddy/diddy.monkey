@@ -1,6 +1,28 @@
-'
-' Module diddy.diddy
-'
+#rem
+header:The main module for Diddy
+Diddy includes various features:
+[list]
+[*]External functions
+[*]Screen Based Framework
+[*]Input Cache
+[*]Tweening
+[*][a collections.monkey.html]Collections[/a]
+[*][a assert.monkey.html]Assertions[/a]
+[*]GUI
+[*]Simple GUI
+[*]Serialization
+[*]XML Parser
+[*]IO
+[*]Tiled Loader
+[*]Filesystem Wrapper
+[*]i18n
+[*]Particle System
+[*]String Builder
+[/list]
+#end
+'summary: The constant contains the library's name
+Const name:String = "Diddy"
+
 Import mojo
 Import functions
 Import framework

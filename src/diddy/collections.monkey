@@ -3,14 +3,14 @@ Strict
 Import assert
 
 #Rem
-Monkey Collections Framework
+header: Monkey Collections Framework
 Based loosely on the Java Collections Framework
 #End
 
 '''' Top level Collection stuff ''''
 
 #Rem
-	ICollection
+	Summary: ICollection
 	Due to limitations with generics in Monkey, ToArray cannot work with an array of type E.  We must return Object[] instead.
 	(Note: I believe this limitation has been removed as of Monkey v47, but it will remain for now.)
 #End
@@ -37,18 +37,18 @@ Public
 	Method ToArray:Object[]() Abstract ' creates a new array of the correct size and returns it
 
 ' Methods
-	' due to a limitation in Monkey regarding ObjectEnumerator and inheritance, this simply calls Enumerator()
+	'summary: due to a limitation in Monkey regarding ObjectEnumerator and inheritance, this simply calls Enumerator()
 	Method ObjectEnumerator:IEnumerator<E>()
 		Return Enumerator()
 	End
 	
 ' Properties
-	' Property to read comparator
+	'summary: Property to read comparator
 	Method Comparator:IComparator() Property
 		Return comparator
 	End
 	
-	' Property to write comparator
+	'summary: Property to write comparator
 	Method Comparator:Void(comparator:IComparator) Property
 		Self.comparator = comparator
 	End
@@ -57,7 +57,7 @@ End
 
 
 #Rem
-	IEnumerator
+	summary: IEnumerator
 	Used in the ObjectEnumerator method for calls to EachIn.
 	If retrieved and used manually, the HasPrevious/PreviousObject/Remove/First/Last methods can be called.
 #End
@@ -76,7 +76,7 @@ End
 
 
 #Rem
-	IComparable
+	summary: IComparable
 	Allows developers to sort a collection without using a Comparator.  Each class is responsible
 	for providing its own logic to determine how it should be sorted.
 #End
@@ -88,7 +88,7 @@ End
 
 
 #Rem
-	IComparator
+	summary:IComparator
 	This is a way for developers to provide a custom comparison method for sorting lists.
 	It's sort of like a function pointer.
 #End
@@ -107,13 +107,13 @@ Class IComparator Abstract
 End
 
 #Rem
-	DefaultComparator
+	summary: DefaultComparator
 	Implements an IComparator to handle primitive wrappers and strings.
 #End
 Global DEFAULT_COMPARATOR:DefaultComparator = New DefaultComparator
 Class DefaultComparator Extends IComparator
 ' Methods
-	' Overrides IComparator
+	'summary: Overrides IComparator
 	Method Compare:Int(o1:Object, o2:Object)
 		If IntObject(o1) <> Null And IntObject(o2) <> Null Then
 			If IntObject(o1).value < IntObject(o2).value Then Return -1
@@ -134,7 +134,7 @@ Class DefaultComparator Extends IComparator
 		Return 0 ' don't know what to do!
 	End
 	
-	' Overrides IComparator
+	'summary: Overrides IComparator
 	Method Equals:Bool(o1:Object, o2:Object)
 		If IntObject(o1) <> Null And IntObject(o2) <> Null Then
 			Return IntObject(o1).value = IntObject(o2).value
@@ -153,7 +153,7 @@ End
 '''' List stuff ''''
 
 #Rem
-	IList
+	summary: IList
 	Extends ICollection to implement some of the abstract methods that apply to any kind of list.
 #End
 Class IList<E> Extends ICollection<E> Abstract
@@ -165,10 +165,10 @@ Private
 	Field rangeChecking:Bool = False
 #end
 	
-	' A counter for modifications to the list.  Used for concurrency checks.
+	'summary: A counter for modifications to the list.  Used for concurrency checks.
 	Field modCount:Int = 0
 	
-	' Performs a range check.
+	'summary: Performs a range check.
 	Method RangeCheck:Void(index:Int)
 		Local size:Int = Self.Size()
 		' range check doesn't use assert, for speed
@@ -193,18 +193,18 @@ Public
 	Method Set:E(index:Int, o:E) Abstract
 	
 ' Methods
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Enumerator:IEnumerator<E>()
 		Return New ListEnumerator<E>(Self)
 	End
 	
 ' Properties
-	' Property to read rangeChecking
+	'summary: Property to read rangeChecking
 	Method RangeChecking:Bool() Property
 		Return rangeChecking
 	End
 	
-	' Property to write rangeChecking
+	'summary: Property to write rangeChecking
 	Method RangeChecking:Void(rangeChecking:Bool) Property
 		Self.rangeChecking = rangeChecking
 	End
@@ -213,7 +213,7 @@ End
 
 
 #Rem
-	ListEnumerator
+	summary: ListEnumerator
 	Extends IEnumerator to provide support for EachIn.  Blocks concurrent modification, but allows elements to be removed on the fly.
 #End
 Class ListEnumerator<E> Extends IEnumerator<E>
@@ -236,19 +236,19 @@ Public
 	End
 
 ' Methods
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method HasNext:Bool()
 		CheckConcurrency()
 		Return index < lst.Size
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method HasPrevious:Bool()
 		CheckConcurrency()
 		Return index > 0
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
 		lastIndex = index		
@@ -256,7 +256,7 @@ Public
 		Return lst.Get(lastIndex)
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method PreviousObject:E()
 		CheckConcurrency()
 		index -= 1
@@ -264,7 +264,7 @@ Public
 		Return lst.Get(lastIndex)
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method Remove:Void()
 		CheckConcurrency()
 		lst.RemoveAt(lastIndex)
@@ -273,19 +273,19 @@ Public
 		expectedModCount = lst.modCount
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method First:Void()
 		CheckConcurrency()
 		index = 0
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method Last:Void()
 		CheckConcurrency()
 		index = lst.Size
 	End
 	
-	' Overrides IEnumerator
+	'summary: Overrides IEnumerator
 	Method Reset:Void()
 		index = 0
 		expectedModCount = lst.modCount
@@ -293,7 +293,7 @@ Public
 End
 
 #Rem
-	ArrayListEnumerator
+	summary: ArrayListEnumerator
 	Extends ListEnumerator to avoid some method calls.
 #End
 Class ArrayListEnumerator<E> Extends ListEnumerator<E>
@@ -309,13 +309,13 @@ Public
 	End
 	
 ' Methods
-	' Overrides ListEnumerator
+	'summary: Overrides ListEnumerator
 	Method HasNext:Bool()
 		CheckConcurrency()
 		Return index < alst.size
 	End
 	
-	' Overrides ListEnumerator
+	'summary: Overrides ListEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
 		lastIndex = index
@@ -323,7 +323,7 @@ Public
 		Return E(alst.elements[lastIndex])
 	End
 	
-	' Overrides ListEnumerator
+	'summary: Overrides ListEnumerator
 	Method PreviousObject:E()
 		CheckConcurrency()
 		index -= 1
@@ -399,7 +399,7 @@ Class StringListEnumerator Extends ListEnumerator<StringObject>
 End
 
 #Rem
-	ArrayList
+	summary: ArrayList
 	Concrete implementation of IList that uses a dynamically sized array to store elements.
 	Has best performance when it is initialised with a capacity large enough to hold the expected number of elements.
 #End
@@ -409,7 +409,7 @@ Private
 	Field elements:Object[]
 	Field size:Int = 0
 
-	' resizes the elements array if necessary to ensure it can fit minCapacity elements
+	'summary: resizes the elements array if necessary to ensure it can fit minCapacity elements
 	Method EnsureCapacity:Void(minCapacity:Int)
 		Local oldCapacity:Int = elements.Length
 		If minCapacity > oldCapacity Then
@@ -444,7 +444,7 @@ Public
 	End
 
 ' Methods
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Add:Bool(o:E)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		elements[size] = o
@@ -453,7 +453,7 @@ Public
 		Return True
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method AddAll:Bool(c:ICollection<E>)
 		If c.IsEmpty() Then Return False
 		Local newItemCount:Int = c.Size
@@ -468,7 +468,7 @@ Public
 		Return newItemCount <> 0
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Clear:Void()
 		For Local i:Int = 0 Until size
 			elements[i] = Null
@@ -477,7 +477,7 @@ Public
 		size = 0
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Contains:Bool(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then Return True
@@ -485,7 +485,7 @@ Public
 		Return False
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method ContainsAll:Bool(c:ICollection<E>)
 		If c.IsEmpty() Then Return True
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
@@ -496,12 +496,12 @@ Public
 		Return True
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Enumerator:IEnumerator<E>()
 		Return New ArrayListEnumerator<E>(Self)
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method FillArray:Int(arr:Object[])
 		AssertGreaterThanOrEqualInt(arr.Length, size, "ArrayList.FillArray: Array too small:")
 		For Local i:Int = 0 Until size
@@ -510,12 +510,12 @@ Public
 		Return size
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method IsEmpty:Bool()
 		Return size = 0
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Remove:Bool(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then
@@ -527,7 +527,7 @@ Public
 		Return False
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method RemoveAll:Bool(c:ICollection<E>)
 		If c.IsEmpty() Then Return False
 		Local modified:Bool = False
@@ -542,7 +542,7 @@ Public
 		Return modified
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method RetainAll:Bool(c:ICollection<E>)
 		Local modified:Bool = False
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
@@ -557,12 +557,12 @@ Public
 		Return modified
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Size:Int() Property
 		Return size
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method Sort:Void(reverse:Bool = False, comp:IComparator = Null)
 		If size <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
@@ -571,7 +571,7 @@ Public
 		modCount += 1
 	End
 	
-	' Overrides ICollection
+	'summary: Overrides ICollection
 	Method ToArray:Object[]()
 		Local arr:Object[] = New Object[size]
 		For Local i:Int = 0 Until size
@@ -580,44 +580,44 @@ Public
 		Return arr
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method AddLast:Bool(o:E)
 		Return Add(o)
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method RemoveLast:E()
 		Return RemoveAt(size-1)
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method GetLast:E()
 		Return Get(size-1)
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method AddFirst:Bool(o:E)
 		Insert(0, o)
 		Return True
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method RemoveFirst:E()
 		Return RemoveAt(0)
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method GetFirst:E()
 		Return Get(0)
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method Get:E(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Return E(elements[index])
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method Insert:Void(index:Int, o:E)
 		If rangeChecking Then RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
@@ -629,7 +629,7 @@ Public
 		modCount += 1
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method InsertAll:Bool(index:Int, c:ICollection<E>)
 		Local newItemCount:Int = c.Size
 		If newItemCount = 0 Then Return False
@@ -647,7 +647,7 @@ Public
 		Return newItemCount <> 0
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method IndexOf:Int(o:E)
 		For Local i:Int = 0 Until size
 			If elements[i] = o Then Return i
@@ -655,7 +655,7 @@ Public
 		Return -1
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method LastIndexOf:Int(o:E)
 		For Local i:Int = size-1 To 0 Step -1
 			If elements[i] = o Then Return i
@@ -663,7 +663,7 @@ Public
 		Return -1
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method RemoveAt:E(index:Int)
 		If rangeChecking Then RangeCheck(index)
 		Local oldValue:E = E(elements[index])
@@ -676,7 +676,7 @@ Public
 		Return oldValue
 	End
 
-	' Overrides IList
+	'summary: Overrides IList
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
 		AssertLessThanOrEqualInt(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
 		If rangeChecking Then
@@ -688,7 +688,7 @@ Public
 		Next
 	End
 	
-	' Overrides IList
+	'summary: Overrides IList
 	Method Set:E(index:Int, o:E)
 		If rangeChecking Then RangeCheck(index)
 		Local oldValue:E = E(elements[index])
@@ -701,8 +701,7 @@ End
 
 
 
-' ArrayList wrapper classes
-
+'summary: ArrayList wrapper classes
 Class IntArrayList Extends ArrayList<IntObject>
 ' Methods
 	Method AddInt:Bool(o:Int)
@@ -720,7 +719,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 		Return False
 	End
 	
-	' Overrides ArrayList
+	'summary: Overrides ArrayList
 	Method Enumerator:IEnumerator<IntObject>()
 		Return New IntListEnumerator(Self)
 	End
@@ -810,7 +809,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 		Return False
 	End
 	
-	' Overrides ArrayList
+	'summary: Overrides ArrayList
 	Method Enumerator:IEnumerator<FloatObject>()
 		Return New FloatListEnumerator(Self)
 	End
@@ -900,7 +899,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 		Return False
 	End
 
-	' Overrides ArrayList
+	'summary: Overrides ArrayList
 	Method Enumerator:IEnumerator<StringObject>()
 		Return New StringListEnumerator(Self)
 	End
@@ -974,7 +973,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 End
 
 
-
+'summary: SparseArray
 Class SparseArray<E>
 Private
 	Field elements:Object[]
@@ -983,7 +982,7 @@ Private
 	Field arraySize:Int
 	Field defaultValue:E
 	
-	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	'summary: resizes the arrays if necessary to ensure they can fit minCapacity elements
 	Method EnsureCapacity:Void(minCapacity:Int)
 		Local oldCapacity:Int = elements.Length
 		If minCapacity > oldCapacity Then
@@ -1058,6 +1057,7 @@ Public
 	End
 End
 
+'summary: SparseIntArray
 Class SparseIntArray
 Private
 	Field elements:Int[]
@@ -1149,6 +1149,7 @@ Public
 	End
 End
 
+'summary: SparseStringArray
 Class SparseStringArray
 Private
 	Field elements:String[]
@@ -1157,7 +1158,7 @@ Private
 	Field arraySize:Int
 	Field defaultValue:String
 	
-	' resizes the arrays if necessary to ensure they can fit minCapacity elements
+	'summary: resizes the arrays if necessary to ensure they can fit minCapacity elements
 	Method EnsureCapacity:Void(minCapacity:Int)
 		Local oldCapacity:Int = elements.Length
 		If minCapacity > oldCapacity Then
@@ -1240,6 +1241,7 @@ Public
 	End
 End
 
+'summary: SparseFloatArray
 Class SparseFloatArray
 Private
 	Field elements:Float[]
@@ -1331,6 +1333,7 @@ Public
 	End
 End
 
+'summary: QuickSort
 Function QuickSort:Void(arr:Object[], left:Int, right:Int, comp:IComparator, reverse:Bool = False)
 	If right > left Then
 		Local pivotIndex:Int = left + (right-left)/2
@@ -1340,6 +1343,7 @@ Function QuickSort:Void(arr:Object[], left:Int, right:Int, comp:IComparator, rev
 	End
 End
 
+'summary: QuickSortPartition
 Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:Int, comp:IComparator, reverse:Bool = False)
 	Local pivotValue:Object = arr[pivotIndex]
 	arr[pivotIndex] = arr[right]
