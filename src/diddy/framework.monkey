@@ -663,8 +663,8 @@ Class DeltaTimer
 End
 
 Class ImageBank Extends StringMap<GameImage>
-	
-	Field path$ = "graphics/"
+	Const ATLAS_PREFIX:String = "_diddyAtlas_"
+	Field path:String = "graphics/"
 	
 	Method LoadAtlas:Void(fileName:String, midHandle:Bool=True)
 		Local parser:XMLParser = New XMLParser
@@ -680,6 +680,13 @@ Class ImageBank Extends StringMap<GameImage>
 		Local pointer:Image = LoadImage(path + spriteFileName)
 		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
 		
+		' save the whole atlas with prefix
+		Local atlasGameImage:GameImage = New GameImage
+		atlasGameImage.name = ATLAS_PREFIX + StripAll(fileName).ToUpper()
+		atlasGameImage.image = pointer
+		atlasGameImage.CalcSize()
+		Self.Set(atlasGameImage.name, atlasGameImage)
+		
 		For Local node:XMLElement = Eachin rootElement.GetChildrenByName("SubTexture")
 			Local x:Int = Int(node.GetAttribute("x").Trim())
 			Local y:Int = Int(node.GetAttribute("y").Trim())
@@ -692,6 +699,10 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.image = pointer.GrabImage(x, y, width, height)
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
+			
+			gi.altasName = atlasGameImage.name
+			gi.subX = x
+			gi.subY = y
 			
 			Self.Set(gi.name, gi)
 		Next
@@ -762,6 +773,22 @@ Class ImageBank Extends StringMap<GameImage>
 		Return i
 	End
 	
+	Method FindSet:GameImage(name:String, w:Int, h:Int, frames:Int=0)
+		name = name.ToUpper()
+		Local subImage:GameImage = Self.Get(name)
+		AssertNotNull(subImage, "Image '" + name + "' not found in the ImageBank")
+		Local altasGameImage:GameImage = Self.Get(subImage.altasName)
+		AssertNotNull(altasGameImage, "Atlas Image '" + name + "' not found in the ImageBank")
+		' TODO: Support hort and vert
+		Local image:Image = altasGameImage.image.GrabImage(subImage.subX, subImage.subY, w, h, frames)
+		
+		Local gi:GameImage = New GameImage
+		gi.name = name.ToUpper()
+		gi.image = image
+		gi.CalcSize()
+		Return gi
+	End
+	
 	Method PreCache:Void()
 		Local gi:GameImage
 		For Local key:String = Eachin Self.Keys()
@@ -790,6 +817,10 @@ Class GameImage
 	Field tileCountX:Int, tileCountY:Int
 	Field tileCount:Int
 	Field tileSpacing:Int, tileMargin:Int
+	
+	Field subX:Int
+	Field subY:Int
+	Field altasName:String
 
 	Method Load:Void(file$, midhandle:Bool=True)
 		name = StripAll(file.ToUpper())
