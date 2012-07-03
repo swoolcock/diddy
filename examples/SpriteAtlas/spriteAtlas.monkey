@@ -25,14 +25,21 @@ Class MyGame Extends DiddyApp
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
 		' load atlas sprites
 		images.LoadAtlas("sprites.xml")
+		' load atlas zombie
+		images.LoadAtlas("zombie.xml")
 	End
 End
 
 Class GameScreen Extends Screen
 	Field shipImage:GameImage
-	Field axeAltasImage:GameImage
-	Field longswordAltasImage:GameImage
+	Field axeAtlasImage:GameImage
+	Field longswordAtlasImage:GameImage
 	Field animImage:GameImage
+	Field frame:Int = 0
+	Field frameDelay:Float = 0
+	Field maxFrameDelay:Int = 10
+	Field maxFrame:Int = 14
+	Field zombieImage:GameImage
 	
 	Method New()
 		name = "Game"
@@ -40,9 +47,10 @@ Class GameScreen Extends Screen
 	
 	Method Start:Void()
 		shipImage = game.images.Find("Ship1")
-		axeAltasImage = game.images.Find("axe")
-		longswordAltasImage = game.images.Find("longsword")
-		animImage = game.images.FindSet("shield_kite", 64, 64, 3)
+		axeAtlasImage = game.images.Find("axe")
+		longswordAtlasImage = game.images.Find("longsword")
+		animImage = game.images.FindSet("shield_kite", 64, 64, 7)
+		zombieImage = game.images.FindSet("idle_left1", 128, 128, 15)
 	End
 	
 	Method Render:Void()
@@ -50,14 +58,23 @@ Class GameScreen Extends Screen
 		DrawText "GAME SCREEN!", SCREEN_WIDTH2, 10, 0.5, 0.5
 		FPSCounter.Draw(0, 0)
 		shipImage.Draw(100, 100, 0, 1, 1, 3)
-		axeAltasImage.Draw(200, 100)
-		longswordAltasImage.Draw(300, 100)
+		axeAtlasImage.Draw(200, 100)
+		longswordAtlasImage.Draw(300, 100)
 		For Local f:Int = 0 Until animImage.image.Frames()
 			animImage.Draw(100 + f * animImage.w, 200, 0, 1, 1, f)
 		Next
+		DrawText "Zombie by: Clint Bellanger (CC-BY-SA 3.0)",SCREEN_WIDTH2, 460, .5, .5
+		zombieImage.Draw(300, 300, 0, 1, 1, frame)
 	End
 	
 	Method Update:Void()
+		frameDelay+=1*dt.delta
+		If frameDelay > maxFrameDelay
+			frame+=1
+			frameDelay = 0
+			If frame > maxFrame Then frame = 0
+		End
+	
 		If KeyHit(KEY_ESCAPE)
 			FadeToScreen(Null)
 		End

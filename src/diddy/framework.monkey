@@ -1,3 +1,53 @@
+#Rem
+Header: The Screen-Based Diddy Game Framework
+This framework allows developers to quickly build screens and move between them quickly.
+Also included are image and sound resource managers, a delta timer, sprite and particle classes.
+Example of how to set up the DiddyApp:
+[code]
+Strict
+
+Import diddy
+
+Function Main:Int()
+	New MyGame()
+	Return 0
+End
+
+Global titleScreen:TitleScreen
+
+Class MyGame extends DiddyApp
+	Method OnCreate:Int()
+		Super.OnCreate()
+		titleScreen = New TitleScreen
+		game.Start(titleScreen)
+		Return 0
+	End
+End
+
+Class TitleScreen Extends Screen
+	Method New()
+		name = "Title"
+	End
+	
+	Method Start:Void()
+		' Load and set up items here
+	End
+	
+	Method Render:Void()
+		Cls
+		DrawText "TITLE SCREEN!", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5
+		DrawText "Escape to Quit!", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 40, 0.5, 0.5
+	End
+	
+	Method Update:Void()
+		If KeyHit(KEY_ESCAPE)
+			' fading to Null is the same as fading to game.exitScreen (which exits the game)
+			FadeToScreen(Null)
+		End
+	End
+End
+[/code]
+#End
 Strict
 
 Import mojo
@@ -31,6 +81,7 @@ Global dt:DeltaTimer
 ' Default fade time
 Global defaultFadeTime:Float = 1000
 
+'Summary: The main class extends Mojo App
 Class DiddyApp Extends App
 
 	Field debugKeyOn:Bool = False
@@ -139,6 +190,7 @@ Public
 		Return 0
 	End
 	
+	'summary: Sets up the virtual resolution
 	Method SetScreenSize:Void(w:Float, h:Float, useAspectRatio:Bool = False)
 		SCREEN_WIDTH = w
 		SCREEN_HEIGHT = h
@@ -297,6 +349,7 @@ Public
 		currentScreen.Update()	
 	End
 
+	'summary: Draws debug information
 	Method DrawDebug:Void()
 		SetColor 255, 255, 255
 		FPSCounter.Draw(0,0)
@@ -336,10 +389,12 @@ Public
 		y += gap
 	End
 	
+	'summary: Draws current FPS at 0,0
 	Method DrawFPS:Void()
 		DrawText FPSCounter.totalFPS, 0, 0
 	End
 	
+	'summary: Wrapper for PlayMusic
 	Method MusicPlay:Void(file:String, flags:Int=1)
 		musicFile = file
 		
@@ -349,6 +404,7 @@ Public
 		End
 	End
 	
+	'summary: Sets the Music volume
 	Method MusicSetVolume:Void(volume:Int)
 		If volume < 0 Then volume = 0
 		If volume > 100 Then volume = 100
@@ -372,6 +428,7 @@ Public
 		Next
 	End
 	
+	'summary: returns an animation length in game frames
 	Method CalcAnimLength:Float(ms:Int)
 		Return ms / (1000.0 / FPS)
 	End
@@ -407,6 +464,7 @@ Public
 	End
 End
 
+'summary: Simple screen fading
 Class ScreenFade
 	Field fadeTime:Float
 	Field fadeOut:Bool
@@ -487,6 +545,7 @@ Class ScreenFade
 	
 End
 
+'summary: Screen to exit the application
 Class ExitScreen Extends Screen
 	Method New()
 		name = "exit"
@@ -503,6 +562,7 @@ Class ExitScreen Extends Screen
 	End
 End
 
+'summary: Abstract Screen class
 Class Screen Abstract
 Private
 	Field autoFadeIn:Bool = False
@@ -601,7 +661,7 @@ Public
 	Method OnMouseReleased:Void(x:Int, y:Int, button:Int)
 	End
 	
-	' convenience methods
+	'summary: convenience method
 	Method FadeToScreen:Void(screen:Screen, fadeTime:Float=defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False)
 		' don't try to fade twice
 		If game.screenFade.active Then Return
@@ -621,6 +681,7 @@ Public
 	End
 End
 
+'summary: Simple Frames per second counter
 Class FPSCounter Abstract
 	Global fpsCount:Int
 	Global startTime:Int
@@ -641,7 +702,7 @@ Class FPSCounter Abstract
 	End
 End
 
-' From James Boyd
+'summary: DeltaTimer by James Boyd
 Class DeltaTimer
 	Field targetfps:Float = 60
 	Field currentticks:Float
@@ -662,6 +723,8 @@ Class DeltaTimer
 	End
 End
 
+'summary: Image resource bank
+'Images must be stored in graphics folder
 Class ImageBank Extends StringMap<GameImage>
 	Const ATLAS_PREFIX:String = "_diddyAtlas_"
 	Field path:String = "graphics/"
@@ -693,7 +756,7 @@ Class ImageBank Extends StringMap<GameImage>
 			Local width:Int = Int(node.GetAttribute("width").Trim())
 			Local height:Int = Int(node.GetAttribute("height").Trim())
 			Local name:String = node.GetAttribute("name").Trim()
-			
+
 			Local gi:GameImage = New GameImage
 			gi.name = name.ToUpper()
 			gi.image = pointer.GrabImage(x, y, width, height)
@@ -764,28 +827,32 @@ Class ImageBank Extends StringMap<GameImage>
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
-	'	For Local key:String = EachIn self.Keys()
-	'		Print key + " is stored in the map."
-	'	Next
+		If game.debugOn
+			For Local key:String = EachIn self.Keys()
+				Print key + " is stored in the image map."
+			Next
+		End
 	   	
 		Local i:GameImage = Self.Get(name)
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
 	
-	Method FindSet:GameImage(name:String, w:Int, h:Int, frames:Int=0)
+	Method FindSet:GameImage(name:String, w:Int, h:Int, frames:Int=0, midhandle:Bool = True, nameoverride:String = "")
 		name = name.ToUpper()
 		Local subImage:GameImage = Self.Get(name)
 		AssertNotNull(subImage, "Image '" + name + "' not found in the ImageBank")
 		Local altasGameImage:GameImage = Self.Get(subImage.altasName)
 		AssertNotNull(altasGameImage, "Atlas Image '" + name + "' not found in the ImageBank")
-		' TODO: Support hort and vert
 		Local image:Image = altasGameImage.image.GrabImage(subImage.subX, subImage.subY, w, h, frames)
 		
 		Local gi:GameImage = New GameImage
-		gi.name = name.ToUpper()
+		Local storeKey:String = nameoverride.ToUpper()
+		If storeKey = "" Then storeKey = name.ToUpper()
+		gi.name = storeKey
 		gi.image = image
 		gi.CalcSize()
+		gi.MidHandle(midhandle)
 		Return gi
 	End
 	
@@ -799,6 +866,7 @@ Class ImageBank Extends StringMap<GameImage>
 	
 End
 
+'summary: GameImage Class
 Class GameImage
 	Field name:String
 	Field image:Image
@@ -1003,7 +1071,8 @@ Class GameImage
 	End
 End
 
-
+'summary: Sound resource bank
+'Images must be stored in sounds folder
 Class SoundBank Extends StringMap<GameSound>
 	
 	Global path$ = "sounds/"
@@ -1028,16 +1097,19 @@ Class SoundBank Extends StringMap<GameSound>
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
-	'	For Local key:String = EachIn self.Keys()
-	'		Print key + " is stored in the map."
-	'	Next
-
+		If  game.debugOn
+			For Local key:String = EachIn self.Keys()
+				Print key + " is stored in the sound map."
+			Next
+		End
+		
 		Local i:GameSound =  Self.Get(name)
 		AssertNotNull(i, "Sound '" + name + "' not found in the SoundBank")
 		Return i
 	End
 End
 
+'summary: GameSound Class
 Class GameSound
 	Field name:String
 	Field sound:Sound
@@ -1050,7 +1122,7 @@ Class GameSound
 	
 	Method Load:Void(file$)
 	
-		If file.Contains(".wav") Or file.Contains(".ogg") Or file.Contains(".mp3") Then
+		If file.Contains(".wav") Or file.Contains(".ogg") Or file.Contains(".mp3") Or file.Contains(".m4a")  Or file.Contains(".wma") Then
 			sound = LoadSoundSample(SoundBank.path + file)
 		Else
 			#if TARGET="flash"
@@ -1092,6 +1164,7 @@ Class GameSound
 	End
 End
 
+'summary: SoundPlayer Class
 Class SoundPlayer
 	Global channel:Int
 	Const MAX_CHANNELS:Int = 31
@@ -1136,6 +1209,7 @@ Class SoundPlayer
 	
 End
 
+'summary: Sprite Class
 Class Sprite
 	Field name$
 	Field visible?
@@ -1364,6 +1438,7 @@ Class Sprite
 	End
 End
 
+'summary: Particle Class
 Class Particle Extends Sprite
 	Global MAX_PARTICLES:Int = 800
 	Global particles:Particle[MAX_PARTICLES]

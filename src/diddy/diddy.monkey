@@ -3,7 +3,7 @@ header:The main module for Diddy
 Diddy includes various features:
 [list]
 [*]External functions
-[*]Screen Based Framework
+[*][a framework.monkey.html]Screen Based Framework[/a]
 [*]Input Cache
 [*]Tweening
 [*][a collections.monkey.html]Collections[/a]
