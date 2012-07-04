@@ -23,10 +23,12 @@ Class MyGame Extends DiddyApp
 		Local tmpImage:Image
 		' load normal sprite
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
-		' load atlas sprites
-		images.LoadAtlas("sprites.xml")
+		' load sparrow atlas sprites
+		images.LoadAtlas("sprites.xml", images.SPARROW_ATLAS)
 		' load atlas zombie
-		images.LoadAtlas("zombie.xml")
+		images.LoadAtlas("zombie.xml", images.SPARROW_ATLAS)
+		' load libgdx atlas
+		images.LoadAtlas("libgdx_sprites.txt", images.LIBGDX_ATLAS)
 	End
 End
 
@@ -40,6 +42,7 @@ Class GameScreen Extends Screen
 	Field maxFrameDelay:Int = 10
 	Field maxFrame:Int = 14
 	Field zombieImage:GameImage
+	Field libGdxImage:GameImage
 	
 	Method New()
 		name = "Game"
@@ -51,6 +54,7 @@ Class GameScreen Extends Screen
 		longswordAtlasImage = game.images.Find("longsword")
 		animImage = game.images.FindSet("shield_kite", 64, 64, 7)
 		zombieImage = game.images.FindSet("idle_left1", 128, 128, 15)
+		libGdxImage = game.images.Find("a_shield_round_gold")
 	End
 	
 	Method Render:Void()
@@ -63,6 +67,7 @@ Class GameScreen Extends Screen
 		For Local f:Int = 0 Until animImage.image.Frames()
 			animImage.Draw(100 + f * animImage.w, 200, 0, 1, 1, f)
 		Next
+		libGdxImage.Draw(100, 300)
 		DrawText "Zombie by: Clint Bellanger (CC-BY-SA 3.0)",SCREEN_WIDTH2, 460, .5, .5
 		zombieImage.Draw(300, 300, 0, 1, 1, frame)
 	End

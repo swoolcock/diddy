@@ -20,9 +20,6 @@ Diddy includes various features:
 [*]String Builder
 [/list]
 #end
-'summary: The constant contains the library's name
-Const name:String = "Diddy"
-
 Import mojo
 Import functions
 Import framework
@@ -41,3 +38,6 @@ Import filesystem
 Import i18n
 Import psystem
 Import stringbuilder
+
+'summary: The constant contains the library's name
+Const name:String = "Diddy"

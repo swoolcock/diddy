@@ -727,15 +727,115 @@ End
 'Images must be stored in graphics folder
 Class ImageBank Extends StringMap<GameImage>
 	Const ATLAS_PREFIX:String = "_diddyAtlas_"
+	Const SPARROW_ATLAS:Int = 0
+	Const LIBGDX_ATLAS:Int = 1
+	
 	Field path:String = "graphics/"
 	
-	Method LoadAtlas:Void(fileName:String, midHandle:Bool=True)
-		Local parser:XMLParser = New XMLParser
+	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool=True)
+		if format = SPARROW_ATLAS
+			LoadSparrowAtlas(fileName, midHandle)
+		ElseIf format = LIBGDX_ATLAS
+			LoadLibGdxAtlas(fileName, midHandle)
+		Else
+			Error "Invalid atlas format"
+		End
+	End
+	
+	Method LoadAtlasString:String(fileName:String)
 		Local str:String = LoadString(path + fileName)
 		' check to see if the file is valid
 		AssertNotEqualInt(str.Length(), 0, "Error loading Atlas "+ path + fileName)
-
+		Return str		
+	End
+	
+	Method SaveAtlasToBank:String(pointer:Image, fileName:String)
+		' save the whole atlas with prefix
+		Local atlasGameImage:GameImage = New GameImage
+		atlasGameImage.name = ATLAS_PREFIX + StripAll(fileName).ToUpper()
+		atlasGameImage.image = pointer
+		atlasGameImage.CalcSize()
+		Self.Set(atlasGameImage.name, atlasGameImage)
+		Return atlasGameImage.name
+	End
+	
+	Method LoadLibGdxAtlas:Void(fileName:String, midHandle:Bool=True)
+		Local str:String = LoadAtlasString(fileName)
+		Local all:String[] = str.Split("~n")
+		Local spriteFileName:String = all[0].Trim()
+		Local pointer:Image = LoadImage(path + spriteFileName)
+		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
+		Local atlasGameImageName:String = SaveAtlasToBank(pointer, fileName)
+		
+		Local line:String = ""
+		Local i:Int = 4
+		Local xy:String[] =["",""]
+		Local debug:Bool = false
+		While True
+			' name of the image
+			line = all[i].Trim()
+			If debug then Print "name = "+line
+			if line = "" Then Exit
+			Local name:String = line
+			'rotate
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "rotate = "+line
+			Local rotate:String = line
+			' x and y
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "x and y = "+line
+			xy = line[ (line.FindLast(":")+1)..].Split(",")
+			Local x:Int = Int(xy[0].Trim())
+			Local y:Int = Int(xy[1].Trim())
+			' width and height
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "width and height = "+line
+			xy = line[ (line.FindLast(":")+1)..].Split(",")
+			Local width:Int = Int(xy[0].Trim())
+			Local height:Int = Int(xy[1].Trim())
+			' origX and origY
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "origX and origY = "+line
+			xy = line[ (line.FindLast(":")+1)..].Split(",")
+			Local origX:Int = Int(xy[0].Trim())
+			Local origY:Int = Int(xy[1].Trim())
+			' offsets
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "offsets = "+line
+			xy = line[ (line.FindLast(":")+1)..].Split(",")
+			Local offsetX:Int = Int(xy[0].Trim())
+			Local offsetY:Int = Int(xy[1].Trim())
+			'index
+			i+=1
+			line = all[i].Trim()
+			If debug then Print "index = "+line
+			Local index:Int = Int(line)
+			i+=1
+			
+			Local gi:GameImage = New GameImage
+			gi.name = name.ToUpper()
+			gi.image = pointer.GrabImage(x, y, width, height)
+			gi.CalcSize()
+			gi.MidHandle(midHandle)
+			
+			gi.altasName = atlasGameImageName
+			gi.subX = x
+			gi.subY = y
+			
+			Self.Set(gi.name, gi)
+		Wend
+		
+	End
+	
+	Method LoadSparrowAtlas:Void(fileName:String, midHandle:Bool=True)
+		local str:String = LoadAtlasString(fileName)
 		' parse the xml
+		Local parser:XMLParser = New XMLParser
 		Local doc:XMLDocument = parser.ParseString(str)
 		Local rootElement:XMLElement = doc.Root
 		Local spriteFileName:String = rootElement.GetAttribute("imagePath")
@@ -743,12 +843,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Local pointer:Image = LoadImage(path + spriteFileName)
 		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
 		
-		' save the whole atlas with prefix
-		Local atlasGameImage:GameImage = New GameImage
-		atlasGameImage.name = ATLAS_PREFIX + StripAll(fileName).ToUpper()
-		atlasGameImage.image = pointer
-		atlasGameImage.CalcSize()
-		Self.Set(atlasGameImage.name, atlasGameImage)
+		Local atlasGameImageName:String = SaveAtlasToBank(pointer, fileName)
 		
 		For Local node:XMLElement = Eachin rootElement.GetChildrenByName("SubTexture")
 			Local x:Int = Int(node.GetAttribute("x").Trim())
@@ -763,7 +858,7 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
 			
-			gi.altasName = atlasGameImage.name
+			gi.altasName = atlasGameImageName
 			gi.subX = x
 			gi.subY = y
 			
@@ -838,6 +933,13 @@ Class ImageBank Extends StringMap<GameImage>
 		Return i
 	End
 	
+	'summary: This returns an animation gameimage from an previous loaded Atas and adds it to the image bank.
+	'So you get then just use Find to return the animation gameimage later.
+	'name: The first image in the atlas
+	'w,h: The width and height of the frames
+	'frames: The number of frames to capture from the atlas
+	'midhandle: Sets the midhandle of the image
+	'nameoverride: If supplied, changes the stored name in the image bank
 	Method FindSet:GameImage(name:String, w:Int, h:Int, frames:Int=0, midhandle:Bool = True, nameoverride:String = "")
 		name = name.ToUpper()
 		Local subImage:GameImage = Self.Get(name)
