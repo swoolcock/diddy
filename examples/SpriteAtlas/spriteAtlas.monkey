@@ -43,6 +43,7 @@ Class GameScreen Extends Screen
 	Field maxFrame:Int = 14
 	Field zombieImage:GameImage
 	Field libGdxImage:GameImage
+	Field orcImage:GameImage
 	
 	Method New()
 		name = "Game"
@@ -55,6 +56,7 @@ Class GameScreen Extends Screen
 		animImage = game.images.FindSet("shield_kite", 64, 64, 7)
 		zombieImage = game.images.FindSet("idle_left1", 128, 128, 15)
 		libGdxImage = game.images.Find("a_shield_round_gold")
+		orcImage = game.images.Find("orc_1")
 	End
 	
 	Method Render:Void()
@@ -68,6 +70,7 @@ Class GameScreen Extends Screen
 			animImage.Draw(100 + f * animImage.w, 200, 0, 1, 1, f)
 		Next
 		libGdxImage.Draw(100, 300)
+		orcImage.Draw(200, 300)
 		DrawText "Zombie by: Clint Bellanger (CC-BY-SA 3.0)",SCREEN_WIDTH2, 460, .5, .5
 		zombieImage.Draw(300, 300, 0, 1, 1, frame)
 	End

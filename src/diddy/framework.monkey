@@ -814,10 +814,25 @@ Class ImageBank Extends StringMap<GameImage>
 			i+=1
 			line = all[i].Trim()
 			If debug then Print "index = "+line
-			Local index:Int = Int(line)
+			Local index:Int = Int(line[ (line.FindLast(":") + 1) ..].Trim())
 			i+=1
-			
 			Local gi:GameImage = New GameImage
+			if index > - 1
+				name += index
+			End
+			If debug
+				Print "name    = " + name
+				Print "x       = " + x
+				Print "y       = " + y
+				Print "width   = " + width
+				Print "height  = " + height
+				Print "origX   = " + origX
+				Print "origY   = " + origY
+				Print "offsetX = " + offsetX
+				Print "offsetY = " + offsetY
+				Print "index   = " + index
+			End
+			
 			gi.name = name.ToUpper()
 			gi.image = pointer.GrabImage(x, y, width, height)
 			gi.CalcSize()
