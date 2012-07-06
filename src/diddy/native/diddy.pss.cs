@@ -49,9 +49,7 @@ class diddy
 	public static void launchEmail(String email, String subject, String text)
 	{
 	}
-	public static float realMod(float value, float amount) {
-		return value % amount;
-	}
+
 	public static void startVibrate(int millisecs)
 	{
 	}
