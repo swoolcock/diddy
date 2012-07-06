@@ -41,10 +41,6 @@ diddy.launchEmail=function(email, subject, text)
 	location.href="mailto:"+email+"&subject="+subject+"&body="+text+"";
 }
 
-diddy.realMod=function(value, amount)
-{
-	return value % amount;
-}
 diddy.startVibrate=function(millisecs)
 {
 }

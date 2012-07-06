@@ -56,9 +56,7 @@ class diddy
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:message]];
 
 	}
-	static float realMod(float value, float amount) {
-		return fmod(value, amount);
-	}
+
 	static void startVibrate(int millisecs)
 	{
 	}
