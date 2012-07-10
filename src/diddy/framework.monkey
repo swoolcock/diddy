@@ -324,8 +324,7 @@ Public
 				Update(1)
 			Next
 			
-			' Monkey's MOD doesnt work with floats
-			Local re:Float = RealMod(numTicks, 1)
+			Local re:Float = numTicks Mod 1
 			If re > 0 Then
 				Update(re)
 			End
