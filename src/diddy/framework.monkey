@@ -461,6 +461,16 @@ Public
 		End
 		firstScreen.PreStart()
 	End
+	
+	Method OnSuspend:Int()
+		currentScreen.Suspend()
+		Return 0
+	End
+
+	Method OnResume:Int()
+		currentScreen.Resume()
+		Return 0
+	End
 End
 
 'summary: Simple screen fading
@@ -587,6 +597,12 @@ Public
 	
 	Method Update:Void() Abstract
 	
+	Method Suspend:Void()
+	End
+
+	Method Resume:Void()
+	End
+
 	Method PostFadeOut:Void()
 		game.nextScreen.PreStart()
 	End
