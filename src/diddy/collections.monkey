@@ -619,7 +619,7 @@ Public
 	
 	'summary: Overrides IList
 	Method Insert:Void(index:Int, o:E)
-		If rangeChecking Then RangeCheck(index)
+		If index <> size And rangeChecking Then RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		For Local i:Int = size Until index Step -1
 			elements[i] = elements[i-1]
