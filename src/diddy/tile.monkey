@@ -620,6 +620,45 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 			End
 		Next
 	End
+	
+	'summary: Check to see if a tile is under x and y on layername
+	Method CollisionTile:Int(x:Float, y:Float, layerName:String)
+		Local layer:TileMapTileLayer
+		For Local tl:TileMapLayer = Eachin layers
+			If TileMapTileLayer(tl)
+				If tl.name = layerName Then layer = TileMapTileLayer(tl); Exit
+			End
+		Next
+		If layer.name <> layerName Then Return 0
+
+		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return 0
+		
+		local xx:Int = (Floor(x / tileWidth))
+		local yy:Int = (Floor(y / tileHeight))
+		
+		Return layer.mapData.Get(xx, yy)
+	End
+	
+	'summary: Scrolls the map based on the changeX and changeY
+	Method Scroll:Void(changeX:Float, changeY:Float)
+		game.scrollX += changeX
+		game.scrollY += changeY
+		
+		If game.scrollX < 0 Then
+			game.scrollX = 0
+		Else
+			Local maxX:Int = width * tileWidth - SCREEN_WIDTH
+			If game.scrollX > maxX Then game.scrollX = maxX
+		End
+		
+		If game.scrollY < 0 Then
+			game.scrollY = 0
+		Else
+			Local maxY:Int = height * tileHeight - SCREEN_HEIGHT
+			If game.scrollY > maxY Then game.scrollY = maxY
+		End
+	End
+	
 End
 
 Class TileMapTileset Implements ITileMapPostLoad
