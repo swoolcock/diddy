@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!--  -->
+<TextureAtlas imagePath="gripe.png">
+    <SubTexture name="gripe.die-0-0" x="1" y="1" width="32" height="32"/>
+    <SubTexture name="gripe.die-0-1" x="35" y="1" width="32" height="32"/>
+    <SubTexture name="gripe.die-0-2" x="69" y="1" width="32" height="32"/>
+    <SubTexture name="gripe.die-0-3" x="1" y="35" width="32" height="32"/>
+    <SubTexture name="gripe.jump" x="35" y="35" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-0" x="69" y="35" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-1" x="1" y="69" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-2" x="35" y="69" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-3" x="69" y="69" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-4" x="1" y="103" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-5" x="35" y="103" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-6" x="69" y="103" width="32" height="32"/>
+    <SubTexture name="gripe.run-0-7" x="1" y="137" width="32" height="32"/>
+    <SubTexture name="gripe.stand" x="35" y="137" width="32" height="32"/>
+    <SubTexture name="gripe.turn-0-0" x="35" y="137" width="32" height="32"/>
+    <SubTexture name="gripe.turn-0-1" x="69" y="137" width="32" height="32"/>
+    <SubTexture name="gripe.turn-0-2" x="1" y="171" width="32" height="32"/>
+    <SubTexture name="gripe.turn-0-3" x="35" y="171" width="32" height="32"/>
+</TextureAtlas>

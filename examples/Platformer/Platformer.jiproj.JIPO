@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<JiProjUserOptions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Files>
+    <DocUserOptions Filename=".\game.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
+      <CursorPos>
+        <X>23</X>
+        <Y>9</Y>
+      </CursorPos>
+      <OutLiningSerialization />
+      <OutLiningSplitSerialization />
+      <DocGUID>3897231b-5b0d-4fff-b796-3dab85aac1e5</DocGUID>
+      <Bookmarks />
+    </DocUserOptions>
+    <DocUserOptions Filename=".\gameobjects.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
+      <CursorPos>
+        <X>9</X>
+        <Y>70</Y>
+      </CursorPos>
+      <OutLiningSerialization />
+      <OutLiningSplitSerialization />
+      <DocGUID>b3fece83-b72d-4944-b538-a3e8309dae43</DocGUID>
+      <Bookmarks />
+    </DocUserOptions>
+    <DocUserOptions Filename=".\level.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
+      <CursorPos>
+        <X>0</X>
+        <Y>7</Y>
+      </CursorPos>
+      <OutLiningSerialization />
+      <OutLiningSplitSerialization />
+      <DocGUID>52b82a14-11a6-49f9-ade4-a8f6c91d59fb</DocGUID>
+      <Bookmarks />
+    </DocUserOptions>
+    <DocUserOptions Filename=".\main.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
+      <CursorPos>
+        <X>38</X>
+        <Y>1</Y>
+      </CursorPos>
+      <OutLiningSerialization />
+      <OutLiningSplitSerialization />
+      <DocGUID>697b079b-a897-4a71-a29e-caedbbd0edd3</DocGUID>
+      <Bookmarks />
+    </DocUserOptions>
+    <DocUserOptions Filename=".\screens.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
+      <CursorPos>
+        <X>33</X>
+        <Y>57</Y>
+      </CursorPos>
+      <OutLiningSerialization />
+      <OutLiningSplitSerialization />
+      <DocGUID>10ef4a9f-869e-4991-9e53-cfda156ece39</DocGUID>
+      <Bookmarks />
+    </DocUserOptions>
+  </Files>
+  <Folders>
+    <FolderStatus NodePath="Platformer\main.build" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\bmax" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\bmax\data" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\bmax\data\graphics" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\bmax\data\levels" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\html5" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\html5\data" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\html5\data\graphics" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.build\html5\data\levels" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.data" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.data\graphics" Expanded="false" />
+    <FolderStatus NodePath="Platformer\main.data\levels" Expanded="false" />
+  </Folders>
+</JiProjUserOptions>
