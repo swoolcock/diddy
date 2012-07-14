@@ -470,10 +470,10 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				If orientation = MAP_ORIENTATION_ORTHOGONAL Then
 					modx = (bx * tl.parallaxScaleX) Mod tileWidth
 					mody = (by * tl.parallaxScaleY) Mod tileHeight
-					y = by
+					y = by + tileHeight - tl.maxTileHeight
 					my = Int(Floor(Float(by * tl.parallaxScaleY) / Float(tileHeight)))
 					While y < by + bh + tl.maxTileHeight
-						x = bx - tl.maxTileWidth
+						x = bx + tileWidth - tl.maxTileWidth
 						mx = Int(Floor(Float(bx * tl.parallaxScaleX) / Float(tileWidth)))
 						While x < bx + bw + tl.maxTileWidth
 							If (wrapX Or (mx >= 0 And mx < width)) And (wrapY Or (my >= 0 And my < height)) Then
