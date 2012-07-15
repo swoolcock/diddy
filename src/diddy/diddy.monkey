@@ -18,26 +18,29 @@ Diddy includes various features:
 [*]i18n
 [*]Particle System
 [*]String Builder
+[*][a vector2d.monkey.html]Vector2d[/a]
 [/list]
 #end
 Import mojo
+
+Import assert
+Import collections
+Import filesystem
+Import font
 Import functions
 Import framework
-Import inputcache
-Import tween
-Import collections
-Import assert
 Import gui
-Import simplegui
-Import serialization
-Import xml
-Import io
-Import tile
-Import font
-Import filesystem
 Import i18n
+Import inputcache
+Import io
 Import psystem
+Import serialization
+Import simplegui
 Import stringbuilder
+Import tile
+Import tween
+Import vector2d
+Import xml
 
 'summary: The constant contains the library's name
 Const name:String = "Diddy"
