@@ -6,6 +6,7 @@
 Import mojo
 Import framework
 Import assert
+Import vector2d
 
 Extern
 
@@ -576,6 +577,58 @@ Function HexToDec:Int(hx:String)
 		rv += idx
 	Next
 	Return rv
+End
+
+Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
+	Local points:Stack<Vector2D> = new Stack<Vector2D>
+	Local steep:Bool = Abs(endPos.y - startPos.y) > Abs(endPos.x - startPos.x)
+	Local swapped:Bool = false
+	
+	if steep
+		startPos.SwapXY(startPos.x, startPos.y)
+		endPos.SwapXY(endPos.x, endPos.y)
+	End
+	
+	if startPos.x > endPos.x
+		Local t:Float = startPos.x
+		startPos.x = endPos.x
+		endPos.x = t
+		t = startPos.y
+		startPos.y = endPos.y
+		endPos.y = t
+		swapped = True
+	End
+	
+	Local deltax:Float = endPos.x - startPos.x
+	Local deltay:Float = Abs(endPos.y - startPos.y)
+	Local error:Float = deltax / 2
+	Local ystep:Float
+	Local y:Float = startPos.y
+	
+	if startPos.y < endPos.y Then
+		ystep = 1
+	Else
+		ystep = -1
+	End
+	
+	For Local x:Int = startPos.x until endPos.x
+		if steep
+			points.Push(new Vector2D(y, x))
+		Else
+			points.Push(new Vector2D(x, y))
+		End
+	
+		error -= deltay
+		if error < 0
+			y += ystep
+			error += deltax
+		End
+	Next
+	local arr:Vector2D[] = points.ToArray()
+	If swapped
+		Arrays < Vector2D >.Reverse(arr)
+	End
+	Return arr
 End
 
 ' constants

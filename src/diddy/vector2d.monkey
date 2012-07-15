@@ -31,6 +31,12 @@ Class Vector2D
 		Return New Vector2D(x, y)
 	End
 	
+	'summary: Swaps x and y around
+	Method SwapXY:Void(x:Float, y:Float)
+		Self.x = y
+		Self.y = x
+	End
+	
 	'summary: Makes x and y zero
 	Method ZeroVector:Vector2D()
 		Self.x = 0
