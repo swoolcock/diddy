@@ -1353,12 +1353,9 @@ Class Sprite
 	Field image:GameImage
 	Field scaleX:Float = 1, scaleY:Float = 1
 
-	Field red% = 255, green% = 255, blue% = 255, alpha# = 1
-	Field hitBoxX:Int = 0
-	Field hitBoxY:Int = 0
-	Field hitBoxWidth:Int
-	Field hitBoxHeight:Int
-	
+	Field red:Int = 255, green:Int = 255, blue:Int = 255, alpha:Float = 1
+	Field hitBox:HitBox
+
 	' Animation
 	Field frame:Int
 	Field frameTimer:Int
@@ -1389,7 +1386,7 @@ Class Sprite
 		Self.x = x
 		Self.y = y
 		Self.alpha = 1
-		Self.SetHitBox(-img.w2, -img.h2, img.w, img.h)
+		Self.SetHitBox( -img.w2, - img.h2, img.w2, img.h2)
 		Self.visible = True
 	End
 	
@@ -1542,8 +1539,15 @@ Class Sprite
 		SetAlpha 1
 
 	'	if debug
-	'		drawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
+'			DrawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
 	'	End
+	End
+	
+	Method DrawHitBox:Void(offsetx:Float = 0, offsety:Float = 0)
+		' Draw the midhandle
+		DrawRect x - 1 - offsetx, y - 1 - offsety, 2, 2
+		' Draw the hit box
+		DrawRectOutline(x + hitBox.x - offsetx, y + hitBox.y - offsety, hitBox.w, hitBox.h)
 	End
 
 	Method SetupRotation:Void(rotationSpeed:Float, length:Int, loop:Bool = False, rndPosition:Bool = False)	
@@ -1558,15 +1562,25 @@ Class Sprite
 	End
 	
 	Method Collide:Int(sprite:Sprite)
-		Return RectsOverlap(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight, 
-							sprite.x + sprite.hitBoxX, sprite.y + sprite.hitBoxY, sprite.hitBoxWidth, sprite.hitBoxHeight)
+		Return RectsOverlap(x + hitBox.x, y + hitBox.y, hitBox.w, hitBox.h,
+							sprite.x +sprite.hitBox.x, sprite.y + sprite.hitBox.y, sprite.hitBox.w, sprite.hitBox.h)
 	End
 		
 	Method SetHitBox:Void(hitX:Int, hitY:Int, hitWidth:Int, hitHeight:Int)
-		hitBoxX = hitX
-		hitBoxY = hitY
-		hitBoxWidth = hitWidth
-		hitBoxHeight = hitHeight
+		hitBox = New HitBox(hitX, hitY, hitWidth, hitHeight)
+	End
+End
+
+'summary: Simple HitBox class
+Class HitBox
+	Field x:Float, y:Float
+	Field w:Float, h:Float
+	
+	Method New(x:Float, y:Float, w:Float, h:Float)
+		Self.x = x
+		Self.y = y
+		Self.w = w
+		Self.h = h
 	End
 End
 

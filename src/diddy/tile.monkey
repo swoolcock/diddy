@@ -621,14 +621,81 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Next
 	End
 	
-	'summary: Check to see if a tile is under x and y on layername
-	Method CollisionTile:Int(x:Float, y:Float, layerName:String)
+	'summary: Check a collision using ray casting
+	Method CheckCollision:Int[](startX:Float, startY:Float, endX:Float, endY:Float, hitBox:HitBox, layerName:String)
+		Local collisionArray:Int[4]
+		Local layer:TileMapTileLayer = GetLayer(layerName)
+		Local pts:Vector2D[]
+		Local xx:Int
+		Local yy:Int
+		Local tile:Int
+		
+		' top left
+		pts = BresenhamLine(New Vector2D(startX + hitBox.x, startY + hitBox.y), New Vector2D(endX + hitBox.x, endY + hitBox.y))
+		For Local v:Vector2D = EachIn pts
+			xx = Floor(v.x / tileWidth)
+			yy = Floor(v.y / tileHeight)
+			tile = layer.mapData.Get(xx, yy)
+			if tile <> 0 Then
+				collisionArray[0] = tile
+				Exit
+			End
+		Next
+		
+		' top right
+		pts = BresenhamLine(New Vector2D(startX + hitBox.w / 2, startY + hitBox.y), New Vector2D(endX + hitBox.w / 2, endY + hitBox.y))
+		For Local v:Vector2D = EachIn pts
+			xx = Floor(v.x / tileWidth)
+			yy = Floor(v.y / tileHeight)
+			tile = layer.mapData.Get(xx, yy)
+			if tile <> 0 Then
+				collisionArray[1] = tile
+				Exit
+			End
+		Next
+		
+		' bottom left
+		pts = BresenhamLine(New Vector2D(startX + hitBox.x, startY + hitBox.h / 2), New Vector2D(endX + hitBox.x, endY + hitBox.h / 2))
+		For Local v:Vector2D = EachIn pts
+			xx = Floor(v.x / tileWidth)
+			yy = Floor(v.y / tileHeight)
+			tile = layer.mapData.Get(xx, yy)
+			if tile <> 0 Then
+				collisionArray[2] = tile
+				Exit
+			End
+		Next
+		
+		' bottom right
+		pts = BresenhamLine(New Vector2D(startX + hitBox.w / 2, startY + hitBox.h / 2), New Vector2D(endX + hitBox.w / 2, endY + hitBox.h / 2))
+		For Local v:Vector2D = EachIn pts
+			xx = Floor(v.x / tileWidth)
+			yy = Floor(v.y / tileHeight)
+			tile = layer.mapData.Get(xx, yy)
+			if tile <> 0 Then
+				collisionArray[3] = tile
+				Exit
+			End
+		Next
+		
+		Return collisionArray
+	End
+	
+	'summary:Return the layer for a set name
+	Method GetLayer:TileMapTileLayer(layerName:String)
 		Local layer:TileMapTileLayer
 		For Local tl:TileMapLayer = Eachin layers
 			If TileMapTileLayer(tl)
 				If tl.name = layerName Then layer = TileMapTileLayer(tl); Exit
 			End
 		Next
+		AssertNotNull(layer, "Cannot find layer " + layerName)
+		Return layer
+	End
+	
+	'summary: Check to see if a tile is under x and y on layername
+	Method CollisionTile:Int(x:Float, y:Float, layerName:String)
+		Local layer:TileMapTileLayer = GetLayer(layerName)
 		If layer.name <> layerName Then Return 0
 
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return 0
