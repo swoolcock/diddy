@@ -149,11 +149,12 @@ End
 Function DrawRectOutline:Void(x:Int, y:Int, w:Int, h:Int)
 	w -= 1
 	h -= 1
-	DrawLine(x,y,x+w,y)
-	DrawLine(x+w,y,x+w,y+h)
-	DrawLine(x+w,y+h,x,y+h)
-	DrawLine(x,y+h,x,y)	
+	DrawLine(x, y, x + w, y)
+	DrawLine(x + w, y, x + w, y + h)
+	DrawLine(x + w, y + h, x, y + h)
+	DrawLine(x, y + h, x, y)
 End
+
 
 Function LoadBitmap:Image(path$, flags%=0)
 	Local pointer:Image = LoadImage(path, 1, flags)
