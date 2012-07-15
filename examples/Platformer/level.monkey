@@ -8,7 +8,8 @@ End
 
 Class MyTileMap Extends TileMap
 	Const GRAVITY:Float = 0.5
-	
+	Const COLLISION_LAYER:String = "CollisionLayer"
+		
 	Method ConfigureLayer:Void(tileLayer:TileMapLayer)
 		SetAlpha(tileLayer.opacity)
 	End

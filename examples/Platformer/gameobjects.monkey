@@ -17,25 +17,37 @@ Class Player extends Sprite
 	End
 	
 	Method Update:Void()
-	
+		Local tempx:Float
+		Local pts:Vector2D[]
+		Local endPoint:Vector2D
+		Local okayToMove:Bool = false
+			
 		if KeyDown(KEY_LEFT)
-			Local tempx:Float = x - speedX
-			if gameScreen.tilemap.CollisionTile(tempx - image.w2, y + image.h2 - 1, "Tile Layer 1") = 0 and
-				gameScreen.tilemap.CollisionTile(tempx - image.w2, y - image.h2, "Tile Layer 1") = 0 and
-				gameScreen.tilemap.CollisionTile(tempx - image.w2, y, "Tile Layer 1") = 0 then
-				x = tempx
-			else
-				x = Round( (x - image.w2) / gameScreen.tilemap.tileWidth) * gameScreen.tilemap.tileWidth + image.w2
-			End
+			tempx = x - speedX
+			pts = BresenhamLine(New Vector2D(x - self.image.w2, y), New Vector2D(tempx, y))
+			okayToMove = true
+			For Local v:Vector2D = EachIn pts
+				if gameScreen.tilemap.CollisionTile(v.x, v.y, gameScreen.tilemap.COLLISION_LAYER) <> 0 Then
+					okayToMove = False
+					x = v.x + image.w2
+					Exit
+				End
+				endPoint = v
+			Next
+			if okayToMove Then x = tempx
 		Else if KeyDown(KEY_RIGHT)
-			Local tempx:Float = x + speedX
-			if gameScreen.tilemap.CollisionTile(tempx + image.w2, y + image.h2 - 1, "Tile Layer 1") = 0 and
-				gameScreen.tilemap.CollisionTile(tempx + image.w2, y - image.h2, "Tile Layer 1") = 0 and
-				gameScreen.tilemap.CollisionTile(tempx + image.w2, y, "Tile Layer 1") = 0 then
-				x = tempx
-			else
-				x = Round( (x + image.w2) / gameScreen.tilemap.tileWidth) * gameScreen.tilemap.tileWidth - image.w2
-			end
+			tempx = x + speedX
+			pts = BresenhamLine(New Vector2D(x + self.image.w2, y), New Vector2D(tempx + image.w2, y))
+			okayToMove = true
+			For Local v:Vector2D = EachIn pts
+				if gameScreen.tilemap.CollisionTile(v.x, v.y, gameScreen.tilemap.COLLISION_LAYER) <> 0 Then
+					okayToMove = False
+					x = v.x - image.w2
+					Exit
+				End
+				endPoint = v
+			Next
+			if okayToMove Then x = tempx
 		End
 		
 		If KeyDown(KEY_SPACE) And not jumping Then
@@ -47,41 +59,54 @@ Class Player extends Sprite
 		Local amountY:int = 1
 		
 		if not jumping
-			if gameScreen.tilemap.CollisionTile(x - image.w2 + amount, y + image.h2, "Tile Layer 1") = 0 And
-				gameScreen.tilemap.CollisionTile(x + image.w2 + amount, y + image.h2, "Tile Layer 1") = 0 And
-				gameScreen.tilemap.CollisionTile(x, y + image.h2, "Tile Layer 1") = 0
-	
-				jumping = true
-			end
+			pts = BresenhamLine(New Vector2D(x, y + image.h2), New Vector2D(x, y + image.h2 + 2))
+			okayToMove = true
+			For Local v:Vector2D = EachIn pts
+				if gameScreen.tilemap.CollisionTile(v.x, v.y, gameScreen.tilemap.COLLISION_LAYER) <> 0 Then
+					okayToMove = False
+					Exit
+				End
+				endPoint = v
+			Next
+			if okayToMove Then jumping = True
 		End
 		
 		if jumping
 			dy += MyTileMap.GRAVITY
 			
-			local tempY# = y + dy
+			local tempY:Float = y + dy
 			if dy <> 0
 				if dy > 0
-					if gameScreen.tilemap.CollisionTile(x, y + image.h - amountY, "Tile Layer 1") > 0 or
-						gameScreen.tilemap.CollisionTile(x - image.w2 + amount, y + image.h - amountY, "Tile Layer 1") > 0 or
-						gameScreen.tilemap.CollisionTile(x + image.w2 + amount, y + image.h - amountY, "Tile Layer 1") > 0
+					pts = BresenhamLine(New Vector2D(x, y + image.h2), New Vector2D(x, image.h2 + tempY))
+					endPoint = new Vector2D(x, y + image.h2)
+					okayToMove = true
+					For Local v:Vector2D = EachIn pts
+						endPoint = v
+						if gameScreen.tilemap.CollisionTile(v.x, v.y, gameScreen.tilemap.COLLISION_LAYER) <> 0 Then
+							okayToMove = False
+							dy = 0
+							jumping = false
+							y = v.y - image.h2
+							Exit
+						End
 						
-						dy = 0
-						jumping = false
-						y = Round( (tempY + image.h) / gameScreen.tilemap.tileHeight) * gameScreen.tilemap.tileHeight - image.h
-					else
-						y = tempY
-					end
+					Next
+					if okayToMove Then y = tempY
 				else
-					if gameScreen.tilemap.CollisionTile(x, y - image.h - amountY, "Tile Layer 1") > 0 or
-						gameScreen.tilemap.CollisionTile(x - image.w2 + amount, y - image.h - amountY, "Tile Layer 1") > 0 or
-						gameScreen.tilemap.CollisionTile(x + image.w2 + amount, y - image.h - amountY, "Tile Layer 1") > 0
-					
-						dy = 0
-						y = Round( (tempY - image.h) / gameScreen.tilemap.tileHeight) * gameScreen.tilemap.tileHeight + image.h
+					pts = BresenhamLine(New Vector2D(x, y - image.h2), New Vector2D(x, tempY - image.h2))
+					endPoint = new Vector2D(x, y + image.h2)
+					okayToMove = true
+					For Local v:Vector2D = EachIn pts
+						endPoint = v
+						if gameScreen.tilemap.CollisionTile(v.x, v.y, gameScreen.tilemap.COLLISION_LAYER) <> 0 Then
+							okayToMove = False
+							dy = 0
+							y = v.y + image.h2
+							Exit
+						End
 						
-					else
-						y = tempY
-					end
+					Next
+					if okayToMove Then y = tempY
 				End
 			End
 		End
