@@ -1386,7 +1386,7 @@ Class Sprite
 		Self.x = x
 		Self.y = y
 		Self.alpha = 1
-		Self.SetHitBox( -img.w2, - img.h2, img.w2, img.h2)
+		Self.SetHitBox( -img.w2, -img.h2, img.w, img.h)
 		Self.visible = True
 	End
 	
@@ -1539,7 +1539,7 @@ Class Sprite
 		SetAlpha 1
 
 	'	if debug
-'			DrawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
+	'		DrawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
 	'	End
 	End
 	
