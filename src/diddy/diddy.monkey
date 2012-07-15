@@ -23,6 +23,7 @@ Diddy includes various features:
 #end
 Import mojo
 
+Import arrays
 Import assert
 Import collections
 Import filesystem

@@ -132,7 +132,7 @@ Class Arrays<T>
 	'summary: returns a new array that is reversed
 	Function Reverse:Void(arr:T[])
 		For Local i:Int = 0 Until arr.Length/2
-			Local tmp:Int = arr[i]
+			Local tmp:T = arr[i]
 			arr[i] = arr[arr.Length-i-1]
 			arr[arr.Length-i-1] = tmp
 		Next
