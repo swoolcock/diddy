@@ -50,7 +50,8 @@ Class GameScreen extends Screen
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
 		Local tm:TileMap = reader.LoadMap("levels/level1.tmx")
 		tilemap = MyTileMap(tm)
-		player = New Player(game.images.Find("gripe.stand"), 300, 100)
+		Local playerStart:TileMapObject = tilemap.FindObjectByName("playerStart")
+		player = New Player(game.images.Find("gripe.stand"), playerStart.x, playerStart.y)
 	End
 	
 	Method Render:Void()

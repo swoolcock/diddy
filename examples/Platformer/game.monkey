@@ -7,7 +7,7 @@ Class MyGame Extends DiddyApp
 		LoadImages()
 		titleScreen = new TitleScreen
 		gameScreen = new GameScreen
-		defaultFadeTime = 100
+		defaultFadeTime = 300
 		game.Start(titleScreen)
 		Return 0
 	End

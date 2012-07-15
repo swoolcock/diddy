@@ -3,7 +3,7 @@
   <Files>
     <DocUserOptions Filename=".\game.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>23</X>
+        <X>21</X>
         <Y>9</Y>
       </CursorPos>
       <OutLiningSerialization />
@@ -13,8 +13,8 @@
     </DocUserOptions>
     <DocUserOptions Filename=".\gameobjects.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>9</X>
-        <Y>70</Y>
+        <X>3</X>
+        <Y>122</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
@@ -23,8 +23,8 @@
     </DocUserOptions>
     <DocUserOptions Filename=".\level.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>0</X>
-        <Y>7</Y>
+        <X>3</X>
+        <Y>19</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
@@ -43,8 +43,8 @@
     </DocUserOptions>
     <DocUserOptions Filename=".\screens.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>33</X>
-        <Y>57</Y>
+        <X>1</X>
+        <Y>55</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
