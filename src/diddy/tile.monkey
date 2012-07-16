@@ -622,67 +622,81 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	End
 	
 	'summary: Check a collision using ray casting
-	Method CheckCollision:Int[](startX:Float, startY:Float, endX:Float, endY:Float, hitBox:HitBox, layerName:String)
-		Local collisionArray:Int[4]
-		Local layer:TileMapTileLayer = GetLayer(layerName)
-		Local pts:Vector2D[]
-		Local xx:Int
-		Local yy:Int
+	Method CheckCollision:TileCollisionData(startX:Float, startY:Float, endX:Float, endY:Float, layerName:String)
+		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		Local x1:Int = startX
+		Local y1:Int = startY
+		Local x2:Int = endX
+		Local y2:Int = endY
+
+		Local deltax:Int = Abs(x2 - x1)
+		Local deltay:Int = Abs(y2 - y1)
+		
+		Local numpixels:Int, d:Int, dinc1:Int, dinc2:Int, xinc1:Int, xinc2:Int, yinc1:Int, yinc2:Int, x:Int, y:Int, i:Int
+		Local xx:Int, cx:Int
+		Local yy:Int, cy:Int
 		Local tile:Int
 		
-		' top left
-		pts = BresenhamLine(New Vector2D(startX + hitBox.x, startY + hitBox.y), New Vector2D(endX + hitBox.x, endY + hitBox.y))
-		For Local v:Vector2D = EachIn pts
-			xx = Floor(v.x / tileWidth)
-			yy = Floor(v.y / tileHeight)
+		If deltax >= deltay 
+			numpixels = deltax + 1
+			d = (2 * deltay) - deltax
+			dinc1 = deltay Shl 1
+			dinc2 = (deltay - deltax) Shl 1
+			xinc1 = 1
+			xinc2 = 1
+			yinc1 = 0
+			yinc2 = 1
+		Else 
+			numpixels = deltay + 1
+			d = (2 * deltax) - deltay
+			dinc1 = deltax Shl 1
+			dinc2 = (deltax - deltay) Shl 1
+			xinc1 = 0
+			xinc2 = 1
+			yinc1 = 1
+			yinc2 = 1
+		End
+		
+		If x1 > x2
+			xinc1 = -xinc1
+			xinc2 = -xinc2
+		End
+		
+		If y1 > y2 
+			yinc1 = -yinc1
+			yinc2 = -yinc2
+		End
+		
+		x = x1
+		y = y1
+
+		For i = 1 To numpixels
+			xx = Floor(x / tileWidth)
+			yy = Floor(y / tileHeight)
 			tile = layer.mapData.Get(xx, yy)
+			' exit when we have a collision
 			if tile <> 0 Then
-				collisionArray[0] = tile
+				cx = x
+				cy = y
 				Exit
 			End
-		Next
-		
-		' top right
-		pts = BresenhamLine(New Vector2D(startX + hitBox.w / 2, startY + hitBox.y), New Vector2D(endX + hitBox.w / 2, endY + hitBox.y))
-		For Local v:Vector2D = EachIn pts
-			xx = Floor(v.x / tileWidth)
-			yy = Floor(v.y / tileHeight)
-			tile = layer.mapData.Get(xx, yy)
-			if tile <> 0 Then
-				collisionArray[1] = tile
-				Exit
+			
+			If d < 0 
+				d = d + dinc1
+				x = x + xinc1
+				y = y + yinc1
+			Else
+				d = d + dinc2
+				x = x + xinc2
+				y = y + yinc2
 			End
-		Next
 		
-		' bottom left
-		pts = BresenhamLine(New Vector2D(startX + hitBox.x, startY + hitBox.h / 2), New Vector2D(endX + hitBox.x, endY + hitBox.h / 2))
-		For Local v:Vector2D = EachIn pts
-			xx = Floor(v.x / tileWidth)
-			yy = Floor(v.y / tileHeight)
-			tile = layer.mapData.Get(xx, yy)
-			if tile <> 0 Then
-				collisionArray[2] = tile
-				Exit
-			End
 		Next
-		
-		' bottom right
-		pts = BresenhamLine(New Vector2D(startX + hitBox.w / 2, startY + hitBox.h / 2), New Vector2D(endX + hitBox.w / 2, endY + hitBox.h / 2))
-		For Local v:Vector2D = EachIn pts
-			xx = Floor(v.x / tileWidth)
-			yy = Floor(v.y / tileHeight)
-			tile = layer.mapData.Get(xx, yy)
-			if tile <> 0 Then
-				collisionArray[3] = tile
-				Exit
-			End
-		Next
-		
-		Return collisionArray
+		Return New TileCollisionData(cx, cy, tile, xx, yy)
 	End
-	
+		
 	'summary:Return the layer for a set name
-	Method GetLayer:TileMapTileLayer(layerName:String)
+	Method FindLayerByName:TileMapTileLayer(layerName:String)
 		Local layer:TileMapTileLayer
 		For Local tl:TileMapLayer = Eachin layers
 			If TileMapTileLayer(tl)
@@ -695,7 +709,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Check to see if a tile is under x and y on layername
 	Method CollisionTile:Int(x:Float, y:Float, layerName:String)
-		Local layer:TileMapTileLayer = GetLayer(layerName)
+		Local layer:TileMapTileLayer = FindLayerByName(layerName)
 		If layer.name <> layerName Then Return 0
 
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return 0
@@ -726,6 +740,21 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		End
 	End
 	
+End
+
+'summary: Simple Collision Data Class
+Class TileCollisionData
+	Field x:Float, y:Float
+	Field tileX:Float, tileY:Float
+	Field tile:Int
+	
+	Method New(x:Float, y:Float, t:Int, tx:Float, ty:Float)
+		Self.x = x
+		Self.y = y
+		Self.tile = t
+		Self.tileX = tx
+		Self.tileY = ty
+	End
 End
 
 Class TileMapTileset Implements ITileMapPostLoad
