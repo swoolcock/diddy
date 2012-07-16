@@ -59,6 +59,7 @@ Class GameScreen extends Screen
 		DrawImage backgroundImage, 0, 0
 		tilemap.RenderMap(game.scrollX, game.scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1)
 		player.Draw(game.scrollX, game.scrollY, True)
+		
 		if player.jumping
 			DrawText "TRUE", 10, 10
 		Else
