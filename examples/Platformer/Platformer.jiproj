@@ -37,5 +37,5 @@
       </CursorPos>
     </Document>
   </Files>
-  <CompilerConfig Configuration="debug" BuildMode="run" Target="html5" />
+  <CompilerConfig Configuration="debug" BuildMode="run" Target="bmax" />
 </JiProj>

@@ -51,7 +51,9 @@ Class GameScreen extends Screen
 		Local tm:TileMap = reader.LoadMap("levels/level1.tmx")
 		tilemap = MyTileMap(tm)
 		Local playerStart:TileMapObject = tilemap.FindObjectByName("playerStart")
-		player = New Player(game.images.Find("gripe.stand"), playerStart.x, playerStart.y)
+		player = New Player(game.images.Find("gripe.stand_right"), playerStart.x, playerStart.y)
+		
+		
 	End
 	
 	Method Render:Void()
@@ -59,7 +61,6 @@ Class GameScreen extends Screen
 		DrawImage backgroundImage, 0, 0
 		tilemap.RenderMap(game.scrollX, game.scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1)
 		player.Draw(game.scrollX, game.scrollY, True)
-		
 		if player.jumping
 			DrawText "TRUE", 10, 10
 		Else
