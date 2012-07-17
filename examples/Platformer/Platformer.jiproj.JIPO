@@ -3,8 +3,8 @@
   <Files>
     <DocUserOptions Filename=".\game.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>21</X>
-        <Y>9</Y>
+        <X>0</X>
+        <Y>16</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
@@ -13,8 +13,8 @@
     </DocUserOptions>
     <DocUserOptions Filename=".\gameobjects.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>12</X>
-        <Y>70</Y>
+        <X>42</X>
+        <Y>193</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
@@ -43,8 +43,8 @@
     </DocUserOptions>
     <DocUserOptions Filename=".\screens.monkey" Open="true" SplitView="false" SplitIsVertical="false" SplitSize="155">
       <CursorPos>
-        <X>3</X>
-        <Y>80</Y>
+        <X>28</X>
+        <Y>78</Y>
       </CursorPos>
       <OutLiningSerialization />
       <OutLiningSplitSerialization />
@@ -55,9 +55,6 @@
   <Folders>
     <FolderStatus NodePath="Platformer\main.build" Expanded="false" />
     <FolderStatus NodePath="Platformer\main.build\bmax" Expanded="false" />
-    <FolderStatus NodePath="Platformer\main.build\bmax\data" Expanded="false" />
-    <FolderStatus NodePath="Platformer\main.build\bmax\data\graphics" Expanded="false" />
-    <FolderStatus NodePath="Platformer\main.build\bmax\data\levels" Expanded="false" />
     <FolderStatus NodePath="Platformer\main.build\html5" Expanded="false" />
     <FolderStatus NodePath="Platformer\main.build\html5\data" Expanded="false" />
     <FolderStatus NodePath="Platformer\main.build\html5\data\graphics" Expanded="false" />
