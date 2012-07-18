@@ -1471,26 +1471,29 @@ Class Sprite
 		ping = 0
 	End
 	
-	Method UpdateAnimation:Void()
+	'summary: Animation process, deals with changing frames. Returns 1 if the animation has finished (only for non looping animations).
+	Method UpdateAnimation:Int()
+		Local rv:Int = 0
 		If frameSpeed > 0
 			If Millisecs() > frameTimer + frameSpeed
 				If Not reverse
 					frame+=1
 					If frame > frameEnd
-						ResetAnim()
+						rv = ResetAnim()
 					End
 				Else
 					frame-=1
 					If frame < frameEnd
-						ResetAnim()
+						rv = ResetAnim()
 					End			
 				End
 				frameTimer = Millisecs()
 			End	
 		End
+		Return rv
 	End
 	
-	Method ResetAnim:Void()
+	Method ResetAnim:Int()
 		If loop Then
 			If pingPong
 				reverse = Not reverse
@@ -1511,8 +1514,10 @@ Class Sprite
 				ping+=1
 			Else
 				frame = frameEnd
+				Return 1
 			End
 		End
+		Return 0
 	End
 	
 	Method Draw:Void()
