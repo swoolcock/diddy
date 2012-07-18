@@ -61,12 +61,19 @@ Class GameScreen extends Screen
 		DrawImage backgroundImage, 0, 0
 		tilemap.RenderMap(game.scrollX, game.scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1)
 		player.Draw(game.scrollX, game.scrollY, True)
-		if player.jumping
-			DrawText "TRUE", 10, 10
-		Else
-			DrawText "FALSE", 10, 10
+		Local status:String = ""
+		Select player.status
+			Case player.STANDING
+				status = "STANDING"
+			Case player.WALKING
+				status = "WALKING"
+			Case player.TURNING
+				status = "TURNING"
+			Case player.DIE
+				status = "DIEING"
 		End
-		DrawText game.scrollX, 10, 30
+		if player.jumping Then status = "JUMPING"
+		DrawText "STATUS: " + status, 10, 10
 	End
 	
 	Method Update:Void()

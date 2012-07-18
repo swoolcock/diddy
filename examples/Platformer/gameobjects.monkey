@@ -3,19 +3,22 @@ Import level
 Import screens
 
 Class Player Extends Sprite
+	Const STANDING:Int = 0
+	Const WALKING:Int = 1
+	Const DIE:Int = 2
+	Const TURNING:Int = 3
+
 	Field jumping:Bool
 	Field speedX:Float = 3
 	Field speedY:Float = 15
 	Field direction:Int = 1
-	Const STANDING:Int = 0
-	Const WALKING:Int = 1
-	Const DIE:Int = 2
 	Field status:Int = STANDING
 	Field olddir:Int
 	Field walkImages:GameImage
 	Field standImage:GameImage
 	Field jumpImage:GameImage
 	Field deadImages:GameImage
+	Field turningImages:GameImage
 	
 	Method New(img:GameImage, x:Float, y:Float)
 		Self.image = img
@@ -29,6 +32,7 @@ Class Player Extends Sprite
 		deadImages = game.images.FindSet("gripe.die", 32, 32, 4)
 		standImage = game.images.Find("gripe.stand_right")
 		jumpImage = game.images.Find("gripe.jump_right")
+		turningImages = game.images.FindSet("gripe.turn_right_to_left", 32, 32, 4)
 	End
 	
 	Method SetupWalkAnim:Void()
@@ -38,7 +42,7 @@ Class Player Extends Sprite
 			scaleX = -1
 		End If
 		image = walkImages
-		if status <> WALKING SetFrame(0, 7, 60)
+		If status <> WALKING SetFrame(0, 7, 60)
 	End
 		
 	Method SetupStandAnim:Void()
@@ -58,61 +62,96 @@ Class Player Extends Sprite
 		SetFrame(0, 3, 50)
 	End
 	
+	Method SetUpTurningAnim:Void()
+		status = TURNING
+		image = turningImages
+		SetFrame(0, 3, 40, False, False)
+	End
+	
 	Method Update:Void()
 		Local tempx:Float
 		Local tileData:TileCollisionData
 		Local tileDatas:TileCollisionData[3]
 		Local newY:Float, newX:Float
-		UpdateAnimation()
+		local animFinish:Int = UpdateAnimation()
+		if status = TURNING
+			if animFinish
+				if direction = 1
+					direction = -1
+					scaleX = -1
+				Else if direction = - 1
+					direction = 1
+					scaleX = 1
+				End
+				SetupStandAnim()
+			End
+		End
 		
-		if status <> DIE
+				
+		If status <> DIE
 			If KeyDown(KEY_LEFT)
-				direction = -1
-				SetupWalkAnim()
-				
-				status = WALKING
-				tempx = x - speedX * dt.delta
-				tileDatas[0] = gameScreen.tilemap.CheckCollision(x - image.w2, y - image.h2 + 1, tempx - image.w2, y - image.h2 + 1, gameScreen.tilemap.COLLISION_LAYER)
-				tileDatas[1] = gameScreen.tilemap.CheckCollision(x - image.w2, y, tempx - image.w2, y, gameScreen.tilemap.COLLISION_LAYER)
-				tileDatas[2] = gameScreen.tilemap.CheckCollision(x - image.w2, y + image.h2 - 1, tempx - image.w2, y + image.h2 - 1, gameScreen.tilemap.COLLISION_LAYER)
-				
-				If tileDatas[0].tile = 0 And tileDatas[1].tile = 0 And tileDatas[2].tile = 0 Then
-					x = tempx
-				Else
-					if tileDatas[0].tile <> 0 Then
-						newX = tileDatas[0].x
-					Else if tileDatas[1].tile <> 0 Then
-						newX = tileDatas[1].x
-					else if tileDatas[2].tile <> 0 Then
-						newX = tileDatas[2].x
+				if direction = 1
+					if jumping
+						direction = -1
+					Else
+						if status <> TURNING Then SetUpTurningAnim()
 					End
-					newX = newX + image.w2 + 1
-					x = newX
+				Else
+					direction = -1
+					SetupWalkAnim()
+					
+					status = WALKING
+					tempx = x - speedX * dt.delta
+					tileDatas[0] = gameScreen.tilemap.CheckCollision(x - image.w2, y - image.h2 + 1, tempx - image.w2, y - image.h2 + 1, gameScreen.tilemap.COLLISION_LAYER)
+					tileDatas[1] = gameScreen.tilemap.CheckCollision(x - image.w2, y, tempx - image.w2, y, gameScreen.tilemap.COLLISION_LAYER)
+					tileDatas[2] = gameScreen.tilemap.CheckCollision(x - image.w2, y + image.h2 - 1, tempx - image.w2, y + image.h2 - 1, gameScreen.tilemap.COLLISION_LAYER)
+					
+					If tileDatas[0].tile = 0 And tileDatas[1].tile = 0 And tileDatas[2].tile = 0 Then
+						x = tempx
+					Else
+						If tileDatas[0].tile <> 0 Then
+							newX = tileDatas[0].x
+						Else If tileDatas[1].tile <> 0 Then
+							newX = tileDatas[1].x
+						Else If tileDatas[2].tile <> 0 Then
+							newX = tileDatas[2].x
+						End
+						newX = newX + image.w2 + 1
+						x = newX
+					End
 				End
 			Else If KeyDown(KEY_RIGHT)
-				direction = 1
-				SetupWalkAnim()
-				status = WALKING
-				tempx = x + speedX * dt.delta
-				tileDatas[0] = gameScreen.tilemap.CheckCollision(x + image.w2, y - image.h2 + 1, tempx + image.w2, y - image.h2 + 1, gameScreen.tilemap.COLLISION_LAYER)
-				tileDatas[1] = gameScreen.tilemap.CheckCollision(x + image.w2, y, tempx + image.w2, y, gameScreen.tilemap.COLLISION_LAYER)
-				tileDatas[2] = gameScreen.tilemap.CheckCollision(x + image.w2, y + image.h2 - 1, tempx + image.w2, y + image.h2 - 1, gameScreen.tilemap.COLLISION_LAYER)
-				
-				If tileDatas[0].tile = 0 And tileDatas[1].tile = 0 And tileDatas[2].tile = 0 Then
-					x = tempx
-				Else
-					if tileDatas[0].tile <> 0 Then
-						newX = tileDatas[0].x
-					Else if tileDatas[1].tile <> 0 Then
-						newX = tileDatas[1].x
-					else if tileDatas[2].tile <> 0 Then
-						newX = tileDatas[2].x
+				if direction = - 1
+					if jumping
+						direction = 1
+					Else
+						if status <> TURNING Then SetUpTurningAnim()
 					End
-					newX = newX - image.w2 - 1
-					x = newX
+				Else
+					direction = 1
+					SetupWalkAnim()
+					status = WALKING
+					tempx = x + speedX * dt.delta
+					tileDatas[0] = gameScreen.tilemap.CheckCollision(x + image.w2, y - image.h2 + 1, tempx + image.w2, y - image.h2 + 1, gameScreen.tilemap.COLLISION_LAYER)
+					tileDatas[1] = gameScreen.tilemap.CheckCollision(x + image.w2, y, tempx + image.w2, y, gameScreen.tilemap.COLLISION_LAYER)
+					tileDatas[2] = gameScreen.tilemap.CheckCollision(x + image.w2, y + image.h2 - 1, tempx + image.w2, y + image.h2 - 1, gameScreen.tilemap.COLLISION_LAYER)
+					
+					If tileDatas[0].tile = 0 And tileDatas[1].tile = 0 And tileDatas[2].tile = 0 Then
+						x = tempx
+					Else
+						If tileDatas[0].tile <> 0 Then
+							newX = tileDatas[0].x
+						Else If tileDatas[1].tile <> 0 Then
+							newX = tileDatas[1].x
+						Else If tileDatas[2].tile <> 0 Then
+							newX = tileDatas[2].x
+						End
+						newX = newX - image.w2 - 1
+						x = newX
+					End
 				End
 			Else
-				SetupStandAnim()
+				if status <> TURNING Then SetupStandAnim()
 			End
 			If KeyDown(KEY_SPACE) And Not jumping Then
 				dy=-speedY
@@ -142,16 +181,16 @@ Class Player Extends Sprite
 							dy = 0
 							jumping = False
 							SetupStandAnim()
-							if tileDatas[0].tile <> 0 Then
+							If tileDatas[0].tile <> 0 Then
 								newY = tileDatas[0].y
-							Else if tileDatas[1].tile <> 0 Then
+							Else If tileDatas[1].tile <> 0 Then
 								newY = tileDatas[1].y
-							else if tileDatas[2].tile <> 0 Then
+							Else If tileDatas[2].tile <> 0 Then
 								newY = tileDatas[2].y
 							End
 							
 							' TODO: Fix this hax!
-							if tileDatas[0].tile = 92 or tileDatas[0].tile = 93 or tileDatas[1].tile = 92 or tileDatas[1].tile = 93 or tileDatas[2].tile = 92 or tileDatas[2].tile = 93
+							If tileDatas[0].tile = 92 Or tileDatas[0].tile = 93 Or tileDatas[1].tile = 92 Or tileDatas[1].tile = 93 Or tileDatas[2].tile = 92 Or tileDatas[2].tile = 93
 								SetupDieAnim()
 								dy = -10
 							End
@@ -167,11 +206,11 @@ Class Player Extends Sprite
 						tileDatas[2] = gameScreen.tilemap.CheckCollision(x + image.w2, y - image.h2, x + image.w2, tempY - image.h2, gameScreen.tilemap.COLLISION_LAYER)
 						If tileDatas[0].tile <> 0 Or tileDatas[1].tile <> 0 Or tileDatas[2].tile <> 0 Then
 							dy = 0
-							if tileDatas[0].tile <> 0 Then
+							If tileDatas[0].tile <> 0 Then
 								newY = tileDatas[0].y
-							Else if tileDatas[1].tile <> 0 Then
+							Else If tileDatas[1].tile <> 0 Then
 								newY = tileDatas[1].y
-							Else if tileDatas[2].tile <> 0 Then
+							Else If tileDatas[2].tile <> 0 Then
 								newY = tileDatas[2].y
 							End
 							newY = newY + image.h2
@@ -190,7 +229,6 @@ Class Player Extends Sprite
 			Else
 				x -= speedX * dt.delta
 			End
-			Print y
 			If y - game.scrollY > SCREEN_HEIGHT + 500
 				gameScreen.FadeToScreen(titleScreen, defaultFadeTime * 2)
 			End
