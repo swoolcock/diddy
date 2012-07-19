@@ -1,5 +1,6 @@
 Strict
 Import mojo
+Import functions
 
 'Summary: 2D Vector Class
 Class Vector2D
@@ -210,5 +211,10 @@ Class Vector2D
 		Local rgb:=GetColor()
 		SetColor r, g, b
 		DrawLine startX, startY, Self.x, Self.y
+	End
+	
+	'summary: Calculate distance between two points - overload using x,y
+	Method Distance:Float(x:float, y:float)
+		Return CalcDistance(Self.x, Self.y, x, y)
 	End
 End

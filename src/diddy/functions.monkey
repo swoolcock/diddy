@@ -258,6 +258,13 @@ Function Round%(flot#)
 	Return Floor(flot+0.5)
 End
 
+'summary: Calculate distance between two points - overload using x,y
+Function CalcDistance:Float(x1:Float, y1:Float, x2:Float, y2:Float)
+	Local dx:Float = x2 - x1
+	Local dy:Float = y2 - y1
+	Return Sqrt(dx * dx + dy * dy)
+End
+
 Function PointInSpot:Int(x1:Float, y1:Float, x2:Float, y2:Float, radius:Float)
 	Local dx:Float = x2 - x1
 	Local dy:Float = y2 - y1
