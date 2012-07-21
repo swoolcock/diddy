@@ -34,6 +34,7 @@ Import gui
 Import i18n
 Import inputcache
 Import io
+Import pathFind
 Import psystem
 Import serialization
 Import simplegui

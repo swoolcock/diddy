@@ -146,4 +146,13 @@ Class Arrays<T>
 		Next
 		Return True
 	End
+	
+	'summary: init a 2d array
+	Function CreateArray:T[][](rows:Int, cols:Int)
+		Local a:T[][] = New T[rows][]
+		For Local i:Int = 0 Until rows
+			a[i] = New T[cols]
+		End
+		Return a
+	End
 End
