@@ -1,5 +1,6 @@
 Strict
 
+Import reflection
 Import diddy
 
 Function Main:Int()
@@ -64,7 +65,7 @@ Class Player Extends Sprite
 		If KeyDown( KEY_RIGHT ) 
 			force.Add( New Vector2D(0.1, 0) )
 		End
-		If KeyHit( KEY_SPACE ) 
+		If KeyHit(KEY_SPACE)
 			' We can only jump when out feet touch the ground
 			If Abs(position.y - groundHeight) < 0.1
 				force.Add( New Vector2D(0, - jumpForce) ) 'Jump up
@@ -75,8 +76,10 @@ Class Player Extends Sprite
 			End
 		End
 		
+		Print position.x +","+position.y +" distance from 10, 465:"+ CalcDistance(10, 465, position.x, position.y)
+		
 		' Gravity
-		force.Add( New Vector2D(0, 0.3) )
+		force.Add(New Vector2D(0, 0.3))
 		velocity.Add( force )
 		force.Set(0 ,0)
 	
