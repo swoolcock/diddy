@@ -853,7 +853,7 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
 			
-			gi.altasName = atlasGameImageName
+			gi.atlasName = atlasGameImageName
 			gi.subX = x
 			gi.subY = y
 			
@@ -888,7 +888,7 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
 			
-			gi.altasName = atlasGameImageName
+			gi.atlasName = atlasGameImageName
 			gi.subX = x
 			gi.subY = y
 			
@@ -974,9 +974,9 @@ Class ImageBank Extends StringMap<GameImage>
 		name = name.ToUpper()
 		Local subImage:GameImage = Self.Get(name)
 		AssertNotNull(subImage, "Image '" + name + "' not found in the ImageBank")
-		Local altasGameImage:GameImage = Self.Get(subImage.altasName)
-		AssertNotNull(altasGameImage, "Atlas Image '" + name + "' not found in the ImageBank")
-		Local image:Image = altasGameImage.image.GrabImage(subImage.subX, subImage.subY, w, h, frames)
+		Local atlasGameImage:GameImage = Self.Get(subImage.atlasName)
+		AssertNotNull(atlasGameImage, "Atlas Image '" + name + "' not found in the ImageBank")
+		Local image:Image = atlasGameImage.image.GrabImage(subImage.subX, subImage.subY, w, h, frames)
 		
 		Local gi:GameImage = New GameImage
 		Local storeKey:String = nameoverride.ToUpper()
@@ -1020,7 +1020,7 @@ Class GameImage
 	
 	Field subX:Int
 	Field subY:Int
-	Field altasName:String
+	Field atlasName:String
 
 	Method Load:Void(file$, midhandle:Bool=True)
 		name = StripAll(file.ToUpper())
