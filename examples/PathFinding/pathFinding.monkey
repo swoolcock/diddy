@@ -82,6 +82,13 @@ Class GameScreen Extends Screen
 		DrawHUD()
 	End
 
+	Method SetPath:Void()
+		startX = x / TILE_SIZE
+		startY = y / TILE_SIZE
+		PathFinder.FindPath(startX, startY, endX, endY)
+		currentPath = (PathFinder.paths - 1) * 2
+	End
+
 	Method Update:Void()
 		mx = game.mouseX / TILE_SIZE
 		my = game.mouseY / TILE_SIZE
@@ -92,25 +99,18 @@ Class GameScreen Extends Screen
 		
 		If MouseDown(0) Then 
 			grid[mx + my * MAP_WIDTH] = 1
-			startX = x / TILE_SIZE
-			startY = y / TILE_SIZE
-			PathFinder.FindPath(startX, startY, endX, endY)
+			SetPath()
 		End
 		
 		If MouseDown(MOUSE_MIDDLE) Then
 			grid[mx + my * MAP_WIDTH] = 0
-			startX = x / TILE_SIZE
-			startY = y / TILE_SIZE
-			PathFinder.FindPath(startX, startY, endX, endY)
+			SetPath()
 		End
 
 		If KeyHit(KEY_SPACE)
-			startX = x / TILE_SIZE
-			startY = y / TILE_SIZE
 			endX = mx
 			endY = my
-			PathFinder.FindPath(startX, startY, endX, endY)
-			currentPath = (PathFinder.paths - 1) * 2
+			SetPath()
 		End
 
 		If currentPath >= 0
