@@ -113,7 +113,7 @@ Class GameScreen Extends Screen
 			SetPath()
 		End
 
-		If currentPath >= 0
+		If currentPath >= 0 And PathFinder.route.Length() > 0
 			If x < PathFinder.route[currentPath] * TILE_SIZE
 				x += 1
 			End
@@ -141,7 +141,7 @@ Class GameScreen Extends Screen
 	Method DrawHUD:Void()
 		DrawText "No. of paths = "+ PathFinder.paths, SCREEN_WIDTH, 10, 1
 		DrawText "Mouse Grid = "+ mx+ "," + my, SCREEN_WIDTH, 30, 1
-		DrawText "currentPath = " + PathFinder.route[currentPath] + "," + PathFinder.route[currentPath + 1], SCREEN_WIDTH, 30, 1		
+		If PathFinder.route.Length() > 0 Then DrawText "currentPath = " + PathFinder.route[currentPath] + "," + PathFinder.route[currentPath + 1], SCREEN_WIDTH, 30, 1		
 		FPSCounter.Draw(SCREEN_WIDTH, SCREEN_HEIGHT  - 12, 1)
 	End
 End
