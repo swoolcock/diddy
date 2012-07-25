@@ -31,6 +31,7 @@ End
 ' This can be extended to handle any map file format.
 Class TileMapReader Abstract
 	Field tileMap:TileMap
+	Field graphicsPath:String
 	
 	Method LoadMap:TileMap(filename:String) Abstract
 	
@@ -213,7 +214,7 @@ Class TiledTileMapReader Extends TileMapReader
 		Local rv:TileMapImage = tileMap.CreateImage()
 		ReadProperties(node, rv)
 		
-		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then rv.source = StripDir(node.GetAttribute(ATTR_IMAGE_SOURCE))
+		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then rv.source = graphicsPath + StripDir(node.GetAttribute(ATTR_IMAGE_SOURCE))
 		If node.HasAttribute(ATTR_IMAGE_WIDTH) Then rv.width = Int(node.GetAttribute(ATTR_IMAGE_WIDTH))
 		If node.HasAttribute(ATTR_IMAGE_HEIGHT) Then rv.height = Int(node.GetAttribute(ATTR_IMAGE_HEIGHT))
 		If node.HasAttribute(ATTR_IMAGE_TRANS) Then rv.trans = node.GetAttribute(ATTR_IMAGE_TRANS)
