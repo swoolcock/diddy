@@ -53,6 +53,10 @@ Class TiledTileMapReader Extends TileMapReader
 		' open file and get root node
 		Local parser:XMLParser = New XMLParser
 		Local xmlString:String = LoadString(filename)
+		' error if we couldnt load the file
+		If Not xmlString
+			AssertError("Cannot load tile map file " + filename)
+		End
 		' look for the data encoding, if we cant find it assume its RAW XML and thats just too slow!
 		Local findData:Int = xmlString.Find("<data encoding")
 		If findData = -1
