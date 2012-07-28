@@ -725,6 +725,19 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Return layer.mapData.Get(xx, yy)
 	End
 	
+	'summary: Set a tile cell
+	Method SetTile:Void(x:Float, y:Float, tile:Int, layerName:String)
+		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		If layer.name <> layerName Then Return
+
+		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return
+		
+		local xx:Int = (Floor(x / tileWidth))
+		local yy:Int = (Floor(y / tileHeight))
+		
+		layer.mapData.Set(xx, yy, tile)
+	End
+	
 	'summary: Scrolls the map based on the changeX and changeY
 	Method Scroll:Void(changeX:Float, changeY:Float)
 		game.scrollX += changeX
