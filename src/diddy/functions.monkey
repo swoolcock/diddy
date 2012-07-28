@@ -258,6 +258,13 @@ Function Round%(flot#)
 	Return Floor(flot+0.5)
 End
 
+'summary: returns an angle between two points
+Function CalcAngle:Float(x1:Float, y1:Float, x2:Float, y2:Float)
+	Local dx:Float = x2 - x1
+	Local dy:Float = y2 - y1
+	Return (ATan2(dy, dx) + 360) Mod 360
+End
+
 'summary: Calculate distance between two points - overload using x,y
 Function CalcDistance:Float(x1:Float, y1:Float, x2:Float, y2:Float)
 	Local dx:Float = x2 - x1
