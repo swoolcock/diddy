@@ -604,7 +604,11 @@ Public
 	End
 
 	Method PostFadeOut:Void()
+		Kill()
 		game.nextScreen.PreStart()
+	End
+	
+	Method Kill:Void()
 	End
 	
 	Method PostFadeIn:Void()
