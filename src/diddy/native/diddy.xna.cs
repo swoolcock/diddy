@@ -64,22 +64,39 @@ class diddy
 	public static void showKeyboard()
 	{
 	}
+	
+	public static void launchMarket(String address, String windowName)
+	{
+		MarketplaceDetailTask marketplaceDetailTask = new MarketplaceDetailTask();
+		marketplaceDetailTask.ContentIdentifier = address;
+		marketplaceDetailTask.ContentType = MarketplaceContentType.Applications;
+		marketplaceDetailTask.Show();
+	}
+	
 	public static void launchBrowser(String address, String windowName)
 	{
 #if WINDOWS
 		System.Diagnostics.Process.Start(address);
 #elif WINDOWS_PHONE
-		MarketplaceDetailTask marketplaceDetailTask = new MarketplaceDetailTask();
-		marketplaceDetailTask.ContentIdentifier = address;
-		marketplaceDetailTask.ContentType = MarketplaceContentType.Applications;
-		marketplaceDetailTask.Show();
+		WebBrowserTask webBrowserTask = new WebBrowserTask();
+		webBrowserTask.Uri = new Uri(address, UriKind.Absolute);
+		webBrowserTask.Show();
 #endif
 	}
+	
 	public static void launchEmail(String email, String subject, String text)
 	{
 #if WINDOWS
 		string message = string.Format("mailto:{0}?subject={1}&body={2}",email, subject, text);
 		System.Diagnostics.Process.Start(message);
+#elif WINDOWS_PHONE
+		EmailComposeTask emailComposeTask = new EmailComposeTask();
+ 
+		emailComposeTask.Subject = subject;
+		emailComposeTask.Body = text;
+		emailComposeTask.To = email;
+ 
+		emailComposeTask.Show();
 #endif
 	}
 
