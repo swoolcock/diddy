@@ -345,7 +345,7 @@ Public
 		End
 
 		If screenFade.active Then screenFade.Update()
-		currentScreen.Update()	
+		if Not screenFade.active or screenFade.allowScreenUpdate Then currentScreen.Update()
 	End
 
 	'summary: Draws debug information
@@ -482,14 +482,16 @@ Class ScreenFade
 	Field counter:Float
 	Field fadeMusic:Bool
 	Field fadeSound:Bool
+	Field allowScreenUpdate:Bool
 	
-	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False)
+	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		If active Then Return
 		active = True
 		Self.fadeTime = game.CalcAnimLength(fadeTime)
 		Self.fadeOut = fadeOut
 		Self.fadeMusic = fadeMusic
 		Self.fadeSound = fadeSound
+		Self.allowScreenUpdate = allowScreenUpdate
 		If fadeOut Then
 			ratio = 1
 		Else
@@ -681,7 +683,7 @@ Public
 	End
 	
 	'summary: convenience method
-	Method FadeToScreen:Void(screen:Screen, fadeTime:Float=defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False)
+	Method FadeToScreen:Void(screen:Screen, fadeTime:Float = defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		' don't try to fade twice
 		If game.screenFade.active Then Return
 		
@@ -696,7 +698,7 @@ Public
 		
 		' trigger the fade out
 		game.nextScreen = screen
-		game.screenFade.Start(fadeTime, True, fadeSound, fadeMusic)
+		game.screenFade.Start(fadeTime, True, fadeSound, fadeMusic, allowScreenUpdate)
 	End
 End
 
