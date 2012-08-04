@@ -241,11 +241,13 @@ End
 Class SimpleButton Extends Sprite
 	Field active:Int = 1
 	Field clicked:Int = 0
+	Field selected:Int = 0
 	Field mouseOver:Int = 0
 	Field disabled:Bool = False
 	Field soundMouseOver:GameSound
 	Field soundClick:GameSound
 	Field imageMouseOver:GameImage
+	Field imageSelected:GameImage
 	Field useVirtualRes:Bool = False
 	Field orientation:Int = VERTICAL
 	
@@ -260,7 +262,9 @@ Class SimpleButton Extends Sprite
 		SetAlpha Self.alpha
 		if mouseOver
 			DrawImage Self.imageMouseOver.image, x, y
-		else
+		ElseIf selected And imageSelected <> null Then
+			DrawImage Self.imageSelected.image, x, y
+		Else
 			DrawImage Self.image.image, x, y
 		EndIf
 		SetAlpha 1
@@ -321,6 +325,11 @@ Class SimpleButton Extends Sprite
 			soundClick = New GameSound
 			soundClick.Load(soundClickFile)
 		End
+	End
+	
+	Method SetSelectedImage:Void(buttonImage:String)
+		imageSelected = New GameImage
+		imageSelected.Load(game.images.path + buttonImage, False)
 	End
 	
 	Method Update:Void()
