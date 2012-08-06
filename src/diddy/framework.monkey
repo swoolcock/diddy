@@ -1392,7 +1392,7 @@ Class Sprite
 		Self.x = x
 		Self.y = y
 		Self.alpha = 1
-		Self.SetHitBox( -img.w2, -img.h2, img.w, img.h)
+		Self.SetHitBox(-img.image.HandleX(), -img.image.HandleY(), img.w, img.h)
 		Self.visible = True
 	End
 	
