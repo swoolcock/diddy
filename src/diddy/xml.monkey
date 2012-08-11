@@ -344,7 +344,11 @@ Class XMLParser
 	End
 
 	Method ParseFile:XMLDocument(filename:String)
-		Return ParseString(LoadString(filename))
+		Local xmlString:String = LoadString(filename)
+		If Not xmlString Then
+			AssertError("Error: Cannot load " + filename)
+		End
+		Return ParseString(xmlString)
 	End
 	
 	Method TrimString:Void(startIdx:Int, endIdx:Int, trimmed:Int[])
