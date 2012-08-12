@@ -79,7 +79,7 @@ Global game:DiddyApp
 Global dt:DeltaTimer
 
 ' Default fade time
-Global defaultFadeTime:Float = 1000
+Global defaultFadeTime:Float = 600
 
 'Summary: The main class extends Mojo App
 Class DiddyApp Extends App
