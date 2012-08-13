@@ -51,7 +51,7 @@ Class XMLParser
 			' if we're in a comment, we're only looking for -->
 			If inComment Then
 				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_HYPHEN And str[i-2] = ASC_HYPHEN Then
-					If tagCount = tagsLength Then
+					If tagCount+1 >= tagsLength Then
 						tagsLength *= 2
 						tags = tags.Resize(tagsLength)
 						tagType = tagType.Resize(tagsLength)
@@ -64,7 +64,7 @@ Class XMLParser
 			' if we're in a cdata, we're only looking for ]]>
 			ElseIf inCdata Then
 				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_CLOSE_BRACKET And str[i-2] = ASC_CLOSE_BRACKET Then
-					If tagCount = tagsLength Then
+					If tagCount+1 >= tagsLength Then
 						tagsLength *= 2
 						tags = tags.Resize(tagsLength)
 						tagType = tagType.Resize(tagsLength)
@@ -77,7 +77,7 @@ Class XMLParser
 			' if we're in a quoted string, we're only looking for "
 			ElseIf inQuote Then
 				If str[i] = ASC_DOUBLE_QUOTE Then
-					If quoteCount = quotesLength Then
+					If quoteCount+1 >= quotesLength Then
 						quotesLength *= 2
 						quotes = quotes.Resize(quotesLength)
 					End
@@ -87,7 +87,7 @@ Class XMLParser
 				End
 			' check if we should start a new quoted string
 			ElseIf str[i] = ASC_DOUBLE_QUOTE Then
-				If quoteCount = quotesLength Then
+				If quoteCount+1 >= quotesLength Then
 					quotesLength *= 2
 					quotes = quotes.Resize(quotesLength)
 				End
@@ -97,7 +97,7 @@ Class XMLParser
 			' if we're in a processing instruction, we're only looking for ?>
 			ElseIf inPi Then
 				If str[i] = ASC_GREATER_THAN And str[i-1] = ASC_QUESTION Then
-					If piCount = pisLength Then
+					If piCount+1 >= pisLength Then
 						pisLength *= 2
 						pis = pis.Resize(pisLength)
 					End
@@ -108,7 +108,7 @@ Class XMLParser
 			' if we're in a doctype, we're only looking for >
 			ElseIf inDoctype Then
 				If str[i] = ASC_GREATER_THAN Then
-					If tagCount = tagsLength Then
+					If tagCount+1 >= tagsLength Then
 						tagsLength *= 2
 						tags = tags.Resize(tagsLength)
 						tagType = tagType.Resize(tagsLength)
@@ -126,7 +126,7 @@ Class XMLParser
 				If str[i+1] = ASC_EXCLAMATION Then
 					' comment?
 					If str[i+2] = ASC_HYPHEN And str[i+3] = ASC_HYPHEN Then
-						If tagCount = tagsLength Then
+						If tagCount+1 >= tagsLength Then
 							tagsLength *= 2
 							tags = tags.Resize(tagsLength)
 							tagType = tagType.Resize(tagsLength)
@@ -143,7 +143,7 @@ Class XMLParser
 							(str[i+6] = ASC_UPPER_T Or str[i+6] = ASC_LOWER_T) And
 							(str[i+7] = ASC_UPPER_A Or str[i+7] = ASC_LOWER_A) And
 							str[i+8] = ASC_OPEN_BRACKET Then
-						If tagCount = tagsLength Then
+						If tagCount+1 >= tagsLength Then
 							tagsLength *= 2
 							tags = tags.Resize(tagsLength)
 							tagType = tagType.Resize(tagsLength)
@@ -160,7 +160,7 @@ Class XMLParser
 							(str[i+6] = ASC_UPPER_Y Or str[i+6] = ASC_LOWER_Y) And
 							(str[i+7] = ASC_UPPER_P Or str[i+7] = ASC_LOWER_P) And
 							(str[i+8] = ASC_UPPER_E Or str[i+8] = ASC_LOWER_E) Then
-						If tagCount = tagsLength Then
+						If tagCount+1 >= tagsLength Then
 							tagsLength *= 2
 							tags = tags.Resize(tagsLength)
 							tagType = tagType.Resize(tagsLength)
@@ -174,7 +174,7 @@ Class XMLParser
 					End
 				' check for processing instruction
 				ElseIf str[i+1] = ASC_QUESTION Then
-					If piCount = pisLength Then
+					If piCount+1 >= pisLength Then
 						pisLength *= 2
 						pis = pis.Resize(pisLength)
 					End
@@ -183,7 +183,7 @@ Class XMLParser
 					inPi = True
 				' finally, it must just be opening a tag
 				Else
-					If tagCount = tagsLength Then
+					If tagCount+1 >= tagsLength Then
 						tagsLength *= 2
 						tags = tags.Resize(tagsLength)
 						tagType = tagType.Resize(tagsLength)
@@ -196,7 +196,7 @@ Class XMLParser
 			' greater than
 			ElseIf str[i] = ASC_GREATER_THAN Then
 				If Not inTag Then AssertError "Invalid greater than!"
-				If tagCount = tagsLength Then
+				If tagCount+1 = tagsLength Then
 					tagsLength *= 2
 					tags = tags.Resize(tagsLength)
 					tagType = tagType.Resize(tagsLength)
