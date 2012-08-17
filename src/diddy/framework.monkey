@@ -1654,7 +1654,7 @@ Class Particle Extends Sprite
 		lastDeath = 0
 	End
 	
-	Function DrawAll:Void()
+	Function DrawAll:Void(offsetx:Float = 0, offsety:Float = 0)
 		If minIndex < 0 Or maxIndex < 0 Then Return
 		For Local i% = minIndex To maxIndex
 			If particles[i] <> Null And particles[i].image <> Null
@@ -1665,7 +1665,7 @@ Class Particle Extends Sprite
 						particles[i].alpha = particles[i].fadeCounter/particles[i].fadeLength
 					End
 				End
-				particles[i].Draw()
+				particles[i].Draw(offsetx, offsety)
 			End
 		Next
 	End
