@@ -144,4 +144,21 @@ class diddy
 	{
 		return ExternalInterface.call('window.location.href.toString');
 	}
+	
+	static public function mouseZ():Number {
+		var t:Number = diddy_mouseWheelDelta;
+		
+		diddy_mouseWheelDelta = 0.0
+		return t;
+	}
+
+	static public function mouseZInit():void {
+		var stage:Stage=game.stage;
+		stage.addEventListener(MouseEvent.MOUSE_WHEEL,  diddy_onMouseWheelEvent);
+	}
+}
+var diddy_mouseWheelDelta:Number = 0.0;
+
+function diddy_onMouseWheelEvent(e:MouseEvent):void {
+	diddy_mouseWheelDelta += e.delta;
 }

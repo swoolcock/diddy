@@ -1,10 +1,28 @@
 #include <time.h>
 #include <math.h>
 
+float diddy_mouseWheel = 0.0f;
+
+float diddy_mouseZ() {
+	float ret = glfwGetMouseWheel() - diddy_mouseWheel;
+	diddy_mouseWheel = glfwGetMouseWheel();
+	return ret;
+}
+
 class diddy
 {
 	public:
 
+	static float mouseZ()
+	{
+		return diddy_mouseZ();
+	}
+	
+	static void mouseZInit()
+	{
+		return;
+	}
+	
 	// only accurate to 1 second 
 	static int systemMillisecs() {
 		time_t seconds;

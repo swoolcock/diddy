@@ -120,6 +120,7 @@ Class DiddyApp Extends App
 	' mouse
 	Field mouseX:Int, mouseY:Int
 	Field mouseHit:Int
+	Field diddyMouse:DiddyMouse
 	
 	' store the images here
 	Field images:ImageBank
@@ -145,6 +146,7 @@ Class DiddyApp Extends App
 	Field lastNumTicks:Float
 	Field maxMs:Int = 50
 	Field lastTime:Float
+	
 Private
 	Field useFixedRateLogic:Bool = False
 	Field vsx:Float, vsy:Float, vsw:Float, vsh:Float
@@ -159,6 +161,7 @@ Public
 		Self.images = New ImageBank
 		Self.sounds = New SoundBank
 		Self.inputCache = New InputCache
+		diddyMouse = New DiddyMouse
 	End
 			
 	Method OnCreate:Int()
@@ -278,6 +281,7 @@ Public
 		If drawFPSOn
 			DrawFPS()
 		End
+		diddyMouse.Update()
 		Return 0
 	End
 
@@ -306,7 +310,6 @@ Public
 	
 	Method OnUpdate:Int()
 		ReadInputs()
-	
 		OverrideUpdate()
 		If useFixedRateLogic
 			Local now:Int = Millisecs()
@@ -1711,5 +1714,40 @@ Class Particle Extends Sprite
 			End 
 		End
 	End
+End
+
+'summary: Simple Mouse functions class
+Class DiddyMouse
+	Field lastX:Int
+	Field lastY:Int
+
+	Method New()
+		MouseZInit()
+	End
 	
+	'summary: Returns the MouseX speed
+	Method MouseXSpeed:Int()
+		Return game.mouseX - lastX
+	End
+	
+	'summary: Returns the MouseY speed
+	Method MouseYSpeed:Int()
+		Return game.mouseY - lastY
+	End
+	
+	'summary: Updates the last positions
+	Method Update:Void()
+		lastX = game.mouseX
+		lastY = game.mouseY
+	End
+End
+
+'summary: Wrapper function for MouseXSpeed
+Function MouseXSpeed:Int()
+	Return game.diddyMouse.MouseXSpeed()
+End
+
+'summary: Wrapper function for MouseYSpeed
+Function MouseYSpeed:Int()
+	Return game.diddyMouse.MouseYSpeed()
 End

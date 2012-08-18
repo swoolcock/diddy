@@ -1,5 +1,21 @@
 var diddy = new Object();
 
+var diddy_mouseWheelDelta = 0.0;
+
+diddy.mouseZ = function() {
+	var t = diddy_mouseWheelDelta;
+	diddy_mouseWheelDelta = 0.0;
+	return t;
+}
+
+diddy.mouseZInit = function() {
+	var canvas=document.getElementById( "GameCanvas" );
+	
+	canvas.onmousewheel = function(e) {
+		diddy_mouseWheelDelta += e.wheelDelta/120.0;
+	}
+}
+
 diddy.systemMillisecs=function(){
 	return new Date().getTime();
 };

@@ -269,5 +269,15 @@ class diddy
 	static String getLongitude() {
 		return longitude;
 	}
-
+	
+	// empty function
+	static void mouseZInit()
+	{
+	}
+	
+	// empty function
+	static float mouseZ()
+	{
+		return 0;
+	}
 }
