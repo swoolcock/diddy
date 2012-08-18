@@ -1,9 +1,9 @@
 Strict
 
-import diddy
+Import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	game = New MyGame()
 	Return 0
 End Function
 
@@ -17,8 +17,8 @@ Class MyGame Extends DiddyApp
 			
 		LoadImages()
 		
-		gameScreen = new GameScreen
-		titleScreen = new TitleScreen
+		gameScreen = New GameScreen
+		titleScreen = New TitleScreen
 		
 		titleScreen.PreStart()
 		
@@ -30,13 +30,12 @@ Class MyGame Extends DiddyApp
 	'***********************
 	Method LoadImages:Void()
 		' create tmpImage for animations
-		local tmpImage:Image
+		Local tmpImage:Image
 		
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
 	End
 	
 	Method OverrideUpdate:Void()
-		Print "HERE"
 	End
 End
 
@@ -48,7 +47,7 @@ Class TitleScreen Extends Screen
 	End
 
 	Method Start:Void()
-		game.screenFade.Start(50, false)
+		game.screenFade.Start(50, False)
 	End
 	
 	Method Render:Void()
@@ -58,12 +57,12 @@ Class TitleScreen Extends Screen
 	End
 
 	Method Update:Void()
-		if KeyHit(KEY_SPACE) or MouseHit(0)
-			game.screenFade.Start(50, true)
+		If KeyHit(KEY_SPACE) Or MouseHit(0)
+			game.screenFade.Start(50, True)
 			game.nextScreen = gameScreen
 		End
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
+			game.screenFade.Start(50, True)
 			game.nextScreen = game.exitScreen
 		End
 	End
@@ -71,14 +70,15 @@ End
 
 Class GameScreen Extends Screen
 	Field player:Player
-
+	Field yPos:Float = 180.0
+	
 	Method New()
 		name = "Game"
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
-		player = new Player(game.images.Find("Ship1"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
+		game.screenFade.Start(50, False)
+		player = New Player(game.images.Find("Ship1"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 	End
 	
 	Method Render:Void()
@@ -90,37 +90,40 @@ Class GameScreen Extends Screen
 	Method Update:Void()
 		player.UpdateAnimation()
 		player.Update()
+
+		yPos -= MouseZ() * 3.0
 		
-		if KeyHit(KEY_1)
-			player.SetFrame(0, 6, 100, false, false)
+		If KeyHit(KEY_1)
+			player.SetFrame(0, 6, 100, False, False)
 		End
-		if KeyHit(KEY_2)
-			player.SetFrame(0, 6, 100, false, true)			
+		If KeyHit(KEY_2)
+			player.SetFrame(0, 6, 100, False, True)			
 		End
-		if KeyHit(KEY_3)
-			player.SetFrame(0, 6, 100, true, false)			
+		If KeyHit(KEY_3)
+			player.SetFrame(0, 6, 100, True, False)			
 		End
-		if KeyHit(KEY_4)
-			player.SetFrame(0, 6, 100, true, true)			
-		End
-		
-		if KeyHit(KEY_Q)
-			player.SetFrame(6, 0, 100, false, false)
-		End
-		if KeyHit(KEY_W)
-			player.SetFrame(6, 0, 100, false, true)			
-		End
-		if KeyHit(KEY_E)
-			player.SetFrame(6, 0, 100, true, false)			
-		End
-		if KeyHit(KEY_R)
-			player.SetFrame(6, 0, 100, true, true)			
+		If KeyHit(KEY_4)
+			player.SetFrame(0, 6, 100, True, True)			
 		End
 		
-		if KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
+		If KeyHit(KEY_Q)
+			player.SetFrame(6, 0, 100, False, False)
+		End
+		If KeyHit(KEY_W)
+			player.SetFrame(6, 0, 100, False, True)			
+		End
+		If KeyHit(KEY_E)
+			player.SetFrame(6, 0, 100, True, False)			
+		End
+		If KeyHit(KEY_R)
+			player.SetFrame(6, 0, 100, True, True)			
+		End
+		
+		If KeyHit(KEY_ESCAPE)
+			game.screenFade.Start(50, True)
 			game.nextScreen = titleScreen
 		End
+		
 	End
 		
 	Method DrawHUD:Void()
@@ -128,7 +131,7 @@ Class GameScreen Extends Screen
 	
 		If player.pingPong
 			DrawText("pingPong = true" , 10, 30)
-		else
+		Else
 			DrawText("pingPong = false" , 10, 30)
 		End
 		If player.loop
@@ -143,6 +146,9 @@ Class GameScreen Extends Screen
 
 		DrawText("Press <ESC> to return to the Title Screen", 10, SCREEN_HEIGHT-12)
 
+		DrawText("MouseXSpeed: " + MouseXSpeed() , 10, yPos + 10)
+
+		DrawText("MouseYSpeed: " + MouseYSpeed() , 10, yPos + 20 )
 		
 		FPSCounter.Draw(SCREEN_WIDTH, SCREEN_HEIGHT  - 12, 1)
 		
@@ -165,20 +171,20 @@ Class Player Extends Sprite
 		
 		If KeyDown(KEY_UP)
 			speed+=.3
-		else If KeyDown(KEY_DOWN)
+		Else If KeyDown(KEY_DOWN)
 			speed-=.3
 		Else
-			if speed > 0
+			If speed > 0
 				speed-=.1
 			Else
 				speed+=.1
 			End
 		End If		
 		If KeyDown(KEY_LEFT)
-			self.rotation+=2
+			Self.rotation+=2
 		End If
 		If KeyDown(KEY_RIGHT)
-			self.rotation-=2
+			Self.rotation-=2
 		End If
 		
 		MoveForward()
@@ -190,6 +196,3 @@ Class Player Extends Sprite
 	End
 	
 End
-
-
-
