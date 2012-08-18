@@ -37,6 +37,8 @@ Extern
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy::showAlertDialog"
 		Function GetInputString:String()="diddy::getInputString"
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy::getPixel"
+		Function MouseZInit:Void()="diddy::mouseZInit"
+		Function MouseZ:Float()="diddy::mouseZ"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -64,6 +66,8 @@ Extern
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy.showAlertDialog"
 		Function GetInputString:String()="diddy.getInputString"
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy.getPixel"
+		Function MouseZInit:Void()="diddy.mouseZInit"
+		Function MouseZ:Float()="diddy.mouseZ"
 	#End
 	
 	#If TARGET="html5" Then
@@ -77,6 +81,14 @@ Extern
 		Function BuildString:String(arr:Int[], offset:Int, length:Int) = "diddy.buildString"
 	#End
 Public
+
+#If TARGET="ios"
+	Function MouseZInit:Void()
+	End
+	Function MouseZ:Float()
+		Return 0
+	End
+#End
 
 #If TARGET<>"html5" Then
 	Function GetBrowserName:String()
@@ -595,16 +607,16 @@ Function HexToDec:Int(hx:String)
 End
 
 Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
-	Local points:Stack<Vector2D> = new Stack<Vector2D>
+	Local points:Stack<Vector2D> = New Stack<Vector2D>
 	Local steep:Bool = Abs(endPos.y - startPos.y) > Abs(endPos.x - startPos.x)
-	Local swapped:Bool = false
+	Local swapped:Bool = False
 	
-	if steep
+	If steep
 		startPos.SwapXY(startPos.x, startPos.y)
 		endPos.SwapXY(endPos.x, endPos.y)
 	End
 	
-	if startPos.x > endPos.x
+	If startPos.x > endPos.x
 		Local t:Float = startPos.x
 		startPos.x = endPos.x
 		endPos.x = t
@@ -620,26 +632,26 @@ Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
 	Local ystep:Float
 	Local y:Float = startPos.y
 	
-	if startPos.y < endPos.y Then
+	If startPos.y < endPos.y Then
 		ystep = 1
 	Else
 		ystep = -1
 	End
 	
-	For Local x:Int = startPos.x until endPos.x
-		if steep
-			points.Push(new Vector2D(y, x))
+	For Local x:Int = startPos.x Until endPos.x
+		If steep
+			points.Push(New Vector2D(y, x))
 		Else
-			points.Push(new Vector2D(x, y))
+			points.Push(New Vector2D(x, y))
 		End
 	
 		error -= deltay
-		if error < 0
+		If error < 0
 			y += ystep
 			error += deltax
 		End
 	Next
-	local arr:Vector2D[] = points.ToArray()
+	Local arr:Vector2D[] = points.ToArray()
 	If swapped
 		Arrays < Vector2D >.Reverse(arr)
 	End

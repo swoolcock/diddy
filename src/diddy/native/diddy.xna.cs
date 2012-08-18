@@ -1,5 +1,19 @@
 class diddy
 {
+	public static float wheelVal = 0.0F;
+
+	public static float mouseZ() {
+		MouseState mouseState = Mouse.GetState();
+		float ret = mouseState.ScrollWheelValue - wheelVal;
+		wheelVal = mouseState.ScrollWheelValue;
+		return ret/120.0F;
+	}
+
+	public static void mouseZInit()
+	{
+		return;
+	}
+
 	public static int systemMillisecs()
 	{
 		DateTime centuryBegin = new DateTime(1970, 1, 1);
@@ -65,6 +79,7 @@ class diddy
 	{
 	}
 	
+/*
 	public static void launchMarket(String address, String windowName)
 	{
 		MarketplaceDetailTask marketplaceDetailTask = new MarketplaceDetailTask();
@@ -72,7 +87,8 @@ class diddy
 		marketplaceDetailTask.ContentType = MarketplaceContentType.Applications;
 		marketplaceDetailTask.Show();
 	}
-	
+*/
+
 	public static void launchBrowser(String address, String windowName)
 	{
 #if WINDOWS

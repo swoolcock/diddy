@@ -127,4 +127,14 @@ class diddy
 		glReadPixels(x, app->graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
 		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
 	}
+	
+	// empty function
+	static void mouseZInit()
+	{
+	}
+	// empty function
+	static float mouseZ()
+	{
+		return 0;
+	}
 };

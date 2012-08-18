@@ -123,4 +123,14 @@ class diddy
 		return "";
 	}
 	
+	// empty function
+	public static void mouseZInit()
+	{
+	}
+	
+	// empty function
+	public static float mouseZ()
+	{
+		return 0;
+	}
 }
