@@ -689,6 +689,15 @@ Function CreateScreenshot:Image(x%=0, y%=0, width%=0, height%=0)
 	Return image
 End
 
+'summary: Returns a random int in the range low (inclusive) to high (exclusive).
+Function Rand:Int (low:Int, high:Int)
+	Local v:Float = Rnd(low, high)
+	if (v < 0) Then v -= 1.0
+	Local vi:Int = Int(v)
+	if vi = (low - 1) Then vi = Min (-1, high)
+	Return vi
+End
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
