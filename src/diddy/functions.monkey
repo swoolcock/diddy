@@ -658,6 +658,37 @@ Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
 	Return arr
 End
 
+Private
+Global screenshotPixels:Int[] ' this is globally cached for performance
+Public
+' summary: Takes a screenshot of a certain rectangle on the screen.  Defaults to the entire screen.
+Function CreateScreenshot:Image(x%=0, y%=0, width%=0, height%=0)
+	' if no width passed in, assume the whole width
+	If width <= 0 Then
+		width = DeviceWidth()
+		x = 0
+	End
+	
+	' if no height passed in, assume the whole height
+	If height <= 0 Then
+		height = DeviceHeight()
+		y = 0
+	End
+	
+	' check that the rectangle is entirely within the screen bounds
+	If x < 0 Or y < 0 Or x + width > DeviceWidth() Or y + height > DeviceHeight() Then Return Null
+	
+	' create an image
+	Local image:Image = CreateImage(width, height)
+	
+	' read the screen
+	If screenshotPixels.Length <> width*height Then screenshotPixels = New Int[width*height]
+	ReadPixels(screenshotPixels, x, y, width, height)
+	image.WritePixels(screenshotPixels, 0, 0, width, height)
+	
+	Return image
+End
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
