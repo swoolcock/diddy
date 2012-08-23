@@ -126,7 +126,59 @@ End
 
 'summary: Assert Error, outputs the error of the assertion
 Function AssertError:Void(msg:String)
-	Print(msg)
-	Error(msg)
+	Throw New AssertException(msg)
 End
 
+Class AssertException Extends DiddyException
+	Method New(message:String="", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
+End
+
+Class DiddyException Extends Throwable
+Private
+	Field message:String
+	Field cause:Throwable
+
+Public
+	Method Message:String() Property Final
+		Return message
+	End
+	
+	Method Message:Void(message:String) Property Final
+		Self.message = message
+	End
+	
+	Method Cause:Throwable() Property Final
+		Return cause
+	End
+	
+	Method Cause:Void(cause:Throwable) Property Final
+		If cause = Self Then cause = Null
+		Self.cause = cause
+	End
+	
+	Method New(message:String="", cause:Throwable=Null)
+		Self.message = message
+		Self.cause = cause
+	End
+	
+	Method ToString:String(recurse:Bool=False)
+		Local rv:String = "Exception: "+message
+		If recurse Then
+			Local depth:Int = 10
+			Local current:Throwable = cause
+			While current And depth > 0
+				If DiddyException(current) Then
+					rv += "~nCaused by: "+DiddyException(current).message
+					current = DiddyException(current).cause
+					depth -= 1
+				Else
+					rv += "~nCaused by a non-Diddy exception."
+					current = Null
+				End
+			End
+		End
+		Return rv
+	End
+End

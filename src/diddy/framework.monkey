@@ -165,30 +165,35 @@ Public
 	End
 			
 	Method OnCreate:Int()
-		' Store the device width and height
-		DEVICE_WIDTH = DeviceWidth()
-		DEVICE_HEIGHT = DeviceHeight()
-		
-		SetScreenSize(DEVICE_WIDTH, DEVICE_HEIGHT)
-		deviceChanged = True
-		
-		' set the mouse x,y
-		mouseX = MouseX() / SCREENX_RATIO
-		mouseY = MouseY() / SCREENY_RATIO
-		
-		' Set the Random seed
-		Seed = RealMillisecs()
-		' Create the delta timer
-		dt = New DeltaTimer(FPS)
-		' Set the update rate
-		SetUpdateRate FPS
-		
-		'create all the particles
-		Particle.Cache()
-		
-		' fixed rate logic timing
-		If useFixedRateLogic
-			ResetFixedRateLogic()
+		Try
+			' Store the device width and height
+			DEVICE_WIDTH = DeviceWidth()
+			DEVICE_HEIGHT = DeviceHeight()
+			
+			SetScreenSize(DEVICE_WIDTH, DEVICE_HEIGHT)
+			deviceChanged = True
+			
+			' set the mouse x,y
+			mouseX = MouseX() / SCREENX_RATIO
+			mouseY = MouseY() / SCREENY_RATIO
+			
+			' Set the Random seed
+			Seed = RealMillisecs()
+			' Create the delta timer
+			dt = New DeltaTimer(FPS)
+			' Set the update rate
+			SetUpdateRate FPS
+			
+			'create all the particles
+			Particle.Cache()
+			
+			' fixed rate logic timing
+			If useFixedRateLogic
+				ResetFixedRateLogic()
+			End
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
 		End
 		Return 0
 	End
@@ -214,74 +219,79 @@ Public
 	End
 
 	Method OnRender:Int()
-		FPSCounter.Update()
-		If virtualResOn
-			PushMatrix
-			If aspectRatioOn
-				If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT) Or deviceChanged
-					DEVICE_WIDTH = DeviceWidth()
-					DEVICE_HEIGHT = DeviceHeight()
-					deviceChanged = False
+		Try
+			FPSCounter.Update()
+			If virtualResOn
+				PushMatrix
+				If aspectRatioOn
+					If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT) Or deviceChanged
+						DEVICE_WIDTH = DeviceWidth()
+						DEVICE_HEIGHT = DeviceHeight()
+						deviceChanged = False
 
-					Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
-					If deviceRatio >= aspectRatio
-						multi = DEVICE_WIDTH / SCREEN_WIDTH
-						heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
-						widthBorder = 0
-					Else
-						multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
-						widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
-						heightBorder = 0
+						Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
+						If deviceRatio >= aspectRatio
+							multi = DEVICE_WIDTH / SCREEN_WIDTH
+							heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
+							widthBorder = 0
+						Else
+							multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
+							widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
+							heightBorder = 0
+						End
+					
+						vsx = Max(0.0, widthBorder )
+						vsy = Max(0.0, heightBorder )
+						vsw = Min(DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
+						vsh = Min(DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
+						
+						virtualScaledW = (SCREEN_WIDTH * multi)
+						virtualScaledH = (SCREEN_HEIGHT * multi)
+						
+						virtualXOff = (DEVICE_WIDTH - virtualScaledW) * 0.5
+						virtualYOff = (DEVICE_HEIGHT - virtualScaledH) * 0.5
+						
+						virtualXOff = virtualXOff / multi
+						virtualYOff = virtualYOff/ multi
 					End
-				
-					vsx = Max(0.0, widthBorder )
-					vsy = Max(0.0, heightBorder )
-					vsw = Min(DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
-					vsh = Min(DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
 					
-					virtualScaledW = (SCREEN_WIDTH * multi)
-					virtualScaledH = (SCREEN_HEIGHT * multi)
+					SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
+					Cls 0, 0, 0
 					
-					virtualXOff = (DEVICE_WIDTH - virtualScaledW) * 0.5
-					virtualYOff = (DEVICE_HEIGHT - virtualScaledH) * 0.5
-					
-					virtualXOff = virtualXOff / multi
-					virtualYOff = virtualYOff/ multi
-				End
-				
-				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
-				Cls 0, 0, 0
-				
-				SetScissor vsx, vsy, vsw, vsh
-	
-				Scale multi, multi
+					SetScissor vsx, vsy, vsw, vsh
+		
+					Scale multi, multi
 
-				Translate virtualXOff, virtualYOff 
-			Else
-				Scale SCREENX_RATIO, SCREENY_RATIO
+					Translate virtualXOff, virtualYOff 
+				Else
+					Scale SCREENX_RATIO, SCREENY_RATIO
+				End
 			End
-		End
-		
-		' render the screen
-		currentScreen.Render()
-		
-		If virtualResOn
-			If aspectRatioOn
-				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT
+			
+			' render the screen
+			currentScreen.Render()
+			
+			If virtualResOn
+				If aspectRatioOn
+					SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT
+				End
+				PopMatrix
 			End
-			PopMatrix
+			
+			currentScreen.ExtraRender()
+			If screenFade.active Then screenFade.Render()
+			currentScreen.DebugRender()
+			If debugOn
+				DrawDebug()
+			End
+			If drawFPSOn
+				DrawFPS()
+			End
+			diddyMouse.Update()
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
 		End
-		
-		currentScreen.ExtraRender()
-		If screenFade.active Then screenFade.Render()
-		currentScreen.DebugRender()
-		If debugOn
-			DrawDebug()
-		End
-		If drawFPSOn
-			DrawFPS()
-		End
-		diddyMouse.Update()
 		Return 0
 	End
 
@@ -309,32 +319,37 @@ Public
 	End
 	
 	Method OnUpdate:Int()
-		ReadInputs()
-		OverrideUpdate()
-		If useFixedRateLogic
-			Local now:Int = Millisecs()
-			If now < lastTime
-				numTicks = lastNumTicks
-			Else
-				tmpMs = now - lastTime
-				If tmpMs > maxMs tmpMs = maxMs
-				numTicks = tmpMs / ms
-			Endif
-		
-			lastTime = now
-			lastNumTicks = numTicks
-			For Local i:Int = 1 To Floor(numTicks)
-				Update(1)
-			Next
+		Try
+			ReadInputs()
+			OverrideUpdate()
+			If useFixedRateLogic
+				Local now:Int = Millisecs()
+				If now < lastTime
+					numTicks = lastNumTicks
+				Else
+					tmpMs = now - lastTime
+					If tmpMs > maxMs tmpMs = maxMs
+					numTicks = tmpMs / ms
+				Endif
 			
-			Local re:Float = numTicks Mod 1
-			If re > 0 Then
-				Update(re)
+				lastTime = now
+				lastNumTicks = numTicks
+				For Local i:Int = 1 To Floor(numTicks)
+					Update(1)
+				Next
+				
+				Local re:Float = numTicks Mod 1
+				If re > 0 Then
+					Update(re)
+				End
+			Else
+				Update(0)
 			End
-		Else
-			Update(0)
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
 		End
-
+		
 		Return 0
 	End
 	
@@ -466,12 +481,22 @@ Public
 	End
 	
 	Method OnSuspend:Int()
-		currentScreen.Suspend()
+		Try
+			currentScreen.Suspend()
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
+		End
 		Return 0
 	End
 
 	Method OnResume:Int()
-		currentScreen.Resume()
+		Try
+			currentScreen.Resume()
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
+		End
 		Return 0
 	End
 End
