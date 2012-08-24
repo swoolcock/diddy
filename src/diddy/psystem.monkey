@@ -2264,7 +2264,7 @@ Public
 ' Methods
 	Method ReadXML:Void(node:XMLElement)
 		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
-		If node.HasAttribute("Enabled") Then Enabled = Bool(node.GetAttribute("Enabled"))
+		If node.HasAttribute("Enabled") Then Enabled = (node.GetAttribute("Enabled") = "true")
 	End
 	
 	Method Apply:Void(delta:Float) Abstract
