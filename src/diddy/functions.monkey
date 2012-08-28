@@ -606,6 +606,57 @@ Function HexToDec:Int(hx:String)
 	Return rv
 End
 
+Function DrawLineThick(x1:Int, y1:Int, x2:Int, y2:Int, thinkness:Int = 2)
+	Local steep:Bool = Abs(y2 - y1) > Abs(x2 - x1)
+	Local swapped:Bool = False
+	
+	If steep
+		Local tmp:Int = x1
+		x1 = y1
+		y1 = tmp
+	
+		tmp = x2
+		x2 = y2
+		y2 = tmp
+	End
+	
+	If x1 > x2
+		Local t:Float = x1
+		x1 = x2
+		x2 = t
+		t = y1
+		y1 = y2
+		y2 = t
+		swapped = True
+	End
+	
+	Local deltax:Float = x2 - x1
+	Local deltay:Float = Abs(y2 - y1)
+	Local error:Float = deltax / 2
+	Local ystep:Float
+	Local y:Float = y1
+	
+	If y1 < y2 Then
+		ystep = 1
+	Else
+		ystep = -1
+	End
+	Local offset:Int = thinkness / 2
+	For Local x:Int = x1 Until x2
+		If steep
+			DrawRect(y - offset, x - offset, thinkness, thinkness)
+		Else
+			DrawRect(x - offset, y - offset, thinkness, thinkness)
+		End
+	
+		error -= deltay
+		If error < 0
+			y += ystep
+			error += deltax
+		End
+	Next
+End
+
 Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
 	Local points:Stack<Vector2D> = New Stack<Vector2D>
 	Local steep:Bool = Abs(endPos.y - startPos.y) > Abs(endPos.x - startPos.x)
