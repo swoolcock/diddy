@@ -492,6 +492,8 @@ Public
 
 	Method OnResume:Int()
 		Try
+			dt.currentticks = Millisecs()
+			dt.lastticks = dt.currentticks
 			currentScreen.Resume()
 		Catch e:DiddyException
 			Print(e.ToString(True))
