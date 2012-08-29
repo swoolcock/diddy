@@ -1290,6 +1290,7 @@ Class GameSound
 	Field loopChannelList:IntArrayList = New IntArrayList
 	Field soundAvailableMillis:Int
 	Field soundDelay:Int
+	Field stopChannelBeforePlaying:Bool = true
 	
 	Method Load:Void(file$)
 	
@@ -1310,6 +1311,9 @@ Class GameSound
 	
 	Method Play:Bool(playChannel:Int = -1, force:Bool=False)
 		If force Or soundDelay = 0 Or soundAvailableMillis < dt.currentticks
+			if stopChannelBeforePlaying And Self.IsPlaying()
+				Self.Stop()
+			End
 			channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
 			If loop = 1
 				loopChannelList.Add(channel)
