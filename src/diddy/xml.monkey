@@ -121,7 +121,7 @@ Class XMLParser
 			' less than
 			ElseIf str[i] = ASC_LESS_THAN Then
 				' if we're in a tag, die
-				If inTag Then AssertError "Invalid less than!"
+				If inTag Then Throw New XMLParseException("Invalid less than!")
 				' check for prolog
 				If str[i+1] = ASC_EXCLAMATION Then
 					' comment?
@@ -170,7 +170,7 @@ Class XMLParser
 						tagCount += 1
 						inDoctype = True
 					Else
-						AssertError "Invalid prolog."
+						Throw New XMLParseException("Invalid prolog.")
 					End
 				' check for processing instruction
 				ElseIf str[i+1] = ASC_QUESTION Then
@@ -195,7 +195,7 @@ Class XMLParser
 				End
 			' greater than
 			ElseIf str[i] = ASC_GREATER_THAN Then
-				If Not inTag Then AssertError "Invalid greater than!"
+				If Not inTag Then Throw New XMLParseException("Invalid greater than!")
 				If tagCount+1 = tagsLength Then
 					tagsLength *= 2
 					tags = tags.Resize(tagsLength)
@@ -207,17 +207,17 @@ Class XMLParser
 				inTag = False
 			End
 		Next
-		If inQuote Then AssertError "Unclosed quote!"
-		If inTag Then AssertError "Unclosed tag!"
-		If inComment Then AssertError "Unclosed comment!"
-		If inCdata Then AssertError "Unclosed cdata!"
-		If inPi Then AssertError "Unclosed processing instruction!"
+		If inQuote Then Throw New XMLParseException("Unclosed quote!")
+		If inTag Then Throw New XMLParseException("Unclosed tag!")
+		If inComment Then Throw New XMLParseException("Unclosed comment!")
+		If inCdata Then Throw New XMLParseException("Unclosed cdata!")
+		If inPi Then Throw New XMLParseException("Unclosed processing instruction!")
 	End
 
 	' get the contents of a tag (given start and end)
 	Method GetTagContents:XMLElement(startIndex:Int, endIndex:Int)
 		' die if empty tag
-		If startIndex = endIndex Then AssertError("Empty tag detected.")
+		If startIndex = endIndex Then Throw New XMLParseException("Empty tag detected.")
 		' our element
 		Local e:XMLElement = New XMLElement
 		Local a:Int, singleQuoted:Bool, doubleQuoted:Bool, key:String, value:String
@@ -240,7 +240,7 @@ Class XMLParser
 		
 		' TODO: validate tag name is alphanumeric
 		' if no name, die
-		If e.name = "" Then AssertError("Error reading tag name.")
+		If e.name = "" Then Throw New XMLParseException("Error reading tag name.")
 		
 		' loop on all tokens
 		While startIndex < endIndex
@@ -274,7 +274,7 @@ Class XMLParser
 			' if the key is empty, there was an error (unless we've hit the end of the string)
 			If key = "" Then
 				If a < endIndex Then
-					AssertError("Error reading attribute key.")
+					Throw New XMLParseException("Error reading attribute key.")
 				Else
 					Exit
 				End
@@ -292,7 +292,7 @@ Class XMLParser
 							singleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							AssertError("Unexpected single quote detected in attribute value.")
+							Throw New XMLParseException("Unexpected single quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so grab it and break out
 							singleQuoted = False
@@ -308,7 +308,7 @@ Class XMLParser
 							doubleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							AssertError("Unexpected double quote detected in attribute value.")
+							Throw New XMLParseException("Unexpected double quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so break out
 							doubleQuoted = False
@@ -332,7 +332,7 @@ Class XMLParser
 				startIndex = a
 				value = UnescapeXMLString(value)
 				
-				If singleQuoted Or doubleQuoted Then AssertError("Unclosed quote detected.")
+				If singleQuoted Or doubleQuoted Then Throw New XMLParseException("Unclosed quote detected.")
 			End
 			
 			' set the attribute
@@ -346,7 +346,7 @@ Class XMLParser
 	Method ParseFile:XMLDocument(filename:String)
 		Local xmlString:String = LoadString(filename)
 		If Not xmlString Then
-			AssertError("Error: Cannot load " + filename)
+			Throw New XMLParseException("Error: Cannot load " + filename)
 		End
 		Return ParseString(xmlString)
 	End
@@ -387,7 +387,7 @@ Class XMLParser
 		CacheControlCharacters()
 		
 		' find first opening tag
-		If tagCount = 0 Then AssertError "Something seriously wrong... no tags!"
+		If tagCount = 0 Then Throw New XMLParseException("Something seriously wrong... no tags!")
 		
 		' parse processing instructions
 		index = 0
@@ -401,7 +401,7 @@ Class XMLParser
 				doc.pi.Add(newE)
 				newE = Null
 			Else
-				AssertError "Empty processing instruction."
+				Throw New XMLParseException("Empty processing instruction.")
 			End
 			index += 2
 		End
@@ -437,22 +437,22 @@ Class XMLParser
 				TrimString(a, b, trimmed)
 				
 				' if it's a completely empty tag name, die
-				If trimmed[0] = trimmed[1] Then AssertError "Empty tag."
+				If trimmed[0] = trimmed[1] Then Throw New XMLParseException("Empty tag.")
 				
 				' check if the first character is a slash (end tag)
 				If str[trimmed[0]] = ASC_SLASH Then
 					' if no current element, die
-					If thisE = Null Then AssertError("Closing tag found outside main document tag.")
+					If thisE = Null Then Throw New XMLParseException("Closing tag found outside main document tag.")
 					
 					' strip the slash
 					trimmed[0] += 1
 					
 					' check that the tag name length matches
-					If trimmed[1] - trimmed[0] <> thisE.name.Length Then AssertError("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
+					If trimmed[1] - trimmed[0] <> thisE.name.Length Then Throw New XMLParseException("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
 					
 					' check that the tag name matches (manually so that we don't create an entire string slice when the first character could be wrong!)
 					For Local nameIdx:Int = 0 Until thisE.name.Length
-						If str[trimmed[0]+nameIdx] <> thisE.name[nameIdx] Then AssertError("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
+						If str[trimmed[0]+nameIdx] <> thisE.name[nameIdx] Then Throw New XMLParseException("Closing tag ~q"+str[trimmed[0]..trimmed[1]]+"~q does not match opening tag ~q"+thisE.name+"~q")
 					Next
 					
 					' pop the element from the stack, or set the document root
@@ -520,7 +520,7 @@ Class XMLParser
 			' next tag
 			index += 1
 		End
-		If doc.root = Null Then AssertError("Error parsing XML: no document tag found.")
+		If doc.root = Null Then Throw New XMLParseException("Error parsing XML: no document tag found.")
 		Return doc
 	End
 End
@@ -817,6 +817,12 @@ Function UnescapeXMLString:String(str:String)
 	str = str.Replace("&lt;", "<")
 	str = str.Replace("&amp;", "&")
 	Return str
+End
+
+Class XMLParseException Extends DiddyException
+	Method New(message:String="", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
 End
 
 Private
