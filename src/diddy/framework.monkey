@@ -1,4 +1,4 @@
-#Rem
+#rem
 Header: The Screen-Based Diddy Game Framework
 This framework allows developers to quickly build screens and move between them quickly.
 Also included are image and sound resource managers, a delta timer, sprite and particle classes.
@@ -363,7 +363,7 @@ Public
 		End
 
 		If screenFade.active Then screenFade.Update()
-		if Not screenFade.active or screenFade.allowScreenUpdate Then currentScreen.Update()
+		If Not screenFade.active Or screenFade.allowScreenUpdate Then currentScreen.Update()
 	End
 
 	'summary: Draws debug information
@@ -782,9 +782,9 @@ Class ImageBank Extends StringMap<GameImage>
 	Field path:String = "graphics/"
 	
 	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool=True)
-		if format = SPARROW_ATLAS
+		If format = SPARROW_ATLAS
 			LoadSparrowAtlas(fileName, midHandle)
-		ElseIf format = LIBGDX_ATLAS
+		Elseif format = LIBGDX_ATLAS
 			LoadLibGdxAtlas(fileName, midHandle)
 		Else
 			Error "Invalid atlas format"
@@ -819,54 +819,54 @@ Class ImageBank Extends StringMap<GameImage>
 		Local line:String = ""
 		Local i:Int = 4
 		Local xy:String[] =["",""]
-		Local debug:Bool = false
+		Local debug:Bool = False
 		While True
 			' name of the image
 			line = all[i].Trim()
-			If debug then Print "name = "+line
-			if line = "" Then Exit
+			If debug Then Print "name = "+line
+			If line = "" Then Exit
 			Local name:String = line
 			'rotate
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "rotate = "+line
+			If debug Then Print "rotate = "+line
 			Local rotate:String = line
 			' x and y
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "x and y = "+line
+			If debug Then Print "x and y = "+line
 			xy = line[ (line.FindLast(":")+1)..].Split(",")
 			Local x:Int = Int(xy[0].Trim())
 			Local y:Int = Int(xy[1].Trim())
 			' width and height
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "width and height = "+line
+			If debug Then Print "width and height = "+line
 			xy = line[ (line.FindLast(":")+1)..].Split(",")
 			Local width:Int = Int(xy[0].Trim())
 			Local height:Int = Int(xy[1].Trim())
 			' origX and origY
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "origX and origY = "+line
+			If debug Then Print "origX and origY = "+line
 			xy = line[ (line.FindLast(":")+1)..].Split(",")
 			Local origX:Int = Int(xy[0].Trim())
 			Local origY:Int = Int(xy[1].Trim())
 			' offsets
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "offsets = "+line
+			If debug Then Print "offsets = "+line
 			xy = line[ (line.FindLast(":")+1)..].Split(",")
 			Local offsetX:Int = Int(xy[0].Trim())
 			Local offsetY:Int = Int(xy[1].Trim())
 			'index
 			i+=1
 			line = all[i].Trim()
-			If debug then Print "index = "+line
+			If debug Then Print "index = "+line
 			Local index:Int = Int(line[ (line.FindLast(":") + 1) ..].Trim())
 			i+=1
 			Local gi:GameImage = New GameImage
-			if index > - 1
+			If index > - 1
 				name += index
 			End
 			If debug
@@ -897,7 +897,7 @@ Class ImageBank Extends StringMap<GameImage>
 	End
 	
 	Method LoadSparrowAtlas:Void(fileName:String, midHandle:Bool=True)
-		local str:String = LoadAtlasString(fileName)
+		Local str:String = LoadAtlasString(fileName)
 		' parse the xml
 		Local parser:XMLParser = New XMLParser
 		Local doc:XMLDocument = parser.ParseString(str)
@@ -987,7 +987,7 @@ Class ImageBank Extends StringMap<GameImage>
 
 		' debug: print all keys in the map
 		If game.debugOn
-			For Local key:String = EachIn self.Keys()
+			For Local key:String = Eachin Self.Keys()
 				Print key + " is stored in the image map."
 			Next
 		End
@@ -1243,7 +1243,7 @@ Class SoundBank Extends StringMap<GameSound>
 	
 	Global path$ = "sounds/"
 	
-	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False)
+	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False, soundDelay:Int=0)
 		' check if we already have the sound in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1255,6 +1255,7 @@ Class SoundBank Extends StringMap<GameSound>
 		Local s:GameSound = New GameSound
 		s.Load(name)
 		s.name = storeKey
+		s.soundDelay = soundDelay
 		Self.Set(s.name, s)
 		Return s
 	End
@@ -1264,7 +1265,7 @@ Class SoundBank Extends StringMap<GameSound>
 
 		' debug: print all keys in the map
 		If  game.debugOn
-			For Local key:String = EachIn self.Keys()
+			For Local key:String = Eachin Self.Keys()
 				Print key + " is stored in the sound map."
 			Next
 		End
@@ -1285,6 +1286,8 @@ Class GameSound
 	Field loop:Int = 0
 	Field channel:Int
 	Field loopChannelList:IntArrayList = New IntArrayList
+	Field soundAvailableMillis:Int
+	Field soundDelay:Int
 	
 	Method Load:Void(file$)
 	
@@ -1300,14 +1303,19 @@ Class GameSound
 			#endif
 		End
 		
-		name = StripAll(file.ToUpper())	
+		name = StripAll(file.ToUpper())
 	End
 	
-	Method Play:Void(playChannel:Int = -1)
-		channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
-		If loop = 1
-			loopChannelList.Add(channel)
+	Method Play:Bool(playChannel:Int = -1, force:Bool=False)
+		If force Or soundDelay = 0 Or soundAvailableMillis < dt.currentticks
+			channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
+			If loop = 1
+				loopChannelList.Add(channel)
+			End
+			soundAvailableMillis = dt.currentticks + soundDelay
+			Return True
 		End
+		Return False
 	End
 	
 	Method Stop:Void()
