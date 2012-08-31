@@ -1391,8 +1391,8 @@ End
 
 'summary: Sprite Class
 Class Sprite
-	Field name$
-	Field visible?
+	Field name:String
+	Field visible:Bool
 	Field x:Float, y:Float
 	Field ox:Float, oy:Float
 	Field dx:Float, dy:Float
@@ -1577,6 +1577,7 @@ Class Sprite
 	End
 	
 	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0, rounded:Bool = False)
+		If Not visible Then Return
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
@@ -1597,6 +1598,7 @@ Class Sprite
 	End
 	
 	Method DrawHitBox:Void(offsetx:Float = 0, offsety:Float = 0)
+		If Not visible Then Return
 		' Draw the midhandle
 		DrawRect x - 1 - offsetx, y - 1 - offsety, 2, 2
 		' Draw the hit box
