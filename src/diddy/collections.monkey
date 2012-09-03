@@ -89,7 +89,7 @@ End
 
 #Rem
 	summary:IComparator
-	This is a way for developers to provide a custom comparison method for sorting lists.
+	This is a way For developers To provide a custom comparison Method For sorting lists.
 	It's sort of like a function pointer.
 #End
 Class IComparator Abstract
@@ -172,7 +172,7 @@ Private
 	Method RangeCheck:Void(index:Int)
 		Local size:Int = Self.Size()
 		' range check doesn't use assert, for speed
-		If index < 0 Or index >= size Then AssertError("IList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
+		If index < 0 Or index >= size Then Throw New IndexOutOfBoundsException("IList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 	
 Public
@@ -225,7 +225,7 @@ Private
 	
 	Method CheckConcurrency:Void()
 		' for speed we don't use assert
-		If lst.modCount <> expectedModCount Then AssertError("ListEnumerator.CheckConcurrency: Concurrent list modification")
+		If lst.modCount <> expectedModCount Then Throw New ConcurrentModificationException("ListEnumerator.CheckConcurrency: Concurrent list modification")
 	End
 
 Public
@@ -251,8 +251,8 @@ Public
 	'summary: Overrides IEnumerator
 	Method NextObject:E()
 		CheckConcurrency()
-		lastIndex = index		
-		index += 1		
+		lastIndex = index
+		index += 1
 		Return lst.Get(lastIndex)
 	End
 	
@@ -422,7 +422,7 @@ Private
 	
 	Method RangeCheck:Void(index:Int)
 		' range check doesn't use assert, for speed
-		If index < 0 Or index >= size Then AssertError("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
+		If index < 0 Or index >= size Then Throw New IndexOutOfBoundsException("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 
 	Field tempArr:Object[] = New Object[128] ' temp array used for internal call to ToArray (so we don't create an object)
@@ -1024,7 +1024,7 @@ Public
 	End
 	
 	Method Get:E(index:Int)
-		AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
+		If index < 0 Or index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return E(elements[i])
 		Next
@@ -1032,7 +1032,7 @@ Public
 	End
 	
 	Method Set:E(index:Int, value:E)
-		AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
+		If index < 0 Or index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Object = elements[i]
@@ -1108,11 +1108,7 @@ Public
 	End
 	
 	Method Get:Int(index:Int)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1120,11 +1116,7 @@ Public
 	End
 	
 	Method Set:Int(index:Int, value:Int)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Int = elements[i]
@@ -1200,11 +1192,7 @@ Public
 	End
 	
 	Method Get:String(index:Int)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1212,11 +1200,7 @@ Public
 	End
 	
 	Method Set:String(index:Int, value:String)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:String = elements[i]
@@ -1292,11 +1276,7 @@ Public
 	End
 	
 	Method Get:Float(index:Int)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1304,11 +1284,7 @@ Public
 	End
 	
 	Method Set:Float(index:Int, value:Float)
-		If arraySize >= 0 Then
-			AssertRangeInt(index, 0, arraySize, "Array index out of bounds.")
-		Else
-			AssertGreaterThanOrEqualInt(index, 0, "Array index out of bounds.")
-		End
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Float = elements[i]
@@ -1330,6 +1306,190 @@ Public
 		Local oldSize:Int = size
 		size = 0
 		Return oldSize
+	End
+End
+
+'summary: See the commented code for an example of what your class should look like.
+' Poolable objects need to retain a field that indicates whether or not they are active.  Since
+' IPoolable is an interface, it cannot provide that field automatically.  You must create the field
+' yourself and implement the properties to access it.
+Interface IPoolable
+'	Field activeInPool:Bool = False
+
+	Method ActiveInPool:Bool() Property
+'		Return activeInPool
+'	End
+
+	Method ActiveInPool:Void(activeInPool:Bool) Property
+'		Self.activeInPool = activeInPool
+'	End
+
+	Method InitFromPool:Void(arg:Object = Null)
+'		' This is like the constructor, it gets called when you call GetObject(arg)
+'	End
+
+	Method PurgedFromPool:Void()
+'		' This is like the destructor, it gets called when the object is purged.
+'	End
+End
+
+'summary: A pool will instantiate "capacity" number of "T" objects, then make those available to the GetObject() method.
+' The type of these objects can NEVER change, so don't try to downcast it.  The point of pooling is to reduce the need for runtime
+' object instantiation.
+' To use the pool, instantiate it with your object type and the maximum number of objects in the pool.  The default constructor for
+' your type will be used to fill the pool.  Your object must implement the IPoolable interface.
+' To retrieve an object from the pool, use the GetObject() method.  To release it, simply set the ActiveInPool property on your
+' object to false, and it will be released on the next purge.  Automatic purges happen in two cases; before an EachIn, and before
+' a Sort().  If you purge the pool during an EachIn, it will throw a ConcurrentModificationException to prevent you from looping on
+' objects twice.  It is still possible to retrieve free objects during an EachIn, as the modifications to the pool will occur after the
+' snapshot count, and will not affect the loop.
+' When looping, it is still a good idea to check the active state of the object, in case you have released it at some point in your
+' code.
+' Note that if the pool is full, a call to GetObject() will return Null.
+Class Pool<T>
+Private
+	Field comparator:IComparator = Null
+	Field objects:Object[] ' we use Object[] instead of T[] so that we can pass it into QuickSort()
+	Field activeCount:Int = 0
+	Field capacity:Int
+	Field modCount:Int = 0
+	
+	Method InitPool:Void(capacity:Int)
+		If capacity <= 0 Then Throw New DiddyException("Pool capacity must be >= 0")
+		Self.capacity = capacity
+		objects = New Object[capacity]
+		For Local i:Int = 0 Until capacity
+			objects[i] = New T
+			If i = 0 And Not IPoolable(objects[i]) Then Throw New DiddyException("Pool generic parameter must implement IPoolable!")
+		Next
+	End
+	
+Public
+	'summary: Property to read comparator
+	Method Comparator:IComparator() Property
+		Return comparator
+	End
+	
+	'summary: Property to write comparator
+	Method Comparator:Void(comparator:IComparator) Property
+		Self.comparator = comparator
+	End
+	
+	'summary: Property to read capacity (read only)
+	Method Capacity:Int() Property
+		Return capacity
+	End
+	
+	'summary: Property to read active count (read only)
+	Method ActiveCount:Int() Property
+		Return activeCount
+	End
+	
+	'summary: Constructor that initialises to a capacity
+	Method New(capacity:Int = 100)
+		InitPool(capacity)
+	End
+	
+	'summary: Retrieves the next free pooled object, optionally passing the arg to InitFromPool.
+	'This is a good way to use template objects (copy fields manually).
+	Method GetObject:T(arg:Object = Null)
+		If activeCount >= capacity Then Return Null
+		Local rv:T = T(objects[activeCount])
+		activeCount += 1
+		IPoolable(rv).ActiveInPool = True
+		IPoolable(rv).InitFromPool(arg)
+		Return rv
+	End
+	
+	'summary: Shuffles object references so that they are contiguous (optimisation), and updates the active count.
+	Method Purge:Void()
+		Local current:Int = 0
+		While current < activeCount
+			' if the low index is active
+			If IPoolable(objects[current]).ActiveInPool Then
+				' move to the next index
+				current += 1
+			Else
+				' else, reduce the active count until we find one to swap with
+				While current < activeCount And Not IPoolable(objects[activeCount-1]).ActiveInPool
+					modCount += 1
+					activeCount -= 1
+					IPoolable(objects[activeCount]).PurgedFromPool()
+				End
+				' if we have an active to swap, do it
+				If current < activeCount Then
+					modCount += 1
+					Local oldObject:Object = objects[current]
+					objects[current] = objects[activeCount-1]
+					objects[activeCount-1] = oldObject
+					IPoolable(oldObject).PurgedFromPool()
+					activeCount -= 1
+				End
+			End
+		End
+	End
+	
+	'summary: Resets all objects (the Purge() call will ensure that PurgedFromPool() is called for each).
+	Method Clear:Void()
+		For Local i% = 0 Until activeCount
+			IPoolable(objects[i]).ActiveInPool = False
+		Next
+		Purge()
+	End
+	
+	'summary: Returns a Monkey-style enumerator for EachIn.
+	Method ObjectEnumerator:PoolEnumerator<T>()
+		Return New PoolEnumerator<T>(Self)
+	End
+	
+	'summary: Performs a quicksort on the pool, doing a purge first.
+	'Due to the way purging works, the pool will most likely become unsorted when items are purged.
+	Method Sort:Void(reverse:Bool = False, comp:IComparator = Null)
+		Purge()
+		If activeCount <= 1 Then Return ' can't sort 0 or 1 elements
+		If comp = Null Then comp = Self.Comparator
+		If comp = Null Then comp = DEFAULT_COMPARATOR
+		QuickSort(objects, 0, activeCount-1, comp, reverse)
+		modCount += 1
+	End
+End
+
+'summary: Monkey-style enumerator class for EachIn
+'When you call EachIn, the pool is purged.  If you wish to loop on a sorted pool, call Sort() first (which also purges).
+Class PoolEnumerator<T>
+Private
+	Field pool:Pool<T>
+	Field snapshotActiveCount:Int
+	Field currentIndex:Int
+	Field modCount:Int
+	
+	Method New(pool:Pool<T>)
+		Self.pool = pool
+		Reset()
+	End
+	
+	Method CheckConcurrency:Void()
+		If modCount <> pool.modCount Then Throw New ConcurrentModificationException("PoolEnumerator.CheckConcurrency: Concurrent pool modification.")
+	End
+	
+Public
+	Method Reset:Void()
+		pool.Purge()
+		Self.currentIndex = 0
+		Self.modCount = pool.modCount
+		Self.snapshotActiveCount = pool.activeCount
+	End
+	
+	Method HasNext:Bool()
+		CheckConcurrency()
+		Return currentIndex < snapshotActiveCount
+	End
+
+	Method NextObject:T()
+		CheckConcurrency()
+		If Not HasNext() Then Throw New IndexOutOfBoundsException("Couldn't get next object, index "+currentIndex+" >= "+snapshotActiveCount)
+		currentIndex += 1
+		Return T(pool.objects[currentIndex-1])
 	End
 End
 
@@ -1372,3 +1532,14 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	Return storeIndex
 End
 
+Class ConcurrentModificationException Extends DiddyException
+	Method New(message:String="", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
+End
+
+Class IndexOutOfBoundsException Extends DiddyException
+	Method New(message:String="", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
+End
