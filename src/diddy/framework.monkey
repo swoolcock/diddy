@@ -1392,7 +1392,7 @@ End
 'summary: Sprite Class
 Class Sprite
 	Field name:String
-	Field visible:Bool
+	Field visible:Bool = True
 	Field x:Float, y:Float
 	Field ox:Float, oy:Float
 	Field dx:Float, dy:Float
