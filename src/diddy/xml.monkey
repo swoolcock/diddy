@@ -10,6 +10,7 @@ Import assert
 Import functions
 Import collections
 Import stringbuilder
+Import exception
 
 Class XMLParser
 	Const TAG_DEFAULT:Int = 0
@@ -121,7 +122,7 @@ Class XMLParser
 			' less than
 			ElseIf str[i] = ASC_LESS_THAN Then
 				' if we're in a tag, die
-				If inTag Then Throw New XMLParseException("Invalid less than!")
+				If inTag Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Invalid less than!")
 				' check for prolog
 				If str[i+1] = ASC_EXCLAMATION Then
 					' comment?
@@ -170,7 +171,7 @@ Class XMLParser
 						tagCount += 1
 						inDoctype = True
 					Else
-						Throw New XMLParseException("Invalid prolog.")
+						Throw New XMLParseException("XMLParser.CacheControlCharacters: Invalid prolog.")
 					End
 				' check for processing instruction
 				ElseIf str[i+1] = ASC_QUESTION Then
@@ -195,7 +196,7 @@ Class XMLParser
 				End
 			' greater than
 			ElseIf str[i] = ASC_GREATER_THAN Then
-				If Not inTag Then Throw New XMLParseException("Invalid greater than!")
+				If Not inTag Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Invalid greater than!")
 				If tagCount+1 = tagsLength Then
 					tagsLength *= 2
 					tags = tags.Resize(tagsLength)
@@ -207,17 +208,17 @@ Class XMLParser
 				inTag = False
 			End
 		Next
-		If inQuote Then Throw New XMLParseException("Unclosed quote!")
-		If inTag Then Throw New XMLParseException("Unclosed tag!")
-		If inComment Then Throw New XMLParseException("Unclosed comment!")
-		If inCdata Then Throw New XMLParseException("Unclosed cdata!")
-		If inPi Then Throw New XMLParseException("Unclosed processing instruction!")
+		If inQuote Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Unclosed quote!")
+		If inTag Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Unclosed tag!")
+		If inComment Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Unclosed comment!")
+		If inCdata Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Unclosed cdata!")
+		If inPi Then Throw New XMLParseException("XMLParser.CacheControlCharacters: Unclosed processing instruction!")
 	End
 
 	' get the contents of a tag (given start and end)
 	Method GetTagContents:XMLElement(startIndex:Int, endIndex:Int)
 		' die if empty tag
-		If startIndex = endIndex Then Throw New XMLParseException("Empty tag detected.")
+		If startIndex = endIndex Then Throw New XMLParseException("XMLParser.GetTagContents: Empty tag detected.")
 		' our element
 		Local e:XMLElement = New XMLElement
 		Local a:Int, singleQuoted:Bool, doubleQuoted:Bool, key:String, value:String
@@ -240,7 +241,7 @@ Class XMLParser
 		
 		' TODO: validate tag name is alphanumeric
 		' if no name, die
-		If e.name = "" Then Throw New XMLParseException("Error reading tag name.")
+		If e.name = "" Then Throw New XMLParseException("XMLParser.GetTagContents: Error reading tag name.")
 		
 		' loop on all tokens
 		While startIndex < endIndex
@@ -274,7 +275,7 @@ Class XMLParser
 			' if the key is empty, there was an error (unless we've hit the end of the string)
 			If key = "" Then
 				If a < endIndex Then
-					Throw New XMLParseException("Error reading attribute key.")
+					Throw New XMLParseException("XMLParser.GetTagContents: Error reading attribute key.")
 				Else
 					Exit
 				End
@@ -292,7 +293,7 @@ Class XMLParser
 							singleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							Throw New XMLParseException("Unexpected single quote detected in attribute value.")
+							Throw New XMLParseException("XMLParser.GetTagContents: Unexpected single quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so grab it and break out
 							singleQuoted = False
@@ -308,7 +309,7 @@ Class XMLParser
 							doubleQuoted = True
 						' otherwise, if we're not quoted at all, die
 						ElseIf Not singleQuoted And Not doubleQuoted Then
-							Throw New XMLParseException("Unexpected double quote detected in attribute value.")
+							Throw New XMLParseException("XMLParser.GetTagContents: Unexpected double quote detected in attribute value.")
 						Else
 							' we must be ending the quote here, so break out
 							doubleQuoted = False
@@ -332,7 +333,7 @@ Class XMLParser
 				startIndex = a
 				value = UnescapeXMLString(value)
 				
-				If singleQuoted Or doubleQuoted Then Throw New XMLParseException("Unclosed quote detected.")
+				If singleQuoted Or doubleQuoted Then Throw New XMLParseException("XMLParser.GetTagContents: Unclosed quote detected.")
 			End
 			
 			' set the attribute
@@ -346,7 +347,7 @@ Class XMLParser
 	Method ParseFile:XMLDocument(filename:String)
 		Local xmlString:String = LoadString(filename)
 		If Not xmlString Then
-			Throw New XMLParseException("Error: Cannot load " + filename)
+			Throw New XMLParseException("XMLParser.ParseFile: Error: Cannot load " + filename)
 		End
 		Return ParseString(xmlString)
 	End
@@ -387,7 +388,7 @@ Class XMLParser
 		CacheControlCharacters()
 		
 		' find first opening tag
-		If tagCount = 0 Then Throw New XMLParseException("Something seriously wrong... no tags!")
+		If tagCount = 0 Then Throw New XMLParseException("XMLParser.ParseString: Something seriously wrong... no tags!")
 		
 		' parse processing instructions
 		index = 0
@@ -401,7 +402,7 @@ Class XMLParser
 				doc.pi.Add(newE)
 				newE = Null
 			Else
-				Throw New XMLParseException("Empty processing instruction.")
+				Throw New XMLParseException("XMLParser.ParseString: Empty processing instruction.")
 			End
 			index += 2
 		End
@@ -437,12 +438,12 @@ Class XMLParser
 				TrimString(a, b, trimmed)
 				
 				' if it's a completely empty tag name, die
-				If trimmed[0] = trimmed[1] Then Throw New XMLParseException("Empty tag.")
+				If trimmed[0] = trimmed[1] Then Throw New XMLParseException("XMLParser.ParseString: Empty tag.")
 				
 				' check if the first character is a slash (end tag)
 				If str[trimmed[0]] = ASC_SLASH Then
 					' if no current element, die
-					If thisE = Null Then Throw New XMLParseException("Closing tag found outside main document tag.")
+					If thisE = Null Then Throw New XMLParseException("XMLParser.ParseString: Closing tag found outside main document tag.")
 					
 					' strip the slash
 					trimmed[0] += 1
@@ -520,7 +521,7 @@ Class XMLParser
 			' next tag
 			index += 1
 		End
-		If doc.root = Null Then Throw New XMLParseException("Error parsing XML: no document tag found.")
+		If doc.root = Null Then Throw New XMLParseException("XMLParser.ParseString: Error parsing XML: no document tag found.")
 		Return doc
 	End
 End
@@ -643,6 +644,7 @@ Public
 	End
 	
 	Method HasAttribute:Bool(name:String)
+		If Not name Then Return False ' checking for an empty name, will always return false
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then Return True
@@ -651,6 +653,7 @@ Public
 	End
 	
 	Method GetAttribute:String(name:String, defaultValue:String = "")
+		If Not name Then Return "" ' reading an empty name will always return ""
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then Return att.value
@@ -659,6 +662,8 @@ Public
 	End
 	
 	Method SetAttribute:String(name:String, value:String)
+		' we'll prevent the developer from setting an attribute with an empty name, as it makes no sense
+		If Not name Then Throw New IllegalArgumentException("XMLElement.SetAttribute: name must not be empty")
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then
@@ -672,6 +677,7 @@ Public
 	End
 	
 	Method ClearAttribute:String(name:String)
+		If Not name Then Return "" ' clearing an attribute with an empty name just returns ""
 		For Local i% = 0 Until attributes.Size
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then
@@ -747,6 +753,7 @@ Public
 	End
 	
 	Method GetChildrenByName:ArrayList<XMLElement>(findName:String)
+		If Not findName Then Throw New IllegalArgumentException("XMLElement.GetChildrenByName: findName must not be empty")
 		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
 		For Local element:XMLElement = Eachin children
 			If element.name = findName Then rv.Add(element)
@@ -755,6 +762,7 @@ Public
 	End
 	
 	Method GetFirstChildByName:XMLElement(findName:String)
+		If Not findName Then Throw New IllegalArgumentException("XMLElement.GetFirstChildByName: findName must not be empty")
 		For Local element:XMLElement = Eachin children
 			If element.name = findName Then Return element
 		Next
@@ -775,6 +783,7 @@ Public
 	End
 	
 	Method Name:Void(name:String) Property
+		If Not name Then Throw New IllegalArgumentException("XMLElement.Name: name must not be empty")
 		Self.name = name
 	End
 	
@@ -789,6 +798,7 @@ End
 
 ' hopefully this stringbuilder-based replace should be faster since it doesn't create intermediate string objects!
 Function EscapeXMLString:String(str:String)
+	If Not str Then Return ""
 	xmlsb.Length = 0
 	For Local i:Int = 0 Until str.Length
 		Select str[i]
@@ -811,18 +821,13 @@ End
 
 ' unescaping is rare so we won't bother using a stringbuilder
 Function UnescapeXMLString:String(str:String)
+	If Not str Then Return ""
 	str = str.Replace("&quot;", "~q")
 	str = str.Replace("&apos;", "'")
 	str = str.Replace("&gt;", ">")
 	str = str.Replace("&lt;", "<")
 	str = str.Replace("&amp;", "&")
 	Return str
-End
-
-Class XMLParseException Extends DiddyException
-	Method New(message:String="", cause:Throwable=Null)
-		Super.New(message, cause)
-	End
 End
 
 Private

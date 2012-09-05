@@ -1,6 +1,7 @@
 Strict
 
 Import assert
+Import exception
 
 #Rem
 header: Monkey Collections Framework
@@ -11,8 +12,7 @@ Based loosely on the Java Collections Framework
 
 #Rem
 	Summary: ICollection
-	Due to limitations with generics in Monkey, ToArray cannot work with an array of type E.  We must return Object[] instead.
-	(Note: I believe this limitation has been removed as of Monkey v47, but it will remain for now.)
+	We use Object[] rather than E[] in many places so that it is easier to pass them into QuickSort.
 #End
 Class ICollection<E> Abstract
 Private
@@ -158,13 +158,6 @@ End
 #End
 Class IList<E> Extends ICollection<E> Abstract
 Private
-	' If true, bounds checking should be performed.
-#if CONFIG="debug"
-	Field rangeChecking:Bool = True
-#else
-	Field rangeChecking:Bool = False
-#end
-	
 	'summary: A counter for modifications to the list.  Used for concurrency checks.
 	Field modCount:Int = 0
 	
@@ -196,17 +189,6 @@ Public
 	'summary: Overrides ICollection
 	Method Enumerator:IEnumerator<E>()
 		Return New ListEnumerator<E>(Self)
-	End
-	
-' Properties
-	'summary: Property to read rangeChecking
-	Method RangeChecking:Bool() Property
-		Return rangeChecking
-	End
-	
-	'summary: Property to write rangeChecking
-	Method RangeChecking:Void(rangeChecking:Bool) Property
-		Self.rangeChecking = rangeChecking
 	End
 End
 
@@ -421,7 +403,6 @@ Private
 	End
 	
 	Method RangeCheck:Void(index:Int)
-		' range check doesn't use assert, for speed
 		If index < 0 Or index >= size Then Throw New IndexOutOfBoundsException("ArrayList.RangeCheck: Index out of bounds: " + index + " is not 0<=index<" + size)
 	End
 
@@ -434,11 +415,12 @@ Public
 	End
 
 	Method New(initialCapacity:Int)
-		AssertGreaterThanOrEqualInt(initialCapacity, 0, "ArrayList.New: Illegal Capacity:")
+		If initialCapacity < 0 Then Throw New IllegalArgumentException("ArrayList.New: Capacity must be >= 0")
 		Self.elements = New Object[initialCapacity]
 	End
 
 	Method New(c:ICollection<E>)
+		If Not c Then Throw New IllegalArgumentException("ArrayList.New: Source collection must not be null")
 		elements = c.ToArray()
 		size = elements.Length
 	End
@@ -455,6 +437,7 @@ Public
 	
 	'summary: Overrides ICollection
 	Method AddAll:Bool(c:ICollection<E>)
+		If Not c Then Throw New IllegalArgumentException("ArrayList.AddAll: Source collection must not be null")
 		If c.IsEmpty() Then Return False
 		Local newItemCount:Int = c.Size
 		If size + newItemCount > elements.Length Then EnsureCapacity(size+newItemCount)
@@ -487,6 +470,7 @@ Public
 	
 	'summary: Overrides ICollection
 	Method ContainsAll:Bool(c:ICollection<E>)
+		If Not c Then Throw New IllegalArgumentException("ArrayList.ContainsAll: Source collection must not be null")
 		If c.IsEmpty() Then Return True
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
 		Local len:Int = c.FillArray(tempArr)
@@ -503,7 +487,7 @@ Public
 	
 	'summary: Overrides ICollection
 	Method FillArray:Int(arr:Object[])
-		AssertGreaterThanOrEqualInt(arr.Length, size, "ArrayList.FillArray: Array too small:")
+		If arr.Length < size Then Throw New IllegalArgumentException("ArrayList.FillArray: Array length too small ("+arr.Length+"<"+size+")")
 		For Local i:Int = 0 Until size
 			arr[i] = elements[i]
 		Next
@@ -529,6 +513,7 @@ Public
 	
 	'summary: Overrides ICollection
 	Method RemoveAll:Bool(c:ICollection<E>)
+		If Not c Then Throw New IllegalArgumentException("ArrayList.RemoveAll: Source collection must not be null")
 		If c.IsEmpty() Then Return False
 		Local modified:Bool = False
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
@@ -544,6 +529,7 @@ Public
 	
 	'summary: Overrides ICollection
 	Method RetainAll:Bool(c:ICollection<E>)
+		If Not c Then Throw New IllegalArgumentException("ArrayList.RetainAll: Source collection must not be null")
 		Local modified:Bool = False
 		If tempArr.Length < c.Size Then tempArr = tempArr.Resize(c.Size)
 		Local len:Int = c.FillArray(tempArr)
@@ -613,13 +599,13 @@ Public
 	
 	'summary: Overrides IList
 	Method Get:E(index:Int)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		Return E(elements[index])
 	End
 	
 	'summary: Overrides IList
 	Method Insert:Void(index:Int, o:E)
-		If index <> size And rangeChecking Then RangeCheck(index)
+		If index <> size Then RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		For Local i:Int = size Until index Step -1
 			elements[i] = elements[i-1]
@@ -665,7 +651,7 @@ Public
 	
 	'summary: Overrides IList
 	Method RemoveAt:E(index:Int)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		Local oldValue:E = E(elements[index])
 		For Local i:Int = index Until size-1
 			elements[i] = elements[i+1]
@@ -678,11 +664,9 @@ Public
 
 	'summary: Overrides IList
 	Method RemoveRange:Void(fromIndex:Int, toIndex:Int)
-		AssertLessThanOrEqualInt(fromIndex, toIndex, "ArrayList.RemoveRange: fromIndex > toIndex:")
-		If rangeChecking Then
-			RangeCheck(fromIndex)
-			RangeCheck(toIndex)
-		End
+		If fromIndex > toIndex Then Throw New IllegalArgumentException("ArrayList.RemoveRange: fromIndex ("+fromIndex+") must be <= toIndex ("+toIndex+")")
+		RangeCheck(fromIndex)
+		RangeCheck(toIndex)
 		For Local i:Int = 0 Until toIndex - fromIndex
 			RemoveAt(fromIndex)
 		Next
@@ -690,7 +674,7 @@ Public
 	
 	'summary: Overrides IList
 	Method Set:E(index:Int, o:E)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		Local oldValue:E = E(elements[index])
 		elements[index] = o
 		modCount += 1
@@ -706,7 +690,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 ' Methods
 	Method AddInt:Bool(o:Int)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
-		elements[size] = New IntObject(o)
+		elements[size] = BoxInt(o)
 		size+=1
 		modCount += 1
 		Return True
@@ -714,7 +698,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 	
 	Method ContainsInt:Bool(o:Int)
 		For Local i:Int = 0 Until size
-			If IntObject(elements[i]).value = o Then Return True
+			If UnboxInt(elements[i]) = o Then Return True
 		Next
 		Return False
 	End
@@ -726,7 +710,7 @@ Class IntArrayList Extends ArrayList<IntObject>
 	
 	Method RemoveInt:Bool(o:Int)
 		For Local i:Int = 0 Until size
-			If IntObject(elements[i]).value = o Then
+			If UnboxInt(elements[i]) = o Then
 				RemoveAt(i)
 				modCount += 1
 				Return True
@@ -738,55 +722,53 @@ Class IntArrayList Extends ArrayList<IntObject>
 	Method ToIntArray:Int[]()
 		Local arr:Int[] = New Int[size]
 		For Local i:Int = 0 Until size
-			arr[i] = IntObject(elements[i]).value
+			arr[i] = UnboxInt(elements[i])
 		Next
 		Return arr
 	End
 	
 	Method GetInt:Int(index:Int)
-		If rangeChecking Then RangeCheck(index)
-		Return IntObject(elements[index]).value
+		RangeCheck(index)
+		Return UnboxInt(elements[index])
 	End
 	
 	Method InsertInt:Void(index:Int, o:Int)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		For Local i:Int = size Until index Step -1
 			elements[i] = elements[i-1]
 		Next
-		elements[index] = New IntObject(o)
+		elements[index] = BoxInt(o)
 		size+=1
 		modCount += 1
 	End
 	
 	Method IndexOfInt:Int(o:Int)
 		For Local i:Int = 0 Until size
-			If IntObject(elements[i]).value = o Then Return i
+			If UnboxInt(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
 	
 	Method LastIndexOfInt:Int(o:E)
 		For Local i:Int = size-1 To 0 Step -1
-			If IntObject(elements[i]).value = o Then Return i
+			If UnboxInt(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
 
 	Method SetInt:Int(index:Int, o:Int)
-		If rangeChecking Then RangeCheck(index)
-		Local oldValue:Int = IntObject(elements[index]).value
-		If elements[index] <> Null Then
-			IntObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
-		End
+		RangeCheck(index)
+		Local oldValue:Int = UnboxInt(elements[index])
+		elements[index] = BoxInt(o)
 		modCount += 1
 		Return oldValue
 	End
 
 	Method FillIntArray:Int(arr:Int[])
-		AssertLessThanInt(arr.Length, size, "IntArrayList.FillIntArray: Array too small:")
+		If arr.Length < size Then Throw New IllegalArgumentException("IntArrayList.FillIntArray: Array length too small ("+arr.Length+"<"+size+")")
 		For Local i:Int = 0 Until size
-			arr[i] = IntObject(elements[i]).value
+			arr[i] = UnboxInt(elements[i])
 		Next
 		Return size
 	End
@@ -796,7 +778,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 ' Methods
 	Method AddFloat:Bool(o:Float)
 		If size + 1 > elements.Length Then EnsureCapacity(size + 1)
-		elements[size] = New FloatObject(o)
+		elements[size] = BoxFloat(o)
 		size += 1
 		modCount += 1
 		Return True
@@ -804,7 +786,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 	
 	Method ContainsFloat:Bool(o:Float)
 		For Local i:Int = 0 Until size
-			If FloatObject(elements[i]).value = o Then Return True
+			If UnboxFloat(elements[i]) = o Then Return True
 		Next
 		Return False
 	End
@@ -816,7 +798,7 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 	
 	Method RemoveFloat:Bool(o:Float)
 		For Local i:Int = 0 Until size
-			If FloatObject(elements[i]).value = o Then
+			If UnboxFloat(elements[i]) = o Then
 				RemoveAt(i)
 				modCount += 1
 				Return True
@@ -828,55 +810,53 @@ Class FloatArrayList Extends ArrayList<FloatObject>
 	Method ToFloatArray:Float[]()
 		Local arr:Float[] = New Float[size]
 		For Local i:Int = 0 Until size
-			arr[i] = FloatObject(elements[i]).value
+			arr[i] = UnboxFloat(elements[i])
 		Next
 		Return arr
 	End
 	
 	Method GetFloat:Float(index:Int)
-		If rangeChecking Then RangeCheck(index)
-		Return FloatObject(elements[index]).value
+		RangeCheck(index)
+		Return UnboxFloat(elements[index])
 	End
 	
 	Method InsertFloat:Void(index:Int, o:Float)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		For Local i:Int = size Until index Step -1
 			elements[i] = elements[i-1]
 		Next
-		elements[index] = New FloatObject(o)
+		elements[index] = BoxFloat(o)
 		size+=1
 		modCount += 1
 	End
 	
 	Method IndexOfFloat:Int(o:Float)
 		For Local i:Int = 0 Until size
-			If FloatObject(elements[i]).value = o Then Return i
+			If UnboxFloat(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
 	
 	Method LastIndexOfFloat:Int(o:Float)
 		For Local i:Int = size-1 To 0 Step -1
-			If FloatObject(elements[i]).value = o Then Return i
+			If UnboxFloat(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
   
 	Method SetFloat:Float(index:Int, o:Float)
-		If rangeChecking Then RangeCheck(index)
-		Local oldValue:Float = FloatObject(elements[index]).value
-		If elements[index] <> Null Then
-			FloatObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
-		End
+		RangeCheck(index)
+		Local oldValue:Float = UnboxFloat(elements[index])
+		elements[index] = BoxFloat(o)
 		modCount += 1
 		Return oldValue
 	End
 	
 	Method FillFloatArray:Int(arr:Float[])
-		AssertLessThanInt(arr.Length, size, "FloatArrayList.FillFloatArray: Array too small:")
+		If arr.Length < size Then Throw New IllegalArgumentException("FloatArrayList.FillFloatArray: Array length too small ("+arr.Length+"<"+size+")")
 		For Local i:Int = 0 Until size
-			arr[i] = FloatObject(elements[i]).value
+			arr[i] = UnboxFloat(elements[i])
 		Next
 		Return size
 	End
@@ -886,7 +866,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 ' Methods
 	Method AddString:Bool(o:String)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
-		elements[size] = New StringObject(o)
+		elements[size] = BoxString(o)
 		size+=1
 		modCount += 1
 		Return True
@@ -894,7 +874,7 @@ Class StringArrayList Extends ArrayList<StringObject>
   
 	Method ContainsString:Bool(o:String)
 		For Local i:Int = 0 Until size
-			If StringObject(elements[i]).value = o Then Return True
+			If UnboxString(elements[i]) = o Then Return True
 		Next
 		Return False
 	End
@@ -906,7 +886,7 @@ Class StringArrayList Extends ArrayList<StringObject>
 	
 	Method RemoveString:Bool(o:String)
 		For Local i:Int = 0 Until size
-			If StringObject(elements[i]).value = o Then
+			If UnboxString(elements[i]) = o Then
 				RemoveAt(i)
 				modCount += 1
 				Return True
@@ -918,55 +898,53 @@ Class StringArrayList Extends ArrayList<StringObject>
 	Method ToStringArray:String[]()
 		Local arr:String[] = New String[size]
 		For Local i:Int = 0 Until size
-			arr[i] = StringObject(elements[i]).value
+			arr[i] = UnboxString(elements[i])
 		Next
 		Return arr
 	End
 	
 	Method GetString:String(index:Int)
-		If rangeChecking Then RangeCheck(index)
-		Return StringObject(elements[index]).value
+		RangeCheck(index)
+		Return UnboxString(elements[index])
 	End
 	
 	Method InsertString:Void(index:Int, o:String)
-		If rangeChecking Then RangeCheck(index)
+		RangeCheck(index)
 		If size+1 > elements.Length Then EnsureCapacity(size+1)
 		For Local i:Int = size Until index Step -1
 			elements[i] = elements[i-1]
 		Next
-		elements[index] = New StringObject(o)
+		elements[index] = BoxString(o)
 		size+=1
 		modCount += 1
 	End
 	
 	Method IndexOfString:Int(o:String)
 		For Local i:Int = 0 Until size
-			If StringObject(elements[i]).value = o Then Return i
+			If UnboxString(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
 	
 	Method LastIndexOfString:Int(o:String)
 		For Local i:Int = size-1 To 0 Step -1
-			If StringObject(elements[i]).value = o Then Return i
+			If UnboxString(elements[i]) = o Then Return i
 		Next
 		Return -1
 	End
   
 	Method SetString:String(index:Int, o:String)
-		If rangeChecking Then RangeCheck(index)
-		Local oldValue:String = StringObject(elements[index]).value
-		If elements[index] <> Null Then
-			StringObject(elements[index]).value = o ' XXX: not sure whether we can change value on the fly
-		End
+		RangeCheck(index)
+		Local oldValue:String = UnboxString(elements[index])
+		elements[index] = BoxString(o)
 		modCount += 1
 		Return oldValue
 	End
 
 	Method FillStringArray:Int(arr:String[])
-		AssertLessThanInt(arr.Length, size, "StringArrayList.FillStringArray: Array too small:")
+		If arr.Length < size Then Throw New IllegalArgumentException("StringArrayList.FillStringArray: Array length too small ("+arr.Length+"<"+size+")")
 		For Local i:Int = 0 Until size
-			arr[i] = StringObject(elements[i]).value
+			arr[i] = UnboxString(elements[i])
 		Next
 		Return size
 	End
@@ -995,7 +973,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:E=Null)
-		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseArray.New: Capacity must be >= 0")
 		elements = New Object[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1011,7 +989,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThanInt(arraySize, size, "The SparseArray contains more mappings than the requested size.")
+		If arraySize < size Then Throw New IllegalArgumentException("SparseArray.ArraySize: The SparseArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1024,7 +1002,7 @@ Public
 	End
 	
 	Method Get:E(index:Int)
-		If index < 0 Or index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseArray.Get: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return E(elements[i])
 		Next
@@ -1032,7 +1010,7 @@ Public
 	End
 	
 	Method Set:E(index:Int, value:E)
-		If index < 0 Or index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseArray.Set: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Object = elements[i]
@@ -1079,7 +1057,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Int=0)
-		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseIntArray.New: Capacity must be >= 0")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1095,7 +1073,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		If arraySize < size Then Throw New IllegalArgumentException("SparseIntArray.ArraySize: The SparseIntArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1108,7 +1086,7 @@ Public
 	End
 	
 	Method Get:Int(index:Int)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseIntArray.Get: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1116,7 +1094,7 @@ Public
 	End
 	
 	Method Set:Int(index:Int, value:Int)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseIntArray.Set: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Int = elements[i]
@@ -1163,7 +1141,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String="")
-		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseStringArray.New: Capacity must be >= 0")
 		elements = New String[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1179,7 +1157,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		If arraySize >= 0 Then AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		If arraySize < size Then Throw New IllegalArgumentException("SparseStringArray.ArraySize: The SparseStringArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1192,7 +1170,7 @@ Public
 	End
 	
 	Method Get:String(index:Int)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseStringArray.Get: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1200,7 +1178,7 @@ Public
 	End
 	
 	Method Set:String(index:Int, value:String)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseStringArray.Set: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:String = elements[i]
@@ -1247,7 +1225,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Float=0)
-		AssertGreaterThanInt(defaultCapacity, 0, "Default capacity must be greater than 0!")
+		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseFloatArray.New: Capacity must be >= 0")
 		elements = New Float[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1263,7 +1241,7 @@ Public
 	End
 	
 	Method ArraySize:Void(arraySize:Int) Property
-		AssertGreaterThanInt(arraySize, size, "The SparseIntArray contains more mappings than the requested size.")
+		If arraySize < size Then Throw New IllegalArgumentException("SparseFloatArray.ArraySize: The SparseFloatArray contains more mappings than the requested size.")
 		Self.arraySize = arraySize
 	End
 	
@@ -1276,7 +1254,7 @@ Public
 	End
 	
 	Method Get:Float(index:Int)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseFloatArray.Get: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then Return elements[i]
 		Next
@@ -1284,7 +1262,7 @@ Public
 	End
 	
 	Method Set:Float(index:Int, value:Float)
-		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("Array index out of bounds.")
+		If index < 0 Or arraySize >= 0 And index >= arraySize Then Throw New IndexOutOfBoundsException("SparseFloatArray.Set: Array index out of bounds.")
 		For Local i% = 0 Until size
 			If indices[i] = index Then
 				Local oldVal:Float = elements[i]
@@ -1346,7 +1324,7 @@ End
 ' When looping, it is still a good idea to check the active state of the object, in case you have released it at some point in your
 ' code.
 ' Note that if the pool is full, a call to GetObject() will return Null.
-Class Pool<T>
+Class Pool<T> ' <T implements IPoolable>
 Private
 	Field comparator:IComparator = Null
 	Field objects:Object[] ' we use Object[] instead of T[] so that we can pass it into QuickSort()
@@ -1355,12 +1333,12 @@ Private
 	Field modCount:Int = 0
 	
 	Method InitPool:Void(capacity:Int)
-		If capacity <= 0 Then Throw New DiddyException("Pool capacity must be >= 0")
+		If capacity <= 0 Then Throw New IllegalArgumentException("Pool.InitPool: Capacity must be > 0")
 		Self.capacity = capacity
 		objects = New Object[capacity]
 		For Local i:Int = 0 Until capacity
 			objects[i] = New T
-			If i = 0 And Not IPoolable(objects[i]) Then Throw New DiddyException("Pool generic parameter must implement IPoolable!")
+			If i = 0 And Not IPoolable(objects[i]) Then Throw New IllegalArgumentException("Pool.InitPool: Pool generic parameter must implement IPoolable!")
 		Next
 	End
 	
@@ -1487,7 +1465,7 @@ Public
 
 	Method NextObject:T()
 		CheckConcurrency()
-		If Not HasNext() Then Throw New IndexOutOfBoundsException("Couldn't get next object, index "+currentIndex+" >= "+snapshotActiveCount)
+		If Not HasNext() Then Throw New IndexOutOfBoundsException("PoolEnumerator.NextObject: Couldn't get next object, index "+currentIndex+" >= "+snapshotActiveCount)
 		currentIndex += 1
 		Return T(pool.objects[currentIndex-1])
 	End
@@ -1530,16 +1508,4 @@ Function QuickSortPartition:Int(arr:Object[], left:Int, right:Int, pivotIndex:In
 	arr[storeIndex] = arr[right]
 	arr[right] = val
 	Return storeIndex
-End
-
-Class ConcurrentModificationException Extends DiddyException
-	Method New(message:String="", cause:Throwable=Null)
-		Super.New(message, cause)
-	End
-End
-
-Class IndexOutOfBoundsException Extends DiddyException
-	Method New(message:String="", cause:Throwable=Null)
-		Super.New(message, cause)
-	End
 End
