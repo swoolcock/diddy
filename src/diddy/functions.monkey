@@ -749,6 +749,24 @@ Function Rand:Int (low:Int, high:Int)
 	Return vi
 End
 
+'summary: Converts Mask Pixel Color to Transparent Pixel
+Function PixelArrayMask:Void(pixels:Int[], maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	For Local i:Int = 0 Until pixels.Length
+		Local argb:Int = pixels[i]
+		Local a:Int = (argb Shr 24) & $ff
+		Local r:Int = (argb Shr 16) & $ff
+		Local g:Int = (argb Shr 8) & $ff
+		Local b:Int = argb & $ff
+				
+		If a = 255 And r = maskRed And g = maskGreen And b = maskBlue
+			a = 0
+			argb = (a Shl 24) | (r Shl 16) | (g Shl 8) | b
+			pixels[i] = argb
+		End
+	Next
+End
+
+
 ' constants
 
 Const BASE64_CHARS:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
