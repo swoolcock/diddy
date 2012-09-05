@@ -3,9 +3,9 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = New MyGame()
+	New MyGame()
 	Return 0
-End Function
+End
 
 Global gameScreen:GameScreen
 Global titleScreen:TitleScreen
@@ -20,7 +20,7 @@ Class MyGame Extends DiddyApp
 		gameScreen = New GameScreen
 		titleScreen = New TitleScreen
 		
-		titleScreen.PreStart()
+		game.Start(titleScreen)
 		
 		Return 0
 	End
@@ -32,7 +32,7 @@ Class MyGame Extends DiddyApp
 		' create tmpImage for animations
 		Local tmpImage:Image
 		
-		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
+		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage, False, False, "", True)
 	End
 	
 	Method OverrideUpdate:Void()
@@ -41,7 +41,9 @@ End
 
 
 Class TitleScreen Extends Screen
-
+	Field readComplete:Bool = False
+	Field createdImage:Image
+	
 	Method New()
 		name = "Title"
 	End
@@ -51,19 +53,30 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Render:Void()
+		If Not readComplete
+			game.images.ReadPixelsArray()
+			readComplete = True
+		End
 		Cls
 		DrawText "TITLE SCREEN!", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5
 		DrawText "Click to Play!", SCREEN_WIDTH2, SCREEN_HEIGHT2 + 20, 0.5, 0.5
+		DrawText "Press 1 to Generate a new image", 100, 100
+		If createdImage
+			DrawImage createdImage , 100, 130
+		End
 	End
 
 	Method Update:Void()
+		If KeyHit(KEY_1)
+			Local gi:GameImage = game.images.Find("Ship1")
+			createdImage = CreateImage(gi.image.Width(), gi.image.Height())
+			createdImage.WritePixels(gi.Pixels, 0, 0, createdImage.Width(), createdImage.Height())
+		End
 		If KeyHit(KEY_SPACE) Or MouseHit(0)
-			game.screenFade.Start(50, True)
-			game.nextScreen = gameScreen
+			FadeToScreen(gameScreen)
 		End
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, True)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End
@@ -120,8 +133,7 @@ Class GameScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, True)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 		
 	End
