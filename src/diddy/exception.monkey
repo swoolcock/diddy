@@ -39,7 +39,12 @@ Public
 	Method New(message:String="", cause:Throwable=Null)
 		Self.message = message
 		Self.cause = cause
-		Self.fullType = GetClass(Self).Name
+		Local ci:ClassInfo = GetClass(Self)
+		If ci Then
+			Self.fullType = ci.Name
+		Else
+			Self.fullType = "diddy.exception.DiddyException"
+		End
 		If Self.fullType.Contains(".") Then
 			Self.type = Self.fullType[Self.fullType.FindLast(".")+1..]
 		Else
