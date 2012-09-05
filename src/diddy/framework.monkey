@@ -810,7 +810,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Return atlasGameImage.name
 	End
 	
-	Method LoadLibGdxAtlas:Void(fileName:String, midHandle:Bool=True)
+	Method LoadLibGdxAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		Local str:String = LoadAtlasString(fileName)
 		Local all:String[] = str.Split("~n")
 		Local spriteFileName:String = all[0].Trim()
@@ -892,13 +892,15 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.atlasName = atlasGameImageName
 			gi.subX = x
 			gi.subY = y
+			gi.readPixels = readPixels
+			gi.SetMask(maskRed, maskGreen, maskBlue)
 			
 			Self.Set(gi.name, gi)
 		Wend
 		
 	End
 	
-	Method LoadSparrowAtlas:Void(fileName:String, midHandle:Bool=True)
+	Method LoadSparrowAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		Local str:String = LoadAtlasString(fileName)
 		' parse the xml
 		Local parser:XMLParser = New XMLParser
@@ -927,58 +929,55 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.atlasName = atlasGameImageName
 			gi.subX = x
 			gi.subY = y
-			
+			gi.readPixels = readPixels
+			gi.SetMask(maskRed, maskGreen, maskBlue)
 			Self.Set(gi.name, gi)
 		Next
 	End
 	
-	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=True, ignoreCache:Bool=False)
+	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=True, ignoreCache:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
-#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-#end
 		Local i:GameImage = New GameImage
-		i.Load(path + name, midhandle)
+		i.Load(path + name, midhandle, readPixels, maskRed, maskGreen, maskBlue)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
 	End
 	
-	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=True, ignoreCache:Bool=False, nameoverride:String = "")
+	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=True, ignoreCache:Bool=False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
-#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-#end
+
 		Local i:GameImage = New GameImage
-		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle)
+		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle, readPixels, maskRed, maskGreen, maskBlue)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
 	End
    
-	Method LoadTileset:GameImage(name:String, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, nameoverride:String = "", midhandle:Bool=False, ignoreCache:Bool=False)
+	Method LoadTileset:GameImage(name:String, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, nameoverride:String = "", midhandle:Bool=False, ignoreCache:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
-#if TARGET<>"pss"
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
-#end		
+		
 		' load the new one
 		Local i:GameImage = New GameImage
-		i.LoadTileset(path + name, tileWidth, tileHeight, tileMargin, tileSpacing, midhandle)
+		i.LoadTileset(path + name, tileWidth, tileHeight, tileMargin, tileSpacing, midhandle, readPixels, maskRed, maskGreen, maskBlue)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
@@ -1032,10 +1031,25 @@ Class ImageBank Extends StringMap<GameImage>
 		Next
 	End
 	
+	Method ReadPixelsArray:Void()
+		Local gi:GameImage
+		For Local key:String = Eachin Self.Keys()
+			gi = Self.Get(key)
+			gi.ReadPixelsArray()
+		Next
+	End
 End
 
 'summary: GameImage Class
 Class GameImage
+
+Private
+	Field pixels:Int[]
+	Field maskRed:Int = 0
+	Field maskGreen:Int = 0
+	Field maskBlue:Int = 0
+	
+Public
 	Field name:String
 	Field image:Image
 	Field w:Int
@@ -1058,21 +1072,47 @@ Class GameImage
 	Field subY:Int
 	Field atlasName:String
 
-	Method Load:Void(file$, midhandle:Bool=True)
+	Field readPixels:Bool
+	Field readPixelsComplete:Bool = False
+
+	Method Pixels:Int[]() Property
+		If readPixels Then
+			If Not readPixelsComplete Then
+			#If CONFIG="debug"
+				Print "Read Pixels have not been completed, please use ReadPixels on GameImage "+name
+			#End
+			End
+		End
+		Return pixels
+	End
+	
+	Method SetMaskColor:Void(r:Int, g:Int, b:Int)
+		maskRed = r
+		maskGreen = g
+		maskBlue = b
+	End
+	
+	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		name = StripAll(file.ToUpper())
 		image = LoadBitmap(file)	
 		CalcSize()
 		MidHandle(midhandle)
+		pixels = New Int[image.Width() * image.Height()]
+		Self.readPixels = readPixels
+		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
-	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=True)
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		name = StripAll(file.ToUpper())
 		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
 		CalcSize()
 		MidHandle(midhandle)
+		pixels = New Int[image.Width() * image.Height()]
+		Self.readPixels = readPixels
+		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
-	Method LoadTileset:Void(file:String, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0, midhandle:Bool=False)
+	Method LoadTileset:Void(file:String, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0, midhandle:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		Load(file, midhandle)
 		Self.tileWidth = tileWidth
 		Self.tileHeight = tileHeight
@@ -1081,6 +1121,9 @@ Class GameImage
 		tileCountX = (w - tileMargin) / (tileWidth + tileSpacing)
 		tileCountY = (h - tileMargin) / (tileHeight + tileSpacing)
 		tileCount = tileCountX * tileCountY
+		pixels = New Int[image.Width() * image.Height()]
+		Self.readPixels = readPixels
+		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
 	Method CalcSize:Void()
@@ -1237,6 +1280,19 @@ Class GameImage
 	Method PreCache:Void()
 		DrawImage Self.image, -Self.w-50, -Self.h-50
 	End
+	
+	Method ReadPixelsArray:Void()
+		Cls 0, 0, 0
+		Local posX:Int = SCREEN_WIDTH2
+		Local posY:Int = SCREEN_HEIGHT2
+		DrawImage Self.image, posX, posY
+		If readPixels
+			ReadPixels(pixels, posX - image.HandleX(), posY - image.HandleY(), image.Width(), image.Height())
+			readPixelsComplete = True
+			PixelArrayMask(pixels, maskRed, maskGreen, maskBlue)		
+		End	
+	End
+	
 End
 
 'summary: Sound resource bank
