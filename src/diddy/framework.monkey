@@ -783,11 +783,11 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Field path:String = "graphics/"
 	
-	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool=True)
+	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		If format = SPARROW_ATLAS
-			LoadSparrowAtlas(fileName, midHandle)
+			LoadSparrowAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
 		Elseif format = LIBGDX_ATLAS
-			LoadLibGdxAtlas(fileName, midHandle)
+			LoadLibGdxAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
 		Else
 			Error "Invalid atlas format"
 		End
