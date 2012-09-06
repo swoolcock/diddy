@@ -337,55 +337,73 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field layerArray:Object[] = []
 	Field animatedTiles:TileMapTile[]
 	
-	' override this to configure a layer (called on every render)
+	' summary: override this to do something before a layer is rendered
+	Method PreRenderLayer:Void(tileLayer:TileMapLayer)
+		ConfigureLayer(tileLayer) ' call the deprecated one
+	End
+	
+	' summary: override this to do something after a layer is rendered
+	Method PostRenderLayer:Void(tileLayer:TileMapLayer)
+	End
+	
+	' summary: override this to do something before the map is rendered
+	Method PreRenderMap:Void()
+	End
+	
+	' summary: override this to do something after the map is rendered
+	Method PostRenderMap:Void()
+	End
+	
+	' summary: override this to configure a layer (called on every render)
+	' deprecated, override PreDrawLayer instead
 	Method ConfigureLayer:Void(tileLayer:TileMapLayer)
 	End
 	
-	' override this to draw a tile
+	' summary: override this to draw a tile
 	Method DrawTile:Void(tileLayer:TileMapTileLayer, mapTile:TileMapTile, x:Int, y:Int)
 	End
 	
-	' override this to create a custom tile class
+	' summary: override this to create a custom tile class
 	Method CreateTile:TileMapTile(id:Int)
 		Return New TileMapTile(id)
 	End
 	
-	' override this to create a custom tileset class
+	' summary: override this to create a custom tileset class
 	Method CreateTileset:TileMapTileset()
 		Return New TileMapTileset
 	End
 	
-	' override this to create a custom tile layer class
+	' summary: override this to create a custom tile layer class
 	Method CreateTileLayer:TileMapTileLayer()
 		Return New TileMapTileLayer
 	End
 	
-	' override this to create a custom object layer class
+	' summary: override this to create a custom object layer class
 	Method CreateObjectLayer:TileMapObjectLayer()
 		Return New TileMapObjectLayer
 	End
 	
-	' override this to create a custom image class
+	' summary: override this to create a custom image class
 	Method CreateImage:TileMapImage()
 		Return New TileMapImage
 	End
 	
-	' override this to create a custom object class
+	' summary: override this to create a custom object class
 	Method CreateObject:TileMapObject()
 		Return New TileMapObject
 	End
 	
-	' override this to create a custom cell class
+	' summary: override this to create a custom cell class
 	Method CreateCell:TileMapCell(gid:Int, x:Int, y:Int)
 		Return New TileMapCell(gid, x, y)
 	End
 	
-	' override this to create a custom data class
+	' summary: override this to create a custom data class
 	Method CreateData:TileMapData(width:Int, height:Int)
 		Return New TileMapData(width, height)
 	End
 	
-	' override this to perform additional post-loading functionality (remember to call Super.PostLoad() first)
+	' summary: override this to perform additional post-loading functionality (remember to call Super.PostLoad() first)
 	Method PostLoad:Void()
 		Local totaltiles% = 0, ts:TileMapTileset
 		Local alltiles:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
@@ -465,12 +483,13 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	' sx,sy = scale x/y (float, defaults to 1) i'll do this later
 	' wx,wy = wrap x/y (boolean, defaults to false)
 	Method RenderMap:Void(bx%, by%, bw%, bh%, sx# = 1, sy# = 1)
+		PreRenderMap()
 		Local x%, y%, rx%, ry%, mx%, my%, mx2%, my2%, modx%, mody%
 		For Local layer:TileMapLayer = Eachin layers
 			If layer.visible And TileMapTileLayer(layer) <> Null Then
 				Local tl:TileMapTileLayer = TileMapTileLayer(layer)
 				Local mapTile:TileMapTile, gid%
-				ConfigureLayer(layer)
+				PreRenderLayer(layer)
 				' ortho
 				If orientation = MAP_ORIENTATION_ORTHOGONAL Then
 					modx = (bx * tl.parallaxScaleX) Mod tileWidth
@@ -535,8 +554,10 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 						End
 					Next
 				End
+				PostRenderLayer(layer)
 			End
 		Next
+		PostRenderMap()
 	End
 	
 	Method GetBounds:TileMapRect()
@@ -932,29 +953,16 @@ Public
 	
 	Method GetInt:Int()
 		Return Int(rawValue)
-		'Local rv% = 0
-		'rv = RawValue.ToInt()
-		'Catch ex:Object
-		'End
-		'Return rv
 	End
 	
 	Method GetFloat:Float()
 		Return Float(rawValue)
-		'Local rv:Float = 0
-		'Try
-		'	rv = RawValue.ToFloat()
-		'Catch ex:Object
-		'EndTry
-		'Return rv
 	End
 	
 	Method GetBool:Bool()
 		Local val:String = rawValue.ToLower()
 		If val = "true" Or val = "t" Or val = "y" Then Return True
 		Return False
-		'If val = "false" Or val = "f" Or val = "n" Then Return False
-		'Return GetInt() <> 0
 	End
 	
 	Method GetString:String()
@@ -1107,5 +1115,3 @@ Const NODE_PROPERTIES$          = "properties"
 Const NODE_PROPERTY$            = "property"
 Const NODE_OBJECTGROUP$         = "objectgroup"
 Const NODE_OBJECT$              = "object"
-
-
