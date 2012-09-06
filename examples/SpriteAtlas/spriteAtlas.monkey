@@ -24,7 +24,7 @@ Class MyGame Extends DiddyApp
 		' load normal sprite
 		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
 		' load sparrow atlas sprites
-		images.LoadAtlas("sprites.xml", images.SPARROW_ATLAS)
+		images.LoadAtlas("sprites.xml", images.SPARROW_ATLAS, True, True)
 		' load atlas zombie
 		images.LoadAtlas("zombie.xml", images.SPARROW_ATLAS)
 		' load libgdx atlas
@@ -44,6 +44,8 @@ Class GameScreen Extends Screen
 	Field zombieImage:GameImage
 	Field libGdxImage:GameImage
 	Field orcImage:GameImage
+	Field readComplete:Bool = False
+	Field createdImage:Image
 	
 	Method New()
 		name = "Game"
@@ -60,6 +62,10 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Render:Void()
+		If Not readComplete
+			game.images.ReadPixelsArray()
+			readComplete = True
+		End
 		Cls
 		DrawText "GAME SCREEN!", SCREEN_WIDTH2, 10, 0.5, 0.5
 		FPSCounter.Draw(0, 0)
@@ -73,9 +79,19 @@ Class GameScreen Extends Screen
 		orcImage.Draw(200, 300)
 		DrawText "Zombie by: Clint Bellanger (CC-BY-SA 3.0)",SCREEN_WIDTH2, 460, .5, .5
 		zombieImage.Draw(300, 300, 0, 1, 1, frame)
+		DrawText "Press 1 to Create an image",400, 300
+		If createdImage
+			DrawImage createdImage , 400, 300
+		End
 	End
 	
 	Method Update:Void()
+		If KeyHit(KEY_1)
+			Local gi:GameImage = game.images.Find("longsword")
+			createdImage = CreateImage(gi.image.Width(), gi.image.Height())
+			createdImage.WritePixels(gi.Pixels, 0, 0, createdImage.Width(), createdImage.Height())
+		End
+		
 		frameDelay+=1*dt.delta
 		If frameDelay > maxFrameDelay
 			frame+=1
