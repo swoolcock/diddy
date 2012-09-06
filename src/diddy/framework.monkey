@@ -893,7 +893,7 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.subX = x
 			gi.subY = y
 			gi.readPixels = readPixels
-			gi.SetMask(maskRed, maskGreen, maskBlue)
+			gi.SetMaskColor(maskRed, maskGreen, maskBlue)
 			
 			Self.Set(gi.name, gi)
 		Wend
@@ -930,7 +930,7 @@ Class ImageBank Extends StringMap<GameImage>
 			gi.subX = x
 			gi.subY = y
 			gi.readPixels = readPixels
-			gi.SetMask(maskRed, maskGreen, maskBlue)
+			gi.SetMaskColor(maskRed, maskGreen, maskBlue)
 			Self.Set(gi.name, gi)
 		Next
 	End
