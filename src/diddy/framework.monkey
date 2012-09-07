@@ -1398,6 +1398,18 @@ Class GameSound
 		#end
 		Return(ChannelState(channel))
 	End
+	
+	Method Pause:Void()
+		If IsPlaying() Then
+			PauseChannel(channel)
+		End
+	End
+
+	Method Resume:Void()
+		If IsPlaying() Then
+			ResumeChannel(channel)
+		End
+	End
 End
 
 'summary: SoundPlayer Class
