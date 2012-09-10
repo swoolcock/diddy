@@ -1,22 +1,19 @@
 Strict
 
-Import mojo
 Import diddy
 
 Global testScreen:ParticleTestScreen
 
 Function Main:Int()
-	game = New ParticleTestApp
+	New ParticleTestApp
 	Return 0
 End
 
 Class ParticleTestApp Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		drawFPSOn = True
 		testScreen = New ParticleTestScreen
-		testScreen.PreStart()
-		Return 0
+		Start(testScreen)
 	End
 End
 
@@ -41,7 +38,6 @@ Class ParticleTestScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
 	End
 	
 	Method Render:Void()
@@ -102,8 +98,7 @@ Class ParticleTestScreen Extends Screen
 		End
 		ps.Update(dt.frametime)
 		If KeyHit(KEY_ESCAPE) Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 	

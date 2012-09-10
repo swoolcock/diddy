@@ -6,17 +6,15 @@ Import diddy
 Global testScreen:InputTestScreen
 
 Function Main:Int()
-	game = New InputTestApp
+	New InputTestApp
 	Return 0
 End
 
 Class InputTestApp Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		drawFPSOn = True
 		testScreen = New InputTestScreen
 		testScreen.PreStart()
-		Return 0
 	End
 End
 
@@ -49,8 +47,7 @@ Class InputTestScreen Extends Screen
 		Next
 		
 		If game.inputCache.keyHit[KEY_ESCAPE] Then
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End

@@ -1,10 +1,9 @@
 Strict
 
-Import mojo
 Import diddy
 
 Function Main:Int()
-	game = New MyGame
+	New MyGame
 	Return 0
 End
 
@@ -12,12 +11,10 @@ Global titleScreen:TitleScreen
 Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
-		titleScreen.PreStart()
-		Return 0
+		Start(titleScreen)
 	End
 End
 
@@ -27,7 +24,6 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -39,8 +35,7 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		if game.mouseHit
-			game.screenFade.Start(50, True, True, True)
-			game.nextScreen = gameScreen
+			FadeToScreen(gameScreen)
 		End
 	End
 End
@@ -58,7 +53,6 @@ Class GameScreen Extends Screen
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
 		Local tm:TileMap = reader.LoadMap("maps/map.xml")
 		tilemap = MyTileMap(tm)
-		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -70,8 +64,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, True)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 		If KeyDown(KEY_UP) Then offsetY -= 4
 		If KeyDown(KEY_DOWN) Then offsetY += 4

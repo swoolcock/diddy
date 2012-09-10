@@ -3,9 +3,9 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	New MyGame()
 	Return 0
-End Function
+End
 
 Global titleScreen:TitleScreen
 Global gameScreen:GameScreen
@@ -13,13 +13,12 @@ Global gameScreen:GameScreen
 Const GRAVITY:Float = 0.06
 
 Class MyGame extends DiddyApp
-	Method OnCreate:Int()
+	Method Create:Void()
 		Super.OnCreate()
 		LoadImages()
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
-		game.Start(titleScreen)
-		return 0
+		Start(titleScreen)
 	End
 	
 	'***********************

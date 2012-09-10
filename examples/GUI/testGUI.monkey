@@ -1,21 +1,18 @@
 Strict
 
-Import mojo
 Import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	New MyGame()
 	Return 0
-End Function
+End
 
 Global guiScreen:GUIScreen
 Global xmlParser:XMLParser = New XMLParser
 Global guiSkin:XMLDocument
 
 Class MyGame extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
-		
+	Method Create:Void()
 		game.images.Load("continue.png",,False)
 		game.images.Load("continueMO.png",,False)
 		game.images.Load("newgame.png",,False)
@@ -32,8 +29,7 @@ Class MyGame extends DiddyApp
 		drawFPSOn = True
 		
 		guiScreen = new GUIScreen
-		guiScreen.PreStart()
-		return 0
+		Start(guiScreen)
 	End
 End
 
@@ -45,7 +41,6 @@ Class GUIScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -59,8 +54,7 @@ Class GUIScreen Extends Screen
 	Method Update:Void()
 		mygui.Update()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End

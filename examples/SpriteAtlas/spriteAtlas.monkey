@@ -3,19 +3,17 @@ Strict
 Import diddy
 
 Function Main:Int()
-	new MyGame()
+	New MyGame()
 	Return 0
 End
 
 Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		LoadImages()
 		gameScreen = new GameScreen
-		game.Start(gameScreen)
-		return 0
+		Start(gameScreen)
 	End
 	
 	Method LoadImages:Void()

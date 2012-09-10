@@ -11,11 +11,9 @@ End
 
 Class MyGame Extends DiddyApp
 
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		gameScreen = New GameScreen
-		game.Start(gameScreen)
-		Return 0
+		Start(gameScreen)
 	End
 End
 

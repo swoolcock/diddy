@@ -3,17 +3,16 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = New MyGame()
+	New MyGame()
 	Return 0
-End Function
+End
 
 Global titleScreen:TitleScreen
 Global gameScreen:GameScreen
 Global optionScreen:OptionScreen
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		SetScreenSize(1024, 768)
 		drawFPSOn = True
 		
@@ -21,8 +20,7 @@ Class MyGame Extends DiddyApp
 		gameScreen = New GameScreen
 		optionScreen = New OptionScreen
 		
-		titleScreen.PreStart()
-		Return 0
+		Start(titleScreen)
 	End
 End
 
@@ -35,7 +33,6 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
 		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, False)
 		Local b:SimpleButton = menu.AddButton("newgame.png", "newgameMO.png")
 		b = menu.AddButton("continue.png", "continueMO.png")
@@ -49,7 +46,6 @@ Class TitleScreen Extends Screen
 	Method Render:Void()
 		Cls
 		DrawText "TITLE SCREEN", SCREEN_WIDTH2, 10, 0.5, 0.5
-		
 	End
 	
 	Method ExtraRender:Void()
@@ -60,23 +56,19 @@ Class TitleScreen Extends Screen
 		menu.Update()
 		
 		If menu.Clicked("newgame") Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = gameScreen
+			FadeToScreen(gameScreen)
 		End
 		
 		If menu.Clicked("options") Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = optionScreen
+			FadeToScreen(optionScreen)
 		End
 		
 		If menu.Clicked("continue") Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 		
 		If KeyHit(KEY_ESCAPE) Or menu.Clicked("quit")
-			game.screenFade.Start(50, True)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End
@@ -101,8 +93,7 @@ Class GameScreen Extends Screen
 		menu.Update()
 		
 		If menu.Clicked("quit") Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 	End
 End
@@ -137,8 +128,7 @@ Class OptionScreen Extends Screen
 		End If
 		
 		If menu.Clicked("quit") Then
-			game.screenFade.Start(50, True)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 	End
 End

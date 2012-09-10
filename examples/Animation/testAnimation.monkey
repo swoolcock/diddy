@@ -12,17 +12,13 @@ Global titleScreen:TitleScreen
 
 Class MyGame Extends DiddyApp
 
-	Method OnCreate:Int()
-		Super.OnCreate()
-			
+	Method Create:Void()
 		LoadImages()
 		
 		gameScreen = New GameScreen
 		titleScreen = New TitleScreen
 		
-		game.Start(titleScreen)
-		
-		Return 0
+		Start(titleScreen)
 	End
 	
 	'***********************
@@ -49,7 +45,6 @@ Class TitleScreen Extends Screen
 	End
 
 	Method Start:Void()
-		game.screenFade.Start(50, False)
 	End
 	
 	Method Render:Void()
@@ -90,7 +85,6 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
 		player = New Player(game.images.Find("Ship1"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 	End
 	

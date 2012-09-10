@@ -5,23 +5,20 @@ Import diddy
 Global testScreen:TestScreen
 
 Function Main:Int()
-	game = new MyGame()
+	New MyGame()
 	Return 0
 End Function
 
 Class MyGame Extends DiddyApp
 
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		testScreen = New TestScreen()
-		testScreen.PreStart()
-		Return 0
+		Start(testScreen)
 	End
 End
 
 Class TestScreen Extends Screen
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 		Local parser:XMLParser = New XMLParser
 		Local doc:XMLDocument = parser.ParseString(LoadString("test.xml"))
 		Print doc.Root.GetAttribute("shutdown")
@@ -59,9 +56,7 @@ Class TestScreen Extends Screen
 
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End	
 End
-

@@ -3,7 +3,7 @@ Strict
 import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	New MyGame()
 	Return 0
 End Function
 
@@ -11,15 +11,10 @@ Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
 
-	Method OnCreate:Int()
-		Super.OnCreate()
-			
+	Method Create:Void()
 		LoadSounds()
-		
 		gameScreen = new GameScreen
-		
-		gameScreen.PreStart()
-		
+		Start(gameScreen)
 		Return 0
 	End
 	
@@ -43,7 +38,6 @@ Class GameScreen Extends Screen
 	End
 
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -84,8 +78,7 @@ Class GameScreen Extends Screen
 		End
 
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End

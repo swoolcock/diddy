@@ -3,22 +3,20 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = new MyGame()
+	new MyGame()
 	Return 0
-End Function
+End
 
 Global gameScreen:GameScreen
 
 Class MyGame extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		' enable touch for non-phones
 		#If TARGET<>"ios" or TARGET<>"android"
 			game.inputCache.MonitorTouch(True)
 		#End
 		gameScreen = new GameScreen
-		gameScreen.PreStart()
-		return 0
+		Start(gameScreen)
 	End
 End
 
@@ -40,7 +38,6 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -82,8 +79,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 		' for each of the circles
 		For Local i:Int = 0 Until life.Length
