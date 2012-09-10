@@ -1,5 +1,6 @@
 Strict
 
+Import reflection
 Import diddy
 
 Function Main:Int()
@@ -7,15 +8,28 @@ Function Main:Int()
 	Return 0
 End
 
-Global gameScreen:GameScreen
-
 Class MyGame Extends DiddyApp
 	Method Create:Void()
 		debugOn = True
-		gameScreen = New GameScreen
 		LoadDiddyData()
-		Start(gameScreen)
+		Start(screens.Find("Title"))
 	End	
+End
+
+Class TitleScreen Extends Screen
+	Method Start:Void()
+	End
+
+	Method Render:Void()
+		Cls
+		DrawText("Press SPACE to Play", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5)
+	End
+	
+	Method Update:Void()
+		If KeyHit(KEY_SPACE)
+			FadeToScreen(game.screens.Find("Game"))
+		End
+	End
 End
 
 Class GameScreen Extends Screen
@@ -23,10 +37,6 @@ Class GameScreen Extends Screen
 	Field background:GameImage
 	Field sound:GameSound
 	
-	Method New()
-		name = "GameScreen"
-	End
-
 	Method Start:Void()
 		sprite = New Sprite(game.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 		background = game.images.Find("bg_1_1")
@@ -42,6 +52,9 @@ Class GameScreen Extends Screen
 	Method Update:Void()
 		If KeyDown(KEY_SPACE)
 			sound.Play()
+		End
+		If KeyHit(KEY_ESCAPE)
+			FadeToScreen(game.screens.Find("Title"))
 		End
 	End
 End

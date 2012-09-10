@@ -9,7 +9,7 @@
 		</sounds>
 	</resources>
 	<screens>
-		<screen name="TitleScreen">
-		</screen>
+		<screen class="TitleScreen" name="Title" />
+		<screen class="GameScreen" name="Game" />
 	</screens>
 </diddy>
