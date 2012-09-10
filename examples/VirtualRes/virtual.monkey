@@ -3,23 +3,19 @@ Strict
 Import diddy
 
 Function Main:Int()
-	game = New MyGame()
+	New MyGame()
 	Return 0
 End
 
 Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
-		
+	Method Create:Void()
 		images.Load("background.png", "", False)
 		SetScreenSize(480, 320)
 		
 		gameScreen = new GameScreen
-		gameScreen.PreStart()
-		
-		Return 0
+		Start(gameScreen)
 	End
 End
 
@@ -31,7 +27,6 @@ Class GameScreen Extends Screen
 	End
 
 	Method Start:Void()
-		game.screenFade.Start(50, false)
 		backgroundImg = game.images.Find("background")
 	End
 	
@@ -77,19 +72,12 @@ Class GameScreen Extends Screen
 			SCREEN_HEIGHT = 320
 		End
 		If KeyHit(KEY_ENTER)
-			game.screenFade.Start(50, true)
-			game.nextScreen = gameScreen
+			FadeToScreen(gameScreen)
 		End
 
 		game.SetScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT)
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, true)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End
-
-
-
-
-

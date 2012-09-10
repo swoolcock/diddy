@@ -12,13 +12,11 @@ Function Main:Int()
 End
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		SetGraphics(320,480)
 		SetScreenSize(960, 640, True)
 		screen = New TestScreen()
-		game.Start(screen)
-		Return 0
+		Start(screen)
 	End
 End
 

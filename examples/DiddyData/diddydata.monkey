@@ -10,16 +10,11 @@ End
 Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		debugOn = True
-		
 		gameScreen = New GameScreen
-		
 		LoadDiddyData()
 		Start(gameScreen)
-		
-		Return 0
 	End	
 End
 

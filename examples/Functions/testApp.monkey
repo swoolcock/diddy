@@ -19,14 +19,12 @@ Class MyGame Extends DiddyApp
 	Field lat:String
 	Field long:String
 	
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		' set the seed to use the system time
 		startingSeed = RealMillisecs()
 		Seed = startingSeed
 		HideMouse()
 		StartGps()
-		Return 0
 	End
 	
 	Method OnUpdate:Int()
@@ -34,11 +32,9 @@ Class MyGame Extends DiddyApp
 			If mouseOn
 				HideMouse()
 				mouseOn = False
-				
 			Else
 				ShowMouse()
 				mouseOn = True
-				
 			End
 		End	
 		If KeyHit(KEY_F1) or (TouchHit(0) And TouchY() < SCREEN_HEIGHT2)

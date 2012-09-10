@@ -5,22 +5,20 @@ Import diddy
 Global musicExt:String
 
 Function Main:Int()
-	game = new MyGame()
-	game.debugOn = True
+	new MyGame()
 	Return 0
-End Function
+End
 
 Global titleScreen:TitleScreen
 Global gameScreen:GameScreen
 
 Class MyGame extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
+		debugOn = True
 		musicExt=".ogg" 
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
-		titleScreen.PreStart()
-		return 0
+		Start(titleScreen)
 	End
 
 End
@@ -32,8 +30,6 @@ Class TitleScreen Extends Screen
 	
 	Method Start:Void()
 		game.MusicPlay("NewsTheme"+musicExt, 1)
-		game.screenFade.Start(50, False, True, True)
-		
 	End
 	
 	Method Render:Void()
@@ -46,13 +42,11 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		If MouseHit(MOUSE_LEFT)
-			game.screenFade.Start(50, True, True, True)
-			game.nextScreen = gameScreen
+			FadeToScreen(gameScreen)
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			game.screenFade.Start(50, True, True, True)
-			game.nextScreen = game.exitScreen
+			FadeToScreen(game.exitScreen)
 		End
 	End
 End
@@ -64,7 +58,6 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False, True, True)
 		game.MusicPlay("SplitInSynapse"+musicExt, 1)
 	End
 	
@@ -75,8 +68,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE) or MouseHit(MOUSE_LEFT)
-			game.screenFade.Start(50, True, True, True)
-			game.nextScreen = titleScreen
+			FadeToScreen(titleScreen)
 		End
 	End
 End

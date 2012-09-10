@@ -2,14 +2,12 @@ Import diddy
 Import screens
 
 Class MyGame Extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		LoadImages()
 		titleScreen = new TitleScreen
 		gameScreen = new GameScreen
 		defaultFadeTime = 300
-		game.Start(titleScreen)
-		Return 0
+		Start(titleScreen)
 	End
 	
 	Method LoadImages:Void()
