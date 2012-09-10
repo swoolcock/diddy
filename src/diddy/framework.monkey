@@ -124,6 +124,9 @@ Class DiddyApp Extends App
 	Field images:ImageBank
 	' store the sounds here
 	Field sounds:SoundBank
+	' store screens
+	Field screens:Screens
+	
 	' volume control
 	Field musicFile:String = ""
 	Field soundVolume:Int = 100
@@ -158,6 +161,7 @@ Public
 		Self.screenFade = New ScreenFade
 		Self.images = New ImageBank
 		Self.sounds = New SoundBank
+		Self.screens = New Screens
 		Self.inputCache = New InputCache
 		diddyMouse = New DiddyMouse
 	End
@@ -199,6 +203,7 @@ Public
 		Return 0
 	End
 	
+	'summary: Main creation method
 	Method Create:Void()
 	End
 	
@@ -509,6 +514,10 @@ Public
 	'summary: Loads in the diddydata xml file
 	Method LoadDiddyData:Void()
 		Local str:String = LoadString("diddydata.xml")
+		If Not str Then
+			Throw New DiddyException("Cannot load diddydata.xml file!")
+		End
+		
 		' parse the xml
 		Local parser:XMLParser = New XMLParser
 		Local doc:XMLDocument = parser.ParseString(str)
@@ -622,11 +631,35 @@ Public
 		Local screenElement:XMLElement = rootElement.GetFirstChildByName("screens")
 		For Local node:XMLElement = EachIn screenElement.GetChildrenByName("screen")
 			Local name:String = node.GetAttribute("name").Trim()
+			Local clazz:String = node.GetAttribute("class").Trim()
+			
 			If debugOn
-				Print "name = " + name
+				Print "name  = " + name
+				Print "class = " + clazz
 			End
+			Local ci:ClassInfo = GetClass(clazz)
+			Local scr:Screen = Screen(ci.NewInstance())
+			screens.Add(name.ToUpper(), scr)
 		Next
 		
+	End
+End
+
+'summary: Map to store the Screens
+Class Screens Extends StringMap<Screen>
+	Method Find:Screen(name:String)
+		name = name.ToUpper()
+
+		' debug: print all keys in the map
+		If game.debugOn
+			For Local key:String = Eachin Self.Keys()
+				Print key + " is stored in the Screens map."
+			Next
+		End
+
+		Local i:Screen = Self.Get(name)
+		AssertNotNull(i, "Image '" + name + "' not found in the Screens map")
+		Return i
 	End
 End
 
