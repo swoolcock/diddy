@@ -16,11 +16,9 @@ End
 Global titleScreen:TitleScreen
 
 Class MyGame extends DiddyApp
-	Method OnCreate:Int()
-		Super.OnCreate()
+	Method Create:Void()
 		titleScreen = New TitleScreen
-		game.Start(titleScreen)
-		Return 0
+		Start(titleScreen)
 	End
 End
 
@@ -191,11 +189,17 @@ Public
 			If useFixedRateLogic
 				ResetFixedRateLogic()
 			End
+			
+			'call Create
+			Create()
 		Catch e:DiddyException
 			Print(e.ToString(True))
 			Error(e.ToString(False))
 		End
 		Return 0
+	End
+	
+	Method Create:Void()
 	End
 	
 	'summary: Sets up the virtual resolution
