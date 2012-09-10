@@ -973,7 +973,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:E=Null)
-		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseArray.New: Capacity must be >= 0")
+		If defaultCapacity < 0 Then Throw New IllegalArgumentException("SparseArray.New: Capacity must be >= 0")
 		elements = New Object[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1057,7 +1057,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Int=0)
-		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseIntArray.New: Capacity must be >= 0")
+		If defaultCapacity < 0 Then Throw New IllegalArgumentException("SparseIntArray.New: Capacity must be >= 0")
 		elements = New Int[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1141,7 +1141,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:String="")
-		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseStringArray.New: Capacity must be >= 0")
+		If defaultCapacity < 0 Then Throw New IllegalArgumentException("SparseStringArray.New: Capacity must be >= 0")
 		elements = New String[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
@@ -1225,7 +1225,7 @@ Private
 	
 Public
 	Method New(arraySize:Int=-1, defaultCapacity:Int=100, defaultValue:Float=0)
-		If initialCapacity < 0 Then Throw New IllegalArgumentException("SparseFloatArray.New: Capacity must be >= 0")
+		If defaultCapacity < 0 Then Throw New IllegalArgumentException("SparseFloatArray.New: Capacity must be >= 0")
 		elements = New Float[defaultCapacity]
 		indices = New Int[defaultCapacity]
 		Self.arraySize = arraySize
