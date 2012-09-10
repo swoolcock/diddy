@@ -639,6 +639,7 @@ Public
 			End
 			Local ci:ClassInfo = GetClass(clazz)
 			Local scr:Screen = Screen(ci.NewInstance())
+			scr.name = name
 			screens.Add(name.ToUpper(), scr)
 		Next
 		
