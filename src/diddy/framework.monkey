@@ -511,45 +511,9 @@ Public
 		Return 0
 	End
 	
-	'summary: Loads in the diddydata xml file
-	Method LoadDiddyData:Void()
-		Local str:String = LoadString("diddydata.xml")
-		If Not str Then
-			Throw New DiddyException("Cannot load diddydata.xml file!")
-		End
-		
-		' parse the xml
-		Local parser:XMLParser = New XMLParser
-		Local doc:XMLDocument = parser.ParseString(str)
-		Local rootElement:XMLElement = doc.Root
-		
-		Local sw:String = rootElement.GetAttribute("screenWidth").Trim()
-		If not sw Then sw = 640
-
-		Local sh:String = rootElement.GetAttribute("screenHeight").Trim()
-		If not sh Then sh = 480
-
-		Local useAspect:String = rootElement.GetAttribute("useAspectRatio").Trim()
-		Local useAspectBool:Bool
-		If useAspect
-			If useAspect.ToUpper() = "TRUE" Then useAspectBool = True Else useAspectBool = False
-		Else
-			useAspectBool = False
-		End
-		
-		If debugOn
-			Print "screenWidth    = " + sw
-			Print "screenHeight   = " + sh
-			Print "useAspectRatio = " + useAspect
-		End
-
-		SetScreenSize(Int(sw), Int(sh), useAspectBool)
-		
-		Local resourcesElement:XMLElement = rootElement.GetFirstChildByName("resources")
-		
-		' read the images
+	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False)
 		Local tmpImage:Image
-		Local imagesElement:XMLElement = resourcesElement.GetFirstChildByName("images")
+		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
 		For Local node:XMLElement = EachIn imagesElement.GetChildrenByName("image")
 			Local name:String = node.GetAttribute("name").Trim()
 			Local path:String = node.GetAttribute("path").Trim()
@@ -596,12 +560,52 @@ Public
 			
 			' if frames > 1 assume its an animation image
 			If frames > 1
-				images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue)
+				images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad)
 			Else
-				images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue)
+				images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad)
 			End
 			
-		Next
+		Next	
+	End
+	
+	'summary: Loads in the diddydata xml file
+	Method LoadDiddyData:Void()
+		Local str:String = LoadString("diddydata.xml")
+		If Not str Then
+			Throw New DiddyException("Cannot load diddydata.xml file!")
+		End
+		
+		' parse the xml
+		Local parser:XMLParser = New XMLParser
+		Local doc:XMLDocument = parser.ParseString(str)
+		Local rootElement:XMLElement = doc.Root
+		
+		Local sw:String = rootElement.GetAttribute("screenWidth").Trim()
+		If not sw Then sw = 640
+
+		Local sh:String = rootElement.GetAttribute("screenHeight").Trim()
+		If not sh Then sh = 480
+
+		Local useAspect:String = rootElement.GetAttribute("useAspectRatio").Trim()
+		Local useAspectBool:Bool
+		If useAspect
+			If useAspect.ToUpper() = "TRUE" Then useAspectBool = True Else useAspectBool = False
+		Else
+			useAspectBool = False
+		End
+		
+		If debugOn
+			Print "screenWidth    = " + sw
+			Print "screenHeight   = " + sh
+			Print "useAspectRatio = " + useAspect
+		End
+
+		SetScreenSize(Int(sw), Int(sh), useAspectBool)
+		
+		Local resourcesElement:XMLElement = rootElement.GetFirstChildByName("resources")
+		
+		' read the images
+		LoadXMLImages(resourcesElement)
 		
 		'read the sounds
 		Local soundsElement:XMLElement = resourcesElement.GetFirstChildByName("sounds")
@@ -641,6 +645,12 @@ Public
 			Local scr:Screen = Screen(ci.NewInstance())
 			scr.name = name
 			screens.Add(name.ToUpper(), scr)
+			
+			For Local screenXml:XMLElement = EachIn node.GetChildrenByName("resources")
+				' read the images
+				LoadXMLImages(screenXml, True)
+			Next
+			
 		Next
 		
 	End
@@ -781,6 +791,15 @@ Public
 			autoFadeIn = False
 			game.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic)
 		End
+		
+		' load screens graphics
+		For Local key:String = EachIn game.images.Keys()
+			Local i:GameImage = game.images.Get(key)
+			If i.preLoad
+				i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False)
+			End
+		Next
+		
 		Start()
 	End
 	
@@ -1096,7 +1115,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Next
 	End
 	
-	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool=True, ignoreCache:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool = True, ignoreCache:Bool = False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1105,13 +1124,13 @@ Class ImageBank Extends StringMap<GameImage>
 		' discard the old image if it's there
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
 		Local i:GameImage = New GameImage
-		i.Load(path + name, midhandle, readPixels, maskRed, maskGreen, maskBlue)
+		i.Load(path + name, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
 	End
 	
-	Method LoadAnim:GameImage(name:String, w%, h%, total%, tmpImage:Image, midhandle:Bool=True, ignoreCache:Bool=False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1121,7 +1140,7 @@ Class ImageBank Extends StringMap<GameImage>
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
 
 		Local i:GameImage = New GameImage
-		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle, readPixels, maskRed, maskGreen, maskBlue)
+		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
@@ -1153,8 +1172,8 @@ Class ImageBank Extends StringMap<GameImage>
 				Print key + " is stored in the image map."
 			Next
 		End
-	   	
 		Local i:GameImage = Self.Get(name)
+		If i.preLoad Then AssertError("Image '" + name + "' not found in the ImageBank")
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
@@ -1209,7 +1228,9 @@ Private
 	Field maskRed:Int = 0
 	Field maskGreen:Int = 0
 	Field maskBlue:Int = 0
-	
+	Field preLoad:Bool = False
+	Field path:String
+	Field midhandle:Bool
 Public
 	Field name:String
 	Field image:Image
@@ -1253,23 +1274,33 @@ Public
 		maskBlue = b
 	End
 	
-	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
 		name = StripAll(file.ToUpper())
-		image = LoadBitmap(file)	
-		CalcSize()
-		MidHandle(midhandle)
-		pixels = New Int[image.Width() * image.Height()]
-		Self.readPixels = readPixels
+		path = file
+		Self.midhandle = midhandle
+		Self.preLoad = preLoad
+		If Not preLoad Then
+			image = LoadBitmap(file)
+			CalcSize()
+			MidHandle(midhandle)
+			pixels = New Int[image.Width() * image.Height()]
+			Self.readPixels = readPixels
+		End
 		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
-	Method LoadAnim:Void(file:String, w:Int, h:Int, total%, tmpImage:Image, midhandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
 		name = StripAll(file.ToUpper())
-		image = LoadAnimBitmap(file, w, h, total, tmpImage)	
-		CalcSize()
-		MidHandle(midhandle)
-		pixels = New Int[image.Width() * image.Height()]
-		Self.readPixels = readPixels
+		path = file
+		Self.midhandle = midhandle
+		Self.preLoad = preLoad
+		If not preLoad Then
+			image = LoadAnimBitmap(file, w, h, total, tmpImage)
+			CalcSize()
+			MidHandle(midhandle)
+			pixels = New Int[image.Width() * image.Height()]
+			Self.readPixels = readPixels
+		End
 		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
