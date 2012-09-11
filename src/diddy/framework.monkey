@@ -511,7 +511,7 @@ Public
 		Return 0
 	End
 	
-	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False)
+	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
 		Local tmpImage:Image
 		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
 		For Local node:XMLElement = EachIn imagesElement.GetChildrenByName("image")
@@ -560,9 +560,9 @@ Public
 			
 			' if frames > 1 assume its an animation image
 			If frames > 1
-				images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad)
+				images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 			Else
-				images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad)
+				images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 			End
 			
 		Next	
@@ -648,7 +648,7 @@ Public
 			
 			For Local screenXml:XMLElement = EachIn node.GetChildrenByName("resources")
 				' read the images
-				LoadXMLImages(screenXml, True)
+				LoadXMLImages(screenXml, True, scr.name)
 			Next
 			
 		Next
@@ -795,8 +795,8 @@ Public
 		' load screens graphics
 		For Local key:String = EachIn game.images.Keys()
 			Local i:GameImage = game.images.Get(key)
-			If i.preLoad
-				i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False)
+			If i.preLoad And i.screenName = name.ToUpper()
+				i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
 			End
 		Next
 		
@@ -1115,7 +1115,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Next
 	End
 	
-	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool = True, ignoreCache:Bool = False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
+	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool = True, ignoreCache:Bool = False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1124,13 +1124,13 @@ Class ImageBank Extends StringMap<GameImage>
 		' discard the old image if it's there
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
 		Local i:GameImage = New GameImage
-		i.Load(path + name, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad)
+		i.Load(path + name, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad, screenName)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
 	End
 	
-	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
+	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1140,7 +1140,7 @@ Class ImageBank Extends StringMap<GameImage>
 		If Self.Contains(storeKey) Then Self.Get(storeKey).image.Discard()
 
 		Local i:GameImage = New GameImage
-		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad)
+		i.LoadAnim(path + name, w, h, total, tmpImage, midhandle, readPixels, maskRed, maskGreen, maskBlue, preLoad, screenName)
 		i.name = storeKey
 		Self.Set(i.name, i)
 		Return i
@@ -1169,11 +1169,14 @@ Class ImageBank Extends StringMap<GameImage>
 		' debug: print all keys in the map
 		If game.debugOn
 			For Local key:String = Eachin Self.Keys()
-				Print key + " is stored in the image map."
+				Local i:GameImage = Self.Get(key)
+				if Not i.preLoad Then
+					Print key + " is stored in the image map."
+				End
 			Next
 		End
 		Local i:GameImage = Self.Get(name)
-		If i.preLoad Then AssertError("Image '" + name + "' not found in the ImageBank")
+		If i.preLoad and i.image = null Then AssertError("Image '" + name + "' not found in the ImageBank")
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
@@ -1231,6 +1234,7 @@ Private
 	Field preLoad:Bool = False
 	Field path:String
 	Field midhandle:Bool
+	Field screenName:String
 Public
 	Field name:String
 	Field image:Image
@@ -1274,11 +1278,12 @@ Public
 		maskBlue = b
 	End
 	
-	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
+	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		name = StripAll(file.ToUpper())
 		path = file
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
+		Self.screenName = screenName.ToUpper()
 		If Not preLoad Then
 			image = LoadBitmap(file)
 			CalcSize()
@@ -1289,11 +1294,12 @@ Public
 		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
-	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False)
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		name = StripAll(file.ToUpper())
 		path = file
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
+		Self.screenName = screenName.ToUpper()
 		If not preLoad Then
 			image = LoadAnimBitmap(file, w, h, total, tmpImage)
 			CalcSize()
