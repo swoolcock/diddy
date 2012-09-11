@@ -17,12 +17,16 @@ Class MyGame Extends DiddyApp
 End
 
 Class TitleScreen Extends Screen
+	Field sword:GameImage
+	
 	Method Start:Void()
+		sword = game.images.Find("sword")
 	End
 
 	Method Render:Void()
 		Cls
 		DrawText("Press SPACE to Play", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5)
+		sword.Draw(200, 500)
 	End
 	
 	Method Update:Void()
