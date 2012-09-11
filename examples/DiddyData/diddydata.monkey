@@ -25,12 +25,12 @@ Class TitleScreen Extends Screen
 
 	Method Render:Void()
 		Cls
-		DrawText("Press SPACE to Play", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5)
+		DrawText("Press SPACE or Click to Play", SCREEN_WIDTH2, SCREEN_HEIGHT2, 0.5, 0.5)
 		sword.Draw(200, 500)
 	End
 	
 	Method Update:Void()
-		If KeyHit(KEY_SPACE)
+		If KeyHit(KEY_SPACE) Or MouseHit()
 			FadeToScreen(game.screens.Find("Game"))
 		End
 	End
@@ -40,16 +40,19 @@ Class GameScreen Extends Screen
 	Field sprite:Sprite
 	Field background:GameImage
 	Field sound:GameSound
+	Field planet:GameImage
 	
 	Method Start:Void()
 		sprite = New Sprite(game.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 		background = game.images.Find("bg_1_1")
 		sound = game.sounds.Find("fire")
+		planet = game.images.Find("planet")
 	End
 	
 	Method Render:Void()
 		Cls
 		background.Draw(0, 0)
+		planet.Draw(700, 400)
 		sprite.Draw()
 	End
 	
