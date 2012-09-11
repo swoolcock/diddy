@@ -16,6 +16,12 @@
 				</images>
 			</resources>
 		</screen>
-		<screen class="GameScreen" name="Game" />
+		<screen class="GameScreen" name="Game">
+			<resources>
+				<images>
+					<image path="planet2.png" name="planet" />
+				</images>
+			</resources>
+		</screen>
 	</screens>
 </diddy>
