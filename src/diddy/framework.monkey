@@ -512,60 +512,90 @@ Public
 	End
 	
 	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
-		Local tmpImage:Image
 		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
-		For Local node:XMLElement = EachIn imagesElement.GetChildrenByName("image")
-			Local name:String = node.GetAttribute("name").Trim()
-			Local path:String = node.GetAttribute("path").Trim()
-			Local frames:Int = Int(node.GetAttribute("frames").Trim())
-			Local width:Int = Int(node.GetAttribute("width").Trim())
-			Local height:Int = Int(node.GetAttribute("height").Trim())
-			Local midhandle:String = node.GetAttribute("midhandle").Trim()
-			Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
-			Local readPixels:String = node.GetAttribute("readPixels").Trim()
-			Local maskRed:Int = Int(node.GetAttribute("maskRed").Trim())
-			Local maskGreen:Int = Int(node.GetAttribute("maskGreen").Trim())
-			Local maskBlue:Int = Int(node.GetAttribute("maskBlue").Trim())
-			
-			Local midhandleBool:Bool
-			If midhandle
-				If midhandle.ToUpper() = "TRUE" Then midhandleBool = True Else midhandleBool = False
-			Else
-				midhandleBool = True
-			End
-			
-			Local ignoreCacheBool:Bool
-			If ignoreCache
-				If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
-			Else
-				ignoreCacheBool = False
-			End
-			
-			Local readPixelsBool:Bool
-			If readPixels
-				If readPixels.ToUpper() = "TRUE" Then readPixelsBool = True Else readPixelsBool = False
-			Else
-				readPixelsBool = False
-			End
-			
-			If debugOn
-				Print "name 		= " + name
-				Print "path 		= " + path
-				Print "frames		= " + frames
-				Print "width 		= " + width
-				Print "height 		= " + height
-				Print "midhandle 	= " + midhandle
-				Print "ignoreCache	= " + ignoreCache
-			End
-			
-			' if frames > 1 assume its an animation image
-			If frames > 1
-				images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
-			Else
-				images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
-			End
-			
-		Next	
+		If imagesElement <> null Then
+			Local tmpImage:Image
+			For Local node:XMLElement = EachIn imagesElement.GetChildrenByName("image")
+				Local name:String = node.GetAttribute("name").Trim()
+				Local path:String = node.GetAttribute("path").Trim()
+				Local frames:Int = Int(node.GetAttribute("frames").Trim())
+				Local width:Int = Int(node.GetAttribute("width").Trim())
+				Local height:Int = Int(node.GetAttribute("height").Trim())
+				Local midhandle:String = node.GetAttribute("midhandle").Trim()
+				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
+				Local readPixels:String = node.GetAttribute("readPixels").Trim()
+				Local maskRed:Int = Int(node.GetAttribute("maskRed").Trim())
+				Local maskGreen:Int = Int(node.GetAttribute("maskGreen").Trim())
+				Local maskBlue:Int = Int(node.GetAttribute("maskBlue").Trim())
+				
+				Local midhandleBool:Bool
+				If midhandle
+					If midhandle.ToUpper() = "TRUE" Then midhandleBool = True Else midhandleBool = False
+				Else
+					midhandleBool = True
+				End
+				
+				Local ignoreCacheBool:Bool
+				If ignoreCache
+					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
+				Else
+					ignoreCacheBool = False
+				End
+				
+				Local readPixelsBool:Bool
+				If readPixels
+					If readPixels.ToUpper() = "TRUE" Then readPixelsBool = True Else readPixelsBool = False
+				Else
+					readPixelsBool = False
+				End
+				
+				If debugOn
+					Print "name 		= " + name
+					Print "path 		= " + path
+					Print "frames		= " + frames
+					Print "width 		= " + width
+					Print "height 		= " + height
+					Print "midhandle 	= " + midhandle
+					Print "ignoreCache	= " + ignoreCache
+				End
+				
+				' if frames > 1 assume its an animation image
+				If frames > 1
+					images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+				Else
+					images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+				End
+				
+			Next
+		End
+	End
+	
+	Method LoadXMLSounds:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
+		Local soundsElement:XMLElement = xmlElement.GetFirstChildByName("sounds")
+		If soundsElement <> null Then
+			For Local node:XMLElement = EachIn soundsElement.GetChildrenByName("sound")
+				Local name:String = node.GetAttribute("name").Trim()
+				Local path:String = node.GetAttribute("path").Trim()
+				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
+				Local soundDelay:String = node.GetAttribute("soundDelay").Trim()
+				
+				If debugOn
+					Print "name 		= " + name
+					Print "path 		= " + path
+					Print "ignoreCache	= " + ignoreCache
+					Print "soundDelay	= " + soundDelay
+				End
+				
+				Local ignoreCacheBool:Bool
+				If ignoreCache
+					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
+				Else
+					ignoreCacheBool = False
+				End
+				
+				sounds.Load(path, name, ignoreCacheBool, Int(soundDelay), preLoad, screenName)
+			Next
+		End
 	End
 	
 	'summary: Loads in the diddydata xml file
@@ -608,29 +638,7 @@ Public
 		LoadXMLImages(resourcesElement)
 		
 		'read the sounds
-		Local soundsElement:XMLElement = resourcesElement.GetFirstChildByName("sounds")
-		For Local node:XMLElement = EachIn soundsElement.GetChildrenByName("sound")
-			Local name:String = node.GetAttribute("name").Trim()
-			Local path:String = node.GetAttribute("path").Trim()
-			Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
-			Local soundDelay:String = node.GetAttribute("soundDelay").Trim()
-			
-			If debugOn
-				Print "name 		= " + name
-				Print "path 		= " + path
-				Print "ignoreCache	= " + ignoreCache
-				Print "soundDelay	= " + soundDelay
-			End
-			
-			Local ignoreCacheBool:Bool
-			If ignoreCache
-				If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
-			Else
-				ignoreCacheBool = False
-			End
-			
-			sounds.Load(path, name, ignoreCacheBool, Int(soundDelay))
-		Next
+		LoadXMLSounds(resourcesElement)
 				
 		Local screenElement:XMLElement = rootElement.GetFirstChildByName("screens")
 		For Local node:XMLElement = EachIn screenElement.GetChildrenByName("screen")
@@ -647,10 +655,9 @@ Public
 			screens.Add(name.ToUpper(), scr)
 			
 			For Local screenXml:XMLElement = EachIn node.GetChildrenByName("resources")
-				' read the images
 				LoadXMLImages(screenXml, True, scr.name)
+				LoadXMLSounds(screenXml, True, scr.name)
 			Next
-			
 		Next
 		
 	End
@@ -793,10 +800,23 @@ Public
 		End
 		
 		' load screens graphics
+		Local tmpImage:Image
 		For Local key:String = EachIn game.images.Keys()
 			Local i:GameImage = game.images.Get(key)
-			If i.preLoad And i.screenName = name.ToUpper()
-				i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
+			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
+				If i.frames > 1
+					i.LoadAnim(i.path, i.w, i.h, i.frames, tmpImage, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
+				Else
+					i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
+				End
+			End
+		Next
+		
+		' load screens sounds
+		For Local key:String = EachIn game.sounds.Keys()
+			Local i:GameSound = game.sounds.Get(key)
+			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
+				i.Load(i.path, False, i.screenName)
 			End
 		Next
 		
@@ -1243,6 +1263,7 @@ Public
 	Field w2:Float
 	Field h2:Float
 	Field midhandled:Int = 0
+	Field frames:Int
 	
 	Field leftMargin:Int = 0
 	Field rightMargin:Int = 0
@@ -1300,6 +1321,9 @@ Public
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
 		Self.screenName = screenName.ToUpper()
+		Self.w = w
+		Self.h = h
+		Self.frames = total
 		If not preLoad Then
 			image = LoadAnimBitmap(file, w, h, total, tmpImage)
 			CalcSize()
@@ -1499,7 +1523,7 @@ Class SoundBank Extends StringMap<GameSound>
 	
 	Global path$ = "sounds/"
 	
-	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False, soundDelay:Int=0)
+	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False, soundDelay:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the sound in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1509,7 +1533,7 @@ Class SoundBank Extends StringMap<GameSound>
 		If Self.Contains(storeKey) Then Self.Get(storeKey).sound.Discard()
 		
 		Local s:GameSound = New GameSound
-		s.Load(name)
+		s.Load(name, preLoad, screenName)
 		s.name = storeKey
 		s.soundDelay = soundDelay
 		Self.Set(s.name, s)
@@ -1521,13 +1545,16 @@ Class SoundBank Extends StringMap<GameSound>
 
 		' debug: print all keys in the map
 		If  game.debugOn
-			For Local key:String = Eachin Self.Keys()
-				Print key + " is stored in the sound map."
+			For Local key:String = EachIn Self.Keys()
+				Local i:GameSound = Self.Get(key)
+				If Not i.preLoad Then Print key + " is stored in the sound map."
 			Next
 		End
 		
-		Local i:GameSound =  Self.Get(name)
-		AssertNotNull(i, "Sound '" + name + "' not found in the SoundBank")
+		Local i:GameSound = Self.Get(name)
+		Local err:String = "Sound '" + name + "' not found in the SoundBank"
+		If i.preLoad and i.sound = null Then AssertError(err)
+		AssertNotNull(i, err)
 		Return i
 	End
 End
@@ -1545,21 +1572,27 @@ Class GameSound
 	Field soundAvailableMillis:Int
 	Field soundDelay:Int
 	Field stopChannelBeforePlaying:Bool = true
+	Field screenName:String
+	Field preLoad:Bool
+	Field path:String
 	
-	Method Load:Void(file$)
-	
-		If file.Contains(".wav") Or file.Contains(".ogg") Or file.Contains(".mp3") Or file.Contains(".m4a")  Or file.Contains(".wma") Then
-			sound = LoadSoundSample(SoundBank.path + file)
-		Else
-			#if TARGET="flash"
-				sound = LoadSoundSample(SoundBank.path + file +".mp3")
-			#else If TARGET="android"
-				sound = LoadSoundSample(SoundBank.path + file +".ogg")
-			#else
-				sound = LoadSoundSample(SoundBank.path + file +".wav")
-			#endif
+	Method Load:Void(file:String, preLoad:Bool = False, screenName:String = "")
+		Self.path = file
+		Self.preLoad = preLoad
+		Self.screenName = screenName
+		If Not preLoad
+			If file.Contains(".wav") Or file.Contains(".ogg") Or file.Contains(".mp3") Or file.Contains(".m4a") Or file.Contains(".wma") Then
+				sound = LoadSoundSample(SoundBank.path + file)
+			Else
+				#if TARGET="flash"
+					sound = LoadSoundSample(SoundBank.path + file +".mp3")
+				#else If TARGET="android"
+					sound = LoadSoundSample(SoundBank.path + file +".ogg")
+				#else
+					sound = LoadSoundSample(SoundBank.path + file +".wav")
+				#endif
+			End
 		End
-		
 		name = StripAll(file.ToUpper())
 	End
 	
