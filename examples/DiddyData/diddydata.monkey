@@ -10,7 +10,7 @@ End
 
 Class MyGame Extends DiddyApp
 	Method Create:Void()
-		debugOn = True
+	'	debugOn = True
 		LoadDiddyData()
 		Start(screens.Find("Title"))
 	End	
@@ -38,28 +38,44 @@ End
 
 Class GameScreen Extends Screen
 	Field sprite:Sprite
+	Field asteroid:Sprite
 	Field background:GameImage
-	Field sound:GameSound
 	Field planet:GameImage
+	Field sound:GameSound
+	Field boom:GameSound
 	
 	Method Start:Void()
 		sprite = New Sprite(game.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
+		sprite.SetFrame(0, 6, 100, True)
+		asteroid = New Sprite(game.images.Find("GAster32"), SCREEN_WIDTH2, 200)
+		asteroid.SetFrame(0, 15, 100)
+		
 		background = game.images.Find("bg_1_1")
-		sound = game.sounds.Find("fire")
 		planet = game.images.Find("planet")
+		
+		sound = game.sounds.Find("fire")
+		boom = game.sounds.Find("boom")
 	End
 	
 	Method Render:Void()
 		Cls
 		background.Draw(0, 0)
 		planet.Draw(700, 400)
+		asteroid.Draw()
 		sprite.Draw()
 	End
 	
 	Method Update:Void()
-		If KeyDown(KEY_SPACE)
+		sprite.UpdateAnimation()
+		asteroid.UpdateAnimation()
+		
+		If KeyDown(KEY_1)
 			sound.Play()
 		End
+		If KeyDown(KEY_2)
+			boom.Play()
+		End
+		
 		If KeyHit(KEY_ESCAPE)
 			FadeToScreen(game.screens.Find("Title"))
 		End

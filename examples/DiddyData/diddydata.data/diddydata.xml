@@ -20,7 +20,11 @@
 			<resources>
 				<images>
 					<image path="planet2.png" name="planet" />
+					<image path="sprites/GAster32.png" name="GAster32" width="32" height="32" frames="16" />
 				</images>
+				<sounds>
+					<sound path="boom3" name="boom" />
+				</sounds>
 			</resources>
 		</screen>
 	</screens>
