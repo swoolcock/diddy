@@ -12,7 +12,7 @@ Class MyGame Extends DiddyApp
 	Method Create:Void()
 	'	debugOn = True
 		LoadDiddyData()
-		Start(screens.Find("Title"))
+		Start(screens.Find("Title"), True, defaultFadeTime, True, True)
 	End	
 End
 
@@ -31,7 +31,7 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_SPACE) Or MouseHit()
-			FadeToScreen(game.screens.Find("Game"))
+			FadeToScreen(game.screens.Find("Game"), defaultFadeTime, True, True)
 		End
 	End
 End
@@ -77,7 +77,7 @@ Class GameScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.screens.Find("Title"))
+			FadeToScreen(game.screens.Find("Title"), defaultFadeTime * 2, True, True)
 		End
 	End
 End

@@ -14,6 +14,7 @@
 				<images>
 					<image path="sprites/sword.png" />
 				</images>
+				<music path="NewsTheme.ogg" />
 			</resources>
 		</screen>
 		<screen class="GameScreen" name="Game">
@@ -25,6 +26,7 @@
 				<sounds>
 					<sound path="boom3" name="boom" />
 				</sounds>
+				<music path="SplitInSynapse.ogg" flag="1" />
 			</resources>
 		</screen>
 	</screens>
