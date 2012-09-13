@@ -652,12 +652,20 @@ Public
 			Local ci:ClassInfo = GetClass(clazz)
 			Local scr:Screen = Screen(ci.NewInstance())
 			scr.name = name
-			screens.Add(name.ToUpper(), scr)
 			
 			For Local screenXml:XMLElement = EachIn node.GetChildrenByName("resources")
 				LoadXMLImages(screenXml, True, scr.name)
 				LoadXMLSounds(screenXml, True, scr.name)
+				
+				Local musicXML:XMLElement = screenXml.GetFirstChildByName("music")
+				If musicXML <> null Then
+					Local musicPath:String = musicXML.GetAttribute("path").Trim()
+					Local musicFlag:Int = Int(musicXML.GetAttribute("flag").Trim())
+					scr.SetMusic(musicPath, Int(musicFlag))
+				End
 			Next
+			
+			screens.Add(name.ToUpper(), scr)
 		Next
 		
 	End
@@ -788,9 +796,12 @@ Private
 	Field autoFadeInTime:Float = 50
 	Field autoFadeInSound:Bool = False
 	Field autoFadeInMusic:Bool = False
-	
+	Field musicPath:String
+	Field musicFlag:Int
+		
 Public
-	Field name$ = ""
+	Field name:String = ""
+
 	
 	Method PreStart:Void()
 		game.currentScreen = Self
@@ -819,6 +830,9 @@ Public
 				i.Load(i.path, False, i.screenName)
 			End
 		Next
+		
+		' play the screen's music if its set
+		If musicPath <> "" Then game.MusicPlay(musicPath, musicFlag)
 		
 		Start()
 	End
@@ -929,6 +943,12 @@ Public
 		' trigger the fade out
 		game.nextScreen = screen
 		game.screenFade.Start(fadeTime, True, fadeSound, fadeMusic, allowScreenUpdate)
+	End
+	
+	'summary: sets the screen's music which autoplays when the screen starts
+	Method SetMusic:Void(path:String, flag:Int = 0)
+		Self.musicPath = path
+		Self.musicFlag = flag
 	End
 End
 
