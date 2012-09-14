@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!--  -->
+<TextureAtlas imagePath="sprites.png">
+    <SubTexture name="shield_kite" x="1" y="1" width="64" height="64"/>
+    <SubTexture name="shield_round" x="67" y="1" width="64" height="64"/>
+    <SubTexture name="archer" x="133" y="1" width="64" height="64"/>
+    <SubTexture name="orc" x="1" y="67" width="64" height="64"/>
+    <SubTexture name="axe" x="67" y="67" width="64" height="64"/>
+    <SubTexture name="broadsword" x="133" y="67" width="64" height="64"/>
+    <SubTexture name="longsword" x="1" y="133" width="64" height="64"/>
+</TextureAtlas>
