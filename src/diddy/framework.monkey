@@ -631,8 +631,9 @@ Public
 		End
 
 		SetScreenSize(Int(sw), Int(sh), useAspectBool)
+		Local globalElement:XMLElement = rootElement.GetFirstChildByName("global")
 		
-		Local resourcesElement:XMLElement = rootElement.GetFirstChildByName("resources")
+		Local resourcesElement:XMLElement = globalElement.GetFirstChildByName("resources")
 		
 		' read the images
 		LoadXMLImages(resourcesElement)

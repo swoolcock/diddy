@@ -1,13 +1,15 @@
 <diddy screenWidth="800" screenHeight="600" useAspectRatio="true">
-	<resources>
-		<images>
-			<image path="sprites/Ship1.png" name="Ship" width="64" height="64" frames="7" />
-			<image path="backgrounds/bg_1_1.png" midhandle="false" />
-		</images>
-		<sounds>
-			<sound path="Firelaser" name="fire" soundDelay="100" ignoreCache="false" />
-		</sounds>
-	</resources>
+	<global>
+		<resources>
+			<images>
+				<image path="sprites/Ship1.png" name="Ship" width="64" height="64" frames="7" />
+				<image path="backgrounds/bg_1_1.png" midhandle="false" />
+			</images>
+			<sounds>
+				<sound path="Firelaser" name="fire" soundDelay="100" ignoreCache="false" />
+			</sounds>
+		</resources>
+	</global>
 	<screens>
 		<screen class="TitleScreen" name="Title">
 			<resources>
