@@ -53,6 +53,7 @@ Import functions
 Import collections
 Import inputcache
 Import xml
+Import diddydata
 
 'Device width and height
 Global DEVICE_WIDTH:Float
@@ -147,6 +148,8 @@ Class DiddyApp Extends App
 	Field lastNumTicks:Float
 	Field maxMs:Int = 50
 	Field lastTime:Float
+	
+	Field diddyData:DiddyData
 	
 Private
 	Field useFixedRateLogic:Bool = False
@@ -278,7 +281,9 @@ Public
 			End
 			
 			' render the screen
+			currentScreen.RenderBackgroundLayers()
 			currentScreen.Render()
+			currentScreen.RenderForegroundLayers()
 			
 			If virtualResOn
 				If aspectRatioOn
@@ -511,166 +516,12 @@ Public
 		Return 0
 	End
 	
-	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
-		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
-		If imagesElement <> null Then
-			Local tmpImage:Image
-			For Local node:XMLElement = EachIn imagesElement.GetChildrenByName("image")
-				Local name:String = node.GetAttribute("name").Trim()
-				Local path:String = node.GetAttribute("path").Trim()
-				Local frames:Int = Int(node.GetAttribute("frames").Trim())
-				Local width:Int = Int(node.GetAttribute("width").Trim())
-				Local height:Int = Int(node.GetAttribute("height").Trim())
-				Local midhandle:String = node.GetAttribute("midhandle").Trim()
-				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
-				Local readPixels:String = node.GetAttribute("readPixels").Trim()
-				Local maskRed:Int = Int(node.GetAttribute("maskRed").Trim())
-				Local maskGreen:Int = Int(node.GetAttribute("maskGreen").Trim())
-				Local maskBlue:Int = Int(node.GetAttribute("maskBlue").Trim())
-				
-				Local midhandleBool:Bool
-				If midhandle
-					If midhandle.ToUpper() = "TRUE" Then midhandleBool = True Else midhandleBool = False
-				Else
-					midhandleBool = True
-				End
-				
-				Local ignoreCacheBool:Bool
-				If ignoreCache
-					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
-				Else
-					ignoreCacheBool = False
-				End
-				
-				Local readPixelsBool:Bool
-				If readPixels
-					If readPixels.ToUpper() = "TRUE" Then readPixelsBool = True Else readPixelsBool = False
-				Else
-					readPixelsBool = False
-				End
-				
-				If debugOn
-					Print "name 		= " + name
-					Print "path 		= " + path
-					Print "frames		= " + frames
-					Print "width 		= " + width
-					Print "height 		= " + height
-					Print "midhandle 	= " + midhandle
-					Print "ignoreCache	= " + ignoreCache
-				End
-				
-				' if frames > 1 assume its an animation image
-				If frames > 1
-					images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
-				Else
-					images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
-				End
-				
-			Next
-		End
-	End
-	
-	Method LoadXMLSounds:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
-		Local soundsElement:XMLElement = xmlElement.GetFirstChildByName("sounds")
-		If soundsElement <> null Then
-			For Local node:XMLElement = EachIn soundsElement.GetChildrenByName("sound")
-				Local name:String = node.GetAttribute("name").Trim()
-				Local path:String = node.GetAttribute("path").Trim()
-				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
-				Local soundDelay:String = node.GetAttribute("soundDelay").Trim()
-				
-				If debugOn
-					Print "name 		= " + name
-					Print "path 		= " + path
-					Print "ignoreCache	= " + ignoreCache
-					Print "soundDelay	= " + soundDelay
-				End
-				
-				Local ignoreCacheBool:Bool
-				If ignoreCache
-					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
-				Else
-					ignoreCacheBool = False
-				End
-				
-				sounds.Load(path, name, ignoreCacheBool, Int(soundDelay), preLoad, screenName)
-			Next
-		End
-	End
-	
 	'summary: Loads in the diddydata xml file
-	Method LoadDiddyData:Void()
-		Local str:String = LoadString("diddydata.xml")
-		If Not str Then
-			Throw New DiddyException("Cannot load diddydata.xml file!")
-		End
-		
-		' parse the xml
-		Local parser:XMLParser = New XMLParser
-		Local doc:XMLDocument = parser.ParseString(str)
-		Local rootElement:XMLElement = doc.Root
-		
-		Local sw:String = rootElement.GetAttribute("screenWidth").Trim()
-		If not sw Then sw = 640
-
-		Local sh:String = rootElement.GetAttribute("screenHeight").Trim()
-		If not sh Then sh = 480
-
-		Local useAspect:String = rootElement.GetAttribute("useAspectRatio").Trim()
-		Local useAspectBool:Bool
-		If useAspect
-			If useAspect.ToUpper() = "TRUE" Then useAspectBool = True Else useAspectBool = False
-		Else
-			useAspectBool = False
-		End
-		
-		If debugOn
-			Print "screenWidth    = " + sw
-			Print "screenHeight   = " + sh
-			Print "useAspectRatio = " + useAspect
-		End
-
-		SetScreenSize(Int(sw), Int(sh), useAspectBool)
-		Local globalElement:XMLElement = rootElement.GetFirstChildByName("global")
-		
-		Local resourcesElement:XMLElement = globalElement.GetFirstChildByName("resources")
-		
-		' read the images
-		LoadXMLImages(resourcesElement)
-		
-		'read the sounds
-		LoadXMLSounds(resourcesElement)
-				
-		Local screenElement:XMLElement = rootElement.GetFirstChildByName("screens")
-		For Local node:XMLElement = EachIn screenElement.GetChildrenByName("screen")
-			Local name:String = node.GetAttribute("name").Trim()
-			Local clazz:String = node.GetAttribute("class").Trim()
-			
-			If debugOn
-				Print "name  = " + name
-				Print "class = " + clazz
-			End
-			Local ci:ClassInfo = GetClass(clazz)
-			Local scr:Screen = Screen(ci.NewInstance())
-			scr.name = name
-			
-			For Local screenXml:XMLElement = EachIn node.GetChildrenByName("resources")
-				LoadXMLImages(screenXml, True, scr.name)
-				LoadXMLSounds(screenXml, True, scr.name)
-				
-				Local musicXML:XMLElement = screenXml.GetFirstChildByName("music")
-				If musicXML <> null Then
-					Local musicPath:String = musicXML.GetAttribute("path").Trim()
-					Local musicFlag:Int = Int(musicXML.GetAttribute("flag").Trim())
-					scr.SetMusic(musicPath, Int(musicFlag))
-				End
-			Next
-			
-			screens.Add(name.ToUpper(), scr)
-		Next
-		
+	Method LoadDiddyData:Void(filename:String="diddydata.xml")
+		diddyData = New DiddyData(filename)
 	End
 End
+
 
 'summary: Map to store the Screens
 Class Screens Extends StringMap<Screen>
@@ -799,10 +650,10 @@ Private
 	Field autoFadeInMusic:Bool = False
 	Field musicPath:String
 	Field musicFlag:Int
-		
+
 Public
 	Field name:String = ""
-
+	Field layers:ArrayList<DiddyDataLayer>
 	
 	Method PreStart:Void()
 		game.currentScreen = Self
@@ -836,6 +687,25 @@ Public
 		If musicPath <> "" Then game.MusicPlay(musicPath, musicFlag)
 		
 		Start()
+	End
+	
+	Method RenderBackgroundLayers:Void()
+		If layers Then
+			For Local layer:DiddyDataLayer = Eachin layers
+				If layer.index >= 0 Then Return
+				layer.Render()
+			Next
+		End
+	End
+	
+	Method RenderForegroundLayers:Void()
+		If layers Then
+			For Local layer:DiddyDataLayer = Eachin layers
+				If layer.index >= 0 Then
+					layer.Render()
+				End
+			Next
+		End
 	End
 	
 	Method Start:Void() Abstract
