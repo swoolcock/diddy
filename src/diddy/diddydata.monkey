@@ -70,7 +70,7 @@ Class DiddyData
 			Local layersNode:XMLElement = node.GetFirstChildByName("layers")
 			If layersNode Then
 				For Local layerNode:XMLElement = Eachin layersNode.GetChildrenByName("layer")
-					If Not scr.layers Then scr.layers = New ArrayList<DiddyDataLayer>
+					If Not scr.layers Then scr.layers = New DiddyDataLayers
 					Local layer:DiddyDataLayer = New DiddyDataLayer
 					scr.layers.Add(layer)
 					layer.InitFromXML(layerNode)
@@ -170,13 +170,42 @@ Class DiddyData
 	End
 End
 
+Class DiddyDataLayers Extends ArrayList<DiddyDataLayer>
+	Method Find:DiddyDataLayer(name:String)
+		name = name.ToLower()
+		For Local i:Int = 0 Until Size
+			Local layer:DiddyDataLayer = Get(i)
+			If layer.name.ToLower() = name Then Return layer
+		Next
+		Return Null
+	End
+	
+	Method Find:DiddyDataLayer(index:Int)
+		For Local i:Int = 0 Until Size
+			Local layer:DiddyDataLayer = Get(i)
+			If layer.index = index Then Return layer
+		Next
+		Return Null
+	End
+	
+	Method FindObject:DiddyDataObject(name:String)
+		name = name.ToLower()
+		For Local i:Int = 0 Until Size
+			Local layer:DiddyDataLayer = Get(i)
+			Local obj:DiddyDataObject = layer.objects.Find(name)
+			If obj Then Return obj
+		Next
+		Return Null
+	End
+End
+
 Class DiddyDataLayer Implements IComparable
 	Field name:String
 	Field index:Int
-	Field objects:ArrayList<DiddyDataObject> = New ArrayList<DiddyDataObject>
+	Field objects:DiddyDataObjects = New DiddyDataObjects
 	
 	Method InitFromXML:Void(node:XMLElement)
-		name = node.GetAttribute("name").Trim()
+		name = node.GetAttribute("name", "").Trim()
 		index = Int(node.GetAttribute("index", "0").Trim())
 		For Local child:XMLElement = Eachin node.GetChildrenByName("object")
 			Local obj:DiddyDataObject = New DiddyDataObject
@@ -205,6 +234,17 @@ Class DiddyDataLayer Implements IComparable
 	End
 End
 
+Class DiddyDataObjects Extends ArrayList<DiddyDataObject>
+	Method Find:DiddyDataObject(name:String)
+		name = name.ToLower()
+		For Local i:Int = 0 Until Size
+			Local obj:DiddyDataObject = Get(i)
+			If obj.name.ToLower() = name Then Return obj
+		Next
+		Return Null
+	End
+End
+
 Class DiddyDataObject
 	Field name:String
 	
@@ -230,6 +270,7 @@ Class DiddyDataObject
 	
 	Global rgbArray:Int[] = New Int[3]
 	Method InitFromXML:Void(node:XMLElement)
+		name = node.GetAttribute("name","").Trim()
 		imageName = node.GetAttribute("image","").Trim()
 		x = Float(node.GetAttribute("x","0").Trim())
 		y = Float(node.GetAttribute("y","0").Trim())

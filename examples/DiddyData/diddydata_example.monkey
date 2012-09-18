@@ -44,6 +44,7 @@ Class GameScreen Extends Screen
 	Field planet:GameImage
 	Field sound:GameSound
 	Field boom:GameSound
+	Field planetObj:DiddyDataObject
 	
 	Method Start:Void()
 		sprite = New Sprite(game.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
@@ -56,6 +57,8 @@ Class GameScreen Extends Screen
 		
 		sound = game.sounds.Find("fire")
 		boom = game.sounds.Find("boom")
+		
+		planetObj = layers.FindObject("planet")
 	End
 	
 	Method Render:Void()
@@ -72,6 +75,18 @@ Class GameScreen Extends Screen
 		End
 		If KeyDown(KEY_2)
 			boom.Play()
+		End
+		
+		If planetObj Then
+			Local dx:Int = 0, dy:Int = 0, speed:Float = 3
+			If KeyDown(KEY_LEFT) Then dx -= 1
+			If KeyDown(KEY_RIGHT) Then dx += 1
+			If KeyDown(KEY_UP) Then dy -= 1
+			If KeyDown(KEY_DOWN) Then dy += 1
+			If dx <> 0 Or dy <> 0 Then
+				planetObj.x += dx * speed * dt.delta
+				planetObj.y += dy * speed * dt.delta
+			End
 		End
 		
 		If KeyHit(KEY_ESCAPE)
