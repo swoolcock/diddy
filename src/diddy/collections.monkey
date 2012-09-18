@@ -1289,9 +1289,9 @@ End
 
 'summary: See the commented code for an example of what your class should look like.
 ' Poolable objects need to retain a field that indicates whether or not they are active.  Since
-' IPoolable is an interface, it cannot provide that field automatically.  You must create the field
+' IArrayPoolable is an interface, it cannot provide that field automatically.  You must create the field
 ' yourself and implement the properties to access it.
-Interface IPoolable
+Interface IArrayPoolable
 '	Field activeInPool:Bool = False
 
 	Method ActiveInPool:Bool() Property
@@ -1315,7 +1315,7 @@ End
 ' The type of these objects can NEVER change, so don't try to downcast it.  The point of pooling is to reduce the need for runtime
 ' object instantiation.
 ' To use the pool, instantiate it with your object type and the maximum number of objects in the pool.  The default constructor for
-' your type will be used to fill the pool.  Your object must implement the IPoolable interface.
+' your type will be used to fill the pool.  Your object must implement the IArrayPoolable interface.
 ' To retrieve an object from the pool, use the GetObject() method.  To release it, simply set the ActiveInPool property on your
 ' object to false, and it will be released on the next purge.  Automatic purges happen in two cases; before an EachIn, and before
 ' a Sort().  If you purge the pool during an EachIn, it will throw a ConcurrentModificationException to prevent you from looping on
@@ -1324,7 +1324,7 @@ End
 ' When looping, it is still a good idea to check the active state of the object, in case you have released it at some point in your
 ' code.
 ' Note that if the pool is full, a call to GetObject() will return Null.
-Class Pool<T> ' <T implements IPoolable>
+Class ArrayPool<T> ' <T implements IArrayPoolable>
 Private
 	Field comparator:IComparator = Null
 	Field objects:Object[] ' we use Object[] instead of T[] so that we can pass it into QuickSort()
@@ -1333,12 +1333,12 @@ Private
 	Field modCount:Int = 0
 	
 	Method InitPool:Void(capacity:Int)
-		If capacity <= 0 Then Throw New IllegalArgumentException("Pool.InitPool: Capacity must be > 0")
+		If capacity <= 0 Then Throw New IllegalArgumentException("ArrayPool.InitPool: Capacity must be > 0")
 		Self.capacity = capacity
 		objects = New Object[capacity]
 		For Local i:Int = 0 Until capacity
 			objects[i] = New T
-			If i = 0 And Not IPoolable(objects[i]) Then Throw New IllegalArgumentException("Pool.InitPool: Pool generic parameter must implement IPoolable!")
+			If i = 0 And Not IArrayPoolable(objects[i]) Then Throw New IllegalArgumentException("ArrayPool.InitPool: Pool generic parameter must implement IArrayPoolable!")
 		Next
 	End
 	
@@ -1374,8 +1374,8 @@ Public
 		If activeCount >= capacity Then Return Null
 		Local rv:T = T(objects[activeCount])
 		activeCount += 1
-		IPoolable(rv).ActiveInPool = True
-		IPoolable(rv).InitFromPool(arg)
+		IArrayPoolable(rv).ActiveInPool = True
+		IArrayPoolable(rv).InitFromPool(arg)
 		Return rv
 	End
 	
@@ -1384,15 +1384,15 @@ Public
 		Local current:Int = 0
 		While current < activeCount
 			' if the low index is active
-			If IPoolable(objects[current]).ActiveInPool Then
+			If IArrayPoolable(objects[current]).ActiveInPool Then
 				' move to the next index
 				current += 1
 			Else
 				' else, reduce the active count until we find one to swap with
-				While current < activeCount And Not IPoolable(objects[activeCount-1]).ActiveInPool
+				While current < activeCount And Not IArrayPoolable(objects[activeCount-1]).ActiveInPool
 					modCount += 1
 					activeCount -= 1
-					IPoolable(objects[activeCount]).PurgedFromPool()
+					IArrayPoolable(objects[activeCount]).PurgedFromPool()
 				End
 				' if we have an active to swap, do it
 				If current < activeCount Then
@@ -1400,7 +1400,7 @@ Public
 					Local oldObject:Object = objects[current]
 					objects[current] = objects[activeCount-1]
 					objects[activeCount-1] = oldObject
-					IPoolable(oldObject).PurgedFromPool()
+					IArrayPoolable(oldObject).PurgedFromPool()
 					activeCount -= 1
 				End
 			End
@@ -1410,14 +1410,14 @@ Public
 	'summary: Resets all objects (the Purge() call will ensure that PurgedFromPool() is called for each).
 	Method Clear:Void()
 		For Local i% = 0 Until activeCount
-			IPoolable(objects[i]).ActiveInPool = False
+			IArrayPoolable(objects[i]).ActiveInPool = False
 		Next
 		Purge()
 	End
 	
 	'summary: Returns a Monkey-style enumerator for EachIn.
-	Method ObjectEnumerator:PoolEnumerator<T>()
-		Return New PoolEnumerator<T>(Self)
+	Method ObjectEnumerator:ArrayPoolEnumerator<T>()
+		Return New ArrayPoolEnumerator<T>(Self)
 	End
 	
 	'summary: Performs a quicksort on the pool, doing a purge first.
@@ -1434,20 +1434,20 @@ End
 
 'summary: Monkey-style enumerator class for EachIn
 'When you call EachIn, the pool is purged.  If you wish to loop on a sorted pool, call Sort() first (which also purges).
-Class PoolEnumerator<T>
+Class ArrayPoolEnumerator<T>
 Private
-	Field pool:Pool<T>
+	Field pool:ArrayPool<T>
 	Field snapshotActiveCount:Int
 	Field currentIndex:Int
 	Field modCount:Int
 	
-	Method New(pool:Pool<T>)
+	Method New(pool:ArrayPool<T>)
 		Self.pool = pool
 		Reset()
 	End
 	
 	Method CheckConcurrency:Void()
-		If modCount <> pool.modCount Then Throw New ConcurrentModificationException("PoolEnumerator.CheckConcurrency: Concurrent pool modification.")
+		If modCount <> pool.modCount Then Throw New ConcurrentModificationException("ArrayPoolEnumerator.CheckConcurrency: Concurrent pool modification.")
 	End
 	
 Public
@@ -1465,7 +1465,7 @@ Public
 
 	Method NextObject:T()
 		CheckConcurrency()
-		If Not HasNext() Then Throw New IndexOutOfBoundsException("PoolEnumerator.NextObject: Couldn't get next object, index "+currentIndex+" >= "+snapshotActiveCount)
+		If Not HasNext() Then Throw New IndexOutOfBoundsException("ArrayPoolEnumerator.NextObject: Couldn't get next object, index "+currentIndex+" >= "+snapshotActiveCount)
 		currentIndex += 1
 		Return T(pool.objects[currentIndex-1])
 	End
