@@ -90,6 +90,7 @@ Class DiddyApp Extends App
 	
 	Field virtualResOn:Bool = True
 	Field aspectRatioOn:Bool = False
+	Field autoCls:Bool = False
 
 	Field aspectRatio:Float
 	Field multi:Float
@@ -279,6 +280,9 @@ Public
 					Scale SCREENX_RATIO, SCREENY_RATIO
 				End
 			End
+			
+			' auto cls
+			If autoCls Then Cls()
 			
 			' render the screen
 			currentScreen.RenderBackgroundLayers()
@@ -518,6 +522,7 @@ Public
 	
 	'summary: Loads in the diddydata xml file
 	Method LoadDiddyData:Void(filename:String="diddydata.xml")
+		autoCls = True
 		diddyData = New DiddyData(filename)
 	End
 End

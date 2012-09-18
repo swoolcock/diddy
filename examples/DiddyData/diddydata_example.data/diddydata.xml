@@ -33,8 +33,8 @@
 			<layers>
 				<!-- negative values get drawn before Render() -->
 				<layer index="-1">
-					<object image="background" x="0" y="0" />
-					<object image="planet" x="10" y="100" />
+					<object image="bg_1_1" x="0" y="0" />
+					<object image="planet" x="700" y="400" />
 				</layer>
 				<!-- non-negative values get drawn after Render() -->
 				<layer index="0">

@@ -59,9 +59,6 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Render:Void()
-		Cls
-		background.Draw(0, 0)
-		planet.Draw(700, 400)
 		asteroid.Draw()
 		sprite.Draw()
 	End
