@@ -32,12 +32,14 @@
 			</resources>
 			<layers>
 				<!-- negative values get drawn before Render() -->
-				<layer index="-1">
+				<layer index="-2">
 					<object image="bg_1_1" x="0" y="0" />
-					<object image="planet" x="700" y="400" />
+				</layer>
+				<layer index="-1">
+					<object name="planet" image="planet" x="700" y="400" />
 				</layer>
 				<!-- non-negative values get drawn after Render() -->
-				<layer index="0">
+				<layer name="hud" index="0">
 					<!-- put your HUD here -->
 				</layer>
 			</layers>
