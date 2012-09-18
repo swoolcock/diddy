@@ -1,6 +1,7 @@
 Strict
 
 Import framework
+Import functions
 Import collections
 
 Class DiddyData
@@ -66,13 +67,15 @@ Class DiddyData
 				End
 			Next
 			
-			For Local layerNode:XMLElement = Eachin node.GetChildrenByName("layers")
-				If Not scr.layers Then scr.layers = New ArrayList<DiddyDataLayer>
-				Local layer:DiddyDataLayer = New DiddyDataLayer
-				layer.name = layerNode.GetAttribute("name").Trim()
-				layer.index = Int(layerNode.GetAttribute("index", "0").Trim())
-				scr.layers.Add(layer)
-			Next
+			Local layersNode:XMLElement = node.GetFirstChildByName("layers")
+			If layersNode Then
+				For Local layerNode:XMLElement = Eachin layersNode.GetChildrenByName("layer")
+					If Not scr.layers Then scr.layers = New ArrayList<DiddyDataLayer>
+					Local layer:DiddyDataLayer = New DiddyDataLayer
+					scr.layers.Add(layer)
+					layer.InitFromXML(layerNode)
+				Next
+			End
 			
 			If scr.layers Then scr.layers.Sort()
 			
@@ -170,6 +173,17 @@ End
 Class DiddyDataLayer Implements IComparable
 	Field name:String
 	Field index:Int
+	Field objects:ArrayList<DiddyDataObject> = New ArrayList<DiddyDataObject>
+	
+	Method InitFromXML:Void(node:XMLElement)
+		name = node.GetAttribute("name").Trim()
+		index = Int(node.GetAttribute("index", "0").Trim())
+		For Local child:XMLElement = Eachin node.GetChildrenByName("object")
+			Local obj:DiddyDataObject = New DiddyDataObject
+			objects.Add(obj)
+			obj.InitFromXML(child)
+		Next
+	End
 	
 	Method Compare:Int(other:Object)
 		Local ol:DiddyDataLayer = DiddyDataLayer(other)
@@ -182,8 +196,12 @@ Class DiddyDataLayer Implements IComparable
 		Return other = Self Or DiddyDataLayer(other) And DiddyDataLayer(other).index = Self.index
 	End
 	
-	Method Render:Void()
-		' TODO: render objects
+	Method Render:Void(xoffset:Float=0, yoffset:Float=0)
+		For Local obj:DiddyDataObject = Eachin objects
+			If obj.visible Then
+				obj.Render(xoffset, yoffset)
+			End
+		Next
 	End
 End
 
@@ -192,5 +210,62 @@ Class DiddyDataObject
 	
 	Field image:GameImage
 	Field imageName:String
+	
+	Field x:Float
+	Field y:Float
+	Field scaleX:Float
+	Field scaleY:Float
+	Field rotation:Float
+	
+	Field visible:Bool = True
+	Field alpha:Float = 1
+	
+	Field red:Int = 255
+	Field green:Int = 255
+	Field blue:Int = 255
+	Field hue:Float = 1
+	Field saturation:Float = 1
+	Field luminance:Float = 0.5
+	Field useHSL:Bool = False
+	
+	Global rgbArray:Int[] = New Int[3]
+	Method InitFromXML:Void(node:XMLElement)
+		imageName = node.GetAttribute("image","").Trim()
+		x = Float(node.GetAttribute("x","0").Trim())
+		y = Float(node.GetAttribute("y","0").Trim())
+		scaleX = Float(node.GetAttribute("scaleX","1").Trim())
+		scaleY = Float(node.GetAttribute("scaleY","1").Trim())
+		rotation = Float(node.GetAttribute("rotation","0").Trim())
+		
+		visible = (node.GetAttribute("visible","true").Trim().ToLower() = "true")
+		alpha = Float(node.GetAttribute("alpha","1").Trim())
+		
+		If node.HasAttribute("hue") Or node.HasAttribute("saturation") Or node.HasAttribute("luminance") Then
+			hue = Float(node.GetAttribute("hue","0").Trim())
+			saturation = Float(node.GetAttribute("saturation","1").Trim())
+			luminance = Float(node.GetAttribute("luminance","0.5").Trim())
+			HSLtoRGB(hue, saturation, luminance, rgbArray)
+			red = rgbArray[0]
+			green = rgbArray[1]
+			blue = rgbArray[2]
+			useHSL = True
+		Else
+			red = Int(node.GetAttribute("red","255").Trim())
+			green = Int(node.GetAttribute("green","255").Trim())
+			blue = Int(node.GetAttribute("blue","255").Trim())
+			useHSL = False
+		End
+	End
+	
+	Method Render:Void(xoffset:Float=0, yoffset:Float=0)
+		If imageName And visible And alpha > 0 Then
+			If Not image Then image = game.images.Find(imageName)
+			If image Then
+				SetColor(red, green, blue)
+				SetAlpha(alpha)
+				image.Draw(x+xoffset, y+yoffset, rotation, scaleX, scaleY)
+			End
+		End
+	End
 End
 
