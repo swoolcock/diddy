@@ -658,7 +658,7 @@ Private
 
 Public
 	Field name:String = ""
-	Field layers:ArrayList<DiddyDataLayer>
+	Field layers:DiddyDataLayers
 	
 	Method PreStart:Void()
 		game.currentScreen = Self

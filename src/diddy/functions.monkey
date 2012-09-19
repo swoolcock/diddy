@@ -82,14 +82,6 @@ Extern
 	#End
 Public
 
-#If TARGET="ios"
-	Function MouseZInit:Void()
-	End
-	Function MouseZ:Float()
-		Return 0
-	End
-#End
-
 #If TARGET<>"html5" Then
 	Function GetBrowserName:String()
 		Return ""
