@@ -153,18 +153,19 @@ Private
 	Field imageName:String
 	Field image:GameImage
 	
-	Field firstX:Float, firstY:Float
-	field firstScaleX:Float, firstScaleY:Float
-	Field firstScale:Float, firstRotation:Float
-	Field firstRed:Float, firstGreen:Float, firstBlue:Float, firstAlpha:Float
+	Field firstX:Float=0, firstY:Float=0
+	field firstScaleX:Float=1, firstScaleY:Float=1
+	Field firstScale:Float=1, firstRotation:Float=0
+	Field firstRed:Float=255, firstGreen:Float=255, firstBlue:Float=255, firstAlpha:Float=1
 	
-	Field x:Float, y:Float
-	field scaleX:Float, scaleY:Float
-	Field scale:Float, rotation:Float
-	Field red:Float, green:Float, blue:Float, alpha:Float
+	Field x:Float=0, y:Float=0
+	field scaleX:Float=1, scaleY:Float=1
+	Field scale:Float=1, rotation:Float=0
+	Field red:Float=255, green:Float=255, blue:Float=255, alpha:Float=1
 	
 	Field transforms:ArrayList<StoryboardSpriteTransform> = New ArrayList<StoryboardSpriteTransform>
 	Field currentTransforms:StoryboardSpriteTransform[] = New StoryboardSpriteTransform[TRANSFORM_COUNT]
+	Field hasTransforms:Bool = False
 	
 Public
 	Function CreateFromXML:StoryboardSprite(node:XMLElement, layer:Int)
@@ -179,7 +180,7 @@ Public
 		sprite.firstRed = Float(node.GetAttribute("red","255"))
 		sprite.firstGreen = Float(node.GetAttribute("green","255"))
 		sprite.firstBlue = Float(node.GetAttribute("blue","255"))
-		sprite.firstAlpha = Float(node.GetAttribute("alpha","0"))
+		sprite.firstAlpha = Float(node.GetAttribute("alpha","1"))
 		CreateTransformsFromXML(sprite, node)
 		Return sprite
 	End
@@ -226,17 +227,23 @@ Public
 		For Local i:Int = 0 Until transforms.Size
 			transforms.Get(i).Update(currentTime)
 		Next
+		hasTransforms = False
 		For Local i:Int = 0 Until currentTransforms.Length
 			currentTransforms[i] = GetActiveTransform(i, currentTime)
-			If currentTransforms[i] Then currentTransforms[i].Apply(Self)
+			If currentTransforms[i] Then
+				currentTransforms[i].Apply(Self)
+				hasTransforms = True
+			End
 		Next
 	End
 	
 	Method Render:Void()
 		If Not image Then image = game.images.Find(imageName)
-		If Not image Then Return
-		
-		If alpha = 0 Then Return
+		If Not image Then
+			Print "Couldn't load "+imageName+" for sprite."
+			Return
+		End
+		If Not hasTransforms Or alpha = 0 Then Return
 		
 		' translation, scale, rotation, handle, other effects
 		PushMatrix
