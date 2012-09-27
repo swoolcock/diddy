@@ -153,7 +153,7 @@ Private
 	Field imageName:String
 	Field image:GameImage
 	
-	Field firstX=0:Float, firstY:Float=0
+	Field firstX:Float=0, firstY:Float=0
 	field firstScaleX:Float=1, firstScaleY:Float=1
 	Field firstScale:Float=1, firstRotation:Float=0
 	Field firstRed:Float=255, firstGreen:Float=255, firstBlue:Float=255, firstAlpha:Float=1
