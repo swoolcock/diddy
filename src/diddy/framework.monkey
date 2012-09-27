@@ -1092,8 +1092,8 @@ Class ImageBank Extends StringMap<GameImage>
 			Next
 		End
 		Local i:GameImage = Self.Get(name)
-		If i.preLoad and i.image = null Then AssertError("Image '" + name + "' not found in the ImageBank")
 		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
+		If i.preLoad and i.image = null Then AssertError("Image '" + name + "' not found in the ImageBank")
 		Return i
 	End
 	

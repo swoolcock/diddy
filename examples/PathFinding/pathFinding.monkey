@@ -10,7 +10,6 @@ Function Main:Int()
 End
 
 Class MyGame Extends DiddyApp
-
 	Method Create:Void()
 		gameScreen = New GameScreen
 		Start(gameScreen)
@@ -131,15 +130,49 @@ Class GameScreen Extends Screen
 			End
 		End
 
+		If KeyHit(KEY_R)
+			'reset
+			x = 0
+			y = 0
+			For fy = 0 Until MAP_HEIGHT
+				For fx = 0 Until MAP_WIDTH
+					grid[fx + fy * MAP_WIDTH] = 0
+				Next
+			Next
+			PathFinder.route = PathFinder.route.Resize(0)
+			PathFinder.paths = 0
+		End
+
 		If KeyHit(KEY_ESCAPE)
 			FadeToScreen(Null)
 		End
 	End
 		
 	Method DrawHUD:Void()
-		DrawText "No. of paths = "+ PathFinder.paths, SCREEN_WIDTH, 10, 1
-		DrawText "Mouse Grid = "+ mx+ "," + my, SCREEN_WIDTH, 30, 1
-		If PathFinder.route.Length() > 0 Then DrawText "currentPath = " + PathFinder.route[currentPath] + "," + PathFinder.route[currentPath + 1], SCREEN_WIDTH, 30, 1		
+		Local yPos:Int = 10
+		Local gap:Int = 20
+		DrawText "No. of paths = "+ PathFinder.paths, SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		DrawText "Mouse Grid = "+ mx+ "," + my, SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		yPos += gap
+		DrawText "Controls:", SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		DrawText "R - Reset", SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		DrawText "Space - Sets End Point", SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		DrawText "LMB - Place Block", SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		DrawText "MMB - Remove Block", SCREEN_WIDTH, yPos, 1
+		yPos += gap
+		yPos += gap
+		If currentPath >= 0 And PathFinder.route.Length() > 0 Then
+			DrawText "currentPath = " + PathFinder.route[currentPath] + "," + PathFinder.route[currentPath + 1], SCREEN_WIDTH, yPos, 1
+		Else
+			DrawText "Fin!", SCREEN_WIDTH, yPos, 1
+		End
+				
 		FPSCounter.Draw(SCREEN_WIDTH, SCREEN_HEIGHT  - 12, 1)
 	End
 End
