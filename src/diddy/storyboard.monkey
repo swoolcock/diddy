@@ -1,12 +1,13 @@
 Strict
 
-Public
-Import exception
-
 Private
 Import mojo
 Import functions
 Import collections
+Import xml
+
+Public
+Import exception
 
 Const TRANSFORM_POSITION:Int = 0
 Const TRANSFORM_ALPHA:Int = 1
@@ -35,7 +36,7 @@ Private
 Public
 	Function LoadXML:Storyboard(filename:String)
 		Local parser:XMLParser = New XMLParser
-		Local doc:XMLDocument = parser.LoadFile("storyboard.xml")
+		Local doc:XMLDocument = parser.ParseFile("storyboard.xml")
 		Local root:XMLElement = doc.Root
 		Local sb:Storyboard = New Storyboard
 		For Local node:XMLElement = EachIn root.Children
@@ -52,19 +53,53 @@ Public
 		Return sb
 	End
 	
+	#Rem
+	Function LoadOSB:Storyboard(filename:String)
+		Local osb:String = LoadString(filename)
+		Local lines:List<String> = New List<String>
+		Local s:Int = 0, e:Int = 0
+		Local prev:Int = 0
+		For Local e:Int = 0 Until osb.Length
+			Local newline:Bool = False
+			If osb[e] = 13 Then
+				newline = True
+			ElseIf osb[e] = 10 Then
+				If prev <> 13 Then
+					newline = True
+				Else
+					s += 1
+				End
+			End
+			If newline Then
+				lines.AddLast(osb[s..e])
+				s = e+1
+			End
+			prev = osb[e]
+		Next
+		If s < e Then lines.AddLast(osb[s..e])
+		For Local i:Int = 0 Until lines.Count
+			Local str:String = lines.Get(i)
+			If str.StartsWith("Sprite") Then
+				Local tokens:String[] = str.Split(",")
+				Local layerStr:String = tokens[1]
+				Local imageName:String = tokens[3]
+		Next
+	End
+	#End
+	
 	Method Update:Void(currentTime:Int)
-		For Local i:Int = 0 Until sprites
+		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Update(currentTime)
 		Next
-		'For Local i:Int = 0 Until sounds
+		'For Local i:Int = 0 Until sounds.Size
 		'	Local sound:StoryboardSound = sounds.Get(i)
 		'	sound.Update(currentTime)
 		'Next
 	End
 	
 	Method Render:Void()
-		For Local i:Int = 0 Until sprites
+		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Render()
 		Next
@@ -118,13 +153,33 @@ Private
 	Field imageName:String
 	Field image:GameImage
 	
+	Field firstX:Float, firstY:Float
+	field firstScaleX:Float, firstScaleY:Float
+	Field firstScale:Float, firstRotation:Float
+	Field firstRed:Float, firstGreen:Float, firstBlue:Float, firstAlpha:Float
+	
+	Field x:Float, y:Float
+	field scaleX:Float, scaleY:Float
+	Field scale:Float, rotation:Float
+	Field red:Float, green:Float, blue:Float, alpha:Float
+	
 	Field transforms:ArrayList<StoryboardSpriteTransform> = New ArrayList<StoryboardSpriteTransform>
 	Field currentTransforms:StoryboardSpriteTransform[] = New StoryboardSpriteTransform[TRANSFORM_COUNT]
 	
 Public
 	Function CreateFromXML:StoryboardSprite(node:XMLElement, layer:Int)
-		Local imageName:String = node.GetAttribute("imageName","")
+		Local imageName:String = node.GetAttribute("image","")
 		Local sprite:StoryboardSprite = New StoryboardSprite(imageName, layer)
+		sprite.firstX = Float(node.GetAttribute("x","0"))
+		sprite.firstY = Float(node.GetAttribute("y","0"))
+		sprite.firstScaleX = Float(node.GetAttribute("scaleX","1"))
+		sprite.firstScaleY = Float(node.GetAttribute("scaleY","1"))
+		sprite.firstScale = Float(node.GetAttribute("scale","1"))
+		sprite.firstRotation = Float(node.GetAttribute("rotation","0"))
+		sprite.firstRed = Float(node.GetAttribute("red","255"))
+		sprite.firstGreen = Float(node.GetAttribute("green","255"))
+		sprite.firstBlue = Float(node.GetAttribute("blue","255"))
+		sprite.firstAlpha = Float(node.GetAttribute("alpha","0"))
 		CreateTransformsFromXML(sprite, node)
 		Return sprite
 	End
@@ -163,48 +218,51 @@ Public
 	End
 	
 	Method Update:Void(currentTime:Int)
+		x = firstX; y = firstY
+		scaleX = firstScaleX; scaleY = firstScaleY
+		scale = firstScale; rotation = firstRotation
+		red = firstRed; green = firstGreen; blue = firstBlue; alpha = firstAlpha
+		
 		For Local i:Int = 0 Until transforms.Size
 			transforms.Get(i).Update(currentTime)
 		Next
 		For Local i:Int = 0 Until currentTransforms.Length
 			currentTransforms[i] = GetActiveTransform(i, currentTime)
+			If currentTransforms[i] Then currentTransforms[i].Apply(Self)
 		Next
 	End
 	
 	Method Render:Void()
 		If Not image Then image = game.images.Find(imageName)
 		If Not image Then Return
-		PushMatrix
+		
+		If alpha = 0 Then Return
+		
 		' translation, scale, rotation, handle, other effects
-		If currentTransforms[TRANSFORM_POSITION] Then currentTransforms[TRANSFORM_POSITION].Apply()
-		If currentTransforms[TRANSFORM_SCALE_VECTOR] Then currentTransforms[TRANSFORM_SCALE_VECTOR].Apply()
-		If currentTransforms[TRANSFORM_SCALE] Then currentTransforms[TRANSFORM_SCALE].Apply()
-		If currentTransforms[TRANSFORM_ROTATION] Then currentTransforms[TRANSFORM_ROTATION].Apply()
-		If currentTransforms[TRANSFORM_HANDLE] Then currentTransforms[TRANSFORM_HANDLE].Apply()
-		If currentTransforms[TRANSFORM_SHAKE] Then currentTransforms[TRANSFORM_SHAKE].Apply()
-		If currentTransforms[TRANSFORM_COLOR] Then currentTransforms[TRANSFORM_COLOR].Apply()
+		PushMatrix
+		Translate x, y
+		Scale scaleX, scaleY
+		Scale scale, scale
+		Rotate rotation
+		SetColor red, green, blue
+		SetAlpha alpha
+		
 		image.Draw(0, 0)
 		PopMatrix
 	End
 	
 	Method GetActiveTransform:StoryboardSpriteTransform(findType:Int, atTime:Int)
-		' by default, we haven't found anything
-		Local active:StoryboardSpriteTransform = Null
 		' loop on all children
 		For Local i:Int = 0 Until transforms.Size
 			Local tr:StoryboardSpriteTransform = transforms.Get(i)
 			If tr.transformType = findType Then
 				' if we're past the start time for this transform
-				If atTime >= tr.startTime Then
-					active = child
-				Else
-					' we've gone past the current time, so break out
-					Exit
+				If atTime >= tr.startTime And atTime <= tr.endTime Then
+					Return tr
 				End
 			End
 		Next
-		' return what we have
-		Return active
+		Return Null
 	End
 End
 
@@ -213,7 +271,7 @@ Private
 	Global hslArray:Float[] = New Float[3]
 	Global rgbArray:Int[] = New Int[3]
 	
-	Field transformType:Int = TRANSFORM_NONE
+	Field transformType:Int = 0
 	
 	Field currentTime:Int
 	Field startTime:Int
@@ -279,6 +337,7 @@ Public
 				Return CreateColorHSL(startTime, endTime, easeType, startHue, startSaturation, startLuminance, endHue, endSaturation, endLuminance)
 			End
 		End
+		Return Null
 	End
 	
 	Function CreateScale:StoryboardSpriteTransform(startTime%, endTime%, easeType%, startScale#, endScale#)
@@ -322,16 +381,16 @@ Public
 	End
 	
 	Function CreateColorHSL:StoryboardSpriteTransform(startTime%, endTime%, easeType%, startHue#, startSaturation#, startLuminance#, endHue#, endSaturation#, endLuminance#)
-		startHue = Max(0.0,Min(1.0,startHue))
-		startSaturation = Max(0.0,Min(1.0,startGreen))
-		startLuminance = Max(0.0,Min(1.0,startBlue))
-		endHue = Max(0.0,Min(1.0,endHue))
-		endSaturation = Max(0.0,Min(1.0,endGreen))
-		endLuminance = Max(0.0,Min(1.0,endBlue))
+		startHue = Max(0.0, Min(1.0, startHue))
+		startSaturation = Max(0.0, Min(1.0, startSaturation))
+		startLuminance = Max(0.0, Min(1.0, startLuminance))
+		endHue = Max(0.0, Min(1.0, endHue))
+		endSaturation = Max(0.0, Min(1.0, endSaturation))
+		endLuminance = Max(0.0, Min(1.0, endLuminance))
 		Return New StoryboardSpriteTransform(TRANSFORM_COLOR, startTime, endTime, easeType, startHue, endHue, startSaturation, endSaturation, startLuminance, endLuminance)
 	End
 	
-	Method New(transformType:Int, startTime:Int, endTime:Int, easeType:Int
+	Method New(transformType:Int, startTime:Int, endTime:Int, easeType:Int,
 							startValue1:Float=0, endValue1:Float=0,
 							startValue2:Float=0, endValue2:Float=0,
 							startValue3:Float=0, endValue3:Float=0,
@@ -342,7 +401,7 @@ Public
 		Self.endTime = endTime
 		Self.easeType = easeType
 		Select transformType
-			Case TRANSFORM_ALPHA, Case TRANSFORM_SCALE, Case TRANSFORM_ROTATION
+			Case TRANSFORM_ALPHA, TRANSFORM_SCALE, TRANSFORM_ROTATION
 				Init(1, startValue1, endValue1)
 			Case TRANSFORM_POSITION, TRANSFORM_SCALE_VECTOR, TRANSFORM_HANDLE
 				Init(2, startValue1, endValue1, startValue2, endValue2)
@@ -358,21 +417,25 @@ Public
 		Next
 	End
 	
-	Method Apply:Void(sprite:StoryboardSprite=Null)
-		Select type
+	Method Apply:Void(sprite:StoryboardSprite)
+		Select transformType
 			Case TRANSFORM_ALPHA
-				SetAlpha(currentValues[0])
+				sprite.alpha = currentValues[0]
 			Case TRANSFORM_SCALE
-				Scale(currentValues[0], currentValues[0])
+				sprite.scale = currentValues[0]
 			Case TRANSFORM_ROTATION
-				Rotate(currentValues[0])
-			Case TRANSFORM_POSITION, TRANSFORM_HANDLE
-				Translate(currentValues[0], currentValues[1])
+				sprite.rotation = currentValues[0]
+			Case TRANSFORM_POSITION
+				sprite.x = currentValues[0]
+				sprite.y = currentValues[1]
 			Case TRANSFORM_SCALE_VECTOR
-				Scale(currentValues[0], currentValues[1])
+				sprite.scaleX = currentValues[0]
+				sprite.scaleY = currentValues[1]
 			Case TRANSFORM_COLOR
 				HSLtoRGB(currentValues[0], currentValues[1], currentValues[2], rgbArray)
-				SetColor(rgbArray[0], rgbArray[1], rgbArray[2])
+				sprite.red = rgbArray[0]
+				sprite.green = rgbArray[1]
+				sprite.blue = rgbArray[2]
 			Case TRANSFORM_HANDLE
 				If sprite And sprite.image And sprite.image.image Then
 					sprite.image.image.SetHandle(currentValues[0], currentValues[1])
@@ -407,23 +470,23 @@ Private
 		startValues = New Float[elementCount]
 		endValues = New Float[elementCount]
 		currentValues = New Float[elementCount]
-		If elementCount <= 1 Then
+		If elementCount >= 1 Then
 			startValues[0] = startValue1
 			endValues[0] = endValue1
 		End
-		If elementCount <= 2 Then
+		If elementCount >= 2 Then
 			startValues[1] = startValue2
 			endValues[1] = endValue2
 		End
-		If elementCount <= 3 Then
+		If elementCount >= 3 Then
 			startValues[2] = startValue3
 			endValues[2] = endValue3
 		End
-		If elementCount <= 4 Then
+		If elementCount >= 4 Then
 			startValues[3] = startValue4
 			endValues[3] = endValue4
 		End
-		If elementCount <= 5 Then
+		If elementCount >= 5 Then
 			startValues[4] = startValue5
 			endValues[4] = endValue5
 		End
