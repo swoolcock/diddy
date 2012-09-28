@@ -5,6 +5,7 @@ Import mojo
 Import functions
 Import collections
 Import xml
+Import format
 
 Public
 Import exception
@@ -32,6 +33,12 @@ Class Storyboard
 Private
 	Field sprites:ArrayList<StoryboardSprite> = New ArrayList<StoryboardSprite>
 	Field sounds:ArrayList<StoryboardSound> = New ArrayList<StoryboardSound>
+	Field debugMode:Bool = False
+	Field name:String
+	Field width:Float
+	Field height:Float
+	Field length:Int
+	Field currentTime:Int
 
 Public
 	Function LoadXML:Storyboard(filename:String)
@@ -39,6 +46,10 @@ Public
 		Local doc:XMLDocument = parser.ParseFile("storyboard.xml")
 		Local root:XMLElement = doc.Root
 		Local sb:Storyboard = New Storyboard
+		sb.name = root.GetAttribute("name","")
+		sb.width = Float(root.GetAttribute("width","640"))
+		sb.height = Float(root.GetAttribute("height","480"))
+		sb.length = Int(root.GetAttribute("length","0"))
 		For Local node:XMLElement = EachIn root.Children
 			If node.Name = "layer" Then
 				Local index:Int = Int(node.GetAttribute("index","0"))
@@ -53,41 +64,16 @@ Public
 		Return sb
 	End
 	
-	#Rem
-	Function LoadOSB:Storyboard(filename:String)
-		Local osb:String = LoadString(filename)
-		Local lines:List<String> = New List<String>
-		Local s:Int = 0, e:Int = 0
-		Local prev:Int = 0
-		For Local e:Int = 0 Until osb.Length
-			Local newline:Bool = False
-			If osb[e] = 13 Then
-				newline = True
-			ElseIf osb[e] = 10 Then
-				If prev <> 13 Then
-					newline = True
-				Else
-					s += 1
-				End
-			End
-			If newline Then
-				lines.AddLast(osb[s..e])
-				s = e+1
-			End
-			prev = osb[e]
-		Next
-		If s < e Then lines.AddLast(osb[s..e])
-		For Local i:Int = 0 Until lines.Count
-			Local str:String = lines.Get(i)
-			If str.StartsWith("Sprite") Then
-				Local tokens:String[] = str.Split(",")
-				Local layerStr:String = tokens[1]
-				Local imageName:String = tokens[3]
-		Next
-	End
-	#End
+	Method DebugMode:Bool() Property Return debugMode End
+	Method DebugMode:Void(debugMode:Bool) Property Self.debugMode = debugMode End
+	Method Name:String() Property Return name End
+	Method Name:Void(name:String) Property Self.name = name End
+	Method Width:Float() Property Return width End
+	Method Height:Float() Property Return height End
+	Method Length:Int() Property Return length End
 	
 	Method Update:Void(currentTime:Int)
+		Self.currentTime = currentTime
 		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Update(currentTime)
@@ -98,11 +84,55 @@ Public
 		'Next
 	End
 	
-	Method Render:Void()
+	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+		If width <= 0 Then width = Self.width
+		If height <= 0 Then height = Self.height
+		Local targetAR:Float = width/height
+		Local sourceAR:Float = Self.width/Self.height
+		' fix aspect ratio
+		If targetAR > sourceAR Then
+			' bars on left/right
+			x += (width-(height*sourceAR))/2
+			width = height*sourceAR
+		ElseIf targetAR < sourceAR Then
+			y += (height-(width/sourceAR))/2
+			height = width/sourceAR
+		End
+		' TODO: scissor
+		PushMatrix
+		Translate x, y
+		Scale Self.width/width, Self.height/height
 		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Render()
 		Next
+		PopMatrix
+		If DebugMode Then
+			' draw time
+			Local millis:Int = currentTime Mod 1000
+			Local secs:Int = (currentTime / 1000) Mod 60
+			Local mins:Int = (currentTime / 60000)
+			SetAlpha(1)
+			SetColor(255,255,255)
+			DrawText(Format("%02d:%02d:%03d", mins, secs, millis), 0, 0)
+			' draw timeline bar
+			DrawLine 10,SCREEN_HEIGHT-10,10,SCREEN_HEIGHT-30
+			DrawLine SCREEN_WIDTH-10,SCREEN_HEIGHT-10,SCREEN_WIDTH-10,SCREEN_HEIGHT-30
+			DrawLine 10,SCREEN_HEIGHT-20,SCREEN_WIDTH-10,SCREEN_HEIGHT-20
+			' draw timeline ticks
+			For Local i:Int = 0 Until length Step 5000
+				Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(i)/length)
+				Local y:Int = SCREEN_HEIGHT-22
+				If i Mod 30000 = 0 Then y -= 2
+				If i Mod 60000 = 0 Then y -= 2
+				DrawLine(x, y, x, SCREEN_HEIGHT-20)
+			Next
+			' draw current time bar
+			Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(currentTime)/length)
+			SetColor 255,0,0
+			DrawLine x,SCREEN_HEIGHT-28,x,SCREEN_HEIGHT-12
+			SetColor 255,255,255
+		End
 	End
 End
 
@@ -165,7 +195,9 @@ Private
 	
 	Field transforms:ArrayList<StoryboardSpriteTransform> = New ArrayList<StoryboardSpriteTransform>
 	Field currentTransforms:StoryboardSpriteTransform[] = New StoryboardSpriteTransform[TRANSFORM_COUNT]
-	Field hasTransforms:Bool = False
+	Field earliestStart:Int, latestEnd:Int
+	Field currentTime:Int
+	Field hasTransform:Bool = False
 	
 Public
 	Function CreateFromXML:StoryboardSprite(node:XMLElement, layer:Int)
@@ -182,6 +214,12 @@ Public
 		sprite.firstBlue = Float(node.GetAttribute("blue","255"))
 		sprite.firstAlpha = Float(node.GetAttribute("alpha","1"))
 		CreateTransformsFromXML(sprite, node)
+		sprite.transforms.Sort()
+		For Local i:Int = 0 Until sprite.transforms.Size
+			Local tr:StoryboardSpriteTransform = sprite.transforms.Get(i)
+			If i=0 Or sprite.earliestStart > tr.startTime Then sprite.earliestStart = tr.startTime
+			If i=0 Or sprite.latestEnd < tr.endTime Then sprite.latestEnd = tr.endTime
+		Next
 		Return sprite
 	End
 	
@@ -219,31 +257,32 @@ Public
 	End
 	
 	Method Update:Void(currentTime:Int)
+		Self.currentTime = currentTime
 		x = firstX; y = firstY
 		scaleX = firstScaleX; scaleY = firstScaleY
 		scale = firstScale; rotation = firstRotation
 		red = firstRed; green = firstGreen; blue = firstBlue; alpha = firstAlpha
+		hasTransform = False
 		
-		For Local i:Int = 0 Until transforms.Size
-			transforms.Get(i).Update(currentTime)
-		Next
-		hasTransforms = False
-		For Local i:Int = 0 Until currentTransforms.Length
-			currentTransforms[i] = GetActiveTransform(i, currentTime)
-			If currentTransforms[i] Then
-				currentTransforms[i].Apply(Self)
-				hasTransforms = True
-			End
-		Next
+		If currentTime >= earliestStart And currentTime <= latestEnd Then
+			For Local i:Int = 0 Until transforms.Size
+				Local tr:StoryboardSpriteTransform = transforms.Get(i)
+				If tr.startTime <= currentTime Then
+					transforms.Get(i).Update(currentTime)
+					transforms.Get(i).Apply(Self)
+				End
+				If Not hasTransform And currentTime >= tr.startTime And currentTime <= tr.endTime Then hasTransform = True
+			Next
+		End
 	End
 	
 	Method Render:Void()
+		If Not hasTransform Or alpha = 0 Then Return
 		If Not image Then image = game.images.Find(imageName)
 		If Not image Then
 			Print "Couldn't load "+imageName+" for sprite."
 			Return
 		End
-		If Not hasTransforms Or alpha = 0 Then Return
 		
 		' translation, scale, rotation, handle, other effects
 		PushMatrix
@@ -256,20 +295,6 @@ Public
 		
 		image.Draw(0, 0)
 		PopMatrix
-	End
-	
-	Method GetActiveTransform:StoryboardSpriteTransform(findType:Int, atTime:Int)
-		' loop on all children
-		For Local i:Int = 0 Until transforms.Size
-			Local tr:StoryboardSpriteTransform = transforms.Get(i)
-			If tr.transformType = findType Then
-				' if we're past the start time for this transform
-				If atTime >= tr.startTime And atTime <= tr.endTime Then
-					Return tr
-				End
-			End
-		Next
-		Return Null
 	End
 End
 
@@ -285,6 +310,8 @@ Private
 	Field endTime:Int
 	Field easeType:Int
 	
+	Field hasValues:Bool = True
+	
 	Field startValues:Float[]
 	Field endValues:Float[]
 	Field currentValues:Float[]
@@ -294,7 +321,28 @@ Public
 		Local name:String = node.Name
 		Local startTime:Int = Int(node.GetAttribute("startTime","0"))+timeOffset
 		Local endTime:Int = Int(node.GetAttribute("endTime","0"))+timeOffset
-		Local easeType:Int = Int(node.GetAttribute("easeType","0"))
+		
+		Local easeStr:String = node.GetAttribute("easeType","")
+		Local easeType:Int = EASE_NONE
+		Select easeStr.ToLower()
+			Case "in", ""+EASE_IN
+				easeType = EASE_IN
+			Case "inhalf", ""+EASE_IN_HALF
+				easeType = EASE_IN_HALF
+			Case "indouble", ""+EASE_IN_DOUBLE
+				easeType = EASE_IN_DOUBLE
+			Case "out", ""+EASE_OUT
+				easeType = EASE_OUT
+			Case "outhalf", ""+EASE_OUT_HALF
+				easeType = EASE_OUT_HALF
+			Case "outdouble", ""+EASE_OUT_DOUBLE
+				easeType = EASE_OUT_DOUBLE
+			Case "inout", ""+EASE_IN_OUT
+				easeType = EASE_IN_OUT
+			Default
+				easeType = EASE_NONE
+		End
+		
 		If name = "scale" Then
 			Local startScale:Float = Float(node.GetAttribute("startScale","1"))
 			Local endScale:Float = Float(node.GetAttribute("endScale","1"))
@@ -318,7 +366,9 @@ Public
 			Local endX:Float = Float(node.GetAttribute("endX","0"))
 			Local startY:Float = Float(node.GetAttribute("startY","0"))
 			Local endY:Float = Float(node.GetAttribute("endY","0"))
-			Return CreatePosition(startTime, endTime, easeType, startX, startY, endX, endY)
+			Local rv:StoryboardSpriteTransform = CreatePosition(startTime, endTime, easeType, startX, startY, endX, endY)
+			rv.hasValues = node.HasAttribute("startX") And node.HasAttribute("endX") And node.HasAttribute("startY") And node.HasAttribute("endY")
+			Return rv
 		ElseIf name = "handle" Then
 			Local startX:Float = Float(node.GetAttribute("startX","0"))
 			Local endX:Float = Float(node.GetAttribute("endX","0"))
@@ -425,6 +475,7 @@ Public
 	End
 	
 	Method Apply:Void(sprite:StoryboardSprite)
+		If Not hasValues Then Return
 		Select transformType
 			Case TRANSFORM_ALPHA
 				sprite.alpha = currentValues[0]
@@ -528,7 +579,7 @@ Private
 		End
 	End
 	
-	Method Lerp:Float(startValue:Float, endValue:Float, progress:Float)
+	Function Lerp:Float(startValue:Float, endValue:Float, progress:Float)
 		Return startValue + (endValue-startValue) * progress
 	End
 End

@@ -1,7 +1,6 @@
 Strict
 
 Import diddy
-Import diddy.format
 Import diddy.storyboard
 
 Function Main:Int()
@@ -14,6 +13,8 @@ Global gameScreen:GameScreen
 Class MyGame Extends DiddyApp
 
 	Method Create:Void()
+		SetGraphics(1280,960)
+		SetScreenSize(640,480)
 		LoadImages()
 		
 		gameScreen = New GameScreen
@@ -30,10 +31,10 @@ Class MyGame Extends DiddyApp
 		images.Load("black.png")
 		images.Load("bmbs.png")
 		images.Load("clouds.png")
-		images.Load("layer 1.png")
-		images.Load("layer 2.png")
-		images.Load("layer 3.png")
-		images.Load("load overlay.png")
+		images.Load("layer1.png")
+		images.Load("layer2.png")
+		images.Load("layer3.png")
+		images.Load("loadoverlay.png")
 		images.Load("LSB.png")
 		images.Load("nebula.png")
 		images.Load("nebula2.png")
@@ -64,19 +65,14 @@ Class GameScreen Extends Screen
 		Cls
 		SetAlpha(1)
 		SetColor(255,255,255)
-		game.images.Find("bg").Draw(SCREEN_WIDTH2,SCREEN_HEIGHT2)
-		sb.Render()
-		Local millis:Int = currentTime Mod 1000
-		Local secs:Int = (currentTime / 1000) Mod 60
-		Local mins:Int = (currentTime / 60000)
-		SetAlpha(1)
-		SetColor(255,255,255)
-		DrawText(Format("%02d:%02d:%03d", mins, secs, millis), 0, 0)
+		sb.Render(0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
 	End
 
 	Method Update:Void()
+		If KeyHit(KEY_R) Then sb = Storyboard.LoadXML("storyboard.xml")
 		If playing Then currentTime += dt.frametime
 		If KeyHit(KEY_SPACE) Then playing = Not playing
+		If KeyHit(KEY_Z) Then sb.DebugMode = Not sb.DebugMode
 		If MouseDown(0) Then currentTime = Int(lengthTime * Float(MouseX())/DEVICE_WIDTH)
 		sb.Update(currentTime)
 	End
