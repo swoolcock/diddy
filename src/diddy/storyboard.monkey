@@ -31,6 +31,7 @@ Const EASE_IN_OUT:Int = 7
 
 Class Storyboard
 Private
+	Global mtx:Float[] = New Float[6]
 	Field sprites:ArrayList<StoryboardSprite> = New ArrayList<StoryboardSprite>
 	Field sounds:ArrayList<StoryboardSound> = New ArrayList<StoryboardSound>
 	Field debugMode:Bool = False
@@ -39,6 +40,8 @@ Private
 	Field height:Float
 	Field length:Int
 	Field currentTime:Int
+	Field playing:Bool = False
+	Field playSpeed:Int
 
 Public
 	Function LoadXML:Storyboard(filename:String)
@@ -71,13 +74,53 @@ Public
 	Method Width:Float() Property Return width End
 	Method Height:Float() Property Return height End
 	Method Length:Int() Property Return length End
+	Method PlaySpeed:Int() Property Return playSpeed End
+	Method PlaySpeed:Void(playSpeed:Int) Property Self.playSpeed = playSpeed End
 	
-	Method Update:Void(currentTime:Int)
-		Self.currentTime = currentTime
+	Method Play:Void()
+		If Not playing Then
+			If playSpeed = 0 Then playSpeed = 1
+			playing = True
+		End
+	End
+	
+	Method PlayPause:Void()
+		If playing Then
+			Pause()
+		Else
+			Play()
+		End
+	End
+	
+	Method Pause:Void()
+		playing = False
+	End
+	
+	Method Stop:Void()
+		playing = False
+		playSpeed = 1
+		currentTime = 0
+	End
+	
+	Method SeekTo:Void(time:Int)
+		currentTime = time
+	End
+	
+	Method SeekForward:Void(time:Int)
+		currentTime += time
+	End
+	
+	Method Update:Void(updateTime:Bool=True)
+		' update the current time based on the millis since the last frame and the play speed, if we should
+		If updateTime And playing Then Self.currentTime += dt.frametime * playSpeed
+		
+		' update the current values for each sprite
 		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Update(currentTime)
 		Next
+		
+		' update sounds (TODO)
 		'For Local i:Int = 0 Until sounds.Size
 		'	Local sound:StoryboardSound = sounds.Get(i)
 		'	sound.Update(currentTime)
@@ -85,11 +128,15 @@ Public
 	End
 	
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+		' if width/height not supplied, assume native storyboard width
 		If width <= 0 Then width = Self.width
 		If height <= 0 Then height = Self.height
+		
+		' get the aspect ratios
 		Local targetAR:Float = width/height
 		Local sourceAR:Float = Self.width/Self.height
-		' fix aspect ratio
+		
+		' fix target width/height based on aspect ratio (letterboxed)
 		If targetAR > sourceAR Then
 			' bars on left/right
 			x += (width-(height*sourceAR))/2
@@ -98,15 +145,45 @@ Public
 			y += (height-(width/sourceAR))/2
 			height = width/sourceAR
 		End
-		' TODO: scissor
+		
+		' push the old matrix and apply correct translation and scales
 		PushMatrix
 		Translate x, y
-		Scale Self.width/width, Self.height/height
+		Scale width/Self.width, height/Self.height
+		
+		' get the current matrix so we can work out the correct scissor
+		GetMatrix(mtx)
+		Local sx:Float = mtx[4]
+		Local sy:Float = mtx[5]
+		Local sw:Float = Self.width*mtx[0]+Self.height*mtx[2]
+		Local sh:Float = Self.width*mtx[1]+Self.height*mtx[3]
+		
+		' set the scissor
+		SetScissor(sx, sy, sw, sh)
+		
+		' render all the sprites
 		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Render()
 		Next
+		
+		' reset scissor
+		SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
+		
+		' draw lines if in debug
+		If DebugMode Then
+			SetAlpha(1)
+			SetColor(255,255,255)
+			DrawLine(0,0,Self.width,0)
+			DrawLine(Self.width,0,Self.width,Self.height)
+			DrawLine(0,0,0,Self.height)
+			DrawLine(0,Self.height,Self.width,Self.height)
+		End
+		
+		' pop the matrix
 		PopMatrix
+		
+		' draw time and timeline if debug
 		If DebugMode Then
 			' draw time
 			Local millis:Int = currentTime Mod 1000
@@ -319,10 +396,12 @@ Private
 Public
 	Function CreateFromXML:StoryboardSpriteTransform(node:XMLElement, timeOffset:Int=0)
 		Local name:String = node.Name
-		Local startTime:Int = Int(node.GetAttribute("startTime","0"))+timeOffset
-		Local endTime:Int = Int(node.GetAttribute("endTime","0"))+timeOffset
+		Local startTime:Int = Int(node.GetAttribute("startTime","0"))
+		Local endTime:Int = Int(node.GetAttribute("endTime",""+startTime))
+		startTime += timeOffset
+		endTime += timeOffset
 		
-		Local easeStr:String = node.GetAttribute("easeType","")
+		Local easeStr:String = node.GetAttribute("ease","")
 		Local easeType:Int = EASE_NONE
 		Select easeStr.ToLower()
 			Case "in", ""+EASE_IN
