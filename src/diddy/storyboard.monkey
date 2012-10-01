@@ -1,3 +1,8 @@
+' summary: Diddy Storyboarding Module
+' This module lets you create a storyboard consisting of sprites and sounds.  Sprites can have
+' timed transformations applied to their position, scale, alpha, rotation, and colour.  These
+' values can optionally be tweened with an easing function.
+
 Strict
 
 Private
@@ -45,38 +50,74 @@ Private
 
 Public
 	Function LoadXML:Storyboard(filename:String)
+		' open the xml file
 		Local parser:XMLParser = New XMLParser
 		Local doc:XMLDocument = parser.ParseFile("storyboard.xml")
 		Local root:XMLElement = doc.Root
+		
+		' create a new storyboard
 		Local sb:Storyboard = New Storyboard
+		
+		' read the attributes from the root node
 		sb.name = root.GetAttribute("name","")
 		sb.width = Float(root.GetAttribute("width","640"))
 		sb.height = Float(root.GetAttribute("height","480"))
 		sb.length = Int(root.GetAttribute("length","0"))
+		
+		' loop on each child
 		For Local node:XMLElement = EachIn root.Children
+			' if it's a sprite layer...
 			If node.Name = "layer" Then
+				' get the layer index
 				Local index:Int = Int(node.GetAttribute("index","0"))
+				' loop on every sprite in the layer
 				For Local spriteNode:XMLElement = EachIn node.Children
 					If spriteNode.Name = "sprite" Then
-						sb.sprites.Add(StoryboardSprite.CreateFromXML(spriteNode, index))
+						' create a new sprite and add it
+						Local sprite:StoryboardSprite = New StoryboardSprite(spriteNode)
+						sprite.layer = index
+						sb.sprites.Add(sprite)
+					End
+				Next
+			End
+			If node.Name = "sounds" Then
+				' loop on children
+				For Local soundNode:XMLElement = EachIn node.Children
+					If soundNode.Name = "sound" Then
+						' create a new sound and add it
+						sb.sounds.Add(New StoryboardSound(soundNode))
 					End
 				Next
 			End
 		Next
+		
+		' sort the sprites by layer
 		sb.sprites.Sort()
+		
+		' we're done!
 		Return sb
 	End
 	
+	' DebugMode enables the timeline and time counter
 	Method DebugMode:Bool() Property Return debugMode End
 	Method DebugMode:Void(debugMode:Bool) Property Self.debugMode = debugMode End
+	
+	' The storyboard's name is mostly for the developer's use
 	Method Name:String() Property Return name End
 	Method Name:Void(name:String) Property Self.name = name End
+	
+	' The native width/height of the storyboard, before scaling
 	Method Width:Float() Property Return width End
 	Method Height:Float() Property Return height End
+	
+	' The length of the storyboard in milliseconds
 	Method Length:Int() Property Return length End
+	
+	' The current play speed (negative values play in reverse)
 	Method PlaySpeed:Int() Property Return playSpeed End
 	Method PlaySpeed:Void(playSpeed:Int) Property Self.playSpeed = playSpeed End
 	
+	' Starts or resumes playback from the current position
 	Method Play:Void()
 		If Not playing Then
 			If playSpeed = 0 Then playSpeed = 1
@@ -84,6 +125,7 @@ Public
 		End
 	End
 	
+	' Starts or pauses playback (toggle)
 	Method PlayPause:Void()
 		If playing Then
 			Pause()
@@ -92,24 +134,29 @@ Public
 		End
 	End
 	
+	' Pauses playback
 	Method Pause:Void()
 		playing = False
 	End
 	
+	' Stops playback, and rewinds to the start
 	Method Stop:Void()
 		playing = False
 		playSpeed = 1
 		currentTime = 0
 	End
-	
+
+	' Jumps to the specified time	
 	Method SeekTo:Void(time:Int)
 		currentTime = time
 	End
 	
+	' Adds the specified offset (negative to jump backward)
 	Method SeekForward:Void(time:Int)
 		currentTime += time
 	End
 	
+	' Updates all the transformations, increasing the current play time based on dt.frametime and the play speed.
 	Method Update:Void(updateTime:Bool=True)
 		' update the current time based on the millis since the last frame and the play speed, if we should
 		If updateTime And playing Then Self.currentTime += dt.frametime * playSpeed
@@ -120,13 +167,14 @@ Public
 			sprite.Update(currentTime)
 		Next
 		
-		' update sounds (TODO)
-		'For Local i:Int = 0 Until sounds.Size
-		'	Local sound:StoryboardSound = sounds.Get(i)
-		'	sound.Update(currentTime)
-		'Next
+		' update sounds
+		For Local i:Int = 0 Until sounds.Size
+			Local sound:StoryboardSound = sounds.Get(i)
+			sound.Update(currentTime)
+		Next
 	End
 	
+	' Renders all the sprites within the specified area, scaling for aspect ratio and setting a scissor.
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		' if width/height not supplied, assume native storyboard width
 		If width <= 0 Then width = Self.width
@@ -192,10 +240,12 @@ Public
 			SetAlpha(1)
 			SetColor(255,255,255)
 			DrawText(Format("%02d:%02d:%03d", mins, secs, millis), 0, 0)
+			
 			' draw timeline bar
 			DrawLine 10,SCREEN_HEIGHT-10,10,SCREEN_HEIGHT-30
 			DrawLine SCREEN_WIDTH-10,SCREEN_HEIGHT-10,SCREEN_WIDTH-10,SCREEN_HEIGHT-30
 			DrawLine 10,SCREEN_HEIGHT-20,SCREEN_WIDTH-10,SCREEN_HEIGHT-20
+			
 			' draw timeline ticks
 			For Local i:Int = 0 Until length Step 5000
 				Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(i)/length)
@@ -204,6 +254,7 @@ Public
 				If i Mod 60000 = 0 Then y -= 2
 				DrawLine(x, y, x, SCREEN_HEIGHT-20)
 			Next
+			
 			' draw current time bar
 			Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(currentTime)/length)
 			SetColor 255,0,0
@@ -217,8 +268,13 @@ Class StoryboardElement Implements IComparable Abstract
 Private
 	Global nextId:Int = 0
 	Field id:Int
+	Field currentTime:Int
+	Field name:String
 	
 Public
+	Method Name:String() Property Return name End
+	Method Name:Void(name:String) Property Self.name = name End
+
 	Method New()
 		id = nextId
 		nextId += 1
@@ -236,21 +292,33 @@ Public
 	Method Equals:Bool(other:Object)
 		Return Compare(other)=0
 	End
+	
+	Method Update:Void(currentTime:Int) Abstract
 End
 
 Class StoryboardSound Extends StoryboardElement
 Private
+	Const SOUND_THRESHOLD:Int = 100
 	Field soundName:String
 	Field sound:GameSound
+	Field time:Int
 	
 Public
-	Function CreateFromXML:StoryboardSound(node:XMLElement)
-		Return Null
+	Method New(node:XMLElement)
+		soundName = node.GetAttribute("soundName","")
+		time = Int(node.GetAttribute("time","0"))
+		name = node.GetAttribute("name","")
 	End
 	
-	Method New(soundName:String)
-		Super.New()
-		Self.soundName = soundName
+	Method Update:Void(currentTime:Int)
+		' if we've gone past this sound, check the delta to make sure it's not huge (to stop spam)
+		Local shouldPlay:Bool = currentTime >= time And Self.currentTime < time And currentTime - time < SOUND_THRESHOLD
+		Self.currentTime = currentTime
+		If shouldPlay Then
+			If Not sound Then sound = game.sounds.Find(soundName)
+			If Not sound Then Return
+			sound.Play()
+		End
 	End
 End
 
@@ -273,34 +341,32 @@ Private
 	Field transforms:ArrayList<StoryboardSpriteTransform> = New ArrayList<StoryboardSpriteTransform>
 	Field currentTransforms:StoryboardSpriteTransform[] = New StoryboardSpriteTransform[TRANSFORM_COUNT]
 	Field earliestStart:Int, latestEnd:Int
-	Field currentTime:Int
 	Field hasTransform:Bool = False
 	
 Public
-	Function CreateFromXML:StoryboardSprite(node:XMLElement, layer:Int)
-		Local imageName:String = node.GetAttribute("image","")
-		Local sprite:StoryboardSprite = New StoryboardSprite(imageName, layer)
-		sprite.firstX = Float(node.GetAttribute("x","0"))
-		sprite.firstY = Float(node.GetAttribute("y","0"))
-		sprite.firstScaleX = Float(node.GetAttribute("scaleX","1"))
-		sprite.firstScaleY = Float(node.GetAttribute("scaleY","1"))
-		sprite.firstScale = Float(node.GetAttribute("scale","1"))
-		sprite.firstRotation = Float(node.GetAttribute("rotation","0"))
-		sprite.firstRed = Float(node.GetAttribute("red","255"))
-		sprite.firstGreen = Float(node.GetAttribute("green","255"))
-		sprite.firstBlue = Float(node.GetAttribute("blue","255"))
-		sprite.firstAlpha = Float(node.GetAttribute("alpha","1"))
-		CreateTransformsFromXML(sprite, node)
-		sprite.transforms.Sort()
-		For Local i:Int = 0 Until sprite.transforms.Size
-			Local tr:StoryboardSpriteTransform = sprite.transforms.Get(i)
-			If i=0 Or sprite.earliestStart > tr.startTime Then sprite.earliestStart = tr.startTime
-			If i=0 Or sprite.latestEnd < tr.endTime Then sprite.latestEnd = tr.endTime
+	Method New(node:XMLElement)
+		imageName = node.GetAttribute("imageName","")
+		name = node.GetAttribute("name","")
+		firstX = Float(node.GetAttribute("x","0"))
+		firstY = Float(node.GetAttribute("y","0"))
+		firstScaleX = Float(node.GetAttribute("scaleX","1"))
+		firstScaleY = Float(node.GetAttribute("scaleY","1"))
+		firstScale = Float(node.GetAttribute("scale","1"))
+		firstRotation = Float(node.GetAttribute("rotation","0"))
+		firstRed = Float(node.GetAttribute("red","255"))
+		firstGreen = Float(node.GetAttribute("green","255"))
+		firstBlue = Float(node.GetAttribute("blue","255"))
+		firstAlpha = Float(node.GetAttribute("alpha","1"))
+		CreateTransformsFromXML(node)
+		transforms.Sort()
+		For Local i:Int = 0 Until transforms.Size
+			Local tr:StoryboardSpriteTransform = transforms.Get(i)
+			If i=0 Or earliestStart > tr.startTime Then earliestStart = tr.startTime
+			If i=0 Or latestEnd < tr.endTime Then latestEnd = tr.endTime
 		Next
-		Return sprite
 	End
 	
-	Function CreateTransformsFromXML:Void(sprite:StoryboardSprite, node:XMLElement, timeOffset:Int=0)
+	Method CreateTransformsFromXML:Void(node:XMLElement, timeOffset:Int=0)
 		For Local childNode:XMLElement = EachIn node.Children
 			Local name:String = childNode.Name
 			If name = "group" Then
@@ -309,20 +375,16 @@ Public
 				Local endTime:Int = Int(childNode.GetAttribute("endTime","0"))
 				Local myOffset:Int = timeOffset + startTime
 				For Local i:Int = 0 Until loopCount
-					CreateTransformsFromXML(sprite, childNode, myOffset)
+					CreateTransformsFromXML(childNode, myOffset)
 					myOffset += endTime - startTime
 				Next
 			Else
-				sprite.transforms.Add(StoryboardSpriteTransform.CreateFromXML(childNode, timeOffset))
+				transforms.Add(StoryboardSpriteTransform.CreateFromXML(childNode, timeOffset))
 			End
 		Next
 	End
 	
-	Method New(imageName:String, layer:Int)
-		Super.New()
-		Self.imageName = imageName
-		Self.layer = layer
-	End
+	Method Layer:Int() Property Return layer End
 	
 	Method Compare:Int(other:Object)
 		Local o:StoryboardSprite = StoryboardSprite(other)
