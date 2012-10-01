@@ -42,6 +42,7 @@ Class MyGame Extends DiddyApp
 		images.Load("sun.png")
 		images.Load("white.png")
 		images.Load("X.png")
+		sounds.Load("soft-hitwhistle.wav")
 	End
 End
 
