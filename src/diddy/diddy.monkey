@@ -12,12 +12,14 @@ Diddy includes various features:
 [*]Simple GUI
 [*]Serialization
 [*]XML Parser
+[*]Base64 Encoding/Decoding
 [*]IO
 [*]Tiled Loader
 [*]Filesystem Wrapper
 [*]i18n
 [*]Particle System
 [*]String Builder
+[*]Storyboarding
 [*][a vector2d.monkey.html]Vector2d[/a]
 [/list]
 #end
@@ -25,6 +27,7 @@ Import mojo
 
 Import arrays
 Import assert
+Import base64
 Import collections
 Import filesystem
 Import font
@@ -38,6 +41,7 @@ Import pathFind
 Import psystem
 Import serialization
 Import simplegui
+Import storyboard
 Import stringbuilder
 Import tile
 Import tween
