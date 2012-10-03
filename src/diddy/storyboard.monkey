@@ -15,15 +15,14 @@ Import format
 Public
 Import exception
 
-Const TRANSFORM_POSITION:Int = 0
-Const TRANSFORM_ALPHA:Int = 1
-Const TRANSFORM_SCALE:Int = 2
-Const TRANSFORM_SCALE_VECTOR:Int = 3
-Const TRANSFORM_ROTATION:Int = 4
-Const TRANSFORM_COLOR:Int = 5
-Const TRANSFORM_HANDLE:Int = 6
-Const TRANSFORM_SHAKE:Int = 7
-Const TRANSFORM_COUNT:Int = 8
+Const KEYFRAME_POSITION:Int = 0
+Const KEYFRAME_ALPHA:Int = 1
+Const KEYFRAME_SCALE:Int = 2
+Const KEYFRAME_SCALE_VECTOR:Int = 3
+Const KEYFRAME_ROTATION:Int = 4
+Const KEYFRAME_COLOR:Int = 5
+Const KEYFRAME_HANDLE:Int = 6
+Const KEYFRAME_COUNT:Int = 6
 
 Const EASE_NONE:Int = 0
 Const EASE_IN_DOUBLE:Int = 1
@@ -360,20 +359,21 @@ Private
 	Field imageName:String
 	Field image:GameImage
 	
+	' these are read from the <sprite> tag and are used as the first keyframe
 	Field firstX:Float=0, firstY:Float=0
 	field firstScaleX:Float=1, firstScaleY:Float=1
 	Field firstScale:Float=1, firstRotation:Float=0
 	Field firstRed:Float=255, firstGreen:Float=255, firstBlue:Float=255, firstAlpha:Float=1
 	
+	' these are the values at the current time
 	Field x:Float=0, y:Float=0
 	field scaleX:Float=1, scaleY:Float=1
 	Field scale:Float=1, rotation:Float=0
 	Field red:Float=255, green:Float=255, blue:Float=255, alpha:Float=1
 	
-	Field transforms:ArrayList<StoryboardSpriteTransform> = New ArrayList<StoryboardSpriteTransform>
-	Field currentTransforms:StoryboardSpriteTransform[] = New StoryboardSpriteTransform[TRANSFORM_COUNT]
-	Field earliestStart:Int, latestEnd:Int
-	Field hasTransform:Bool = False
+	Field keyframes:ArrayList<StoryboardSpriteKeyframe> = New ArrayList<StoryboardSpriteKeyframe>
+	Field previousKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
+	Field nextKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
 	
 Public
 	Method New(node:XMLElement)
@@ -388,19 +388,15 @@ Public
 		firstRed = Float(node.GetAttribute("red","255"))
 		firstGreen = Float(node.GetAttribute("green","255"))
 		firstBlue = Float(node.GetAttribute("blue","255"))
-		firstAlpha = Float(node.GetAttribute("alpha","1"))
-		CreateTransformsFromXML(node)
-		transforms.Sort()
-		For Local i:Int = 0 Until transforms.Size
-			Local tr:StoryboardSpriteTransform = transforms.Get(i)
-			If i=0 Or earliestStart > tr.startTime Then earliestStart = tr.startTime
-			If i=0 Or latestEnd < tr.endTime Then latestEnd = tr.endTime
-		Next
+		firstAlpha = Float(node.GetAttribute("alpha","0"))
+		CreateKeyframesFromXML(node)
+		keyframes.Sort()
 	End
 	
-	Method CreateTransformsFromXML:Void(node:XMLElement, timeOffset:Int=0)
+	Method CreateKeyframesFromXML:Void(node:XMLElement, timeOffset:Int=0)
 		For Local childNode:XMLElement = EachIn node.Children
 			Local name:String = childNode.Name
+			#Rem
 			If name = "group" Then
 				Local loopCount:Int = Int(childNode.GetAttribute("loopCount","1"))
 				Local startTime:Int = Int(childNode.GetAttribute("startTime","0"))
@@ -411,8 +407,9 @@ Public
 					myOffset += endTime - startTime
 				Next
 			Else
-				transforms.Add(New StoryboardSpriteTransform(childNode, timeOffset))
-			End
+			#End
+				keyframes.Add(New StoryboardSpriteKeyframe(childNode, timeOffset))
+			'End
 		Next
 	End
 	
@@ -433,22 +430,41 @@ Public
 		scaleX = firstScaleX; scaleY = firstScaleY
 		scale = firstScale; rotation = firstRotation
 		red = firstRed; green = firstGreen; blue = firstBlue; alpha = firstAlpha
-		hasTransform = False
 		
-		If currentTime >= earliestStart And currentTime <= latestEnd Then
-			For Local i:Int = 0 Until transforms.Size
-				Local tr:StoryboardSpriteTransform = transforms.Get(i)
-				If tr.startTime <= currentTime Then
-					transforms.Get(i).Update(currentTime)
-					transforms.Get(i).Apply(Self)
-				End
-				If Not hasTransform And currentTime >= tr.startTime And currentTime <= tr.endTime Then hasTransform = True
-			Next
-		End
+		' clear the keyframe arrays
+		For Local i:Int = 0 Until previousKeyframes.Length
+			previousKeyframes[i] = Null
+			nextKeyframes[i] = Null
+		Next
+		
+		' find the keyframes either side of the current time
+		For Local i:Int = 0 Until keyframes.Size
+			Local kf:StoryboardSpriteKeyframe = keyframes.Get(i)
+			' if we've already found the next one, skip it
+			If nextKeyframes[kf.keyframeType] Then Continue
+			' set the next keyframe if we should
+			If currentTime <= kf.time Then
+				nextKeyframes[kf.keyframeType] = kf
+			Else
+				previousKeyframes[kf.keyframeType] = kf
+			End
+		Next
+		
+		' loop through each of the keyframe types
+		For Local i:Int = 0 Until previousKeyframes.Length
+			Local prevKF:StoryboardSpriteKeyframe = previousKeyframes[i]
+			Local nextKF:StoryboardSpriteKeyframe = nextKeyframes[i]
+			' if we have no previous, we do nothing (can't tween from the start, yet)
+			If Not prevKF Then Continue
+			' if we have no next, or the next doesn't tween, we just use the previous
+			If Not nextKF Or Not nextKF.Tween Then nextKF = prevKF
+			' interp and apply
+			nextKF.Apply(Self, prevKF, currentTime)
+		Next
 	End
 	
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
-		If Not hasTransform Or alpha = 0 Then Return
+		If alpha = 0 Then Return
 		If Not image Then image = game.images.Find(imageName)
 		If Not image Then
 			Print "Couldn't load "+imageName+" for sprite."
@@ -469,114 +485,162 @@ Public
 	End
 End
 
-Class StoryboardCalculation Implements IComparable Abstract
+Class StoryboardSpriteKeyframe Implements IComparable
 Private
-	Field currentTime:Int
-	Field startTime:Int
-	Field endTime:Int
-	Field easeType:Int
-	
-	Field startValues:Float[]
-	Field endValues:Float[]
-	Field currentValues:Float[]
-
-	Method Init:Void(elementCount:Int,
-							startValue1:Float=0, endValue1:Float=0,
-							startValue2:Float=0, endValue2:Float=0,
-							startValue3:Float=0, endValue3:Float=0,
-							startValue4:Float=0, endValue4:Float=0,
-							startValue5:Float=0, endValue5:Float=0)
-		startValues = New Float[elementCount]
-		endValues = New Float[elementCount]
-		currentValues = New Float[elementCount]
-		If elementCount >= 1 Then
-			startValues[0] = startValue1
-			endValues[0] = endValue1
-		End
-		If elementCount >= 2 Then
-			startValues[1] = startValue2
-			endValues[1] = endValue2
-		End
-		If elementCount >= 3 Then
-			startValues[2] = startValue3
-			endValues[2] = endValue3
-		End
-		If elementCount >= 4 Then
-			startValues[3] = startValue4
-			endValues[3] = endValue4
-		End
-		If elementCount >= 5 Then
-			startValues[4] = startValue5
-			endValues[4] = endValue5
-		End
-	End
-	
-	Method Calculate:Float(startValue:Float, endValue:Float)
-		' shortcut for start/end (also accounts for the case when startTime==endTime)
-		' we check endTime first because if startTime==endTime==currentTime, we want to use endValue
-		If currentTime >= endTime Then Return endValue
-		If currentTime <= startTime Then Return startValue
-		
-		' how far through are we?
-		Local progress:Float = Float(currentTime - startTime) / Float(endTime - startTime)
-		
-		Select easeType
-			Case EASE_IN_DOUBLE
-				Return Lerp(endValue, startValue, (1-progress)*(1-progress)*(1-progress)*(1-progress))
-			Case EASE_IN
-				Return Lerp(endValue, startValue, (1-progress)*(1-progress))
-			Case EASE_IN_HALF
-				Return Lerp(endValue, startValue, Pow(1-progress, 1.5))
-			Case EASE_OUT
-				Return Lerp(startValue, endValue, progress * progress)
-			Case EASE_OUT_HALF
-				Return Lerp(startValue, endValue, Pow(progress, 1.5))
-			Case EASE_OUT_DOUBLE
-				Return Lerp(startValue, endValue, progress*progress*progress*progress)
-			Case EASE_IN_OUT
-				Return startValue + (-2*(progress*progress*progress) + 3*(progress*progress)) * (endValue - startValue)
-			Default
-				Return Lerp(startValue, endValue, progress);
-		End
-	End
+	Field keyframeType:Int
+	Field values:Float[]
+	Field tween:Bool = True
+	Field ease:Int = EASE_NONE
+	Field time:Int
 	
 Public
+	Method KeyframeType:Int() Property Return keyframeType End
+	Method KeyframeType:Void(keyframeType:Int) Property
+		Init(keyframeType)
+	End
+	
+	Method Tween:Bool() Property Return tween End
+	Method Tween:Void(tween:Bool) Self.tween = tween End
+	
+	Method Ease:Int() Property Return ease End
+	Method Ease:Void(ease:Int) Self.ease = ease End
+	
+	Method Time:Int() Property Return time End
+	Method Time:Void(time:Int) Property Self.time = time End
+	
+	Method X:Float() Property Return values[0] End
+	Method X:Void(val:Float) Property values[0] = val End
+	Method Y:Float() Property Return values[1] End
+	Method Y:Void(val:Float) Property values[1] = val End
+	
+	Method ScaleX:Float() Property Return values[0] End
+	Method ScaleX:Void(val:Float) Property values[0] = val End
+	Method ScaleY:Float() Property Return values[1] End
+	Method ScaleY:Void(val:Float) Property values[1] = val End
+	
+	Method Scale:Float() Property Return values[0] End
+	Method Scale:Void(val:Float) Property values[0] = val End
+	
+	Method Rotation:Float() Property Return values[0] End
+	Method Rotation:Void(val:Float) Property values[0] = val End
+	
+	Method Alpha:Float() Property Return values[0] End
+	Method Alpha:Void(val:Float) Property values[0] = val End
+	
+	Method Hue:Float() Property Return values[0] End
+	Method Hue:Void(val:Float) Property values[0] = val End
+	Method Saturation:Float() Property Return values[1] End
+	Method Saturation:Void(val:Float) Property values[1] = val End
+	Method Luminance:Float() Property Return values[2] End
+	Method Luminance:Void(val:Float) Property values[2] = val End
+	
+	' Constructor for manually building a storyboard
+	Method New(keyframeType:Int)
+		Init(keyframeType)
+	End
+	
+	' Constructor for reading from xml
 	Method New(node:XMLElement, timeOffset:Int=0)
-		startTime = Int(node.GetAttribute("startTime","0"))
-		endTime = Int(node.GetAttribute("endTime",""+startTime))
-		startTime += timeOffset
-		endTime += timeOffset
+		Local name:String = node.Name
+		Self.tween = node.GetAttribute("tween","false").ToLower() = "true"
+		Self.time = Int(node.GetAttribute("time","0"))
 		
 		Local easeStr:String = node.GetAttribute("ease","")
 		Local easeType:Int = EASE_NONE
 		Select easeStr.ToLower()
 			Case "in", ""+EASE_IN
-				easeType = EASE_IN
+				Self.ease = EASE_IN
 			Case "inhalf", ""+EASE_IN_HALF
-				easeType = EASE_IN_HALF
+				Self.ease = EASE_IN_HALF
 			Case "indouble", ""+EASE_IN_DOUBLE
-				easeType = EASE_IN_DOUBLE
+				Self.ease = EASE_IN_DOUBLE
 			Case "out", ""+EASE_OUT
-				easeType = EASE_OUT
+				Self.ease = EASE_OUT
 			Case "outhalf", ""+EASE_OUT_HALF
-				easeType = EASE_OUT_HALF
+				Self.ease = EASE_OUT_HALF
 			Case "outdouble", ""+EASE_OUT_DOUBLE
-				easeType = EASE_OUT_DOUBLE
+				Self.ease = EASE_OUT_DOUBLE
 			Case "inout", ""+EASE_IN_OUT
-				easeType = EASE_IN_OUT
+				Self.ease = EASE_IN_OUT
 			Default
-				easeType = EASE_NONE
+				Self.ease = EASE_NONE
+		End
+		
+		If name = "scale" Then
+			Local scale:Float = Float(node.GetAttribute("scale","1"))
+			Init(KEYFRAME_SCALE, scale)
+		ElseIf name = "scaleVector" Then
+			Local scaleX:Float = Float(node.GetAttribute("scaleX","1"))
+			Local scaleY:Float = Float(node.GetAttribute("scaleY","1"))
+			Init(KEYFRAME_SCALE_VECTOR, scaleX, scaleY)
+		ElseIf name = "alpha" Then
+			Local alpha:Float = Clamp(Float(node.GetAttribute("alpha","1")))
+			Init(KEYFRAME_ALPHA, alpha)
+		ElseIf name = "rotation" Then
+			Local rotation:Float = Float(node.GetAttribute("rotation","0"))
+			Init(KEYFRAME_ROTATION, rotation)
+		ElseIf name = "position" Then
+			Local x:Float = Float(node.GetAttribute("x","0"))
+			Local y:Float = Float(node.GetAttribute("y","0"))
+			Init(KEYFRAME_POSITION, x, y)
+		ElseIf name = "handle" Then
+			Local x:Float = Float(node.GetAttribute("x","0"))
+			Local y:Float = Float(node.GetAttribute("y","0"))
+			Init(KEYFRAME_HANDLE, x, y)
+		ElseIf name = "color" Then
+			If node.HasAttribute("red") Or node.HasAttribute("green") Or node.HasAttribute("blue") Then
+				Local red:Float = Clamp(Float(node.GetAttribute("red","255")),0,255)
+				Local green:Float = Clamp(Float(node.GetAttribute("green","255")),0,255)
+				Local blue:Float = Clamp(Float(node.GetAttribute("blue","255")),0,255)
+				RGBtoHSL(red, green, blue, hslArray)
+			Else
+				hslArray[0] = Clamp(Float(node.GetAttribute("hue","0")))
+				hslArray[1] = Clamp(Float(node.GetAttribute("saturation","0")))
+				hslArray[2] = Clamp(Float(node.GetAttribute("luminance","0")))
+			End
+			Init(KEYFRAME_COLOR, hslArray[0], hslArray[1], hslArray[2])
+		End
+	End
+	
+	Method Apply:Void(sprite:StoryboardSprite, prevKF:StoryboardSpriteKeyframe, currentTime:Int)
+		Local progress:Float = 0
+		If Self.time >= prevKF.time Then progress = Float(currentTime-prevKF.time)/(Self.time-prevKF.time)
+		Select keyframeType
+			Case KEYFRAME_ALPHA
+				sprite.alpha = Interpolate(prevKF.values[0], values[0], progress, ease)
+			Case KEYFRAME_SCALE
+				sprite.scale = Interpolate(prevKF.values[0], values[0], progress, ease)
+			Case KEYFRAME_ROTATION
+				sprite.rotation = Interpolate(prevKF.values[0], values[0], progress, ease)
+			Case KEYFRAME_POSITION
+				sprite.x = Interpolate(prevKF.values[0], values[0], progress, ease)
+				sprite.y = Interpolate(prevKF.values[1], values[1], progress, ease)
+			Case KEYFRAME_SCALE_VECTOR
+				sprite.scaleX = Interpolate(prevKF.values[0], values[0], progress, ease)
+				sprite.scaleY = Interpolate(prevKF.values[1], values[1], progress, ease)
+			Case KEYFRAME_COLOR
+				HSLtoRGB(
+					Interpolate(prevKF.values[0], values[0], progress, ease),
+					Interpolate(prevKF.values[1], values[1], progress, ease),
+					Interpolate(prevKF.values[2], values[2], progress, ease), rgbArray)
+				sprite.red = rgbArray[0]
+				sprite.green = rgbArray[1]
+				sprite.blue = rgbArray[2]
+			Case KEYFRAME_HANDLE
+				If sprite And sprite.image And sprite.image.image Then
+					sprite.image.image.SetHandle(Interpolate(prevKF.values[0], values[0], progress, ease), Interpolate(prevKF.values[1], values[1], progress, ease))
+				End
 		End
 	End
 	
 	Method Compare:Int(other:Object)
-		Local o:StoryboardSpriteTransform = StoryboardSpriteTransform(other)
+		Local o:StoryboardSpriteKeyframe = StoryboardSpriteKeyframe(other)
 		If Not o Then Return -1
 		If o = Self Then Return 0
-		If startTime > o.startTime Then Return 1
-		If startTime < o.startTime Then Return -1
-		If endTime > o.endTime Then Return 1
-		If endTime < o.endTime Then Return -1
+		If time < o.time Then Return -1
+		If time > o.time Then Return 1
+		If keyframeType < o.keyframeType Then Return -1
+		If keyframeType > o.keyframeType Then Return 1
 		Return 0
 	End
 	
@@ -584,128 +648,26 @@ Public
 		Return Compare(other)=0
 	End
 	
-	Method Update:Void(currentTime:Int)
-		Self.currentTime = currentTime
-		For Local i:Int = 0 Until startValues.Length
-			currentValues[i] = Calculate(startValues[i], endValues[i])
-		Next
-	End
-	
-	Method Apply:Void(obj:Object) Abstract
-End
-
-Class StoryboardSpriteTransform Extends StoryboardCalculation
 Private
-	Field transformType:Int = 0
-	Field hasValues:Bool = True
-	
-Public
-	Method New(node:XMLElement, timeOffset:Int=0)
-		Super.New(node, timeOffset)
-		Local name:String = node.Name
-		
-		If name = "scale" Then
-			Self.transformType = TRANSFORM_SCALE
-			Local startScale:Float = Float(node.GetAttribute("startScale","1"))
-			Local endScale:Float = Float(node.GetAttribute("endScale","1"))
-			Init(1, startScale, endScale)
-		ElseIf name = "scaleVector" Then
-			Self.transformType = TRANSFORM_SCALE_VECTOR
-			Local startScaleX:Float = Float(node.GetAttribute("startScaleX","1"))
-			Local endScaleX:Float = Float(node.GetAttribute("endScaleX","1"))
-			Local startScaleY:Float = Float(node.GetAttribute("startScaleY","1"))
-			Local endScaleY:Float = Float(node.GetAttribute("endScaleY","1"))
-			Init(2, startScaleX, endScaleX, startScaleY, endScaleY)
-		ElseIf name = "alpha" Then
-			Self.transformType = TRANSFORM_ALPHA
-			Local startAlpha:Float = Clamp(Float(node.GetAttribute("startAlpha","1")))
-			Local endAlpha:Float = Clamp(Float(node.GetAttribute("endAlpha","1")))
-			Init(1, startAlpha, endAlpha)
-		ElseIf name = "rotation" Then
-			Self.transformType = TRANSFORM_ROTATION
-			Local startRotation:Float = Float(node.GetAttribute("startRotation","0"))
-			Local endRotation:Float = Float(node.GetAttribute("endRotation","0"))
-			Init(1, startRotation, endRotation)
-		ElseIf name = "position" Then
-			Self.transformType = TRANSFORM_POSITION
-			Local startX:Float = Float(node.GetAttribute("startX","0"))
-			Local endX:Float = Float(node.GetAttribute("endX","0"))
-			Local startY:Float = Float(node.GetAttribute("startY","0"))
-			Local endY:Float = Float(node.GetAttribute("endY","0"))
-			Init(2, startX, endX, startY, endY)
-			hasValues = node.HasAttribute("startX") And node.HasAttribute("endX") And node.HasAttribute("startY") And node.HasAttribute("endY")
-		ElseIf name = "handle" Then
-			Self.transformType = TRANSFORM_HANDLE
-			Local startX:Float = Float(node.GetAttribute("startX","0"))
-			Local endX:Float = Float(node.GetAttribute("endX","0"))
-			Local startY:Float = Float(node.GetAttribute("startY","0"))
-			Local endY:Float = Float(node.GetAttribute("endY","0"))
-			Init(2, startX, endX, startY, endY)
-		ElseIf name = "color" Then
-			Local startHue:Float, startSaturation:Float, startLuminance:Float
-			Local endHue:Float, endSaturation:Float, endLuminance:Float
-			If node.HasAttribute("startRed") Or node.HasAttribute("startGreen") Or node.HasAttribute("startBlue") Then
-				Self.transformType = TRANSFORM_COLOR
-				Local startRed:Float = Clamp(Float(node.GetAttribute("startRed","255")),0,255)
-				Local endRed:Float = Clamp(Float(node.GetAttribute("endRed","255")),0,255)
-				Local startGreen:Float = Clamp(Float(node.GetAttribute("startGreen","255")),0,255)
-				Local endGreen:Float = Clamp(Float(node.GetAttribute("endGreen","255")),0,255)
-				Local startBlue:Float = Clamp(Float(node.GetAttribute("startBlue","255")),0,255)
-				Local endBlue:Float = Clamp(Float(node.GetAttribute("endBlue","255")),0,255)
-				RGBtoHSL(startRed, startGreen, startBlue, hslArray)
-				startHue = hslArray[0]; startSaturation = hslArray[1]; startLuminance = hslArray[2]
-				RGBtoHSL(endRed, endGreen, endBlue, hslArray)
-				endHue = hslArray[0]; endSaturation = hslArray[1]; endLuminance = hslArray[2]
-			Else
-				Self.transformType = TRANSFORM_COLOR
-				Local startHue:Float = Clamp(Float(node.GetAttribute("startHue","0")))
-				Local endHue:Float = Clamp(Float(node.GetAttribute("endHue","0")))
-				Local startSaturation:Float = Clamp(Float(node.GetAttribute("startSaturation","1")))
-				Local endSaturation:Float = Clamp(Float(node.GetAttribute("endSaturation","1")))
-				Local startLuminance:Float = Clamp(Float(node.GetAttribute("startLuminance","1")))
-				Local endLuminance:Float = Clamp(Float(node.GetAttribute("endLuminance","1")))
-			End
-			Init(3, startHue, endHue, startSaturation, endSaturation, startLuminance, endLuminance)
+	Method Init:Void(keyframeType:Int, value1:Float=0, value2:Float=0, value3:Float=0, value4:Float=0, value5:Float=0)
+		Self.keyframeType = keyframeType
+		Select keyframeType
+			Case KEYFRAME_ROTATION, KEYFRAME_SCALE, KEYFRAME_ALPHA
+				InitArray(1, value1)
+			Case KEYFRAME_POSITION, KEYFRAME_SCALE_VECTOR
+				InitArray(2, value1, value2)
+			Case KEYFRAME_COLOR
+				InitArray(3, value1, value2, value3)
 		End
 	End
 	
-	Method Apply:Void(obj:Object)
-		Local sprite:StoryboardSprite = StoryboardSprite(obj)
-		If Not hasValues Then Return
-		Select transformType
-			Case TRANSFORM_ALPHA
-				sprite.alpha = currentValues[0]
-			Case TRANSFORM_SCALE
-				sprite.scale = currentValues[0]
-			Case TRANSFORM_ROTATION
-				sprite.rotation = currentValues[0]
-			Case TRANSFORM_POSITION
-				sprite.x = currentValues[0]
-				sprite.y = currentValues[1]
-			Case TRANSFORM_SCALE_VECTOR
-				sprite.scaleX = currentValues[0]
-				sprite.scaleY = currentValues[1]
-			Case TRANSFORM_COLOR
-				HSLtoRGB(currentValues[0], currentValues[1], currentValues[2], rgbArray)
-				sprite.red = rgbArray[0]
-				sprite.green = rgbArray[1]
-				sprite.blue = rgbArray[2]
-			Case TRANSFORM_HANDLE
-				If sprite And sprite.image And sprite.image.image Then
-					sprite.image.image.SetHandle(currentValues[0], currentValues[1])
-				End
-		End
-	End
-
-	Method Compare:Int(other:Object)
-		Local o:StoryboardSpriteTransform = StoryboardSpriteTransform(other)
-		If Not o Then Return -1
-		If o = Self Then Return 0
-		Local rv:Int = Super.Compare(other)
-		If rv <> 0 Then Return rv
-		If transformType > o.transformType Then Return 1
-		If transformType < o.transformType Then Return -1
-		Return 0
+	Method InitArray:Void(elementCount:Int, value1:Float=0, value2:Float=0, value3:Float=0, value4:Float=0, value5:Float=0)
+		values = New Float[elementCount]
+		If elementCount >= 1 Then values[0] = value1
+		If elementCount >= 2 Then values[1] = value2
+		If elementCount >= 3 Then values[2] = value3
+		If elementCount >= 4 Then values[3] = value4
+		If elementCount >= 5 Then values[4] = value5
 	End
 End
 
@@ -779,3 +741,28 @@ End
 Function Clamp:Float(value:Float, minval:Float=0, maxval:Float=1)
 	Return Max(minval,Min(maxval,value))
 End
+
+Function Interpolate:Float(startValue:Float, endValue:Float, progress:Float, ease:Int)
+	If progress <= 0 Then Return startValue
+	If progress >= 1 Then Return endValue
+	Select ease
+		Case EASE_IN_DOUBLE
+			Return Lerp(endValue, startValue, (1-progress)*(1-progress)*(1-progress)*(1-progress))
+		Case EASE_IN
+			Return Lerp(endValue, startValue, (1-progress)*(1-progress))
+		Case EASE_IN_HALF
+			Return Lerp(endValue, startValue, Pow(1-progress, 1.5))
+		Case EASE_OUT
+			Return Lerp(startValue, endValue, progress * progress)
+		Case EASE_OUT_HALF
+			Return Lerp(startValue, endValue, Pow(progress, 1.5))
+		Case EASE_OUT_DOUBLE
+			Return Lerp(startValue, endValue, progress*progress*progress*progress)
+		Case EASE_IN_OUT
+			Return startValue + (-2*(progress*progress*progress) + 3*(progress*progress)) * (endValue - startValue)
+		Default
+			Return Lerp(startValue, endValue, progress);
+	End
+End
+
+
