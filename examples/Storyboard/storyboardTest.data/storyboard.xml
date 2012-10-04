@@ -68,41 +68,13 @@
 				<alpha time="99691" alpha="1" />
 				<alpha time="102539" alpha="0" tween="true" />
 			</sprite>
-			<!--<sprite imageName="X" x="320.00" y="180.00">
-				<alpha startTime="0956" endTime="1004" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1004" endTime="1051" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1051" endTime="1099" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1099" endTime="1146" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1146" endTime="1194" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1194" endTime="1241" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1241" endTime="1289" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1289" endTime="1336" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1336" endTime="1384" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1384" endTime="1431" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1431" endTime="1479" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1479" endTime="1526" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1526" endTime="1574" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1574" endTime="1621" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1621" endTime="1668" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1668" endTime="1716" startAlpha="1.00" endAlpha="0.00" />
-				<scale startTime="1716" endTime="1716" startScale="0.90" endScale="0.90" />
-				<alpha startTime="1716" endTime="1763" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1763" endTime="1811" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1811" endTime="1858" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1858" endTime="1906" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="1906" endTime="1953" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="1953" endTime="2001" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="2001" endTime="2048" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="2048" endTime="2096" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="2096" endTime="2143" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="2143" endTime="2191" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="2191" endTime="2238" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="2238" endTime="2286" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="2286" endTime="2333" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="2333" endTime="2380" startAlpha="1.00" endAlpha="0.00" />
-				<alpha startTime="2380" endTime="2428" startAlpha="0.00" endAlpha="1.00" />
-				<alpha startTime="2428" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-			</sprite>-->
+			<sprite imageName="X" x="320.00" y="180.00" alpha="0" scale="1">
+				<group time="1004" length="95" loopCount="16">
+					<alpha time="0" alpha="1" />
+					<alpha time="48" alpha="0" />
+				</group>
+				<scale time="1716" scale="0.9" />
+			</sprite>
 			<sprite imageName="X" x="320.00" y="180.00" alpha="0">
 				<alpha time="0" alpha="0" />
 				<alpha time="956" alpha="1" tween="true" />

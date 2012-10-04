@@ -396,20 +396,18 @@ Public
 	Method CreateKeyframesFromXML:Void(node:XMLElement, timeOffset:Int=0)
 		For Local childNode:XMLElement = EachIn node.Children
 			Local name:String = childNode.Name
-			#Rem
 			If name = "group" Then
 				Local loopCount:Int = Int(childNode.GetAttribute("loopCount","1"))
-				Local startTime:Int = Int(childNode.GetAttribute("startTime","0"))
-				Local endTime:Int = Int(childNode.GetAttribute("endTime","0"))
-				Local myOffset:Int = timeOffset + startTime
+				Local time:Int = Int(childNode.GetAttribute("time","0"))
+				Local length:Int = Int(childNode.GetAttribute("length","0"))
+				Local myOffset:Int = timeOffset + time
 				For Local i:Int = 0 Until loopCount
-					CreateTransformsFromXML(childNode, myOffset)
-					myOffset += endTime - startTime
+					CreateKeyframesFromXML(childNode, myOffset)
+					myOffset += length
 				Next
 			Else
-			#End
 				keyframes.Add(New StoryboardSpriteKeyframe(childNode, timeOffset))
-			'End
+			End
 		Next
 	End
 	
@@ -543,7 +541,7 @@ Public
 	Method New(node:XMLElement, timeOffset:Int=0)
 		Local name:String = node.Name
 		Self.tween = node.GetAttribute("tween","false").ToLower() = "true"
-		Self.time = Int(node.GetAttribute("time","0"))
+		Self.time = Int(node.GetAttribute("time","0"))+timeOffset
 		
 		Local easeStr:String = node.GetAttribute("ease","")
 		Local easeType:Int = EASE_NONE
