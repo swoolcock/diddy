@@ -69,7 +69,9 @@ Extern
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy.getPixel"
 		Function MouseZInit:Void()="diddy.mouseZInit"
 		Function MouseZ:Float()="diddy.mouseZ"
-		Function SeekMusic:Void(timeMillis:Int)="diddy.seekMusic"
+		#If TARGET<>"xna" And TARGET<>"psm" Then
+			Function SeekMusic:Void(timeMillis:Int)="diddy.seekMusic"
+		#End
 	#End
 	
 	#If TARGET="html5" Then
@@ -109,6 +111,18 @@ Public
 			rv += String.FromChar(arr[i])
 		Next
 		Return rv
+	End
+#End
+
+#If TARGET="xna" Or TARGET="psm" Then
+	Private
+	Global seekMusicCalled:Bool = False
+	Public
+	Function SeekMusic:Void(timeMillis:Int)
+		If Not seekMusicCalled Then
+			seekMusicCalled = True
+			Print "Warning: SeekMusic is not implemented in XNA and PSM!"
+		End
 	End
 #End
 

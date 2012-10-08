@@ -158,8 +158,12 @@ class diddy
 	}
 	
 	static public function seekMusic(timeMillis:int):void {
-		if(bb_audio_device && bb_audio_device.music && bb_audio_device.music.sound) {
-			bb_audio_device.music.sound.Seek(timeMillis);
+		if(bb_audio_device) {
+			var chan:gxtkChannel = bb_audio_device.channels[32];
+			if(chan.channel) {
+				chan.channel.stop();
+				chan.channel = chan.sample.sound.play(timeMillis, chan.loops, chan.transform);
+			}
 		}
 	}
 }
