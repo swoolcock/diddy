@@ -140,10 +140,9 @@ class diddy
 	
 	static void seekMusic(int timeMillis)
 	{
-		gxtkChannel *chan = &(app->audio->channels[32]);
-		if(chan && chan->state==1)
+		if(app->audio->music)
 		{
-			alSourcef(chan->source, AL_SEC_OFFSET, (float)(timeMillis / 1000.0));
+			app->audio->music.currentTime = timeMillis/1000.0;
 		}
 	}
 };
