@@ -156,6 +156,12 @@ class diddy
 		var stage:Stage=game.stage;
 		stage.addEventListener(MouseEvent.MOUSE_WHEEL,  diddy_onMouseWheelEvent);
 	}
+	
+	static public function seekMusic(timeMillis:int):void {
+		if(bb_audio_device && bb_audio_device.music && bb_audio_device.music.sound) {
+			bb_audio_device.music.sound.Seek(timeMillis);
+		}
+	}
 }
 var diddy_mouseWheelDelta:Number = 0.0;
 
