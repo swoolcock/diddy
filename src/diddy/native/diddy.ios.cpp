@@ -137,4 +137,13 @@ class diddy
 	{
 		return 0;
 	}
+	
+	static void seekMusic(int timeMillis)
+	{
+		gxtkChannel *chan = &(app->audio->channels[32]);
+		if(chan && chan->state==1)
+		{
+			alSourcef(chan->source, AL_SEC_OFFSET, (float)(timeMillis / 1000.0));
+		}
+	}
 };

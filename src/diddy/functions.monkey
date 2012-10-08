@@ -39,6 +39,7 @@ Extern
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy::getPixel"
 		Function MouseZInit:Void()="diddy::mouseZInit"
 		Function MouseZ:Float()="diddy::mouseZ"
+		Function SeekMusic:Void(timeMillis:Int)="diddy::seekMusic"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -68,6 +69,7 @@ Extern
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy.getPixel"
 		Function MouseZInit:Void()="diddy.mouseZInit"
 		Function MouseZ:Float()="diddy.mouseZ"
+		Function SeekMusic:Void(timeMillis:Int)="diddy.seekMusic"
 	#End
 	
 	#If TARGET="html5" Then
