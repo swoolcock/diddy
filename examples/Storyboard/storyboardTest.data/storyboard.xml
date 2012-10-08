@@ -3,142 +3,123 @@
 	<sounds>
 		<sound soundName="soft-hitwhistle" time="5000" />
 	</sounds>
-	<layer index="-1">
-		<sprite imageName="bg" x="320.00" y="240.00">
-			<position startTime="0" endTime="103110" />
-		</sprite>
-		<sprite imageName="black" x="320.00" y="240.00">
-			<alpha startTime="0" endTime="2475" startAlpha="1.00" endAlpha="1.00" />
-			<alpha startTime="2475" endTime="2523" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2523" endTime="2523" startAlpha="0.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="bar" x="58.00" y="295.00">
-			<alpha startTime="956" endTime="1146" startAlpha="1.00" endAlpha="0.00" />
-			<position startTime="956" endTime="2428" startX="58.00" startY="295.00" endX="324.00" endY="295.00" />
-			<alpha startTime="1146" endTime="1336" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1336" endTime="1526" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1526" endTime="1716" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1716" endTime="1906" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1906" endTime="2096" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2096" endTime="2286" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2286" endTime="2428" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2428" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-	</layer>
-	<layer index="1">
-		<sprite imageName="loadoverlay" x="320.00" y="240.00">
-			<alpha startTime="956" endTime="2428" startAlpha="1.00" endAlpha="1.00" />
-			<alpha startTime="2428" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="bmbs" x="456.00" y="122.00">
-			<alpha startTime="2475" endTime="4754" startAlpha="0.00" endAlpha="1.00" />
-			<scale startTime="2475" endTime="7032" startScale="0.55" endScale="0.78" />
-			<alpha startTime="4754" endTime="7032" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="LSB" x="320.00" y="357.00">
-			<alpha startTime="0" endTime="577" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="577" endTime="956" startAlpha="1.00" endAlpha="1.00" />
-			<alpha startTime="956" endTime="2428" startAlpha="1.00" endAlpha="1.00" />
-			<alpha startTime="2428" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="layer1" x="320.00" y="240.00">
-			<alpha startTime="2475" endTime="2475" startAlpha="1.00" endAlpha="1.00" />
-			<scale startTime="2475" endTime="14627" startScale="1.00" endScale="3.30" />
-			<alpha startTime="14627" endTime="14627" startAlpha="0.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="layer2" x="320.00" y="240.00">
-			<alpha startTime="14627" endTime="14627" startAlpha="1.00" endAlpha="1.00" />
-			<scale startTime="14627" endTime="26779" startScale="1.00" endScale="5.00" />
-			<alpha startTime="26779" endTime="26779" startAlpha="0.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="nebula" x="320.00" y="240.00">
-			<scale startTime="26779" endTime="38931" startScale="0.10" endScale="1.33" />
-			<scale startTime="38931" endTime="38931" startScale="1.33" endScale="1.33" />
-		</sprite>
-		<sprite imageName="nebula2" x="320.00" y="240.00">
-			<scale startTime="75387" endTime="99691" startScale="0.30" endScale="1.40" />
-			<alpha startTime="99691" endTime="102539" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="X" x="320.00" y="180.00">
-			<alpha startTime="0956" endTime="1004" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1004" endTime="1051" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1051" endTime="1099" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1099" endTime="1146" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1146" endTime="1194" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1194" endTime="1241" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1241" endTime="1289" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1289" endTime="1336" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1336" endTime="1384" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1384" endTime="1431" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1431" endTime="1479" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1479" endTime="1526" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1526" endTime="1574" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1574" endTime="1621" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1621" endTime="1668" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1668" endTime="1716" startAlpha="1.00" endAlpha="0.00" />
-			<scale startTime="1716" endTime="1716" startScale="0.90" endScale="0.90" />
-			<alpha startTime="1716" endTime="1763" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1763" endTime="1811" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1811" endTime="1858" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1858" endTime="1906" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="1906" endTime="1953" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="1953" endTime="2001" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2001" endTime="2048" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2048" endTime="2096" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2096" endTime="2143" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2143" endTime="2191" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2191" endTime="2238" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2238" endTime="2286" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2286" endTime="2333" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2333" endTime="2380" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2380" endTime="2428" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2428" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="X" x="320.00" y="180.00">
-			<alpha startTime="0" endTime="956" startAlpha="0.00" endAlpha="1.00" />
-			<scale startTime="956" endTime="956" startScale="0.80" endScale="0.80" />
-			<alpha startTime="956" endTime="2475" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="SBB" x="118.00" y="95.00">
-			<alpha startTime="8551" endTime="10830" startAlpha="0.00" endAlpha="1.00" />
-			<scale startTime="8551" endTime="12349" startScale="0.30" endScale="0.40" />
-			<alpha startTime="10830" endTime="12349" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="layer3" x="320.00" y="240.00">
-			<alpha startTime="75387" endTime="75387" startAlpha="1.00" endAlpha="1.00" />
-			<scale startTime="75387" endTime="102539" startScale="0.75" endScale="1.00" />
-			<alpha startTime="102539" endTime="103108" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="sun" x="320.00" y="240.00">
-			<alpha startTime="51178" endTime="51178" startAlpha="1.00" endAlpha="1.00" />
-			<scale startTime="51178" endTime="75339" startScale="0.30" endScale="0.70" />
-			<position startTime="51178" endTime="75387" startX="293.00" startY="254.00" endX="187.00" endY="167.00" />
-			<scale startTime="75339" endTime="75387" startScale="0.70" endScale="0.10" />
-			<alpha startTime="75387" endTime="75387" startAlpha="0.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="planet" x="120.00" y="150.00">
-			<position startTime="38931" endTime="75387" startX="120.00" startY="150.00" endX="444.00" endY="470.00" />
-			<scale startTime="38931" endTime="75387" startScale="0.28" endScale="2.06" />
-			<alpha startTime="75339" endTime="75387" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-		<sprite imageName="white" x="320.00" y="240.00">
-			<alpha startTime="2428" endTime="2475" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="2475" endTime="2855" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="2855" endTime="14580" startAlpha="0.00" endAlpha="0.02" />
-			<alpha startTime="14580" endTime="14627" startAlpha="0.02" endAlpha="1.00" />
-			<alpha startTime="14627" endTime="15007" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="15007" endTime="26732" startAlpha="0.00" endAlpha="0.02" />
-			<alpha startTime="26732" endTime="26779" startAlpha="0.02" endAlpha="1.00" />
-			<alpha startTime="26779" endTime="27159" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="27159" endTime="38884" startAlpha="0.00" endAlpha="0.00" />
-			<alpha startTime="38884" endTime="38931" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="38931" endTime="39311" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="39311" endTime="51083" startAlpha="0.00" endAlpha="0.01" />
-			<alpha startTime="51083" endTime="51178" startAlpha="0.01" endAlpha="1.00" />
-			<alpha startTime="51178" endTime="51273" startAlpha="1.00" endAlpha="0.00" />
-			<alpha startTime="51273" endTime="75339" startAlpha="0.00" endAlpha="0.00" />
-			<alpha startTime="75339" endTime="75387" startAlpha="0.00" endAlpha="1.00" />
-			<alpha startTime="75387" endTime="75767" startAlpha="1.00" endAlpha="0.00" />
-		</sprite>
-	</layer>
+	<sprites>
+		<layer index="-1">
+			<sprite imageName="bg" x="320.00" y="240.00" alpha="1" />
+			<sprite imageName="black" x="320.00" y="240.00" alpha="1">
+				<alpha time="2475" alpha="1" />
+				<alpha time="2523" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="bar" x="58.00" y="295.00" alpha="0">
+				<position time="956" x="58" y="295" />
+				<position time="2428" x="324" y="295" tween="true" />
+				<alpha time="956" alpha="1" />
+				<alpha time="1146" alpha="0" tween="true" />
+				<alpha time="1336" alpha="1" tween="true" />
+				<alpha time="1526" alpha="0" tween="true" />
+				<alpha time="1716" alpha="1" tween="true" />
+				<alpha time="1906" alpha="0" tween="true" />
+				<alpha time="2096" alpha="1" tween="true" />
+				<alpha time="2286" alpha="0" tween="true" />
+				<alpha time="2428" alpha="1" tween="true" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+		</layer>
+		<layer index="1">
+			<sprite imageName="loadoverlay" x="320.00" y="240.00" alpha="1">
+				<alpha time="2428" alpha="1" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="bmbs" x="456.00" y="122.00" alpha="0">
+				<alpha time="2475" alpha="0" />
+				<alpha time="4754" alpha="1" tween="true" />
+				<alpha time="7032" alpha="0" tween="true" />
+				<scale time="2475" scale="0.55" />
+				<scale time="7032" scale="0.78" tween="true" />
+			</sprite>
+			<sprite imageName="LSB" x="320.00" y="357.00" alpha="0">
+				<alpha time="0" alpha="0" />
+				<alpha time="577" alpha="1" tween="true" />
+				<alpha time="2428" alpha="1" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="layer1" x="320.00" y="240.00" alpha="0">
+				<alpha time="2475" alpha="1" />
+				<alpha time="14627" alpha="0" />
+				<scale time="2475" scale="1" />
+				<scale time="14627" scale="3.3" tween="true" />
+			</sprite>
+			<sprite imageName="layer2" x="320.00" y="240.00" alpha="0">
+				<alpha time="14627" alpha="1" />
+				<alpha time="26779" alpha="0" />
+				<scale time="14627" scale="1" />
+				<scale time="26779" scale="5" tween="true" />
+			</sprite>
+			<sprite imageName="nebula" x="320.00" y="240.00" alpha="0">
+				<alpha time="26779" alpha="1" />
+				<alpha time="38931" alpha="0" />
+				<scale time="26779" scale="0.10" />
+				<scale time="38931" scale="1.33" tween="true" />
+			</sprite>
+			<sprite imageName="nebula2" x="320.00" y="240.00" alpha="0">
+				<alpha time="75387" alpha="1" />
+				<scale time="75387" scale="0.3" />
+				<scale time="99691" scale="1.4" tween="true" />
+				<alpha time="99691" alpha="1" />
+				<alpha time="102539" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="X" x="320.00" y="180.00" alpha="0" scale="1">
+				<group time="1004" length="95" loopCount="16">
+					<alpha time="0" alpha="1" />
+					<alpha time="48" alpha="0" />
+				</group>
+				<scale time="1716" scale="0.9" />
+			</sprite>
+			<sprite imageName="X" x="320.00" y="180.00" alpha="0">
+				<alpha time="0" alpha="0" />
+				<alpha time="956" alpha="1" tween="true" />
+				<scale time="956" scale="0.80" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="SBB" x="118.00" y="95.00" alpha="0">
+				<alpha time="8551" alpha="0" />
+				<alpha time="10830" alpha="1" tween="true" />
+				<alpha time="12349" alpha="0" tween="true" />
+				<scale time="8551" scale="0.3" />
+				<scale time="12349" scale="0.4" tween="true" />
+			</sprite>
+			<sprite imageName="layer3" x="320.00" y="240.00" alpha="0">
+				<alpha time="75387" alpha="1" />
+				<scale time="75387" scale="0.75" />
+				<scale time="102539" scale="1" tween="true" />
+				<alpha time="102539" alpha="1" />
+				<alpha time="103108" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="sun" x="320.00" y="240.00" alpha="0">
+				<alpha time="51178" alpha="1" />
+				<alpha time="75387" alpha="0" />
+				<scale time="51178" scale="0.3" />
+				<scale time="75339" scale="0.7" tween="true" />
+				<position time="51178" x="293" y="254" />
+				<position time="75387" x="187" y="167" tween="true" />
+			</sprite>
+			<sprite imageName="planet" x="120.00" y="150.00">
+				<alpha time="38931" alpha="1" />
+				<alpha time="75339" alpha="1" />
+				<alpha time="75387" alpha="0" tween="true"/>
+				<position time="38931" x="120" y="150" />
+				<position time="75387" x="444" y="470" tween="true" />
+				<scale time="38931" scale="0.28" />
+				<scale time="75387" scale="2.06" tween="true" />
+			</sprite>
+		</layer>
+	</sprites>
+	<effects>
+		<flash time="2475" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="14627" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="26779" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="38931" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="51178" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="75387" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+	</effects>
 </storyboard>

@@ -1,5 +1,6 @@
 Strict
 
+Import base64
 Import monkey.map
 Import collections
 Import framework

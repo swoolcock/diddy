@@ -156,6 +156,16 @@ class diddy
 		var stage:Stage=game.stage;
 		stage.addEventListener(MouseEvent.MOUSE_WHEEL,  diddy_onMouseWheelEvent);
 	}
+	
+	static public function seekMusic(timeMillis:int):void {
+		if(bb_audio_device) {
+			var chan:gxtkChannel = bb_audio_device.channels[32];
+			if(chan.channel) {
+				chan.channel.stop();
+				chan.channel = chan.sample.sound.play(timeMillis, chan.loops, chan.transform);
+			}
+		}
+	}
 }
 var diddy_mouseWheelDelta:Number = 0.0;
 
