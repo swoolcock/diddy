@@ -1,2 +1,4 @@
 syntax: glob
 .svn
+*.build*
+*conflicted copy*

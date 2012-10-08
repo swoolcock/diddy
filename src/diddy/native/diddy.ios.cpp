@@ -137,4 +137,12 @@ class diddy
 	{
 		return 0;
 	}
+	
+	static void seekMusic(int timeMillis)
+	{
+		if(app->audio->music)
+		{
+			app->audio->music.currentTime = timeMillis/1000.0;
+		}
+	}
 };
