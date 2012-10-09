@@ -38,6 +38,7 @@ Private
 	Global mtx:Float[] = New Float[6]
 	Field sprites:ArrayList<StoryboardSprite> = New ArrayList<StoryboardSprite>
 	Field sounds:ArrayList<StoryboardSound> = New ArrayList<StoryboardSound>
+	Field musics:ArrayList<StoryboardMusic> = New ArrayList<StoryboardMusic>
 	Field effects:ArrayList<StoryboardEffect> = New ArrayList<StoryboardEffect>
 	Field debugMode:Bool = False
 	Field name:String
@@ -92,6 +93,9 @@ Public
 					If soundNode.Name = "sound" Then
 						' create a new sound and add it
 						sb.sounds.Add(New StoryboardSound(soundNode))
+					ElseIf soundNode.Name = "music" Then
+						' create a new music and add it
+						sb.musics.Add(New StoryboardMusic(soundNode))
 					End
 				Next
 			' effects node
@@ -136,6 +140,8 @@ Public
 		If Not playing Then
 			If playSpeed = 0 Then playSpeed = 1
 			playing = True
+			StoryboardMusic.musicPlaying = False
+			StopMusic()
 		End
 	End
 	
@@ -151,6 +157,8 @@ Public
 	' Pauses playback
 	Method Pause:Void()
 		playing = False
+		StoryboardMusic.musicPlaying = False
+		StopMusic()
 	End
 	
 	' Stops playback, and rewinds to the start
@@ -158,16 +166,22 @@ Public
 		playing = False
 		playSpeed = 1
 		currentTime = 0
+		StoryboardMusic.musicPlaying = False
+		StopMusic()
 	End
 
 	' Jumps to the specified time	
 	Method SeekTo:Void(time:Int)
 		currentTime = time
+		StoryboardMusic.musicPlaying = False
+		StopMusic()
 	End
 	
 	' Adds the specified offset (negative to jump backward)
 	Method SeekForward:Void(time:Int)
 		currentTime += time
+		StoryboardMusic.musicPlaying = False
+		StopMusic()
 	End
 	
 	' Updates all the transformations, increasing the current play time based on dt.frametime and the play speed.
@@ -181,11 +195,25 @@ Public
 			sprite.Update(currentTime)
 		Next
 		
-		' update sounds
-		For Local i:Int = 0 Until sounds.Size
-			Local sound:StoryboardSound = sounds.Get(i)
-			sound.Update(currentTime)
-		Next
+		' only do sounds etc. if playing
+		If playing Then
+			' update sounds
+			For Local i:Int = 0 Until sounds.Size
+				Local sound:StoryboardSound = sounds.Get(i)
+				sound.Update(currentTime)
+			Next
+			
+			' update music
+			For Local i:Int = 0 Until musics.Size
+				Local music:StoryboardMusic = musics.Get(i)
+				music.Update(currentTime)
+			Next
+			
+			' need to seek music here
+			If StoryboardMusic.musicPlaying And StoryboardMusic.performSeek Then
+				StoryboardMusic.performSeek = Not SeekMusic(StoryboardMusic.performSeekTime)
+			End
+		End
 		
 		' update effects
 		For Local i:Int = 0 Until effects.Size
@@ -350,6 +378,51 @@ Public
 	
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		' can't render a sound.... yet ;)
+	End
+End
+
+Class StoryboardMusic Extends StoryboardElement
+Private
+	Global musicPlaying:Bool = False
+	Global performSeek:Bool = False
+	Global performSeekTime:Int = 0
+	Const MUSIC_THRESHOLD:Int = 50
+	Field musicName:String
+	Field time:Int
+	Field length:Int
+	Field channel:Int
+	Field loop:Bool = False
+	
+Public
+	Method New(node:XMLElement)
+		musicName = node.GetAttribute("musicName","")
+		time = Int(node.GetAttribute("time","0"))
+		length = Int(node.GetAttribute("length","0"))
+		name = node.GetAttribute("name","")
+		loop = node.GetAttribute("loop","true").ToLower() = "true"
+	End
+	
+	Method Update:Void(currentTime:Int)
+		' find out if we're inside the music
+		If currentTime >= Self.time And (currentTime < Self.time+Self.length Or Self.loop) Then
+			' if we're not playing, need to start playing
+			If Not musicPlaying Then
+				musicPlaying = True
+				StopMusic()
+				performSeekTime = currentTime-Self.time
+				If loop Then
+					game.MusicPlay(musicName, 1)
+					performSeekTime = performSeekTime Mod Self.length
+				Else
+					game.MusicPlay(musicName, 0)
+				End
+				performSeek = performSeekTime >= MUSIC_THRESHOLD
+			End
+		End
+	End
+	
+	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+		' can't render music.... yet ;)
 	End
 End
 

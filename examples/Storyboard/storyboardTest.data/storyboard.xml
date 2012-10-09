@@ -2,6 +2,7 @@
 <storyboard name="test" width="640" height="480" length="103110">
 	<sounds>
 		<sound soundName="soft-hitwhistle" time="5000" />
+		<music musicName="SplitInSynapse.ogg" time="0" length="8000" loop="true" />
 	</sounds>
 	<sprites>
 		<layer index="-1">
