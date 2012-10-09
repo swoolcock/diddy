@@ -281,12 +281,14 @@ class diddy
 		return 0;
 	}
 	
-	static void seekMusic(int timeMillis)
+	static int seekMusic(int timeMillis)
 	{
 		android.media.MediaPlayer mp = MonkeyGame.app.audio.music;
 		if(mp!=null)
 		{
 			mp.seekTo(timeMillis);
 		}
+		// TODO: check it worked
+		return 1;
 	}
 }

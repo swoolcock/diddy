@@ -144,12 +144,14 @@ class diddy
 		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
 	}
 	
-	static void seekMusic(int timeMillis)
+	static int seekMusic(int timeMillis)
 	{
 		gxtkChannel *chan = &(app->audio->channels[32]);
 		if(chan && chan->state==1)
 		{
 			alSourcef(chan->source, AL_SEC_OFFSET, (float)(timeMillis / 1000.0));
 		}
+		// TODO: check it worked
+		return 1;
 	}
 };

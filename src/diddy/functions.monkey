@@ -39,7 +39,7 @@ Extern
 		Function GetColorPixel:Int(x:Int, y:Int)="diddy::getPixel"
 		Function MouseZInit:Void()="diddy::mouseZInit"
 		Function MouseZ:Float()="diddy::mouseZ"
-		Function SeekMusic:Void(timeMillis:Int)="diddy::seekMusic"
+		Function SeekMusic:Int(timeMillis:Int)="diddy::seekMusic"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
 		Function FlushKeys:Void() = "diddy.flushKeys"
@@ -70,7 +70,7 @@ Extern
 		Function MouseZInit:Void()="diddy.mouseZInit"
 		Function MouseZ:Float()="diddy.mouseZ"
 		#If TARGET<>"xna" And TARGET<>"psm" Then
-			Function SeekMusic:Void(timeMillis:Int)="diddy.seekMusic"
+			Function SeekMusic:Int(timeMillis:Int)="diddy.seekMusic"
 		#End
 	#End
 	
@@ -118,11 +118,12 @@ Public
 	Private
 	Global seekMusicCalled:Bool = False
 	Public
-	Function SeekMusic:Void(timeMillis:Int)
+	Function SeekMusic:Int(timeMillis:Int)
 		If Not seekMusicCalled Then
 			seekMusicCalled = True
 			Print "Warning: SeekMusic is not implemented in XNA and PSM!"
 		End
+		Return 1
 	End
 #End
 
