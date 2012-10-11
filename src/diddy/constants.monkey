@@ -137,3 +137,13 @@ Const INTERPOLATION_INVERSE_LINEAR:Int = 2  ' interpolates from end to start
 Const INTERPOLATION_HALF_SINE:Int = 3       ' interpolates from start to end and back again, in a wave
 Const INTERPOLATION_HALF_COSINE:Int = 4     ' interpolates from end to start and back again, in a wave
 Const INTERPOLATION_COUNT:Int = 5
+
+Const EASE_NONE:Int = 0
+Const EASE_IN_DOUBLE:Int = 1
+Const EASE_IN:Int = 2
+Const EASE_IN_HALF:Int = 3
+Const EASE_OUT:Int = 4
+Const EASE_OUT_HALF:Int = 5
+Const EASE_OUT_DOUBLE:Int = 6
+Const EASE_IN_OUT:Int = 7
+Const EASE_COUNT:Int = 8
