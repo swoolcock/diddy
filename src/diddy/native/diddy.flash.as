@@ -157,7 +157,7 @@ class diddy
 		stage.addEventListener(MouseEvent.MOUSE_WHEEL,  diddy_onMouseWheelEvent);
 	}
 	
-	static public function seekMusic(timeMillis:int):void {
+	static public function seekMusic(timeMillis:int):int {
 		if(bb_audio_device) {
 			var chan:gxtkChannel = bb_audio_device.channels[32];
 			if(chan.channel) {
@@ -165,6 +165,8 @@ class diddy
 				chan.channel = chan.sample.sound.play(timeMillis, chan.loops, chan.transform);
 			}
 		}
+		// TODO: check it worked
+		return 1;
 	}
 }
 var diddy_mouseWheelDelta:Number = 0.0;

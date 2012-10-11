@@ -29,6 +29,7 @@ Import arrays
 Import assert
 Import base64
 Import collections
+Import externfunctions
 Import filesystem
 Import font
 Import functions
