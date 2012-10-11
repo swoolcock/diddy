@@ -24,15 +24,6 @@ Const KEYFRAME_COLOR:Int = 5
 Const KEYFRAME_HANDLE:Int = 6
 Const KEYFRAME_COUNT:Int = 6
 
-Const EASE_NONE:Int = 0
-Const EASE_IN_DOUBLE:Int = 1
-Const EASE_IN:Int = 2
-Const EASE_IN_HALF:Int = 3
-Const EASE_OUT:Int = 4
-Const EASE_OUT_HALF:Int = 5
-Const EASE_OUT_DOUBLE:Int = 6
-Const EASE_IN_OUT:Int = 7
-
 Class Storyboard
 Private
 	Global mtx:Float[] = New Float[6]
@@ -196,7 +187,7 @@ Public
 		Next
 		
 		' only do sounds etc. if playing
-		If playing Then
+		If playing And updateTime Then
 			' update sounds
 			For Local i:Int = 0 Until sounds.Size
 				Local sound:StoryboardSound = sounds.Get(i)
@@ -645,7 +636,7 @@ Public
 			Local scaleY:Float = Float(node.GetAttribute("scaleY","1"))
 			Init(KEYFRAME_SCALE_VECTOR, scaleX, scaleY)
 		ElseIf name = "alpha" Then
-			Local alpha:Float = Clamp(Float(node.GetAttribute("alpha","1")))
+			Local alpha:Float = Clamp(Float(node.GetAttribute("alpha","1")),0.0,1.0)
 			Init(KEYFRAME_ALPHA, alpha)
 		ElseIf name = "rotation" Then
 			Local rotation:Float = Float(node.GetAttribute("rotation","0"))
@@ -660,14 +651,14 @@ Public
 			Init(KEYFRAME_HANDLE, x, y)
 		ElseIf name = "color" Then
 			If node.HasAttribute("red") Or node.HasAttribute("green") Or node.HasAttribute("blue") Then
-				Local red:Float = Clamp(Float(node.GetAttribute("red","255")),0,255)
-				Local green:Float = Clamp(Float(node.GetAttribute("green","255")),0,255)
-				Local blue:Float = Clamp(Float(node.GetAttribute("blue","255")),0,255)
+				Local red:Float = Clamp(Float(node.GetAttribute("red","255")),0.0,255.0)
+				Local green:Float = Clamp(Float(node.GetAttribute("green","255")),0.0,255.0)
+				Local blue:Float = Clamp(Float(node.GetAttribute("blue","255")),0.0,255.0)
 				RGBtoHSL(red, green, blue, hslArray)
 			Else
-				hslArray[0] = Clamp(Float(node.GetAttribute("hue","0")))
-				hslArray[1] = Clamp(Float(node.GetAttribute("saturation","0")))
-				hslArray[2] = Clamp(Float(node.GetAttribute("luminance","0")))
+				hslArray[0] = Clamp(Float(node.GetAttribute("hue","0")),0.0,1.0)
+				hslArray[1] = Clamp(Float(node.GetAttribute("saturation","0")),0.0,1.0)
+				hslArray[2] = Clamp(Float(node.GetAttribute("luminance","0")),0.0,1.0)
 			End
 			Init(KEYFRAME_COLOR, hslArray[0], hslArray[1], hslArray[2])
 		End
@@ -678,28 +669,28 @@ Public
 		If Self.time >= prevKF.time Then progress = Float(currentTime-prevKF.time)/(Self.time-prevKF.time)
 		Select keyframeType
 			Case KEYFRAME_ALPHA
-				sprite.alpha = Interpolate(prevKF.values[0], values[0], progress, ease)
+				sprite.alpha = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
 			Case KEYFRAME_SCALE
-				sprite.scale = Interpolate(prevKF.values[0], values[0], progress, ease)
+				sprite.scale = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
 			Case KEYFRAME_ROTATION
-				sprite.rotation = Interpolate(prevKF.values[0], values[0], progress, ease)
+				sprite.rotation = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
 			Case KEYFRAME_POSITION
-				sprite.x = Interpolate(prevKF.values[0], values[0], progress, ease)
-				sprite.y = Interpolate(prevKF.values[1], values[1], progress, ease)
+				sprite.x = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
+				sprite.y = InterpolateWithEase(prevKF.values[1], values[1], progress, ease)
 			Case KEYFRAME_SCALE_VECTOR
-				sprite.scaleX = Interpolate(prevKF.values[0], values[0], progress, ease)
-				sprite.scaleY = Interpolate(prevKF.values[1], values[1], progress, ease)
+				sprite.scaleX = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
+				sprite.scaleY = InterpolateWithEase(prevKF.values[1], values[1], progress, ease)
 			Case KEYFRAME_COLOR
 				HSLtoRGB(
-					Interpolate(prevKF.values[0], values[0], progress, ease),
-					Interpolate(prevKF.values[1], values[1], progress, ease),
-					Interpolate(prevKF.values[2], values[2], progress, ease), rgbArray)
+					InterpolateWithEase(prevKF.values[0], values[0], progress, ease),
+					InterpolateWithEase(prevKF.values[1], values[1], progress, ease),
+					InterpolateWithEase(prevKF.values[2], values[2], progress, ease), rgbArray)
 				sprite.red = rgbArray[0]
 				sprite.green = rgbArray[1]
 				sprite.blue = rgbArray[2]
 			Case KEYFRAME_HANDLE
 				If sprite And sprite.image And sprite.image.image Then
-					sprite.image.image.SetHandle(Interpolate(prevKF.values[0], values[0], progress, ease), Interpolate(prevKF.values[1], values[1], progress, ease))
+					sprite.image.image.SetHandle(InterpolateWithEase(prevKF.values[0], values[0], progress, ease), InterpolateWithEase(prevKF.values[1], values[1], progress, ease))
 				End
 		End
 	End
@@ -765,17 +756,17 @@ Public
 		time = Int(node.GetAttribute("time","0"))
 		leadIn = Int(node.GetAttribute("leadIn","0"))
 		leadOut = Int(node.GetAttribute("leadOut","0"))
-		alpha = Clamp(Float(node.GetAttribute("alpha","1")))
+		alpha = Clamp(Float(node.GetAttribute("alpha","1")),0.0,1.0)
 		If node.HasAttribute("hue") Or node.HasAttribute("saturation") Or node.HasAttribute("luminance") Then
-			Local hue:Float = Clamp(Float(node.GetAttribute("hue","0")))
-			Local saturation:Float = Clamp(Float(node.GetAttribute("saturation","0")))
-			Local luminance:Float = Clamp(Float(node.GetAttribute("luminance","0")))
+			Local hue:Float = Clamp(Float(node.GetAttribute("hue","0")),0.0,1.0)
+			Local saturation:Float = Clamp(Float(node.GetAttribute("saturation","0")),0.0,1.0)
+			Local luminance:Float = Clamp(Float(node.GetAttribute("luminance","0")),0.0,1.0)
 			HSLtoRGB(hue, saturation, luminance, rgbArray)
 			red = rgbArray[0]; green = rgbArray[1]; blue = rgbArray[2]
 		Else
-			red = Clamp(Float(node.GetAttribute("red","255")),0,255)
-			green = Clamp(Float(node.GetAttribute("green","255")),0,255)
-			blue = Clamp(Float(node.GetAttribute("blue","255")),0,255)
+			red = Clamp(Float(node.GetAttribute("red","255")),0.0,255.0)
+			green = Clamp(Float(node.GetAttribute("green","255")),0.0,255.0)
+			blue = Clamp(Float(node.GetAttribute("blue","255")),0.0,255.0)
 		End
 	End
 	
@@ -804,36 +795,3 @@ End
 Private
 Global hslArray:Float[] = New Float[3]
 Global rgbArray:Int[] = New Int[3]
-
-Function Lerp:Float(startValue:Float, endValue:Float, progress:Float)
-	Return startValue + (endValue-startValue) * progress
-End
-
-Function Clamp:Float(value:Float, minval:Float=0, maxval:Float=1)
-	Return Max(minval,Min(maxval,value))
-End
-
-Function Interpolate:Float(startValue:Float, endValue:Float, progress:Float, ease:Int)
-	If progress <= 0 Then Return startValue
-	If progress >= 1 Then Return endValue
-	Select ease
-		Case EASE_IN_DOUBLE
-			Return Lerp(endValue, startValue, (1-progress)*(1-progress)*(1-progress)*(1-progress))
-		Case EASE_IN
-			Return Lerp(endValue, startValue, (1-progress)*(1-progress))
-		Case EASE_IN_HALF
-			Return Lerp(endValue, startValue, Pow(1-progress, 1.5))
-		Case EASE_OUT
-			Return Lerp(startValue, endValue, progress * progress)
-		Case EASE_OUT_HALF
-			Return Lerp(startValue, endValue, Pow(progress, 1.5))
-		Case EASE_OUT_DOUBLE
-			Return Lerp(startValue, endValue, progress*progress*progress*progress)
-		Case EASE_IN_OUT
-			Return startValue + (-2*(progress*progress*progress) + 3*(progress*progress)) * (endValue - startValue)
-		Default
-			Return Lerp(startValue, endValue, progress);
-	End
-End
-
-

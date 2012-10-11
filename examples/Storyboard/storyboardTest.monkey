@@ -50,6 +50,7 @@ End
 Class GameScreen Extends Screen
 	Field sb:Storyboard
 	Field scale:Float = 1
+	Field seeking:Bool = False
 	
 	Method New()
 		name = "Storyboard Test"
@@ -108,7 +109,12 @@ Class GameScreen Extends Screen
 		If scale > 3 Then scale = 3
 		
 		' left click to move the position (doesn't line up perfectly with the slider, for now)
-		If MouseDown(0) Then sb.SeekTo(Int(sb.Length * Float(MouseX())/DEVICE_WIDTH))
+		If MouseDown(0) Then
+			If MouseHit() Then seeking = True
+			sb.SeekTo(Int(sb.Length * Float(MouseX())/DEVICE_WIDTH))
+		ElseIf seeking Then
+			seeking = False
+		End
 		
 		' Use mouse wheel to seek forward and backward one second at a time
 		Local mz:Float = MouseZ()
@@ -117,6 +123,6 @@ Class GameScreen Extends Screen
 		End
 		
 		' update the storyboard (don't increment the time while seeking - it makes no sense!)
-		sb.Update(Not MouseDown(0))
+		sb.Update(Not seeking)
 	End
 End

@@ -579,3 +579,30 @@ Function PixelArrayMask:Void(pixels:Int[], maskRed:Int = 0, maskGreen:Int = 0, m
 		End
 	Next
 End
+
+Function Lerp:Float(startValue:Float, endValue:Float, progress:Float)
+	Return startValue + (endValue-startValue) * progress
+End
+
+Function InterpolateWithEase:Float(startValue:Float, endValue:Float, progress:Float, ease:Int)
+	If progress <= 0 Then Return startValue
+	If progress >= 1 Then Return endValue
+	Select ease
+		Case EASE_IN_DOUBLE
+			Return Lerp(endValue, startValue, (1-progress)*(1-progress)*(1-progress)*(1-progress))
+		Case EASE_IN
+			Return Lerp(endValue, startValue, (1-progress)*(1-progress))
+		Case EASE_IN_HALF
+			Return Lerp(endValue, startValue, Pow(1-progress, 1.5))
+		Case EASE_OUT
+			Return Lerp(startValue, endValue, progress * progress)
+		Case EASE_OUT_HALF
+			Return Lerp(startValue, endValue, Pow(progress, 1.5))
+		Case EASE_OUT_DOUBLE
+			Return Lerp(startValue, endValue, progress*progress*progress*progress)
+		Case EASE_IN_OUT
+			Return startValue + (-2*(progress*progress*progress) + 3*(progress*progress)) * (endValue - startValue)
+		Default
+			Return Lerp(startValue, endValue, progress);
+	End
+End
