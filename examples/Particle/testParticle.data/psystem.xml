@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<psystem>
+	<groups>
+		<group Name="group1" MaxParticles="50000">
+			<constantforce Name="gravity" X="0" Y="150" Enabled="true" />
+			<pointforce Name="point" Acceleration="300" Enabled="false" />
+		</group>
+	</groups>
+	<emitters>
+		<emitter Name="emit1"
+				Group="group1"
+				StartHue="0.0" EndHue="1.0"
+				Saturation="1.0"
+				Luminance="0.5"
+				Life="3"
+				AlphaInterpolationTime="0.5"
+				ParticleImage="speck"
+				Scale="1.5"
+				ScaleSpread="2"
+				PolarVelocityAngle="-90"
+				PolarVelocityAngleSpread="60"
+				PolarVelocityAmplitude="250"
+				PolarVelocityAmplitudeSpread="50">
+			<deathemitter Name="emit2" Chance="0.05" Count="30" />
+		</emitter>
+		<emitter Name="emit2"
+				Red="0"
+				Green="255"
+				StartBlue="255" EndBlue="0"
+				Life="3"
+				AlphaInterpolationTime="0.5"
+				Scale="2"
+				ScaleSpread="2"
+				PolarVelocityAngle="0"
+				PolarVelocityAngleSpread="360"
+				PolarVelocityAmplitude="50"
+				PolarVelocityAmplitudeSpread="10"
+				Rotation="0"
+				RotationSpread="22.5"
+				RotationSpeed="0"
+				RotationSpeedSpread="90" />
+	</emitters>
+</psystem>

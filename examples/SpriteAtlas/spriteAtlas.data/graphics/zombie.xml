@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!--  -->
+<TextureAtlas imagePath="zombie_0.png">
+    <SubTexture name="idle_left1" x="1" y="1" width="128" height="128"/>
+    <SubTexture name="idle_left2" x="128" y="1" width="128" height="128"/>
+    <SubTexture name="idle_left3" x="256" y="1" width="128" height="128"/>
+    <SubTexture name="idle_left4" x="384" y="1" width="128" height="128"/>
+</TextureAtlas>

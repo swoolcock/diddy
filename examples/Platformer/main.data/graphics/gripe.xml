@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!--  -->
+<TextureAtlas imagePath="gripe.png">
+    <SubTexture name="gripe.die" x="1" y="1" width="128" height="32"/>
+    <SubTexture name="gripe.jump_right" x="131" y="1" width="32" height="32"/>
+    <SubTexture name="gripe.run_right" x="165" y="1" width="256" height="32"/>
+    <SubTexture name="gripe.stand_right" x="423" y="1" width="32" height="32"/>
+    <SubTexture name="gripe.turn_right_to_left" x="1" y="35" width="128" height="32"/>
+</TextureAtlas>
