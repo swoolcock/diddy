@@ -1,58 +1,60 @@
 Strict
 
+Private
+Import stringbuilder
+
 Public
 
-' TODO: allow encoding of Int[]
-' TODO: enabling lineWrap will wrap the string every lineWrapWidth characters (defaults to 80)
+' enabling lineWrap will wrap the string every lineWrapWidth characters (defaults to 80)
 ' enabling padOutput will pad the ending of the output with equals characters (=) to next 4-byte boundary
-Function EncodeBase64:String(src:String, padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
-	Local rv:String = ""
-	Local s1:Int, s2:Int, s3:Int, a:Int, b:Int, c:Int, d:Int, i:Int
+Function EncodeBase64:String(src:Int[], padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
 	If src.Length = 0 Then Return ""
+	Local rv:StringBuilder = New StringBuilder(Int(src.Length*4.0/3.0+10))
+	Local s1:Int, s2:Int, s3:Int, a:Int, b:Int, c:Int, d:Int, i:Int
+	Local charsAdded:Int = 0
+	
 	Repeat
+		' get 3 source bytes
 		s1 = src[i]
 		If i+1 < src.Length Then s2 = src[i+1] Else s2 = 0
 		If i+2 < src.Length Then s3 = src[i+2] Else s3 = 0
+		
+		' make 4 target bytes
 		a = s1 Shr 2
 		b = ((s1 & 3) Shl 4) | (s2 Shr 4)
 		c = ((s2 & 15) Shl 2) | (s3 Shr 6)
 		d = s3 & 63
+		
+		' set target bytes 3 and 4 if the source is not divisible by 3
 		If i+1 >= src.Length Then c = 64
 		If i+2 >= src.Length Then d = 64
-		rv += BASE64_CHARS[a..a+1] + BASE64_CHARS[b..b+1]
-		If c < 64 Or padOutput Then rv += BASE64_CHARS[c..c+1]
-		If d < 64 Or padOutput Then rv += BASE64_CHARS[d..d+1]
+		
+		' append target bytes, adding a line wrap if we must
+		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 And charsAdded > 1 Then rv.Append("~n")
+		rv.AppendByte(BASE64_CHARS[a]); charsAdded += 1
+		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
+		rv.AppendByte(BASE64_CHARS[b]); charsAdded += 1
+		If c < 64 Or padOutput Then
+			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
+			rv.AppendByte(BASE64_CHARS[c]); charsAdded += 1
+		End
+		If d < 64 Or padOutput Then
+			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
+			rv.AppendByte(BASE64_CHARS[d]); charsAdded += 1
+		End
+		
+		' next 3 bytes!
 		i += 3
 	Until i >= src.Length
-	Return rv
+	Return rv.ToString()
 End
 
-' TODO: convert this to use BASE64_ARRAY
-' I'll do this once Monkey has a decent string builder class.
+Function EncodeBase64:String(src:String, padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
+	Return EncodeBase64(src.ToChars(), padOutput, lineWrap, lineWrapWidth)
+End
+
 Function DecodeBase64:String(src:String)
-	Local rv:String = "", src2:String = ""
-	Local s1:Int, s2:Int, s3:Int, a:Int, b:Int, c:Int, d:Int, i:Int
-	' remove any non-base64 characters
-	For i = 0 Until src.Length
-		If BASE64_CHARS.Find(src[i..i+1]) >= 0 Then src2 += src[i..i+1]
-	Next
-	If src2.Length = 0 Then Return ""
-	i = 0
-	Repeat
-		a = BASE64_CHARS.Find(src2[i..i+1])
-		If i+1 > src2.Length Then Exit ' This shouldn't happen with base64, so something's wrong!
-		b = BASE64_CHARS.Find(src2[i+1..i+2])
-		If i+2 < src2.Length Then c = BASE64_CHARS.Find(src2[i+2..i+3]) Else c = 64
-		If i+3 < src2.Length Then d = BASE64_CHARS.Find(src2[i+3..i+4]) Else d = 64
-		s1 = (a Shl 2) | (b Shr 4)
-		s2 = ((b & 15) Shl 4) | (c Shr 2)
-		s3 = ((c & 3) Shl 6) | d
-		rv += String.FromChar(s1)
-		If c <> 64 Then rv += String.FromChar(s2)
-		If d <> 64 Then rv += String.FromChar(s3)
-		i += 4
-	Until i >= src2.Length
-	Return rv
+	Return String.FromChars(DecodeBase64Bytes(src))
 End
 
 Function DecodeBase64Bytes:Int[](src:String)

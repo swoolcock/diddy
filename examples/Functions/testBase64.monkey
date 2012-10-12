@@ -2,12 +2,12 @@ Import diddy
 
 ' Tests encoding/decoding base64, using example string from Wikipedia.
 Function Main:Int()
-	Print "Test encoding different lengths, with = padding"
-	Print EncodeBase64("any carnal pleasure.", True)
-	Print EncodeBase64("any carnal pleasure", True)
-	Print EncodeBase64("any carnal pleasur", True)
-	Print EncodeBase64("any carnal pleasu", True)
-	Print EncodeBase64("any carnal pleas", True)
+	Print "Test encoding different lengths, with = padding and line wrap of 10"
+	Print EncodeBase64("any carnal pleasure.", True, True, 10)
+	Print EncodeBase64("any carnal pleasure", True, True, 10)
+	Print EncodeBase64("any carnal pleasur", True, True, 10)
+	Print EncodeBase64("any carnal pleasu", True, True, 10)
+	Print EncodeBase64("any carnal pleas", True, True, 10)
 	
 	Print "Test decoding different lengths, with = padding and handling non-base64 characters"
 	Print DecodeBase64("YW55IGNhcm5hbCB wbGVhc3VyZS4=")
