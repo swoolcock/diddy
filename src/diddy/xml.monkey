@@ -226,14 +226,12 @@ Class XMLParser
 		' get the name
 		a = startIndex
 		While a < endIndex
-			If str[a]=ASC_SPACE Or str[a]=ASC_TAB Or str[a]=ASC_LF Or str[a]=ASC_CR Or a = endIndex-1 Then
-				If a = endIndex-1 Then
-					e.name = str[startIndex..endIndex]
-				Else
-					e.name = str[startIndex..a]
-				End
+			If str[a]=ASC_SPACE Or str[a]=ASC_TAB Or str[a]=ASC_LF Or str[a]=ASC_CR Then
+				e.name = str[startIndex..a]
 				a += 1
 				Exit
+			ElseIf a = endIndex-1 Then
+				e.name = str[startIndex..endIndex]
 			End
 			a += 1
 		End
