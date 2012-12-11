@@ -14,7 +14,6 @@ Const GRAVITY:Float = 0.06
 
 Class MyGame extends DiddyApp
 	Method Create:Void()
-		Super.OnCreate()
 		LoadImages()
 		titleScreen = New TitleScreen
 		gameScreen = new GameScreen
