@@ -590,6 +590,10 @@ Private
 		Self.name = name
 		Self.value = value
 	End
+	
+	Method Matches:Bool(check:String)
+		Return check = name + "=" + value
+	End
 End
 
 Class XMLElement
@@ -750,21 +754,52 @@ Public
 		Return rv
 	End
 	
-	Method GetChildrenByName:ArrayList<XMLElement>(findName:String)
+	Method GetChildrenByName:ArrayList<XMLElement>(findName$, att1$="", att2$="", att3$="", att4$="", att5$="", att6$="", att7$="", att8$="", att9$="", att10$="")
 		If Not findName Then Throw New IllegalArgumentException("XMLElement.GetChildrenByName: findName must not be empty")
 		Local rv:ArrayList<XMLElement> = New ArrayList<XMLElement>
 		For Local element:XMLElement = Eachin children
-			If element.name = findName Then rv.Add(element)
+			If element.name = findName Then
+				If att1 And Not element.MatchesAttribute(att1) Then Continue
+				If att2 And Not element.MatchesAttribute(att2) Then Continue
+				If att3 And Not element.MatchesAttribute(att3) Then Continue
+				If att4 And Not element.MatchesAttribute(att4) Then Continue
+				If att5 And Not element.MatchesAttribute(att5) Then Continue
+				If att6 And Not element.MatchesAttribute(att6) Then Continue
+				If att7 And Not element.MatchesAttribute(att7) Then Continue
+				If att8 And Not element.MatchesAttribute(att8) Then Continue
+				If att9 And Not element.MatchesAttribute(att9) Then Continue
+				If att10 And Not element.MatchesAttribute(att10) Then Continue
+				rv.Add(element)
+			End
 		Next
 		Return rv
 	End
 	
-	Method GetFirstChildByName:XMLElement(findName:String)
+	Method GetFirstChildByName:XMLElement(findName$, att1$="", att2$="", att3$="", att4$="", att5$="", att6$="", att7$="", att8$="", att9$="", att10$="")
 		If Not findName Then Throw New IllegalArgumentException("XMLElement.GetFirstChildByName: findName must not be empty")
 		For Local element:XMLElement = Eachin children
-			If element.name = findName Then Return element
+			If element.name = findName Then
+				If att1 And Not element.MatchesAttribute(att1) Then Continue
+				If att2 And Not element.MatchesAttribute(att2) Then Continue
+				If att3 And Not element.MatchesAttribute(att3) Then Continue
+				If att4 And Not element.MatchesAttribute(att4) Then Continue
+				If att5 And Not element.MatchesAttribute(att5) Then Continue
+				If att6 And Not element.MatchesAttribute(att6) Then Continue
+				If att7 And Not element.MatchesAttribute(att7) Then Continue
+				If att8 And Not element.MatchesAttribute(att8) Then Continue
+				If att9 And Not element.MatchesAttribute(att9) Then Continue
+				If att10 And Not element.MatchesAttribute(att10) Then Continue
+				Return element
+			End
 		Next
 		Return Null
+	End
+	
+	Method MatchesAttribute:Bool(check:String)
+		For Local attr:XMLAttribute = EachIn attributes
+			If attr.Matches(check) Then Return True
+		Next
+		Return False
 	End
 	
 ' Properties
