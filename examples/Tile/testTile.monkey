@@ -50,6 +50,8 @@ Class GameScreen Extends Screen
 	End
 
 	Method Start:Void()
+		Local tmpImage:Image
+		game.images.LoadAnim("tileslostgarden.png", 20, 20, 21, tmpImage, True, False)	
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
 		Local tm:TileMap = reader.LoadMap("maps/map.xml")
 		tilemap = MyTileMap(tm)

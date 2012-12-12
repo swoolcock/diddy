@@ -410,7 +410,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local alltiles:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' load the image
-			ts.image = game.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing)
+			ts.image = game.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
 			' get the cell count
 			ts.tileCount = ts.image.tileCount
 			
