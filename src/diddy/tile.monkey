@@ -356,12 +356,14 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	End
 	
 	' summary: override this to configure a layer (called on every render)
-	' deprecated, override PreDrawLayer instead
+	' deprecated, override PreRenderLayer instead
 	Method ConfigureLayer:Void(tileLayer:TileMapLayer)
 	End
 	
 	' summary: override this to draw a tile
 	Method DrawTile:Void(tileLayer:TileMapTileLayer, mapTile:TileMapTile, x:Int, y:Int)
+		' default draw call
+		mapTile.image.DrawTile(x, y, mapTile.id, 0, 1, 1)
 	End
 	
 	' summary: override this to create a custom tile class
