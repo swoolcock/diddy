@@ -86,11 +86,11 @@ Public
 		Local myAtlas:GameImage
 		If red = 0 And green = 0 And blue = 0 Then
 			SetColor(255,255,255)
-			If blackAtlas = Null Then blackAtlas = game.images.Load(blackAtlasName,,False)
+			If blackAtlas = Null Then blackAtlas = diddyGame.images.Load(blackAtlasName,,False)
 			myAtlas = blackAtlas
 		Else
 			SetColor(red,green,blue)
-			If atlas = Null Then atlas = game.images.Load(atlasName,,False)
+			If atlas = Null Then atlas = diddyGame.images.Load(atlasName,,False)
 			myAtlas = atlas
 		End
 		Local strlen:Int = str.Length

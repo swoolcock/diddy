@@ -15,7 +15,6 @@ Class MyGame Extends DiddyApp
 		LoadSounds()
 		gameScreen = new GameScreen
 		Start(gameScreen)
-		Return 0
 	End
 	
 	'***********************
@@ -33,8 +32,8 @@ Class GameScreen Extends Screen
 	
 	Method New()
 		name = "Game"
-		boom = game.sounds.Find("boom3")
-		lazer = game.sounds.Find("lazer")
+		boom = diddyGame.sounds.Find("boom3")
+		lazer = diddyGame.sounds.Find("lazer")
 	End
 
 	Method Start:Void()
@@ -78,7 +77,7 @@ Class GameScreen Extends Screen
 		End
 
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End

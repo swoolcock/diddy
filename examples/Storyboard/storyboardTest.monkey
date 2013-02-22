@@ -58,9 +58,7 @@ Class GameScreen Extends Screen
 	
 	Method Start:Void()
 		sb = Storyboard.LoadXML("storyboard.xml")
-#If TARGET="android" Or TARGET="ios" Then
 		sb.Play()
-#End
 	End
 	
 	Method Render:Void()

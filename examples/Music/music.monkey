@@ -29,7 +29,7 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.MusicPlay("NewsTheme"+musicExt, 1)
+		diddyGame.MusicPlay("NewsTheme"+musicExt, 1)
 	End
 	
 	Method Render:Void()
@@ -46,7 +46,7 @@ Class TitleScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
@@ -58,7 +58,7 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.MusicPlay("SplitInSynapse"+musicExt, 1)
+		diddyGame.MusicPlay("SplitInSynapse"+musicExt, 1)
 	End
 	
 	Method Render:Void()

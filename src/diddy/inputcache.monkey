@@ -344,8 +344,8 @@ Public
 			mouseDownCount = 0
 			mouseHitCount = 0
 			mouseReleasedCount = 0
-			mouseX = game.mouseX
-			mouseY = game.mouseY
+			mouseX = diddyGame.mouseX
+			mouseY = diddyGame.mouseY
 			For Local i:Int = 0 Until MOUSE_COUNT
 				' get the mouse hit
 				newval = MouseHit(i)

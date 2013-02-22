@@ -412,7 +412,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local alltiles:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' load the image
-			ts.image = game.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
+			ts.image = diddyGame.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
 			' get the cell count
 			ts.tileCount = ts.image.tileCount
 			
@@ -764,21 +764,21 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Scrolls the map based on the changeX and changeY
 	Method Scroll:Void(changeX:Float, changeY:Float)
-		game.scrollX += changeX
-		game.scrollY += changeY
+		diddyGame.scrollX += changeX
+		diddyGame.scrollY += changeY
 		
-		If game.scrollX < 0 Then
-			game.scrollX = 0
+		If diddyGame.scrollX < 0 Then
+			diddyGame.scrollX = 0
 		Else
 			Local maxX:Int = width * tileWidth - SCREEN_WIDTH
-			If game.scrollX > maxX Then game.scrollX = maxX
+			If diddyGame.scrollX > maxX Then diddyGame.scrollX = maxX
 		End
 		
-		If game.scrollY < 0 Then
-			game.scrollY = 0
+		If diddyGame.scrollY < 0 Then
+			diddyGame.scrollY = 0
 		Else
 			Local maxY:Int = height * tileHeight - SCREEN_HEIGHT
-			If game.scrollY > maxY Then game.scrollY = maxY
+			If diddyGame.scrollY > maxY Then diddyGame.scrollY = maxY
 		End
 	End
 	
@@ -994,7 +994,7 @@ Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	Method PostLoad:Void()
 		If properties.Has(PROP_TILE_ANIM_DELAY) Then
-			animDelay = game.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
+			animDelay = diddyGame.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
 			animated = True
 		End
 		If properties.Has(PROP_TILE_ANIM_NEXT) Then animNext = properties.Get(PROP_TILE_ANIM_NEXT).GetInt()

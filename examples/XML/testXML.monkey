@@ -56,7 +56,7 @@ Class TestScreen Extends Screen
 
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End	
 End

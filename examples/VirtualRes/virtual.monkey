@@ -27,7 +27,7 @@ Class GameScreen Extends Screen
 	End
 
 	Method Start:Void()
-		backgroundImg = game.images.Find("background")
+		backgroundImg = diddyGame.images.Find("background")
 	End
 	
 	Method Render:Void()
@@ -75,9 +75,9 @@ Class GameScreen Extends Screen
 			FadeToScreen(gameScreen)
 		End
 
-		game.SetScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+		diddyGame.SetScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT)
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End

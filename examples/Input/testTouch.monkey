@@ -13,7 +13,7 @@ Class MyGame extends DiddyApp
 	Method Create:Void()
 		' enable touch for non-phones
 		#If TARGET<>"ios" or TARGET<>"android"
-			game.inputCache.MonitorTouch(True)
+			diddyGame.inputCache.MonitorTouch(True)
 		#End
 		gameScreen = new GameScreen
 		Start(gameScreen)
@@ -79,7 +79,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 		' for each of the circles
 		For Local i:Int = 0 Until life.Length

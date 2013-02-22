@@ -39,7 +39,7 @@ Class TitleScreen Extends Screen
 		b = menu.AddButton("options.png", "optionsMO.png")
 		b = menu.AddButton("quit.png", "quitMO.png")
 		musicFormat="ogg"
-		game.MusicPlay("happy."+musicFormat, True)
+		diddyGame.MusicPlay("happy."+musicFormat, True)
 		menu.Centre()
 	End
 	
@@ -68,7 +68,7 @@ Class TitleScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE) Or menu.Clicked("quit")
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
@@ -77,7 +77,7 @@ Class GameScreen Extends Screen
 	Field menu:SimpleMenu
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
+		diddyGame.screenFade.Start(50, False)
 		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, True)
 		Local b:SimpleButton = menu.AddButton("quit.png", "quitMO.png")
 		menu.Centre()
@@ -103,13 +103,13 @@ Class OptionScreen Extends Screen
 	Field musicSlider:SimpleSlider
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
+		diddyGame.screenFade.Start(50, False)
 		menu = New SimpleMenu("ButtonOver", "ButtonClick", 0, 0, 10, True)
 		Local b:SimpleButton = menu.AddButton("quit.png", "quitMO.png")
 		menu.Centre()
 		
 		musicSlider = New SimpleSlider("slider_bar.png", "slider.png", SCREEN_WIDTH2 - 93, 115, 35, "music", 20, True)
-		musicSlider.SetValue(game.musicVolume)
+		musicSlider.SetValue(diddyGame.musicVolume)
 	End
 	
 	Method Render:Void()
@@ -124,7 +124,7 @@ Class OptionScreen Extends Screen
 		menu.Update()
 		
 		If musicSlider.Update() Then
-			game.MusicSetVolume(musicSlider.value)
+			diddyGame.MusicSetVolume(musicSlider.value)
 		End If
 		
 		If menu.Clicked("quit") Then

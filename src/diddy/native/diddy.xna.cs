@@ -26,13 +26,6 @@ class diddy
 		return millisecs;
 	}
 
-	public static void flushKeys()
-	{
-		for( int i=0;i<512;++i ){
-			gxtkApp.game.app.input.keyStates[i]&=0x100;
-		}
-	}
-	
 	public static int getUpdateRate()
 	{
 		return gxtkApp.game.app.updateRate;
@@ -61,14 +54,6 @@ class diddy
 		}
 		return 0;
 	}	
-	public static void showMouse()
-	{
-		gxtkApp.game.IsMouseVisible=true;
-	}
-	public static void hideMouse()
-	{
-		gxtkApp.game.IsMouseVisible=false;
-	}
 	public static void setGraphics(int w, int h)
 	{
 	}

@@ -37,7 +37,7 @@ Class GameScreen Extends Screen
 	Method Update:Void()
 		player.Update()	
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 		

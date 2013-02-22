@@ -68,7 +68,7 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		spark = game.images.Find("spark")
+		spark = diddyGame.images.Find("spark")
 		' FadeToScreen forces an autofade, so we don't need to manually fade in anymore
 	End
 	
@@ -86,7 +86,7 @@ Class GameScreen Extends Screen
 		End
 		If MouseDown(MOUSE_LEFT)
 			For Local i% = 1 To 3
-				Particle.Create(spark, game.mouseX , game.mouseY, Rnd(-2,2), Rnd(-3,-1), GRAVITY/4, 2000)
+				Particle.Create(spark, diddyGame.mouseX , diddyGame.mouseY, Rnd(-2,2), Rnd(-3,-1), GRAVITY/4, 2000)
 			Next
 		End
 		Particle.UpdateAll()

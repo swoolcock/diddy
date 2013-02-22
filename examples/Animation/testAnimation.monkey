@@ -49,7 +49,7 @@ Class TitleScreen Extends Screen
 	
 	Method Render:Void()
 		If Not readComplete
-			game.images.ReadPixelsArray()
+			diddyGame.images.ReadPixelsArray()
 			readComplete = True
 		End
 		Cls
@@ -63,7 +63,7 @@ Class TitleScreen Extends Screen
 
 	Method Update:Void()
 		If KeyHit(KEY_1)
-			Local gi:GameImage = game.images.Find("Ship1")
+			Local gi:GameImage = diddyGame.images.Find("Ship1")
 			createdImage = CreateImage(gi.image.Width(), gi.image.Height())
 			createdImage.WritePixels(gi.Pixels, 0, 0, createdImage.Width(), createdImage.Height())
 		End
@@ -71,7 +71,7 @@ Class TitleScreen Extends Screen
 			FadeToScreen(gameScreen)
 		End
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
@@ -85,7 +85,7 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		player = New Player(game.images.Find("Ship1"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
+		player = New Player(diddyGame.images.Find("Ship1"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 	End
 	
 	Method Render:Void()

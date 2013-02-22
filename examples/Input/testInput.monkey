@@ -24,8 +24,8 @@ Class InputTestScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.inputCache.MonitorAllKeys()
-		game.screenFade.Start(50, false)
+		diddyGame.inputCache.MonitorAllKeys()
+		diddyGame.screenFade.Start(50, false)
 	End
 	
 	Method Render:Void()
@@ -33,21 +33,21 @@ Class InputTestScreen Extends Screen
 	End
 	
 	Method Update:Void()
-		For Local event:KeyEvent = EachIn game.inputCache.KeysHit
+		For Local event:KeyEvent = EachIn diddyGame.inputCache.KeysHit
 			' do something for each key hit since the last frame
 			Print "KeyHit: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
-		For Local event:KeyEvent = EachIn game.inputCache.KeysDown
+		For Local event:KeyEvent = EachIn diddyGame.inputCache.KeysDown
 			' do something for each key held down
 			'Print "KeyDown: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
-		For Local event:KeyEvent = EachIn game.inputCache.KeysReleased
+		For Local event:KeyEvent = EachIn diddyGame.inputCache.KeysReleased
 			' do something for each key released since the last frame
 			Print "KeyReleased: key,char,at="+event.KeyCode+","+String.FromChar(event.KeyChar)+","+event.EventTime
 		Next
 		
-		If game.inputCache.keyHit[KEY_ESCAPE] Then
-			FadeToScreen(game.exitScreen)
+		If diddyGame.inputCache.keyHit[KEY_ESCAPE] Then
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
