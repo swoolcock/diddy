@@ -12,13 +12,6 @@ class diddy
 		return millisecs;
 	}
 
-	public static void flushKeys()
-	{
-		for( int i=0;i<512;++i ){
-			gxtkApp._app._input._keyStates[i]&=0x100;
-		}
-	}
-	
 	public static int getUpdateRate()
 	{
 		return gxtkApp._app._updateRate;
@@ -28,12 +21,6 @@ class diddy
 	{
 		return 0;
 	}	
-	public static void showMouse()
-	{
-	}
-	public static void hideMouse()
-	{
-	}
 	public static void setGraphics(int w, int h)
 	{
 	}

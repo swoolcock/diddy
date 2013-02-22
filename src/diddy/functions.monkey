@@ -46,6 +46,10 @@ Import constants
 	End
 #End
 
+Function FlushKeys:Void()
+	ResetInput()
+End
+
 Function LaunchBrowser(address:String, openNewWindow:Bool = True)
 	Local windowName:String = "_self"
 	If openNewWindow

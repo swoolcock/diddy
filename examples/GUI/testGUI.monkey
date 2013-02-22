@@ -13,12 +13,12 @@ Global guiSkin:XMLDocument
 
 Class MyGame extends DiddyApp
 	Method Create:Void()
-		game.images.Load("continue.png",,False)
-		game.images.Load("continueMO.png",,False)
-		game.images.Load("newgame.png",,False)
-		game.images.Load("newgameMO.png",,False)
-		game.images.Load("options.png",,False)
-		game.images.Load("optionsMO.png",,False)
+		diddyGame.images.Load("continue.png",,False)
+		diddyGame.images.Load("continueMO.png",,False)
+		diddyGame.images.Load("newgame.png",,False)
+		diddyGame.images.Load("newgameMO.png",,False)
+		diddyGame.images.Load("options.png",,False)
+		diddyGame.images.Load("optionsMO.png",,False)
 		
 		' enable this and UseVirtualResolution to test the GUI under virtual res
 		'SetScreenSize(1024, 768)
@@ -54,7 +54,7 @@ Class GUIScreen Extends Screen
 	Method Update:Void()
 		mygui.Update()
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
@@ -158,9 +158,9 @@ Class MyGUI Extends GUI
 		gl.rowHeightTypes[2] = GridLayout.FILLTYPE_PREFERRED
 		gl.colWidthTypes[0] = GridLayout.FILLTYPE_PREFERRED
 		
-		imageButton1 = New Button(testPanel, game.images.Find("continue"), game.images.Find("continueMO"))
-		imageButton2 = New Button(testPanel, game.images.Find("newgame"), game.images.Find("newgameMO"))
-		imageButton3 = New Button(testPanel, game.images.Find("options"), game.images.Find("optionsMO"))
+		imageButton1 = New Button(testPanel, diddyGame.images.Find("continue"), diddyGame.images.Find("continueMO"))
+		imageButton2 = New Button(testPanel, diddyGame.images.Find("newgame"), diddyGame.images.Find("newgameMO"))
+		imageButton3 = New Button(testPanel, diddyGame.images.Find("options"), diddyGame.images.Find("optionsMO"))
 		
 		testPanel.Pack()
 		testPanel.SetLocation((Self.Desktop.Width-testPanel.Width)/2,Self.Desktop.Height-testPanel.Height)

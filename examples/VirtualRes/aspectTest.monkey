@@ -29,7 +29,7 @@ Class TestScreen Extends Screen
 	End
 		
 	Method Start:Void()
-		logo = game.images.Load("logo.png", "logo", False)
+		logo = diddyGame.images.Load("logo.png", "logo", False)
 	End
 	
 	Method Render:Void()
@@ -55,10 +55,10 @@ Class TestScreen Extends Screen
 			Else
 				SetGraphics(320, 480)
 			End
-			game.SetScreenSize(960, 640, True)
+			diddyGame.SetScreenSize(960, 640, True)
 		End
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End 

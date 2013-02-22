@@ -50,18 +50,18 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		shipImage = game.images.Find("Ship1")
-		axeAtlasImage = game.images.Find("axe")
-		longswordAtlasImage = game.images.Find("longsword")
-		animImage = game.images.FindSet("shield_kite", 64, 64, 7)
-		zombieImage = game.images.FindSet("idle_left1", 128, 128, 15)
-		libGdxImage = game.images.Find("a_shield_round_gold")
-		orcImage = game.images.Find("orc_1")
+		shipImage = diddyGame.images.Find("Ship1")
+		axeAtlasImage = diddyGame.images.Find("axe")
+		longswordAtlasImage = diddyGame.images.Find("longsword")
+		animImage = diddyGame.images.FindSet("shield_kite", 64, 64, 7)
+		zombieImage = diddyGame.images.FindSet("idle_left1", 128, 128, 15)
+		libGdxImage = diddyGame.images.Find("a_shield_round_gold")
+		orcImage = diddyGame.images.Find("orc_1")
 	End
 	
 	Method Render:Void()
 		If Not readComplete
-			game.images.ReadPixelsArray()
+			diddyGame.images.ReadPixelsArray()
 			readComplete = True
 		End
 		Cls
@@ -85,7 +85,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_1)
-			Local gi:GameImage = game.images.Find("longsword")
+			Local gi:GameImage = diddyGame.images.Find("longsword")
 			createdImage = CreateImage(gi.image.Width(), gi.image.Height())
 			createdImage.WritePixels(gi.Pixels, 0, 0, createdImage.Width(), createdImage.Height())
 		End

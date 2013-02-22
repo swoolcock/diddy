@@ -44,6 +44,7 @@ Function Main:Int()
 		Print "tc2.serField="
 		Print "  myField="+tc2.serField.myField
 	End
+	Return 0
 End
 
 Class TestClass Implements ISerializable

@@ -29,26 +29,11 @@ class diddy
 		seconds = time (NULL);
 		return seconds * 1000;
 	}
-
-	static void flushKeys() {
-		for( int i=0;i<512;++i ){
-			app->input->keyStates[i]&=0x100;
-		}
-	}
 	
 	static int getUpdateRate() {
 		return app->updateRate;
 	}
-	
-	static void showMouse()
-	{
-		glfwEnable( GLFW_MOUSE_CURSOR );
-	}
-	
-	static void hideMouse()
-	{
-		glfwDisable( GLFW_MOUSE_CURSOR );
-	}
+
 	static void setGraphics(int w, int h)
 	{
 		glfwSetWindowSize(w, h);

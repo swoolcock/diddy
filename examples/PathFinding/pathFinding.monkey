@@ -87,8 +87,8 @@ Class GameScreen Extends Screen
 	End
 
 	Method Update:Void()
-		mx = game.mouseX / TILE_SIZE
-		my = game.mouseY / TILE_SIZE
+		mx = diddyGame.mouseX / TILE_SIZE
+		my = diddyGame.mouseY / TILE_SIZE
 		mx = Max(mx, 0)
 		mx = Min(mx, 19)
 		my = Max(my, 0)

@@ -212,7 +212,7 @@ Class SimpleMenu Extends List<SimpleButton>
 	End
 	
 	Method Update:Int()
-		If game.screenFade.active
+		If diddyGame.screenFade.active
 			Return 0
 		EndIf
 		clickedName = ""
@@ -313,11 +313,11 @@ Class SimpleButton Extends Sprite
 		
 	Method Load:Void(buttonImage:String, mouseOverImage:String = "", soundMouseOverFile:String="", soundClickFile:String="")
 		Self.image = New GameImage
-		image.Load(game.images.path + buttonImage, False)
+		image.Load(diddyGame.images.path + buttonImage, False)
 		
 		if  mouseOverImage <> ""
 			imageMouseOver = New GameImage
-			imageMouseOver.Load(game.images.path + mouseOverImage, False)
+			imageMouseOver.Load(diddyGame.images.path + mouseOverImage, False)
 		End
 		
 		name = StripAll(buttonImage.ToUpper())
@@ -334,19 +334,19 @@ Class SimpleButton Extends Sprite
 	
 	Method SetSelectedImage:Void(buttonImage:String, buttonImageMO:String = "")
 		imageSelected = New GameImage
-		imageSelected.Load(game.images.path + buttonImage, False)
+		imageSelected.Load(diddyGame.images.path + buttonImage, False)
 		
 		if  buttonImageMO <> ""
 			imageSelectedMO = New GameImage
-			imageSelectedMO.Load(game.images.path + buttonImageMO, False)
+			imageSelectedMO.Load(diddyGame.images.path + buttonImageMO, False)
 		End
 
 	End
 	
 	Method Update:Void()
 		If active = 0 or disabled Then Return
-		Local mx:Int = game.mouseX
-		Local my:Int = game.mouseY
+		Local mx:Int = diddyGame.mouseX
+		Local my:Int = diddyGame.mouseY
 		if not useVirtualRes
 			mx = MouseX()
 			my = MouseY()
@@ -383,11 +383,11 @@ Class SimpleSlider Extends Sprite
 		Self.image = New GameImage
 		Self.useVirtualRes = useVirtualRes
 		
-		image.Load(game.images.path + barFile, False)
+		image.Load(diddyGame.images.path + barFile, False)
 		name = StripAll(barFile.ToUpper())	
 		
 		dotImage = New GameImage
-		dotImage.Load(game.images.path + dotFile, False)
+		dotImage.Load(diddyGame.images.path + dotFile, False)
 		dotImage.name = StripAll(dotFile.ToUpper())
 		
 		Self.x = x
@@ -412,8 +412,8 @@ Class SimpleSlider Extends Sprite
 		Local change:Int=0
 		If active
 			Local buffer:int = 10
-			Local mx:Int = game.mouseX
-			Local my:Int = game.mouseY
+			Local mx:Int = diddyGame.mouseX
+			Local my:Int = diddyGame.mouseY
 			if not useVirtualRes
 				mx = MouseX()
 				my = MouseY()

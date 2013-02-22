@@ -25,14 +25,6 @@ class diddy
 		return ms;
 	}
 	
-	static void flushKeys()
-	{
-		for( int i = 0; i < 512; ++i )
-		{
-			MonkeyGame.app.input.keyStates[i] = 0;
-		}
-	}
-	
 	static int getPixel(int x, int y)
 	{
 		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
@@ -50,16 +42,7 @@ class diddy
 	{
 		return MonkeyGame.app.updateRate;
 	}
-	
-	// empty function
-	static void showMouse()
-	{
-	}
 
-	// empty function
-	static void hideMouse()
-	{
-	}
 	static void setGraphics(int w, int h)
 	{
 	/*

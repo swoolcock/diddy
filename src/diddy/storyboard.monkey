@@ -361,7 +361,7 @@ Public
 		Local shouldPlay:Bool = currentTime >= time And Self.currentTime < time And currentTime - time < SOUND_THRESHOLD
 		Self.currentTime = currentTime
 		If shouldPlay Then
-			If Not sound Then sound = game.sounds.Find(soundName)
+			If Not sound Then sound = diddyGame.sounds.Find(soundName)
 			If Not sound Then Return
 			sound.Play()
 		End
@@ -402,10 +402,10 @@ Public
 				StopMusic()
 				performSeekTime = currentTime-Self.time
 				If loop Then
-					game.MusicPlay(musicName, 1)
+					diddyGame.MusicPlay(musicName, 1)
 					performSeekTime = performSeekTime Mod Self.length
 				Else
-					game.MusicPlay(musicName, 0)
+					diddyGame.MusicPlay(musicName, 0)
 				End
 				performSeek = performSeekTime >= MUSIC_THRESHOLD
 			End
@@ -527,7 +527,7 @@ Public
 	
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		If alpha = 0 Then Return
-		If Not image Then image = game.images.Find(imageName)
+		If Not image Then image = diddyGame.images.Find(imageName)
 		If Not image Then
 			Print "Couldn't load "+imageName+" for sprite."
 			Return

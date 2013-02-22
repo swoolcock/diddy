@@ -8,9 +8,6 @@ Extern
 
 	#If LANG="cpp" Then
 		Function RealMillisecs:Int() = "diddy::systemMillisecs"
-		Function FlushKeys:Void() = "diddy::flushKeys"
-		Function HideMouse:Void() = "diddy::hideMouse"
-		Function ShowMouse:Void() = "diddy::showMouse"
 		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
@@ -38,9 +35,6 @@ Extern
 		Function SeekMusic:Int(timeMillis:Int)="diddy::seekMusic"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
-		Function FlushKeys:Void() = "diddy.flushKeys"
-		Function HideMouse:Void() = "diddy.hideMouse"
-		Function ShowMouse:Void() = "diddy.showMouse"
 		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
 		Function ShowKeyboard:Void() = "diddy.showKeyboard"

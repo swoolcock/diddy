@@ -25,13 +25,13 @@ Class DiddyData
 		Local useAspect:String = rootElement.GetAttribute("useAspectRatio").Trim()
 		Local useAspectBool:Bool = useAspect And useAspect.ToLower() = "true"
 		
-		If game.debugOn
+		If diddyGame.debugOn
 			Print "screenWidth    = " + sw
 			Print "screenHeight   = " + sh
 			Print "useAspectRatio = " + useAspect
 		End
 
-		game.SetScreenSize(Int(sw), Int(sh), useAspectBool)
+		diddyGame.SetScreenSize(Int(sw), Int(sh), useAspectBool)
 		Local globalElement:XMLElement = rootElement.GetFirstChildByName("global")
 		
 		Local resourcesElement:XMLElement = globalElement.GetFirstChildByName("resources")
@@ -47,7 +47,7 @@ Class DiddyData
 			Local name:String = node.GetAttribute("name").Trim()
 			Local clazz:String = node.GetAttribute("class").Trim()
 			
-			If game.debugOn
+			If diddyGame.debugOn
 				Print "name  = " + name
 				Print "class = " + clazz
 			End
@@ -79,7 +79,7 @@ Class DiddyData
 			
 			If scr.layers Then scr.layers.Sort()
 			
-			game.screens.Add(name.ToUpper(), scr)
+			diddyGame.screens.Add(name.ToUpper(), scr)
 		Next
 	End
 	
@@ -121,7 +121,7 @@ Class DiddyData
 					readPixelsBool = False
 				End
 				
-				If game.debugOn
+				If diddyGame.debugOn
 					Print "name 		= " + name
 					Print "path 		= " + path
 					Print "frames		= " + frames
@@ -133,9 +133,9 @@ Class DiddyData
 				
 				' if frames > 1 assume its an animation image
 				If frames > 1
-					game.images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+					diddyGame.images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				Else
-					game.images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+					diddyGame.images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				End
 			Next
 		End
@@ -150,7 +150,7 @@ Class DiddyData
 				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
 				Local soundDelay:String = node.GetAttribute("soundDelay").Trim()
 				
-				If game.debugOn
+				If diddyGame.debugOn
 					Print "name 		= " + name
 					Print "path 		= " + path
 					Print "ignoreCache	= " + ignoreCache
@@ -164,7 +164,7 @@ Class DiddyData
 					ignoreCacheBool = False
 				End
 				
-				game.sounds.Load(path, name, ignoreCacheBool, Int(soundDelay), preLoad, screenName)
+				diddyGame.sounds.Load(path, name, ignoreCacheBool, Int(soundDelay), preLoad, screenName)
 			Next
 		End
 	End
@@ -300,7 +300,7 @@ Class DiddyDataObject
 	
 	Method Render:Void(xoffset:Float=0, yoffset:Float=0)
 		If imageName And visible And alpha > 0 Then
-			If Not image Then image = game.images.Find(imageName)
+			If Not image Then image = diddyGame.images.Find(imageName)
 			If image Then
 				SetColor(red, green, blue)
 				SetAlpha(alpha)

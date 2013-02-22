@@ -61,8 +61,8 @@ Class ParticleTestScreen Extends Screen
 	End
 	
 	Method Update:Void()
-		pf.X = game.mouseX
-		pf.Y = game.mouseY
+		pf.X = diddyGame.mouseX
+		pf.Y = diddyGame.mouseY
 		If KeyDown(KEY_CONTROL) Then
 			pf.Acceleration = Abs(pf.Acceleration)
 			pf.Enabled = True
@@ -94,11 +94,11 @@ Class ParticleTestScreen Extends Screen
 		If emitCount > 100 Then emitCount = 100
 		
 		If emitting Then
-			e.EmitAt(emitCount, game.mouseX, game.mouseY)
+			e.EmitAt(emitCount, diddyGame.mouseX, diddyGame.mouseY)
 		End
 		ps.Update(dt.frametime)
 		If KeyHit(KEY_ESCAPE) Then
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 	

@@ -13,7 +13,7 @@ Class TitleScreen extends Screen
 	End
 	
 	Method Start:Void()
-		backgroundImage = LoadImage(game.images.path + "title_screen.jpg")
+		backgroundImage = LoadImage(diddyGame.images.path + "title_screen.jpg")
 	End
 	
 	Method Render:Void()
@@ -30,7 +30,7 @@ Class TitleScreen extends Screen
 			FadeToScreen(gameScreen)
 		End
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 End
@@ -45,13 +45,13 @@ Class GameScreen extends Screen
 	End
 	
 	Method Start:Void()
-		game.scrollX = 0
-		backgroundImage = LoadImage(game.images.path + "area01_bkg0.png")
+		diddyGame.scrollX = 0
+		backgroundImage = LoadImage(diddyGame.images.path + "area01_bkg0.png")
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
 		Local tm:TileMap = reader.LoadMap("levels/level1.tmx")
 		tilemap = MyTileMap(tm)
 		Local playerStart:TileMapObject = tilemap.FindObjectByName("playerStart")
-		player = New Player(game.images.Find("gripe.stand_right"), playerStart.x, playerStart.y)
+		player = New Player(diddyGame.images.Find("gripe.stand_right"), playerStart.x, playerStart.y)
 		
 		
 	End
@@ -59,8 +59,8 @@ Class GameScreen extends Screen
 	Method Render:Void()
 		Cls
 		DrawImage backgroundImage, 0, 0
-		tilemap.RenderMap(game.scrollX, game.scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1)
-		player.Draw(game.scrollX, game.scrollY, True)
+		tilemap.RenderMap(diddyGame.scrollX, diddyGame.scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1)
+		player.Draw(diddyGame.scrollX, diddyGame.scrollY, True)
 		Local status:String = ""
 		Select player.status
 			Case player.STANDING
@@ -78,10 +78,10 @@ Class GameScreen extends Screen
 	
 	Method Update:Void()
 		player.Update()
-		If KeyDown(KEY_W) Then game.scrollY -= 4
-		If KeyDown(KEY_S) Then game.scrollY += 4
-		If KeyDown(KEY_A) Then game.scrollX -= 4
-		If KeyDown(KEY_D) Then game.scrollX += 4
+		If KeyDown(KEY_W) Then diddyGame.scrollY -= 4
+		If KeyDown(KEY_S) Then diddyGame.scrollY += 4
+		If KeyDown(KEY_A) Then diddyGame.scrollX -= 4
+		If KeyDown(KEY_D) Then diddyGame.scrollX += 4
 		If KeyHit(KEY_ESCAPE)
 			FadeToScreen(titleScreen)
 		End

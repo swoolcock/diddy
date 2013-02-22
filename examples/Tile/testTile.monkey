@@ -34,7 +34,7 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Update:Void()
-		if game.mouseHit
+		if diddyGame.mouseHit
 			FadeToScreen(gameScreen)
 		End
 	End
@@ -51,7 +51,7 @@ Class GameScreen Extends Screen
 
 	Method Start:Void()
 		Local tmpImage:Image
-		game.images.LoadAnim("tileslostgarden.png", 20, 20, 21, tmpImage, True, False)	
+		diddyGame.images.LoadAnim("tileslostgarden.png", 20, 20, 21, tmpImage, True, False)	
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
 		Local tm:TileMap = reader.LoadMap("maps/map.xml")
 		tilemap = MyTileMap(tm)
@@ -66,7 +66,7 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 		If KeyDown(KEY_UP) Then offsetY -= 4
 		If KeyDown(KEY_DOWN) Then offsetY += 4

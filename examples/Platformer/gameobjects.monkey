@@ -28,11 +28,11 @@ Class Player Extends Sprite
 		Self.SetHitBox( -img.w2 + 2, - img.h2 + 1, img.w - 2, img.h - 1)
 		Self.visible = True
 		
-		walkImages = game.images.FindSet("gripe.run_right", 32, 32, 8)
-		deadImages = game.images.FindSet("gripe.die", 32, 32, 4)
-		standImage = game.images.Find("gripe.stand_right")
-		jumpImage = game.images.Find("gripe.jump_right")
-		turningImages = game.images.FindSet("gripe.turn_right_to_left", 32, 32, 4)
+		walkImages = diddyGame.images.FindSet("gripe.run_right", 32, 32, 8)
+		deadImages = diddyGame.images.FindSet("gripe.die", 32, 32, 4)
+		standImage = diddyGame.images.Find("gripe.stand_right")
+		jumpImage = diddyGame.images.Find("gripe.jump_right")
+		turningImages = diddyGame.images.FindSet("gripe.turn_right_to_left", 32, 32, 4)
 	End
 	
 	Method SetupWalkAnim:Void()
@@ -229,17 +229,17 @@ Class Player Extends Sprite
 			Else
 				x -= speedX * dt.delta
 			End
-			If y - game.scrollY > SCREEN_HEIGHT + 500
+			If y - diddyGame.scrollY > SCREEN_HEIGHT + 500
 				gameScreen.FadeToScreen(titleScreen, defaultFadeTime * 2)
 			End
 		End
 		
 		Local borderX:Int = 200
 		Local borderY:Int = 200
-		If x - game.scrollX < borderX Then gameScreen.tilemap.Scroll( (x - game.scrollX) - borderX, 0)
-		If x - game.scrollX > SCREEN_WIDTH - borderX Then gameScreen.tilemap.Scroll( (x - game.scrollX) - (SCREEN_WIDTH - borderX), 0)
-		If y - game.scrollY < borderY Then gameScreen.tilemap.Scroll(0, (y - game.scrollY) - borderY)
-		If y - game.scrollY > SCREEN_HEIGHT - borderY Then gameScreen.tilemap.Scroll(0, (y - game.scrollY) - (SCREEN_HEIGHT - borderY))
+		If x - diddyGame.scrollX < borderX Then gameScreen.tilemap.Scroll( (x - diddyGame.scrollX) - borderX, 0)
+		If x - diddyGame.scrollX > SCREEN_WIDTH - borderX Then gameScreen.tilemap.Scroll( (x - diddyGame.scrollX) - (SCREEN_WIDTH - borderX), 0)
+		If y - diddyGame.scrollY < borderY Then gameScreen.tilemap.Scroll(0, (y - diddyGame.scrollY) - borderY)
+		If y - diddyGame.scrollY > SCREEN_HEIGHT - borderY Then gameScreen.tilemap.Scroll(0, (y - diddyGame.scrollY) - (SCREEN_HEIGHT - borderY))
 
 	End
 	

@@ -449,7 +449,7 @@ Public
 ' Public methods
 	Method LoadSkin:Void(doc:XMLDocument)
 		Local atlas:String = doc.Root.GetAttribute("atlas","")
-		skinAtlas = game.images.Load(atlas,,False)
+		skinAtlas = diddyGame.images.Load(atlas,,False)
 		skinDoc = doc
 		ApplySkin()
 	End
@@ -493,8 +493,8 @@ Public
 		mouseLastY = mouseThisY
 		mouseLastComponent = mouseThisComponent
 		If useVirtualRes Then
-			mouseThisX = game.mouseX
-			mouseThisY = game.mouseY
+			mouseThisX = diddyGame.mouseX
+			mouseThisY = diddyGame.mouseY
 		Else
 			mouseThisX = MouseX()
 			mouseThisY = MouseY()

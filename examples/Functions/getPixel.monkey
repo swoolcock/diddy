@@ -34,7 +34,7 @@ Class GameScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		game.screenFade.Start(50, False)
+		diddyGame.screenFade.Start(50, False)
 		For Local i%=0 To max-1
 			r[i] = Rnd(0, 255)
 			g[i] = Rnd(0, 255)
@@ -59,9 +59,9 @@ Class GameScreen Extends Screen
 		Next
 
 		SetColor pixel[0], pixel[1], pixel[2]
-		DrawRect game.mouseX+12, game.mouseY+12, 50, 50
+		DrawRect diddyGame.mouseX+12, diddyGame.mouseY+12, 50, 50
 		SetColor pixel[0], pixel[1], pixel[2]
-		DrawOval game.mouseX+12, game.mouseY+62, 50, 50
+		DrawOval diddyGame.mouseX+12, diddyGame.mouseY+62, 50, 50
 		
 		SetColor 255,255,255
 
@@ -70,13 +70,13 @@ Class GameScreen Extends Screen
 		DrawText "Blue  = " + pixel[2], 10, 80
 		
 		If MouseDown()
-			pixel = GetPixel(game.mouseX, game.mouseY)
+			pixel = GetPixel(diddyGame.mouseX, diddyGame.mouseY)
 		End
 	End
 
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.exitScreen)
+			FadeToScreen(diddyGame.exitScreen)
 		End
 	End
 

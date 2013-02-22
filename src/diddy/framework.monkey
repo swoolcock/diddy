@@ -39,7 +39,7 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			' fading to Null is the same as fading to game.exitScreen (which exits the game)
+			' fading to Null is the same as fading to diddyGame.exitScreen (which exits the game)
 			FadeToScreen(Null)
 		End
 	End
@@ -72,7 +72,7 @@ Global SCREENX_RATIO:Float = 1
 Global SCREENY_RATIO:Float = 1
 
 ' THE GAME!!
-Global game:DiddyApp
+Global diddyGame:DiddyApp
 
 ' Used for delta timing movement
 Global dt:DeltaTimer
@@ -160,7 +160,7 @@ Public
 	Method New()
 		' DiddyApp now assigns itself to game, so you just need to do: New MyGame()
 		' Assigning it manually will have no effect, but won't break anything.
-		game = Self
+		diddyGame = Self
 		Self.exitScreen = New ExitScreen
 		Self.screenFade = New ScreenFade
 		Self.images = New ImageBank
@@ -459,7 +459,7 @@ Public
 		If volume > 100 Then volume = 100
 		Self.soundVolume = volume
 		For Local i% = 0 To SoundPlayer.MAX_CHANNELS
-			SetChannelVolume(i, game.soundVolume / 100.0)
+			SetChannelVolume(i, diddyGame.soundVolume / 100.0)
 		Next
 	End
 	
@@ -534,7 +534,7 @@ Class Screens Extends StringMap<Screen>
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
-		If game.debugOn
+		If diddyGame.debugOn
 			For Local key:String = Eachin Self.Keys()
 				Print key + " is stored in the Screens map."
 			Next
@@ -560,7 +560,7 @@ Class ScreenFade
 	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		If active Then Return
 		active = True
-		Self.fadeTime = game.CalcAnimLength(fadeTime)
+		Self.fadeTime = diddyGame.CalcAnimLength(fadeTime)
 		Self.fadeOut = fadeOut
 		Self.fadeMusic = fadeMusic
 		Self.fadeSound = fadeSound
@@ -571,7 +571,7 @@ Class ScreenFade
 			ratio = 0
 			' set the music volume to zero if fading in the music
 			If Self.fadeMusic
-				game.SetMojoMusicVolume(0)
+				diddyGame.SetMojoMusicVolume(0)
 			End			
 		End
 		counter = 0
@@ -583,18 +583,18 @@ Class ScreenFade
 		CalcRatio()
 		If fadeSound Then
 			For Local i% = 0 To SoundPlayer.MAX_CHANNELS
-				SetChannelVolume(i, (ratio) * (game.soundVolume / 100.0))
+				SetChannelVolume(i, (ratio) * (diddyGame.soundVolume / 100.0))
 			Next
 		End
 		If fadeMusic Then
-			game.SetMojoMusicVolume((ratio) * (game.musicVolume / 100.0))
+			diddyGame.SetMojoMusicVolume((ratio) * (diddyGame.musicVolume / 100.0))
 		End
 		If counter > fadeTime
 			active = False
 			If fadeOut			
-				game.currentScreen.PostFadeOut()
+				diddyGame.currentScreen.PostFadeOut()
 			Else
-				game.currentScreen.PostFadeIn()
+				diddyGame.currentScreen.PostFadeIn()
 			End
 		End
 	End
@@ -604,13 +604,13 @@ Class ScreenFade
 		If ratio < 0
 			ratio = 0
 			If fadeMusic
-				game.SetMojoMusicVolume(0)
+				diddyGame.SetMojoMusicVolume(0)
 			End
 		End
 		If ratio > 1
 			ratio = 1
 			If fadeMusic
-				game.SetMojoMusicVolume(game.musicVolume / 100.0)
+				diddyGame.SetMojoMusicVolume(diddyGame.musicVolume / 100.0)
 			End
 		End
 		If fadeOut Then
@@ -661,16 +661,16 @@ Public
 	Field layers:DiddyDataLayers
 	
 	Method PreStart:Void()
-		game.currentScreen = Self
+		diddyGame.currentScreen = Self
 		If autoFadeIn Then
 			autoFadeIn = False
-			game.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic)
+			diddyGame.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic)
 		End
 		
 		' load screens graphics
 		Local tmpImage:Image
-		For Local key:String = EachIn game.images.Keys()
-			Local i:GameImage = game.images.Get(key)
+		For Local key:String = EachIn diddyGame.images.Keys()
+			Local i:GameImage = diddyGame.images.Get(key)
 			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
 				If i.frames > 1
 					i.LoadAnim(i.path, i.w, i.h, i.frames, tmpImage, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
@@ -681,15 +681,15 @@ Public
 		Next
 		
 		' load screens sounds
-		For Local key:String = EachIn game.sounds.Keys()
-			Local i:GameSound = game.sounds.Get(key)
+		For Local key:String = EachIn diddyGame.sounds.Keys()
+			Local i:GameSound = diddyGame.sounds.Get(key)
 			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
 				i.Load(i.path, False, i.screenName)
 			End
 		Next
 		
 		' play the screen's music if its set
-		If musicPath <> "" Then game.MusicPlay(musicPath, musicFlag)
+		If musicPath <> "" Then diddyGame.MusicPlay(musicPath, musicFlag)
 		
 		Start()
 	End
@@ -727,7 +727,7 @@ Public
 
 	Method PostFadeOut:Void()
 		Kill()
-		game.nextScreen.PreStart()
+		diddyGame.nextScreen.PreStart()
 	End
 	
 	Method Kill:Void()
@@ -805,10 +805,10 @@ Public
 	'summary: convenience method
 	Method FadeToScreen:Void(screen:Screen, fadeTime:Float = defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		' don't try to fade twice
-		If game.screenFade.active Then Return
+		If diddyGame.screenFade.active Then Return
 		
 		' if the screen is null, assume we're exiting
-		If Not screen Then screen = game.exitScreen
+		If Not screen Then screen = diddyGame.exitScreen
 		
 		' configure the autofade values
 		screen.autoFadeIn = True
@@ -817,8 +817,8 @@ Public
 		screen.autoFadeInMusic = fadeMusic
 		
 		' trigger the fade out
-		game.nextScreen = screen
-		game.screenFade.Start(fadeTime, True, fadeSound, fadeMusic, allowScreenUpdate)
+		diddyGame.nextScreen = screen
+		diddyGame.screenFade.Start(fadeTime, True, fadeSound, fadeMusic, allowScreenUpdate)
 	End
 	
 	'summary: sets the screen's music which autoplays when the screen starts
@@ -1083,7 +1083,7 @@ Class ImageBank Extends StringMap<GameImage>
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
-		If game.debugOn
+		If diddyGame.debugOn
 			For Local key:String = Eachin Self.Keys()
 				Local i:GameImage = Self.Get(key)
 				if Not i.preLoad Then
@@ -1440,7 +1440,7 @@ Class SoundBank Extends StringMap<GameSound>
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
-		If  game.debugOn
+		If  diddyGame.debugOn
 			For Local key:String = EachIn Self.Keys()
 				Local i:GameSound = Self.Get(key)
 				If Not i.preLoad Then Print key + " is stored in the sound map."
@@ -1497,7 +1497,7 @@ Class GameSound
 			if stopChannelBeforePlaying And Self.IsPlaying()
 				Self.Stop()
 			End
-			channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (game.soundVolume / 100.0), loop, playChannel)
+			channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (diddyGame.soundVolume / 100.0), loop, playChannel)
 			If loop = 1
 				loopChannelList.Add(channel)
 			End
@@ -1771,7 +1771,7 @@ Class Sprite
 		Draw(0,0, rounded)
 	End
 	
-	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0, rounded:Bool = False)
+	Method Draw:Void(offsetx:Float, offsety:Float, rounded:Bool = False)
 		If Not visible Then Return
 		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
 		If Self.alpha > 1 Then Self.alpha = 1
@@ -1963,27 +1963,27 @@ Class DiddyMouse
 	
 	'summary: Returns the MouseX speed
 	Method MouseXSpeed:Int()
-		Return game.mouseX - lastX
+		Return diddyGame.mouseX - lastX
 	End
 	
 	'summary: Returns the MouseY speed
 	Method MouseYSpeed:Int()
-		Return game.mouseY - lastY
+		Return diddyGame.mouseY - lastY
 	End
 	
 	'summary: Updates the last positions
 	Method Update:Void()
-		lastX = game.mouseX
-		lastY = game.mouseY
+		lastX = diddyGame.mouseX
+		lastY = diddyGame.mouseY
 	End
 End
 
 'summary: Wrapper function for MouseXSpeed
 Function MouseXSpeed:Int()
-	Return game.diddyMouse.MouseXSpeed()
+	Return diddyGame.diddyMouse.MouseXSpeed()
 End
 
 'summary: Wrapper function for MouseYSpeed
 Function MouseYSpeed:Int()
-	Return game.diddyMouse.MouseYSpeed()
+	Return diddyGame.diddyMouse.MouseYSpeed()
 End

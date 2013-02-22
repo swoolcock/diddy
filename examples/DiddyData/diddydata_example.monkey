@@ -1,4 +1,5 @@
 Strict
+#REFLECTION_FILTER="*"
 
 ' must import reflection first so that diddydata knows about the user's Screen classes
 Import reflection
@@ -21,7 +22,7 @@ Class TitleScreen Extends Screen
 	Field sword:GameImage
 	
 	Method Start:Void()
-		sword = game.images.Find("sword")
+		sword = diddyGame.images.Find("sword")
 	End
 
 	Method Render:Void()
@@ -32,7 +33,7 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_SPACE) Or MouseHit()
-			FadeToScreen(game.screens.Find("Game"), defaultFadeTime, True, True)
+			FadeToScreen(diddyGame.screens.Find("Game"), defaultFadeTime, True, True)
 		End
 	End
 End
@@ -47,16 +48,16 @@ Class GameScreen Extends Screen
 	Field planetObj:DiddyDataObject
 	
 	Method Start:Void()
-		sprite = New Sprite(game.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
+		sprite = New Sprite(diddyGame.images.Find("Ship"), SCREEN_WIDTH2, SCREEN_HEIGHT2)
 		sprite.SetFrame(0, 6, 100, True)
-		asteroid = New Sprite(game.images.Find("GAster32"), SCREEN_WIDTH2, 200)
+		asteroid = New Sprite(diddyGame.images.Find("GAster32"), SCREEN_WIDTH2, 200)
 		asteroid.SetFrame(0, 15, 100)
 		
-		background = game.images.Find("bg_1_1")
-		planet = game.images.Find("planet")
+		background = diddyGame.images.Find("bg_1_1")
+		planet = diddyGame.images.Find("planet")
 		
-		sound = game.sounds.Find("fire")
-		boom = game.sounds.Find("boom")
+		sound = diddyGame.sounds.Find("fire")
+		boom = diddyGame.sounds.Find("boom")
 		
 		planetObj = layers.FindObject("planet")
 	End
@@ -90,7 +91,7 @@ Class GameScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(game.screens.Find("Title"), defaultFadeTime * 2, True, True)
+			FadeToScreen(diddyGame.screens.Find("Title"), defaultFadeTime * 2, True, True)
 		End
 	End
 End
