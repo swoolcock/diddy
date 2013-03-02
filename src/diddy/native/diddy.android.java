@@ -29,18 +29,13 @@ class diddy
 	{
 		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
 		pixelBuffer.order(ByteOrder.LITTLE_ENDIAN); 
-		GLES11.glReadPixels((int)x, (int)MonkeyGame.app.graphics.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
+		GLES11.glReadPixels((int)x, (int)bb_graphics.g_device.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
 		int red = pixelBuffer.get(0) & 0xff;
 		int green = pixelBuffer.get(1) & 0xff;
 		int blue = pixelBuffer.get(2) & 0xff;
 		int alpha = pixelBuffer.get(3) & 0xff;
 		// returning ARGB
 		return (alpha<<24) | (red<<16) | (green<<8) |  blue;
-	}
-	
-	public static int getUpdateRate()
-	{
-		return MonkeyGame.app.updateRate;
 	}
 
 	static void setGraphics(int w, int h)
@@ -87,17 +82,17 @@ class diddy
 	
 	static void showKeyboard()
 	{
-		android.view.inputmethod.InputMethodManager inputMgr = (android.view.inputmethod.InputMethodManager)MonkeyGame.activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+		android.view.inputmethod.InputMethodManager inputMgr = (android.view.inputmethod.InputMethodManager)BBAndroidGame._androidGame._activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
 		inputMgr.toggleSoftInput(0, 0);
 	}
 	
 	static void showAlertDialog(String title, String message)
 	{
-		alert = new AlertDialog.Builder(MonkeyGame.activity);
+		alert = new AlertDialog.Builder(BBAndroidGame._androidGame._activity);
 		alert.setTitle(title);
 		alert.setMessage(message);
 		// Set an EditText view to get user input 
-		input = new EditText(MonkeyGame.activity);
+		input = new EditText(BBAndroidGame._androidGame._activity);
 		alert.setView(input);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
@@ -122,7 +117,7 @@ class diddy
 	static void launchBrowser(String address, String windowName) {
 		android.net.Uri uriUrl = android.net.Uri.parse(address);
 		android.content.Intent launchBrowserActivity = new android.content.Intent(android.content.Intent.ACTION_VIEW, uriUrl);
-		MonkeyGame.activity.startActivity(launchBrowserActivity);
+		BBAndroidGame._androidGame._activity.startActivity(launchBrowserActivity);
 	}
 	
 	static void launchEmail(String email, String subject, String text)
@@ -132,7 +127,7 @@ class diddy
 		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);  
 		emailIntent.setType("plain/text");  
 		emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, text);  
-		MonkeyGame.activity.startActivity(emailIntent);
+		BBAndroidGame._androidGame._activity.startActivity(emailIntent);
 	}
 
 	static String buildString(int[] arr, int offset, int length) {
@@ -148,7 +143,7 @@ class diddy
 	public static void startVibrate(int millisec)
 	{
 		try {
-			vibrator = (Vibrator)MonkeyGame.activity.getSystemService(Context.VIBRATOR_SERVICE);
+			vibrator = (Vibrator)BBAndroidGame._androidGame._activity.getSystemService(Context.VIBRATOR_SERVICE);
 			if (vibrator!=null)
 				vibrator.vibrate(millisec);
 		} catch (java.lang.SecurityException e) {
@@ -217,7 +212,7 @@ class diddy
 	static void startGps()
 	{
 		try {
-			myManager = (LocationManager)MonkeyGame.activity.getSystemService(Context.LOCATION_SERVICE);
+			myManager = (LocationManager)BBAndroidGame._androidGame._activity.getSystemService(Context.LOCATION_SERVICE);
 
 			final LocationListener locationListener = new LocationListener() {
 
@@ -230,7 +225,7 @@ class diddy
 				public void onProviderDisabled(String provider) {}
 			};
 
-			MonkeyGame.activity.runOnUiThread(new Runnable() {
+			BBAndroidGame._androidGame._activity.runOnUiThread(new Runnable() {
 				public void run() {
 					try {
 						if (!gpsStarted) {
@@ -266,7 +261,7 @@ class diddy
 	
 	static int seekMusic(int timeMillis)
 	{
-		android.media.MediaPlayer mp = MonkeyGame.app.audio.music;
+		android.media.MediaPlayer mp = bb_audio.g_device.music;
 		if(mp!=null)
 		{
 			mp.seekTo(timeMillis);

@@ -8,7 +8,6 @@ Extern
 
 	#If LANG="cpp" Then
 		Function RealMillisecs:Int() = "diddy::systemMillisecs"
-		Function GetUpdateRate:Int() = "diddy::getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
 		Function ShowKeyboard:Void() = "diddy::showKeyboard"
 		Function LaunchNativeBrowser:Void(address:String, windowName:String) = "diddy::launchBrowser"
@@ -35,7 +34,6 @@ Extern
 		Function SeekMusic:Int(timeMillis:Int)="diddy::seekMusic"
 	#Else
 		Function RealMillisecs:Int() = "diddy.systemMillisecs"
-		Function GetUpdateRate:Int() = "diddy.getUpdateRate"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy.setMouse"
 		Function ShowKeyboard:Void() = "diddy.showKeyboard"
 		Function LaunchNativeBrowser:Void(address:String, windowName:String) = "diddy.launchBrowser"

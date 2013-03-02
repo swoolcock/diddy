@@ -27,11 +27,6 @@ class diddy
 		
 	}
 	
-	static public function getUpdateRate():Number
-	{
-		return app.updateRate;
-	}
-	
 	static public function showKeyboard():void
 	{
 	}

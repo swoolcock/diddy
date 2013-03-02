@@ -20,10 +20,6 @@ diddy.systemMillisecs=function(){
 	return new Date().getTime();
 };
 
-diddy.getUpdateRate=function(){
-	return bb_app__updateRate;
-};
-
 diddy.setGraphics=function(w, h)
 {
 	var canvas=document.getElementById( "GameCanvas" );

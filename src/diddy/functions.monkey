@@ -50,6 +50,10 @@ Function FlushKeys:Void()
 	ResetInput()
 End
 
+Function GetUpdateRate:Int()
+	Return UpdateRate()
+End
+
 Function LaunchBrowser(address:String, openNewWindow:Bool = True)
 	Local windowName:String = "_self"
 	If openNewWindow

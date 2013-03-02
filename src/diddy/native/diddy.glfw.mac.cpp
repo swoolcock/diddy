@@ -30,10 +30,6 @@ class diddy
 		return seconds * 1000;
 	}
 	
-	static int getUpdateRate() {
-		return app->updateRate;
-	}
-
 	static void setGraphics(int w, int h)
 	{
 		glfwSetWindowSize(w, h);

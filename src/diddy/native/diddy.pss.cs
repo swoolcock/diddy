@@ -11,11 +11,6 @@ class diddy
 
 		return millisecs;
 	}
-
-	public static int getUpdateRate()
-	{
-		return gxtkApp._app._updateRate;
-	}
 	
 	public static int getPixel(int x, int y)
 	{

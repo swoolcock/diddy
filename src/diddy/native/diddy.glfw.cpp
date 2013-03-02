@@ -29,10 +29,6 @@ class diddy
 		seconds = time (NULL);
 		return seconds * 1000;
 	}
-
-	static int getUpdateRate() {
-		return app->updateRate;
-	}
 	
 	static void setGraphics(int w, int h)
 	{
@@ -151,13 +147,13 @@ class diddy
 	static int getPixel(int x, int y)
 	{
 		unsigned char pix[4];
-		glReadPixels(x, app->graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
+		glReadPixels(x, bb_app__delegate->m__graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
 		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
 	}
 	
 	static int seekMusic(int timeMillis)
 	{
-		gxtkChannel *chan = &(app->audio->channels[32]);
+		gxtkChannel *chan = &(bb_audio_device->channels[32]);
 		if(chan && chan->state==1)
 		{
 			alSourcef(chan->source, AL_SEC_OFFSET, (float)(timeMillis / 1000.0));
