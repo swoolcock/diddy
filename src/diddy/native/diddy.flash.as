@@ -8,7 +8,7 @@ class diddy
 		var bmd:BitmapData = new BitmapData(1, 1);
 		var matrix:Matrix = new Matrix();
 		matrix.translate(-x, -y);
-		bmd.draw(game.stage, matrix);
+		bmd.draw(BBFlashGame._flashGame._root.stage, matrix);
 		var pixel:uint = bmd.getPixel32(0, 0);
 
 		return pixel;
@@ -132,7 +132,7 @@ class diddy
 	}
 
 	static public function mouseZInit():void {
-		var stage:Stage=game.stage;
+		var stage:Stage=BBFlashGame._flashGame._root.stage;
 		stage.addEventListener(MouseEvent.MOUSE_WHEEL,  diddy_onMouseWheelEvent);
 	}
 	
