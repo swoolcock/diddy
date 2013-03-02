@@ -26,10 +26,6 @@ class diddy
 		return millisecs;
 	}
 
-	public static int getUpdateRate()
-	{
-		return gxtkApp.game.app.updateRate;
-	}
 	public static int getPixel(int x, int y)
 	{
 		if ((x > 0 && y > 0 && x < gxtkApp.game.app.graphics.Width()) && (y < gxtkApp.game.app.graphics.Height()))

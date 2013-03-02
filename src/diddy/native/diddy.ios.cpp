@@ -11,10 +11,6 @@ class diddy
 		seconds = time (NULL);
 		return seconds * 1000;
 	}
-	
-	static int getUpdateRate() {
-		return app->updateRate;
-	}
 
 	static void setGraphics(int w, int h)
 	{
