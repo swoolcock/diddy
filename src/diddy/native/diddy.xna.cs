@@ -28,12 +28,10 @@ class diddy
 
 	public static int getPixel(int x, int y)
 	{
-	bb_std_lang.Print("x="+x+",y="+y+" col="+bb_graphics.g_device.Width().ToString());
-	/*
 		if ((x > 0 && y > 0 && x < bb_graphics.g_device.Width()) && (y < bb_graphics.g_device.Height()))
 		{
 			Texture2D backBufferData = new Texture2D(
-				bb_graphics.g_device.device,
+				BBXnaGame.XnaGame().GetXNAGame().GraphicsDevice,
 				bb_graphics.g_device.Width(),
 				bb_graphics.g_device.Height());
 
@@ -50,7 +48,6 @@ class diddy
 				
 			bb_std_lang.Print("x="+x+",y="+y+" col="+retrievedColor[0].ToString());
 		}
-		*/
 		return 0;
 	}	
 	public static void setGraphics(int w, int h)
