@@ -1,5 +1,7 @@
 #include <time.h>
 #include <Shellapi.h>
+extern gxtkAudio *bb_audio_device;
+extern gxtkGraphics *bb_graphics_device;
 
 float diddy_mouseWheel = 0.0f;
 
@@ -147,7 +149,7 @@ class diddy
 	static int getPixel(int x, int y)
 	{
 		unsigned char pix[4];
-		glReadPixels(x, bb_app__delegate->m__graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
+		glReadPixels(x, bb_graphics_device->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
 		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
 	}
 	
