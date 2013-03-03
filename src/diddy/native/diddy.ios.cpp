@@ -1,5 +1,7 @@
 #include <time.h>
 #include <math.h>
+extern gxtkAudio *bb_audio_device;
+extern gxtkGraphics *bb_graphics_device;
 
 class diddy
 {
@@ -108,7 +110,7 @@ class diddy
 	static int getPixel(int x, int y)
 	{
 		unsigned char pix[4];
-		glReadPixels(x, app->graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
+		glReadPixels(x, bb_graphics_device->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
 		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
 	}
 	
@@ -124,9 +126,9 @@ class diddy
 	
 	static int seekMusic(int timeMillis)
 	{
-		if(app->audio->music)
+		if(bb_audio_device->music)
 		{
-			app->audio->music.currentTime = timeMillis/1000.0;
+			bb_audio_device->music.currentTime = timeMillis/1000.0;
 		}
 		// TODO: check it worked
 		return 1;
