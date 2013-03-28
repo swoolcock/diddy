@@ -26,7 +26,6 @@ Const KEYFRAME_COUNT:Int = 6
 
 Class Storyboard
 Private
-	Global mtx:Float[] = New Float[6]
 	Field sprites:ArrayList<StoryboardSprite> = New ArrayList<StoryboardSprite>
 	Field sounds:ArrayList<StoryboardSound> = New ArrayList<StoryboardSound>
 	Field musics:ArrayList<StoryboardMusic> = New ArrayList<StoryboardMusic>
@@ -39,6 +38,7 @@ Private
 	Field currentTime:Int
 	Field playing:Bool = False
 	Field playSpeed:Int
+	Field renderer:StoryboardRenderer
 
 Public
 	Function LoadXML:Storyboard(filename:String)
@@ -57,7 +57,7 @@ Public
 		sb.length = Int(root.GetAttribute("length","0"))
 		
 		' loop on each child
-		For Local node:XMLElement = EachIn root.Children
+		For Local node:XMLElement = Eachin root.Children
 			' sprites node
 			If node.Name = "sprites" Then
 				' layers
@@ -107,6 +107,26 @@ Public
 		Return sb
 	End
 	
+	' Allows the developer to use a custom renderer without extending Storyboard
+	Method Renderer:StoryboardRenderer() Property
+		If Not renderer Then renderer = New StoryboardRenderer
+		Return renderer
+	End
+	
+	Method Renderer:Void(renderer:StoryboardRenderer) Property Self.renderer = renderer End
+	
+	' The sprite list (read only)
+	Method Sprites:ArrayList<StoryboardSprite>() Property Return sprites End
+	
+	' The effect list (read only)
+	Method Effects:ArrayList<StoryboardEffect>() Property Return effects End
+	
+	' The sound list (read only)
+	Method Sounds:ArrayList<StoryboardSound>() Property Return sounds End
+	
+	' The music list (read only)
+	Method Musics:ArrayList<StoryboardMusic>() Property Return musics End
+	
 	' DebugMode enables the timeline and time counter
 	Method DebugMode:Bool() Property Return debugMode End
 	Method DebugMode:Void(debugMode:Bool) Property Self.debugMode = debugMode End
@@ -121,6 +141,9 @@ Public
 	
 	' The length of the storyboard in milliseconds
 	Method Length:Int() Property Return length End
+	
+	' The current time in millis
+	Method CurrentTime:Int() Property Return currentTime End
 	
 	' The current play speed (negative values play in reverse)
 	Method PlaySpeed:Int() Property Return playSpeed End
@@ -202,7 +225,9 @@ Public
 			
 			' need to seek music here
 			If StoryboardMusic.musicPlaying And StoryboardMusic.performSeek Then
+#If TARGET<>"bmax" Then
 				StoryboardMusic.performSeek = Not SeekMusic(StoryboardMusic.performSeekTime)
+#End
 			End
 		End
 		
@@ -213,15 +238,22 @@ Public
 		Next
 	End
 	
-	' Renders all the sprites within the specified area, scaling for aspect ratio and setting a scissor.
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+		Renderer.Render(Self, x, y, width, height)
+	End
+End
+
+Class StoryboardRenderer
+	Field mtx:Float[] = New Float[6]
+	' Renders all the sprites within the specified area, scaling for aspect ratio and setting a scissor.
+	Method Render:Void(sb:Storyboard, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		' if width/height not supplied, assume native storyboard width
-		If width <= 0 Then width = Self.width
-		If height <= 0 Then height = Self.height
+		If width <= 0 Then width = sb.Width
+		If height <= 0 Then height = sb.Height
 		
 		' get the aspect ratios
 		Local targetAR:Float = width/height
-		Local sourceAR:Float = Self.width/Self.height
+		Local sourceAR:Float = sb.Width/sb.Height
 		
 		' fix target width/height based on aspect ratio (letterboxed)
 		If targetAR > sourceAR Then
@@ -236,52 +268,52 @@ Public
 		' push the old matrix and apply correct translation and scales
 		PushMatrix
 		Translate x, y
-		Scale width/Self.width, height/Self.height
+		Scale width/sb.Width, height/sb.Height
 		
 		' get the current matrix so we can work out the correct scissor
 		GetMatrix(mtx)
 		Local sx:Float = mtx[4]
 		Local sy:Float = mtx[5]
-		Local sw:Float = Self.width*mtx[0]+Self.height*mtx[2]
-		Local sh:Float = Self.width*mtx[1]+Self.height*mtx[3]
+		Local sw:Float = sb.Width*mtx[0]+sb.Height*mtx[2]
+		Local sh:Float = sb.Width*mtx[1]+sb.Height*mtx[3]
 		
 		' set the scissor
 		SetScissor(sx, sy, sw, sh)
 		
 		' render all the sprites
-		For Local i:Int = 0 Until sprites.Size
-			Local sprite:StoryboardSprite = sprites.Get(i)
-			sprite.Render(0, 0, width, height)
+		For Local i:Int = 0 Until sb.Sprites.Size
+			Local sprite:StoryboardSprite = sb.Sprites.Get(i)
+			sprite.Render(sb, Self, 0, 0, width, height)
 		Next
 		
 		' render effects
-		For Local i:Int = 0 Until effects.Size
-			Local effect:StoryboardEffect = effects.Get(i)
-			effect.Render(0, 0, width, height)
+		For Local i:Int = 0 Until sb.Effects.Size
+			Local effect:StoryboardEffect = sb.Effects.Get(i)
+			effect.Render(sb, Self, 0, 0, width, height)
 		Next
 		
 		' reset scissor
 		SetScissor(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)
 		
 		' draw lines if in debug
-		If DebugMode Then
+		If sb.DebugMode Then
 			SetAlpha(1)
 			SetColor(255,255,255)
-			DrawLine(0,0,Self.width,0)
-			DrawLine(Self.width,0,Self.width,Self.height)
-			DrawLine(0,0,0,Self.height)
-			DrawLine(0,Self.height,Self.width,Self.height)
+			DrawLine(0,0,sb.Width,0)
+			DrawLine(sb.Width,0,sb.Width,sb.Height)
+			DrawLine(0,0,0,sb.Height)
+			DrawLine(0,sb.Height,sb.Width,sb.Height)
 		End
 		
 		' pop the matrix
 		PopMatrix
 		
 		' draw time and timeline if debug
-		If DebugMode Then
+		If sb.DebugMode Then
 			' draw time
-			Local millis:Int = currentTime Mod 1000
-			Local secs:Int = (currentTime / 1000) Mod 60
-			Local mins:Int = (currentTime / 60000)
+			Local millis:Int = sb.CurrentTime Mod 1000
+			Local secs:Int = (sb.CurrentTime / 1000) Mod 60
+			Local mins:Int = (sb.CurrentTime / 60000)
 			SetAlpha(1)
 			SetColor(255,255,255)
 			DrawText(Format("%02d:%02d:%03d", mins, secs, millis), 0, 0)
@@ -292,8 +324,8 @@ Public
 			DrawLine 10,SCREEN_HEIGHT-20,SCREEN_WIDTH-10,SCREEN_HEIGHT-20
 			
 			' draw timeline ticks
-			For Local i:Int = 0 Until length Step 5000
-				Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(i)/length)
+			For Local i:Int = 0 Until sb.Length Step 5000
+				Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(i)/sb.Length)
 				Local y:Int = SCREEN_HEIGHT-22
 				If i Mod 30000 = 0 Then y -= 2
 				If i Mod 60000 = 0 Then y -= 2
@@ -301,11 +333,25 @@ Public
 			Next
 			
 			' draw current time bar
-			Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(currentTime)/length)
+			Local x:Int = 10+Int((SCREEN_WIDTH-20)*Float(sb.CurrentTime)/sb.Length)
 			SetColor 255,0,0
 			DrawLine x,SCREEN_HEIGHT-28,x,SCREEN_HEIGHT-12
 			SetColor 255,255,255
 		End
+	End
+	
+	Method PreRenderSprite:Bool(sb:Storyboard, sprite:StoryboardSprite, x:Int, y:Int, width:Int, height:Int)
+		Return True
+	End
+	
+	Method PostRenderSprite:Void(sb:Storyboard, sprite:StoryboardSprite, x:Int, y:Int, width:Int, height:Int)
+	End
+	
+	Method PreRenderEffect:Bool(sb:Storyboard, effect:StoryboardEffect, x:Int, y:Int, width:Int, height:Int)
+		Return True
+	End
+	
+	Method PostRenderEffect:Void(sb:Storyboard, effect:StoryboardEffect, x:Int, y:Int, width:Int, height:Int)
 	End
 End
 
@@ -339,7 +385,7 @@ Public
 	End
 	
 	Method Update:Void(currentTime:Int) Abstract
-	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1) Abstract
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1) Abstract
 End
 
 Class StoryboardSound Extends StoryboardElement
@@ -367,7 +413,7 @@ Public
 		End
 	End
 	
-	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		' can't render a sound.... yet ;)
 	End
 End
@@ -412,7 +458,7 @@ Public
 		End
 	End
 	
-	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		' can't render music.... yet ;)
 	End
 End
@@ -440,6 +486,30 @@ Private
 	Field nextKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
 	
 Public
+	Method SpriteImage:GameImage() Property
+		If Not image Then image = diddyGame.images.Find(imageName)
+		If Not image Then
+			Print "Couldn't load "+imageName+" for sprite."
+			Return Null
+		End
+		Return image
+	End
+	
+	Method X:Float() Property Return x End
+	Method Y:Float() Property Return y End
+	
+	Method Width:Float() Property
+		Local image:GameImage = SpriteImage
+		If image Then Return image.image.Width()
+		Return 0
+	End
+	
+	Method Height:Float() Property
+		Local image:GameImage = SpriteImage
+		If image Then Return image.image.Height()
+		Return 0
+	End
+	
 	Method New(node:XMLElement)
 		imageName = node.GetAttribute("imageName","")
 		name = node.GetAttribute("name","")
@@ -525,14 +595,14 @@ Public
 		Next
 	End
 	
-	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		If alpha = 0 Then Return
-		If Not image Then image = diddyGame.images.Find(imageName)
+		If Not renderer Then renderer = sb.Renderer
+		Local image:GameImage = SpriteImage
 		If Not image Then
 			Print "Couldn't load "+imageName+" for sprite."
 			Return
 		End
-		
 		' translation, scale, rotation, handle, other effects
 		PushMatrix
 		Translate Self.x, Self.y
@@ -541,8 +611,10 @@ Public
 		Rotate rotation
 		SetColor red, green, blue
 		SetAlpha alpha
-		
-		image.Draw(0, 0)
+		If renderer.PreRenderSprite(sb, Self, x, y, width, height) Then
+			image.Draw(0, 0)
+			renderer.PostRenderSprite(sb, Self, x, y, width, height)
+		End
 		PopMatrix
 	End
 End
@@ -736,7 +808,7 @@ End
 Class StoryboardEffect Abstract
 Public
 	Method Update:Void(currentTime:Int) Abstract
-	Method Render:Void(x:Float, y:Float, width:Float, height:Float) Abstract
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float, y:Float, width:Float, height:Float) Abstract
 End
 
 Class StoryboardFlash Extends StoryboardEffect
@@ -783,11 +855,13 @@ Public
 		End
 	End
 	
-	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
-		If currentAlpha <> 0 Then
+	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
+		If Not renderer Then renderer = sb.Renderer
+		If renderer.PreRenderEffect(sb, Self, x, y, width, height) And currentAlpha <> 0 Then
 			SetAlpha(currentAlpha)
 			SetColor(red, green, blue)
 			DrawRect(x, y, width, height)
+			renderer.PostRenderEffect(sb, Self, x, y, width, height)
 		End
 	End
 End
