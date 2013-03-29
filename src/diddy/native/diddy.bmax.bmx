@@ -106,6 +106,10 @@ Type diddy
 		diddy_mouseWheel = BlitzMaxMouseZ()
 		Return ret
 	EndFunction
+	
+	Function SeekMusic:Int(timeMillis:Int)
+		Return 0
+	EndFunction
 EndType
 
 Function BlitzMaxMouseZ:Float()
