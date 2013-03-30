@@ -1773,9 +1773,15 @@ Class Sprite
 	
 	Method Draw:Void(offsetx:Float, offsety:Float, rounded:Bool = False)
 		If Not visible Then Return
-		If x - offsetx + image.w < 0 Or x - offsetx - image.w >= SCREEN_WIDTH Or y - offsety + image.h < 0 Or y - offsety - image.h >= SCREEN_HEIGHT Then Return
+		
+		If x - offsetx + (image.w * scaleX) + (image.h * scaleY) < 0 Or
+			x - offsetx - (image.w * scaleX) - (image.h * scaleY) >= SCREEN_WIDTH Or
+			y - offsety + (image.h  * scaleY) + (image.w * scaleX) < 0 Or 
+			y - offsety - (image.h  * scaleY) - (image.w * scaleX) >= SCREEN_HEIGHT Then Return
+
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
+		
 		SetAlpha Self.alpha
 		SetColor red, green, blue
 		If rounded
@@ -1786,10 +1792,6 @@ Class Sprite
 		
 		SetColor 255, 255, 255
 		SetAlpha 1
-
-	'	if debug
-	'		DrawRectOutline(x + hitBoxX, y + hitBoxY, hitBoxWidth, hitBoxHeight)
-	'	End
 	End
 	
 	Method DrawHitBox:Void(offsetx:Float = 0, offsety:Float = 0)
