@@ -1,7 +1,9 @@
 Strict
-Import mojo
+
+Private
 Import functions
 
+Public
 'Summary: 2D Vector Class
 Class Vector2D
 	Field x:Float
@@ -97,7 +99,7 @@ Class Vector2D
 	
 	'summary: Gets the angle
 	Method Angle:Float() Property
-		Return ATan2(Self.y, Self.y)
+		Return ATan2(Self.y, Self.x)
 	End
 	
 	'summary: Set the vector's length to one
@@ -204,13 +206,6 @@ Class Vector2D
 	'summary: Turn this vector into a string.
 	Method ToString:String()
 		Return "Vector2D x:" + Self.x + ", y:" + Self.y
-	End
-	
-	'summary: Draw vector
-	Method Draw:Void(startX:Float, startY:Float, r:Int = 255, g:Int = 255, b:Int = 255)
-		Local rgb:=GetColor()
-		SetColor r, g, b
-		DrawLine startX, startY, Self.x, Self.y
 	End
 	
 	'summary: Calculate distance between two points - overload using x,y
