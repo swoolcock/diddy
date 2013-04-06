@@ -3,6 +3,7 @@ Strict
 Import assert
 Import exception
 Import comparator
+Import quicksort
 
 #Rem
 header: Monkey Collections Framework
