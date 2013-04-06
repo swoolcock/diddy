@@ -115,15 +115,16 @@ Class Arrays<T>
 		If srcPos + length > src.Length Then Error("Arrays.Copy: srcPos ("+srcPos+") + length ("+length+") > src.Length ("+src.Length+")")
 		If destPos + length > dest.Length Then Error("Arrays.Copy: destPos ("+destPos+") + length ("+length+") > dest.Length ("+dest.Length+")")
 		
-		' since we can't compare array object references, we must never assume that src and dest are different objects
-		' as such, we'll copy the src values into a temp array (wasted cycles, but oh well)
-		Local temp:T[] = New T[length]
-		For Local i:Int = 0 Until length
-			temp[i] = src[srcPos+i]
-		Next
-		For Local i:Int = 0 Until length
-			dest[destPos+i] = temp[i]
-		Next
+		' if dest is after src, copy in reverse to avoid overwriting if it's the same array
+		If destPos > srcPos Then
+			For Local i:Int = length-1 To 0 Step -1
+				dest[destPos+i] = src[srcPos+i]
+			Next
+		Else
+			For Local i:Int = 0 Until length
+				dest[destPos+i] = src[srcPos+i]
+			Next
+		End
 	End
 	
 	'summary: Slice returns a new array [3,5,7] which is from 1 (inclusive) to 4 (exclusive)
