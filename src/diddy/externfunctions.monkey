@@ -35,7 +35,6 @@ Extern
 		Function GetLongitude:String()="diddy::getLongitude"
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy::showAlertDialog"
 		Function GetInputString:String()="diddy::getInputString"
-		Function GetColorPixel:Int(x:Int, y:Int)="diddy::getPixel"
 		Function MouseZInit:Void()="diddy::mouseZInit"
 		Function MouseZ:Float()="diddy::mouseZ"
 		Function SeekMusic:Int(timeMillis:Int)="diddy::seekMusic"
@@ -61,7 +60,6 @@ Extern
 		Function GetLongitude:String()="diddy.getLongitude"
 		Function ShowAlertDialog:Void(title:String, message:String) = "diddy.showAlertDialog"
 		Function GetInputString:String()="diddy.getInputString"
-		Function GetColorPixel:Int(x:Int, y:Int)="diddy.getPixel"
 		Function MouseZInit:Void()="diddy.mouseZInit"
 		Function MouseZ:Float()="diddy.mouseZ"
 		#If TARGET<>"xna" And TARGET<>"psm" Then

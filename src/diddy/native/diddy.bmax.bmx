@@ -98,13 +98,6 @@ Type diddy
 		Return "";
 	EndFunction
 	
-	Function getPixel:Int( x:int, y:int )
-'		unsigned char pix[4];
-'		glReadPixels(x, app->graphics->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
-'		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
-		Return 0
-	EndFunction
-	
 	Function mouseZInit()
 	EndFunction
 

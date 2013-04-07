@@ -136,11 +136,6 @@ class diddy
 	{
 		return "";
 	}
-	static int getPixel(int x, int y)
-	{
-		return 0;
-	}
-	
 	static int seekMusic(int timeMillis)
 	{
 		return 1;

@@ -11,16 +11,6 @@ import Date;
 
 class diddy
 {
-	static public function getPixel(x:int, y:int):int{
-		var bmd:BitmapData = new BitmapData(1, 1);
-		var matrix:Matrix = new Matrix();
-		matrix.translate(-x, -y);
-		bmd.draw(BBFlashGame._flashGame._root.stage, matrix);
-		var pixel:uint = bmd.getPixel32(0, 0);
-
-		return pixel;
-	}
-
 	static public function systemMillisecs():Number
 	{
 		return (new Date).getTime();

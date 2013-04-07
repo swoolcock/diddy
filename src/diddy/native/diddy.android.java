@@ -31,58 +31,11 @@ class diddy
 		int ms = (int)System.currentTimeMillis();
 		return ms;
 	}
-	
-	static int getPixel(int x, int y)
-	{
-		ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
-		pixelBuffer.order(ByteOrder.LITTLE_ENDIAN); 
-		GLES11.glReadPixels((int)x, (int)bb_graphics.g_device.height - y, 1, 1, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, pixelBuffer);
-		int red = pixelBuffer.get(0) & 0xff;
-		int green = pixelBuffer.get(1) & 0xff;
-		int blue = pixelBuffer.get(2) & 0xff;
-		int alpha = pixelBuffer.get(3) & 0xff;
-		// returning ARGB
-		return (alpha<<24) | (red<<16) | (green<<8) |  blue;
-	}
 
 	static void setGraphics(int w, int h)
 	{
-	/*
-		For Android to set the graphics size, we need access to the surfaceholder
-		currently (V43) in Monkey we dont have access to it. To get access to you need to alter
-		the mojo.android.java:
-		
-			public static class MonkeyView extends GLSurfaceView{
-				private SurfaceHolder surfaceHolder;
-			
-				public MonkeyView( Context context ){
-					super( context );
-					setUpSurfaceHolder();
-				}
-				
-				public MonkeyView( Context context,AttributeSet attrs ){
-					super( context,attrs );
-					setUpSurfaceHolder();
-				}
-				
-				private void setUpSurfaceHolder()
-				{
-					surfaceHolder = getHolder();
-					surfaceHolder.addCallback(this);
-					surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_NORMAL);
-				}
-				
-				public SurfaceHolder getSurfaceHolder() {
-					return surfaceHolder;
-				}
-			
-		Once that change it in you can then use the following command in this file:
-	
-			MonkeyGame.view.getSurfaceHolder().setFixedSize(w, h);
-		
-	*/
 	}
-	// empty function
+	
 	static void setMouse(int x, int y)
 	{
 	}

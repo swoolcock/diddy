@@ -18,11 +18,7 @@ class diddy
 
 		return millisecs;
 	}
-	
-	public static int getPixel(int x, int y)
-	{
-		return 0;
-	}	
+
 	public static void setGraphics(int w, int h)
 	{
 	}

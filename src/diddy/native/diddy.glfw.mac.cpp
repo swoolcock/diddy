@@ -126,14 +126,6 @@ class diddy
 		return "";
 	}
 	
-	static int getPixel(int x, int y)
-	{
-		unsigned char pix[4];
-		glReadPixels(x, bb_graphics_device->height-y ,1 ,1 ,GL_RGBA ,GL_UNSIGNED_BYTE ,pix);
-		// returning ARGB
-		return (pix[3]<<24) | (pix[0]<<16) | (pix[1]<<8) |  pix[2];
-	}
-	
 	static int seekMusic(int timeMillis)
 	{
 		gxtkChannel *chan = &(bb_audio_device->channels[32]);
