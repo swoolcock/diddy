@@ -33,30 +33,6 @@ class diddy
 		return millisecs;
 	}
 
-	public static int getPixel(int x, int y)
-	{
-		if ((x > 0 && y > 0 && x < bb_graphics.g_device.Width()) && (y < bb_graphics.g_device.Height()))
-		{
-			Texture2D backBufferData = new Texture2D(
-				BBXnaGame.XnaGame().GetXNAGame().GraphicsDevice,
-				bb_graphics.g_device.Width(),
-				bb_graphics.g_device.Height());
-
-			Rectangle sourceRectangle =	new Rectangle(x, y, 1, 1);
-
-			Color[] retrievedColor = new Color[1];
-
-			backBufferData.GetData<Color>(
-				0,
-				sourceRectangle,
-				retrievedColor,
-				0,
-				1);
-				
-			bb_std_lang.Print("x="+x+",y="+y+" col="+retrievedColor[0].ToString());
-		}
-		return 0;
-	}	
 	public static void setGraphics(int w, int h)
 	{
 	}
