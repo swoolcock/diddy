@@ -1,0 +1,53 @@
+libgdx_sprites.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a_shield_kite_mithril
+  rotate: false
+  xy: 1, 1
+  size: 44, 50
+  orig: 64, 64
+  offset: 7, 6
+  index: -1
+w_axe_war_
+  rotate: false
+  xy: 1, 119
+  size: 54, 46
+  orig: 64, 64
+  offset: 3, 9
+  index: 0
+w_longsword_steel
+  rotate: false
+  xy: 1, 183
+  size: 58, 58
+  orig: 64, 64
+  offset: 2, 3
+  index: -1
+archer_
+  rotate: false
+  xy: 1, 53
+  size: 58, 64
+  orig: 64, 64
+  offset: 2, 0
+  index: 0
+orc_
+  rotate: false
+  xy: 61, 53
+  size: 62, 58
+  orig: 64, 64
+  offset: 1, 6
+  index: 1
+w_broadsword_
+  rotate: false
+  xy: 57, 119
+  size: 62, 62
+  orig: 64, 64
+  offset: 1, 1
+  index: 0
+a_shield_round_gold
+  rotate: false
+  xy: 47, 1
+  size: 40, 40
+  orig: 64, 64
+  offset: 12, 12
+  index: -1

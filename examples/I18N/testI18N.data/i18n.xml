@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" ?>
+<i18n>
+	<language name="french">
+		<string>
+			<key>Hello World!</key>
+			<value>Bonjour, tout le monde!</value>
+		</string>
+	</language>
+	<language name="japanese">
+		<string>
+			<key>Hello World!</key>
+			<value>こんにちは、みなさん！</value>
+		</string>
+	</language>
+</i18n>

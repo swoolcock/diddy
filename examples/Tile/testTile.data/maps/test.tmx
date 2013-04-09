@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="7" height="13" tilewidth="20" tileheight="20">
+ <tileset firstgid="1" name="mblocks" tilewidth="20" tileheight="20">
+  <image source="../graphics/tileslostgarden1.png" width="560" height="320"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="7" height="13">
+  <data encoding="csv">
+8,8,3,8,3,8,8,
+3,0,0,0,0,0,3,
+8,0,0,0,0,0,8,
+8,0,0,0,0,0,8,
+3,0,0,0,0,0,3,
+8,0,0,0,0,0,8,
+8,0,0,0,0,0,8,
+3,0,0,0,0,0,3,
+8,0,0,0,0,0,8,
+8,0,0,0,0,0,8,
+3,0,0,0,0,0,3,
+8,0,0,0,0,0,8,
+8,3,8,8,8,3,8
+</data>
+ </layer>
+</map>
