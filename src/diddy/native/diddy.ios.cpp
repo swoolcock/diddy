@@ -127,11 +127,10 @@ class diddy
 	
 	static int seekMusic(int timeMillis)
 	{
-		if(bb_audio_device->music)
+		if(bb_audio_device->musicPlayer)
 		{
-			bb_audio_device->music.currentTime = timeMillis/1000.0;
+			bb_audio_device->musicPlayer.currentTime = timeMillis/1000.0;
 		}
-		// TODO: check it worked
 		return 1;
 	}
 };
