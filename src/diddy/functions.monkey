@@ -79,18 +79,6 @@ Function SetGraphics:Void(w:Int, h:Int)
 	SCREEN_HEIGHT2 = SCREEN_HEIGHT / 2
 End
 
-Function GetPixel:Int[](x:Int, y:Int)
-	Local colorArr:Int[4]
-	Local color:Int = GetColorPixel(x, y)
-	'Print color
-	colorArr[0] = (color Shr 16) & $ff
-	colorArr[1] = (color Shr 8) & $ff
-	colorArr[2] = color & $ff
-	colorArr[3] = (color Shr 24) & $ff
-
-	Return colorArr
-End
-
 Function ExitApp:Void()
 	Error ""
 End
