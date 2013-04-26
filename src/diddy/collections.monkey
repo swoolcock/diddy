@@ -10,7 +10,7 @@ Strict
 Import assert
 Import exception
 Import comparator
-Import sortutil
+Import quicksort
 
 #Rem
 header: Monkey Collections Framework
@@ -485,7 +485,7 @@ Public
 		If size <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
 		If comp = Null Then comp = DEFAULT_COMPARATOR
-		SortUtil<Object>.QuickSortObject(elements, 0, size-1, comp, reverse)
+		QuickSort(elements, 0, size-1, comp, reverse)
 		modCount += 1
 	End
 	
@@ -1359,7 +1359,7 @@ Public
 		If activeCount <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
 		If comp = Null Then comp = DEFAULT_COMPARATOR
-		SortUtil<Object>.QuickSortObject(objects, 0, activeCount-1, comp, reverse)
+		QuickSort(objects, 0, activeCount-1, comp, reverse)
 		modCount += 1
 	End
 End
