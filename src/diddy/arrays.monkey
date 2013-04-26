@@ -19,7 +19,6 @@ Join accepts up to 10 arrays.  Unused parameters are assumed to be empty arrays.
 #Rem
 	Summary: The Arrays class
 #End
-Public
 Class Arrays<T>
 	'summary: Join returns a new array
 	Function Join:T[](arr1:T[], arr2:T[], arr3:T[]=[], arr4:T[]=[], arr5:T[]=[], arr6:T[]=[], arr7:T[]=[], arr8:T[]=[], arr9:T[]=[], arr10:T[]=[])
@@ -107,7 +106,6 @@ Class Arrays<T>
 	
 	'summary: Arrays<Int>.Copy([1,2,3,4], 1, [5,6,7,8], 2, 2) copies 2 characters from index 1 in src to index 3 in dest. dest now contains [5,6,2,3]
 	Function Copy:Void(src:T[], srcPos:Int, dest:T[], destPos:Int, length:Int)
-#If CONFIG="debug" Then
 		If length = 0 Then Return
 		If length < 0 Then Error("Arrays.Copy: length < 0")
 		If srcPos < 0 Then Error("Arrays.Copy: srcPos < 0")
@@ -116,7 +114,7 @@ Class Arrays<T>
 		If destPos >= dest.Length Then Error("Arrays.Copy: destPos ("+destPos+") >= dest.Length ("+dest.Length+")")
 		If srcPos + length > src.Length Then Error("Arrays.Copy: srcPos ("+srcPos+") + length ("+length+") > src.Length ("+src.Length+")")
 		If destPos + length > dest.Length Then Error("Arrays.Copy: destPos ("+destPos+") + length ("+length+") > dest.Length ("+dest.Length+")")
-#End
+		
 		' if dest is after src, copy in reverse to avoid overwriting if it's the same array
 		If destPos > srcPos Then
 			For Local i:Int = length-1 To 0 Step -1
