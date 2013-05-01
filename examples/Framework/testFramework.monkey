@@ -62,8 +62,8 @@ Class TitleScreen Extends Screen
 		End
 		
 		If KeyHit(KEY_ESCAPE)
-			' since backScreenName is set to "exit", calling OnBack will fade to game.exitScreen (which exits the game)
-			diddyGame.OnBack()
+			' since backScreenName is set to "exit", calling Back() will fade to game.exitScreen (which exits the game)
+			Self.Back()
 		End
 	End
 End
@@ -91,8 +91,8 @@ Class GameScreen Extends Screen
 	
 	Method Update:Void()
 		If KeyHit(KEY_ESCAPE)
-			' since backScreenName is set to "Title", calling OnBack will fade to titleScreen
-			diddyGame.OnBack()
+			' since backScreenName is set to "Title", calling Back() will fade to titleScreen
+			Self.Back()
 		End
 		If MouseDown(MOUSE_LEFT)
 			For Local i% = 1 To 3
