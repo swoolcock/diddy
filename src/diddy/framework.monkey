@@ -680,26 +680,16 @@ Private
 	Field musicFlag:Int
 
 Public
-	Field screenName:String = ""
+	Field name:String = ""
 	Field backScreenName:String = ""
 	Field layers:DiddyDataLayers
-	
-	Method name:String() Property
-		Return Self.screenName
-	End
-	
-	Method name:Void(name:String) Property
-		Self.screenName = name
-		If name Then
-			diddyGame.screens.Set(name, Self)
-		End
-	End
 	
 	Method New(name:String="")
 		Self.name = name
 	End
 	
 	Method PreStart:Void()
+		diddyGame.screens.Set(name, Self)
 		diddyGame.currentScreen = Self
 		If autoFadeIn Then
 			autoFadeIn = False
