@@ -168,11 +168,11 @@ Public
 		' DiddyApp now assigns itself to game, so you just need to do: New MyGame()
 		' Assigning it manually will have no effect, but won't break anything.
 		diddyGame = Self
+		Self.screens = New Screens
 		Self.exitScreen = New ExitScreen
 		Self.screenFade = New ScreenFade
 		Self.images = New ImageBank
 		Self.sounds = New SoundBank
-		Self.screens = New Screens
 		Self.inputCache = New InputCache
 		diddyMouse = New DiddyMouse
 	End
@@ -429,6 +429,8 @@ Public
 		y += gap
 		DrawText "Sound Channel      = "+SoundPlayer.channel, 0, y
 		y += gap
+		DrawText "Back Screen Name   = "+currentScreen.backScreenName, 0, y
+		y += gap
 	End
 	
 	'summary: Draws current FPS at 0,0
@@ -527,6 +529,16 @@ Public
 		Return 0
 	End
 	
+	Method OnBack:Int()
+		Try
+			currentScreen.Back()
+		Catch e:DiddyException
+			Print(e.ToString(True))
+			Error(e.ToString(False))
+		End
+		Return 0
+	End
+	
 	'summary: Loads in the diddydata xml file
 	Method LoadDiddyData:Void(filename:String="diddydata.xml")
 		autoCls = True
@@ -537,6 +549,10 @@ End
 
 'summary: Map to store the Screens
 Class Screens Extends StringMap<Screen>
+	Method Set:Bool(key:String, value:Screen)
+		Return Super.Set(key.ToUpper(), value)
+	End
+	
 	Method Find:Screen(name:String)
 		name = name.ToUpper()
 
@@ -548,7 +564,7 @@ Class Screens Extends StringMap<Screen>
 		End
 
 		Local i:Screen = Self.Get(name)
-		AssertNotNull(i, "Image '" + name + "' not found in the Screens map")
+		AssertNotNull(i, "Screen '" + name + "' not found in the Screens map")
 		Return i
 	End
 End
@@ -639,7 +655,7 @@ End
 'summary: Screen to exit the application
 Class ExitScreen Extends Screen
 	Method New()
-		name = "exit"
+		Super.New("exit")
 	End
 	
 	Method Start:Void()
@@ -664,8 +680,24 @@ Private
 	Field musicFlag:Int
 
 Public
-	Field name:String = ""
+	Field screenName:String = ""
+	Field backScreenName:String = ""
 	Field layers:DiddyDataLayers
+	
+	Method name:String() Property
+		Return Self.screenName
+	End
+	
+	Method name:Void(name:String) Property
+		Self.screenName = name
+		If name Then
+			diddyGame.screens.Set(name, Self)
+		End
+	End
+	
+	Method New(name:String="")
+		Self.name = name
+	End
 	
 	Method PreStart:Void()
 		diddyGame.currentScreen = Self
@@ -725,6 +757,15 @@ Public
 	Method Render:Void() Abstract
 	
 	Method Update:Void() Abstract
+	
+	Method Back:Void()
+		If backScreenName="exit" Then
+			FadeToScreen(Null)
+		ElseIf backScreenName Then
+			Local scr:Screen = diddyGame.screens.Find(backScreenName)
+			If scr Then FadeToScreen(scr)
+		End
+	End
 	
 	Method Suspend:Void()
 	End
