@@ -87,6 +87,9 @@ Global dt:DeltaTimer
 ' Default fade time
 Global defaultFadeTime:Float = 600
 
+' quit flag to exit the app via OnBack
+Global quitApp:Bool = False
+
 'Summary: The main class extends Mojo App
 Class DiddyApp Extends App
 
@@ -345,6 +348,7 @@ Public
 	
 	Method OnUpdate:Int()
 		Try
+			If quitApp Then OnBack()
 			ReadInputs()
 			OverrideUpdate()
 			If useFixedRateLogic
@@ -531,6 +535,10 @@ Public
 	
 	Method OnBack:Int()
 		Try
+			If quitApp Then
+				ExitApp()
+				Return 0
+			End
 			currentScreen.Back()
 		Catch e:DiddyException
 			Print(e.ToString(True))
@@ -659,7 +667,7 @@ Class ExitScreen Extends Screen
 	End
 	
 	Method Start:Void()
-		ExitApp()
+		quitApp = True
 	End
 	
 	Method Render:Void()
