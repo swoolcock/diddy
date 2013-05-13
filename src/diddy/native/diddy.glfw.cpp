@@ -4,6 +4,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+#include <windows.h>
+#include <string.h>
+#include <iostream>
 
 #include <time.h>
 #include <Shellapi.h>
@@ -11,6 +14,8 @@ extern gxtkAudio *bb_audio_device;
 extern gxtkGraphics *bb_graphics_device;
 
 float diddy_mouseWheel = 0.0f;
+
+
 
 float diddy_mouseZ() {
 	float ret = glfwGetMouseWheel() - diddy_mouseWheel;
@@ -21,7 +26,54 @@ float diddy_mouseZ() {
 class diddy
 {
 	public:
+	
+	// Returns an empty string if dialog is cancelled
+	static String openfilename() {
+		char *filter = "All Files (*.*)\0*.*\0";
+		HWND owner = NULL;
+		OPENFILENAME ofn;
+		char fileName[MAX_PATH] = "";
+		ZeroMemory(&ofn, sizeof(ofn));
 
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = owner;
+		ofn.lpstrFilter = filter;
+		ofn.lpstrFile = fileName;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+		ofn.lpstrDefExt = "";
+
+		String fileNameStr;
+
+		if ( GetOpenFileName(&ofn) )
+			fileNameStr = fileName;
+
+		return fileNameStr;
+	}
+	
+	static String savefilename() {
+		char *filter = "All Files (*.*)\0*.*\0";
+		HWND owner = NULL;
+		OPENFILENAME ofn;
+		char fileName[MAX_PATH] = "";
+		ZeroMemory(&ofn, sizeof(ofn));
+
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = owner;
+		ofn.lpstrFilter = filter;
+		ofn.lpstrFile = fileName;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+		ofn.lpstrDefExt = "";
+
+		String fileNameStr;
+
+		if ( GetSaveFileNameA(&ofn) )
+			fileNameStr = fileName;
+
+		return fileNameStr;
+	}
+	
 	static float mouseZ()
 	{
 		return diddy_mouseZ();
