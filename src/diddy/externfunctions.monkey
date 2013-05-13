@@ -13,6 +13,21 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Extern
 
+	#If TARGET="glfw" and HOST="winnt" Then
+		Function OpenFileName:String() = "diddy::openfilename"
+		Function SaveFileName:String() = "diddy::savefilename"
+	#Else
+		Public
+		Function OpenFileName:String()
+			Return ""
+		End
+		Function SaveFileName:String()
+			Return ""
+		End
+	#End
+	
+Extern
+
 	#If LANG="cpp" Then
 		Function RealMillisecs:Int() = "diddy::systemMillisecs"
 		Function SetMouse:Void(x:Int, y:Int) = "diddy::setMouse"
