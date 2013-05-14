@@ -56,17 +56,21 @@ Public
 	End
 
 	Method CrossMultiply:Matrix3D(m:Matrix3D)
-		Local v00:Float = val[M00] * m.val[M00] + val[M01] * m.val[M10] + val[M02] * m.val[M20]
-		Local v01:Float = val[M00] * m.val[M01] + val[M01] * m.val[M11] + val[M02] * m.val[M21]
-		Local v02:Float = val[M00] * m.val[M02] + val[M01] * m.val[M12] + val[M02] * m.val[M22]
+		Return CrossMultiply(m.val)
+	End
+	
+	Method CrossMultiply:Matrix3D(arr:Float[])
+		Local v00:Float = val[M00] * arr[M00] + val[M01] * arr[M10] + val[M02] * arr[M20]
+		Local v01:Float = val[M00] * arr[M01] + val[M01] * arr[M11] + val[M02] * arr[M21]
+		Local v02:Float = val[M00] * arr[M02] + val[M01] * arr[M12] + val[M02] * arr[M22]
 
-		Local v10:Float = val[M10] * m.val[M00] + val[M11] * m.val[M10] + val[M12] * m.val[M20]
-		Local v11:Float = val[M10] * m.val[M01] + val[M11] * m.val[M11] + val[M12] * m.val[M21]
-		Local v12:Float = val[M10] * m.val[M02] + val[M11] * m.val[M12] + val[M12] * m.val[M22]
+		Local v10:Float = val[M10] * arr[M00] + val[M11] * arr[M10] + val[M12] * arr[M20]
+		Local v11:Float = val[M10] * arr[M01] + val[M11] * arr[M11] + val[M12] * arr[M21]
+		Local v12:Float = val[M10] * arr[M02] + val[M11] * arr[M12] + val[M12] * arr[M22]
 
-		Local v20:Float = val[M20] * m.val[M00] + val[M21] * m.val[M10] + val[M22] * m.val[M20]
-		Local v21:Float = val[M20] * m.val[M01] + val[M21] * m.val[M11] + val[M22] * m.val[M21]
-		Local v22:Float = val[M20] * m.val[M02] + val[M21] * m.val[M12] + val[M22] * m.val[M22]
+		Local v20:Float = val[M20] * arr[M00] + val[M21] * arr[M10] + val[M22] * arr[M20]
+		Local v21:Float = val[M20] * arr[M01] + val[M21] * arr[M11] + val[M22] * arr[M21]
+		Local v22:Float = val[M20] * arr[M02] + val[M21] * arr[M12] + val[M22] * arr[M22]
 
 		val[M00] = v00
 		val[M10] = v10
@@ -213,7 +217,7 @@ Public
 		Return Self
 	End
 
-	Method Translate:Matrix3D(translation:Vector2)
+	Method Translate:Matrix3D(translation:Vector2D)
 		tmp[M00] = 1
 		tmp[M10] = 0
 		tmp[M20] = 0
@@ -263,7 +267,7 @@ Public
 		Return Self
 	End
 
-	Method Scale:Matrix3D(v:Vector2)
+	Method Scale:Matrix3D(v:Vector2D)
 		tmp[M00] = v.x
 		tmp[M10] = 0
 		tmp[M20] = 0
