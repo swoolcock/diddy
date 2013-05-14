@@ -213,7 +213,7 @@ Public
 		' update the current values for each sprite
 		For Local i:Int = 0 Until sprites.Size
 			Local sprite:StoryboardSprite = sprites.Get(i)
-			sprite.Update(currentTime)
+			sprite.Update(Self, currentTime)
 		Next
 		
 		' only do sounds etc. if playing
@@ -221,13 +221,13 @@ Public
 			' update sounds
 			For Local i:Int = 0 Until sounds.Size
 				Local sound:StoryboardSound = sounds.Get(i)
-				sound.Update(currentTime)
+				sound.Update(Self, currentTime)
 			Next
 			
 			' update music
 			For Local i:Int = 0 Until musics.Size
 				Local music:StoryboardMusic = musics.Get(i)
-				music.Update(currentTime)
+				music.Update(Self, currentTime)
 			Next
 			
 			' need to seek music here
@@ -241,7 +241,7 @@ Public
 		' update effects
 		For Local i:Int = 0 Until effects.Size
 			Local effect:StoryboardEffect = effects.Get(i)
-			effect.Update(currentTime)
+			effect.Update(Self, currentTime)
 		Next
 	End
 	
@@ -391,7 +391,7 @@ Public
 		Return Compare(other)=0
 	End
 	
-	Method Update:Void(currentTime:Int) Abstract
+	Method Update:Void(sb:Storyboard, currentTime:Int) Abstract
 	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1) Abstract
 End
 
@@ -409,7 +409,7 @@ Public
 		name = node.GetAttribute("name","")
 	End
 	
-	Method Update:Void(currentTime:Int)
+	Method Update:Void(sb:Storyboard, currentTime:Int)
 		' if we've gone past this sound, check the delta to make sure it's not huge (to stop spam)
 		Local shouldPlay:Bool = currentTime >= time And Self.currentTime < time And currentTime - time < SOUND_THRESHOLD
 		Self.currentTime = currentTime
@@ -446,7 +446,7 @@ Public
 		loop = node.GetAttribute("loop","true").ToLower() = "true"
 	End
 	
-	Method Update:Void(currentTime:Int)
+	Method Update:Void(sb:Storyboard, currentTime:Int)
 		' find out if we're inside the music
 		If currentTime >= Self.time And (currentTime < Self.time+Self.length Or Self.loop) Then
 			' if we're not playing, need to start playing
@@ -563,7 +563,7 @@ Public
 		Return Super.Compare(other)
 	End
 	
-	Method Update:Void(currentTime:Int)
+	Method Update:Void(sb:Storyboard, currentTime:Int)
 		Self.currentTime = currentTime
 		x = firstX; y = firstY
 		scaleX = firstScaleX; scaleY = firstScaleY
@@ -814,7 +814,7 @@ End
 
 Class StoryboardEffect Abstract
 Public
-	Method Update:Void(currentTime:Int) Abstract
+	Method Update:Void(sb:Storyboard, currentTime:Int) Abstract
 	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float, y:Float, width:Float, height:Float) Abstract
 End
 
@@ -849,7 +849,7 @@ Public
 		End
 	End
 	
-	Method Update:Void(currentTime:Int)
+	Method Update:Void(sb:Storyboard, currentTime:Int)
 		Local leadInTime:Int = time - leadIn, leadOutTime:Int = time + leadOut
 		If currentTime < leadInTime Or currentTime > leadOutTime Then
 			currentAlpha = 0
