@@ -62,11 +62,11 @@ Public
 		Return Null
 	End
 	
-	Method Render:Void()
+	Method Render:Void(scrollX:Float = 0, scrollY:Float = 0)
 		Local rgb:Float[] = GetColor()
 		Local alpha:Float = GetAlpha()
 		For Local i:Int = 0 Until groups.Size
-			groups.Get(i).Render()
+			groups.Get(i).Render(scrollX, scrollY)
 		Next
 		SetAlpha(alpha)
 		SetColor(rgb[0], rgb[1], rgb[2])
@@ -2186,7 +2186,7 @@ Public
 		aliveParticles -= 1
 	End
 	
-	Method Render:Void()
+	Method Render:Void(scrollX:Float = 0, scrollY:Float = 0)
 		For Local i:Int = 0 Until aliveParticles
 			Local index:Int = alivePointers[i]
 			SetColor(red[index], green[index], blue[index])
@@ -2197,20 +2197,20 @@ Public
 			
 			If particleImage[index] <> Null Then
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
-					DrawImage(particleImage[index], x[index], y[index], rotation[index]*R2D, scale[index], scale[index])
+					DrawImage(particleImage[index], x[index] - scrollX, y[index] - scrollY, rotation[index] * R2D, scale[index], scale[index])
 				Else
-					DrawImage(particleImage[index], x[index], y[index])
+					DrawImage(particleImage[index], x[index] - scrollX, y[index] - scrollY)
 				End
 			Else
 				If scale[index] <> 1 Or rotation[index] <> 0 Then
 					PushMatrix
-					Translate(x[index]-1, y[index]-1)
+					Translate(x[index] - 1 - scrollX, y[index] - 1 - scrollY)
 					If scale[index] <> 1 Then Scale(scale[index], scale[index])
 					If rotation[index] <> 0 Then Rotate(rotation[index] * R2D)
 					DrawRect(0, 0, 3, 3)
 					PopMatrix
 				Else
-					DrawRect(x[index]-1, y[index]-1, 3, 3)
+					DrawRect(x[index] - 1 - scrollX, y[index] - 1 - scrollY, 3, 3)
 				End
 			End
 		Next
