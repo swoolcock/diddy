@@ -80,7 +80,11 @@ Function SetGraphics:Void(w:Int, h:Int)
 End
 
 Function ExitApp:Void()
-	Error ""
+	#If TARGET="win8"
+		Print "Cant exit a Win8 application"
+	#Else
+		EndApp()
+	#End
 End
 
 Function RectsOverlap:Int(x0:Float, y0:Float, w0:Float, h0:Float, x2:Float, y2:Float, w2:Float, h2:Float)
