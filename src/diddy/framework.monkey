@@ -118,6 +118,8 @@ Class DiddyApp Extends App
 	Field nextScreen:Screen
 	' exit Screen
 	Field exitScreen:ExitScreen
+	' loading Screen
+	Field loadingScreen:LoadingScreen
 	' used for fading
 	Field screenFade:ScreenFade
 	' scroll
@@ -170,6 +172,7 @@ Public
 		diddyGame = Self
 		Self.screens = New Screens
 		Self.exitScreen = New ExitScreen
+		Self.loadingScreen = New LoadingScreen
 		Self.screenFade = New ScreenFade
 		Self.images = New ImageBank
 		Self.sounds = New SoundBank
@@ -650,6 +653,78 @@ Class ScreenFade
 		SetColor 255, 255, 255
 	End
 	
+End
+
+Class LoadingBar
+	Field fullImage:Image
+	Field emptyImage:Image
+	Field x:Int, y:Int
+	Field steps:Float
+	Field stepSize:Float
+	Field finished:Bool = False
+	Field position:Float
+	Field currentStep:Int
+
+	Method SetSteps:Void(steps:Int)
+		Self.steps = steps
+		stepSize = fullImage.Width() / steps
+	End Method
+
+	Method Progress:Void()
+		currentStep = currentStep + 1
+		position = currentStep * stepSize
+		If position > fullImage.Width() Then position = fullImage.Width()
+		If currentStep = steps Then finished = True
+	End Method
+	
+	Method Draw:Void()
+		DrawImage(emptyImage, x, y)
+		DrawImageRect(fullImage, x, y, 0, 0, position, fullImage.Height())
+	End
+End
+
+'summary: Screen to draw a loading screen
+Class LoadingScreen Extends Screen
+	Field finished:Bool
+	Field destination:Screen
+	Field loadingBar:LoadingBar
+	Field image:Image
+	
+	Method New()
+		name = "loading"
+		loadingBar = New LoadingBar
+	End
+	
+	Method Init:Void(loadingScreenPath:String, loadingFullBarPath:String, loadingEmptyBarPath:String, steps:Int, loadingBarX:Int = -1, loadingBarY:Int = -1)
+		image = LoadBitmap(loadingScreenPath, Image.MidHandle)
+		If loadingBarX = -1 Then loadingBarX = SCREEN_WIDTH2
+		If loadingBarY = -1 Then loadingBarY = SCREEN_HEIGHT2
+		loadingBar.x = loadingBarX
+		loadingBar.y = loadingBarY
+		loadingBar.fullImage = LoadBitmap(loadingFullBarPath, Image.MidHandle)
+		loadingBar.emptyImage = LoadBitmap(loadingEmptyBarPath, Image.MidHandle)
+		loadingBar.SetSteps(steps)
+	End
+	
+	Method Start:Void()
+		finished = False
+		If destination = Null Then Error "Loading Screen Destination is null!"
+	End
+	
+	Method Render:Void()
+		Cls()
+		DrawImage image, SCREEN_WIDTH2, SCREEN_HEIGHT2
+		loadingBar.Draw()
+	End 
+	
+	Method Update:Void()
+		If KeyHit(KEY_SPACE) Then 
+			loadingBar.Progress()
+		End
+		If loadingBar.finished
+			FadeToScreen(destination)
+		End
+	End
 End
 
 'summary: Screen to exit the application
