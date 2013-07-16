@@ -149,6 +149,16 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next
 	End
 
+	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String="")
+		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name)
+		If orientation = VERTICAL
+			IncreaseHeight(b)
+		Else
+			IncreaseWidth(b)
+		End
+		Return b
+	End
+
 	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String="")
 		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name)
 		If orientation = VERTICAL
@@ -181,9 +191,27 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 
+	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String)
+		Local b:SimpleButton = New SimpleButton
+		b.name = StripAll(buttonImage.name.ToUpper())
+		b.image = buttonImage
+		b.image.SetHandle(0, 0)
+		If mouseOver <> Null
+			b.imageMouseOver = mouseOver
+			b.imageMouseOver.SetHandle(0, 0)
+		End
+		b = ProcessButton(b, name)
+		Return b		
+	End
+
 	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String)
 		Local b:SimpleButton = New SimpleButton
 		b.Load(buttonImageFile, mouseOverFile)
+		b = ProcessButton(b, name)
+		Return b
+	End
+	
+	Method ProcessButton:SimpleButton(b:SimpleButton, name:String)
 		b.useVirtualRes = Self.useVirtualRes
 		b.orientation = Self.orientation
 		If name <> "" Then b.name = name.ToUpper()
@@ -198,7 +226,7 @@ Class SimpleMenu Extends List<SimpleButton>
 		AddLast(b)
 		Return b
 	End
-	
+		
 	Method FindButton:SimpleButton(name:String)
 		name = name.ToUpper()
 		Local b:SimpleButton

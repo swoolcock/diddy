@@ -23,6 +23,9 @@ Class MyGame Extends DiddyApp
 		SetScreenSize(1024, 768)
 		drawFPSOn = True
 		
+		images.Load("continue.png")
+		images.Load("continueMO.png")
+		
 		titleScreen = New TitleScreen
 		gameScreen = New GameScreen
 		optionScreen = New OptionScreen
@@ -45,6 +48,7 @@ Class TitleScreen Extends Screen
 		b = menu.AddButton("continue.png", "continueMO.png")
 		b = menu.AddButton("options.png", "optionsMO.png")
 		b = menu.AddButton("quit.png", "quitMO.png")
+		b = menu.AddButton(diddyGame.images.Find("continue"), diddyGame.images.Find("continueMO"), "TEST")
 		musicFormat="ogg"
 		diddyGame.MusicPlay("happy."+musicFormat, True)
 		menu.Centre()
@@ -61,6 +65,10 @@ Class TitleScreen Extends Screen
 	
 	Method Update:Void()
 		menu.Update()
+
+		If menu.Clicked("TEST") Then
+			FadeToScreen(gameScreen)
+		End
 		
 		If menu.Clicked("newgame") Then
 			FadeToScreen(gameScreen)
