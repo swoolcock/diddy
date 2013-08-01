@@ -138,7 +138,7 @@ class diddy
 			var chan:gxtkChannel = bb_audio_device.channels[32];
 			if(chan.channel) {
 				chan.channel.stop();
-				chan.channel = chan.sample.sound.play(timeMillis, chan.loops, chan.transform);
+				chan.channel = chan.sample.sound.play(timeMillis, 0, chan.transform);
 			}
 		}
 		// TODO: check it worked
