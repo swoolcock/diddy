@@ -41,7 +41,7 @@ Class TitleScreen Extends Screen
 	End
 	
 	Method Update:Void()
-		if diddyGame.mouseHit
+		If diddyGame.mouseHit
 			FadeToScreen(gameScreen)
 		End
 	End
@@ -79,6 +79,10 @@ Class GameScreen Extends Screen
 		If KeyDown(KEY_DOWN) Then offsetY += 4
 		If KeyDown(KEY_LEFT) Then offsetX -= 4
 		If KeyDown(KEY_RIGHT) Then offsetX += 4
+		
+		If MouseDown(0)
+			tilemap.ChangeTile(diddyGame.mouseX + offsetX, diddyGame.mouseY + offsetY, 4, "Tile Layer 1")
+		Endif
 		
 		tilemap.UpdateAnimation(dt.frametime)
 	End
