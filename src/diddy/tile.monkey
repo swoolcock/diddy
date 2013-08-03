@@ -533,6 +533,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 									If mody < 0 Then mody += tileHeight
 									rx = x - modx - bx
 									ry = y - mody - by
+
 									DrawTile(tl, mapTile, rx, ry)
 								End
 							End
@@ -760,14 +761,24 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Method SetTile:Void(x:Float, y:Float, tile:Int, layerName:String)
 		Local layer:TileMapTileLayer = FindLayerByName(layerName)
 		If layer.name <> layerName Then Return
-
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return
-		
-		local xx:Int = (Floor(x / tileWidth))
-		local yy:Int = (Floor(y / tileHeight))
-		
+		Local xx:Int = (Floor(x / tileWidth))
+		Local yy:Int = (Floor(y / tileHeight))
 		layer.mapData.Set(xx, yy, tile)
 	End
+	
+	'summary: Change a tile cell and its frame image
+	Method ChangeTile:Void(x:Float, y:Float, tile:Int, layerName:String)
+		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+
+		If layer.name <> layerName Then Return
+		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return
+		Local xx:Int = (Floor(x / tileWidth))
+		Local yy:Int = (Floor(y / tileHeight))
+		layer.mapData.Set(xx, yy, tile)
+		Local tmc:TileMapCell = layer.mapData.GetCell(xx, yy)
+		tmc.gid = tile
+	End	
 	
 	'summary: Scrolls the map based on the changeX and changeY
 	Method Scroll:Void(changeX:Float, changeY:Float)
