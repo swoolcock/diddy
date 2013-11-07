@@ -1522,6 +1522,9 @@ Public
 		Local posY:Int = SCREEN_HEIGHT2
 		DrawImage Self.image, posX, posY
 		If readPixels
+			If pixels.Length <> image.Width() * image.Height() Then
+				pixels = New Int[image.Width() * image.Height()]
+			End
 			ReadPixels(pixels, posX - image.HandleX(), posY - image.HandleY(), image.Width(), image.Height())
 			readPixelsComplete = True
 			PixelArrayMask(pixels, maskRed, maskGreen, maskBlue)		
