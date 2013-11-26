@@ -55,6 +55,7 @@ End
 #End
 Strict
 
+Import brl.json
 Import mojo
 Import functions
 Import collections
@@ -993,6 +994,7 @@ Class ImageBank Extends StringMap<GameImage>
 	Const ATLAS_PREFIX:String = "_diddyAtlas_"
 	Const SPARROW_ATLAS:Int = 0
 	Const LIBGDX_ATLAS:Int = 1
+	Const JSON_HASH_ATLAS:Int = 2
 	
 	Field path:String = "graphics/"
 	
@@ -1001,6 +1003,8 @@ Class ImageBank Extends StringMap<GameImage>
 			LoadSparrowAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
 		Elseif format = LIBGDX_ATLAS
 			LoadLibGdxAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
+		Elseif format = JSON_HASH_ATLAS
+			LoadJsonAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
 		Else
 			Error "Invalid atlas format"
 		End
@@ -1111,6 +1115,58 @@ Class ImageBank Extends StringMap<GameImage>
 			Self.Set(gi.name, gi)
 		Wend
 		
+	End
+	
+	Method LoadJsonAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+		Local str:String = LoadAtlasString(fileName)
+		' parse the json
+		Local jso:JsonObject = New JsonObject(str)
+		
+		Local meta:JsonObject = JsonObject( jso.Get("meta") )
+		Local image:JsonValue = meta.Get("image")
+		Local spriteFileName:String = image.StringValue()
+		
+		Local pointer:Image = LoadImage(path + spriteFileName)
+		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
+		
+		Local atlasGameImageName:String = SaveAtlasToBank(pointer, fileName)
+		
+		Local sprs:JsonObject = JsonObject( jso.Get("frames") )
+		For Local it:map.Node<String, JsonValue> = Eachin sprs.GetData()
+			Local name:String = it.Key
+
+			Local spr:JsonObject = JsonObject( it.Value )
+			Local frame:JsonObject = JsonObject( spr.Get( "frame" ) )
+			Local x:Int = frame.GetInt("x")
+			Local y:Int = frame.GetInt("y")
+			Local w:Int = frame.GetInt("w")
+			Local h:Int = frame.GetInt("h")
+			
+			Local rotated:JsonValue = spr.Get( "rotated" )
+			'TODO
+			
+			Local trimmed:JsonValue = spr.Get( "trimmed" )
+			'TODO
+
+			Local spriteSourceSize:JsonObject = JsonObject( spr.Get( "spriteSourceSize" ) )
+			'TODO
+			
+			Local sourceSize:JsonObject = JsonObject( spr.Get( "sourceSize" ) )
+			'TODO
+			
+			Local gi:GameImage = New GameImage
+			gi.name = name.ToUpper()
+			gi.image = pointer.GrabImage(x, y, w, h)
+			gi.CalcSize()
+			gi.MidHandle(midHandle)
+			
+			gi.atlasName = atlasGameImageName
+			gi.subX = x
+			gi.subY = y
+			gi.readPixels = readPixels
+			gi.SetMaskColor(maskRed, maskGreen, maskBlue)
+			Self.Set(gi.name, gi)
+		Next
 	End
 	
 	Method LoadSparrowAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
