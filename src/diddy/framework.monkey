@@ -1312,6 +1312,85 @@ Class ImageBank Extends StringMap<GameImage>
 	End
 End
 
+Class SpriteAnimation
+	Field frames:GameImage[] = []
+	Field frame:Int
+	Field frameTimer:Int
+	Field frameStart:Int
+	Field frameEnd:Int
+	Field frameSpeed:Int = 0 
+	Field reverse:Bool = False
+	Field pingPong:Bool = False
+	Field loop:Bool = True
+	Field ping:Int
+
+	Method New(speed:Int = 125, pingPong:Bool = False, loop:Bool = True)
+		frames = New GameImage[1]
+		frameEnd = 0
+		frameStart = 0
+		Self.pingPong = pingPong
+		Self.loop = loop
+		frameSpeed = speed
+		frameTimer = Millisecs()
+		ping = 0
+	End
+	
+	Method Add:Void(gi:GameImage)
+		frameEnd = frameEnd + 1
+		frames = frames.Resize(frameEnd + 1)
+		frames[frameEnd - 1] = gi
+	End
+		
+	'summary: Animation process, deals with changing frames. Returns 1 if the animation has finished (only for non looping animations).
+	Method UpdateAnimation:Int()
+		Local rv:Int = 0
+		If frameSpeed > 0
+			If Millisecs() > frameTimer + frameSpeed
+				If Not reverse
+					frame += 1
+					If frame > frameEnd - 1
+						rv = ResetAnim()
+					End
+				Else
+					frame -= 1
+					If frame < frameEnd - 1
+						rv = ResetAnim()
+					End
+				End
+				frameTimer = Millisecs()
+			End	
+		End
+		Return rv
+	End
+	
+	Method ResetAnim:Int()
+		If loop Then
+			If pingPong
+				reverse = Not reverse
+				frame = frameEnd
+				Local ts:Int = frameStart
+				frameStart = frameEnd
+				frameEnd = ts
+			Else
+				frame = frameStart
+			End
+		Else
+			If pingPong And ping <1
+				reverse = Not reverse
+				frame = frameEnd
+				Local ts:Int = frameStart
+				frameStart = frameEnd
+				frameEnd = ts
+				ping += 1
+			Else
+				frame = frameEnd
+				Return 1
+			End
+		End
+		Return 0
+	End
+End
+
 'summary: GameImage Class
 Class GameImage
 
@@ -1350,6 +1429,9 @@ Public
 
 	Field readPixels:Bool
 	Field readPixelsComplete:Bool = False
+	
+	Field offSetX:Int
+	Field offSetY:Int
 
 	Method Pixels:Int[]() Property
 		If readPixels Then
@@ -1445,7 +1527,7 @@ Public
 	End
 	
 	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
-		DrawImage(Self.image, x, y, rotation, scaleX, scaleY, frame)
+		DrawImage(Self.image, x + offSetX, y + offSetY, rotation, scaleX, scaleY, frame)
 	End
 	
 	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
@@ -1786,6 +1868,9 @@ Class Sprite
 	Field loop:Bool = True
 	Field ping:Int
 	
+	Field spriteAnimation:SpriteAnimation
+	Field useSpriteAnimation:Bool = False
+	
 	' Scale
 	Field scaleCounter:Float = 0
 	Field scaleXSpeed:Float = 0.1
@@ -1893,21 +1978,25 @@ Class Sprite
 	'summary: Animation process, deals with changing frames. Returns 1 if the animation has finished (only for non looping animations).
 	Method UpdateAnimation:Int()
 		Local rv:Int = 0
-		If frameSpeed > 0
-			If Millisecs() > frameTimer + frameSpeed
-				If Not reverse
-					frame+=1
-					If frame > frameEnd
-						rv = ResetAnim()
+		If useSpriteAnimation
+			Return spriteAnimation.UpdateAnimation()
+		Else
+			If frameSpeed > 0
+				If Millisecs() > frameTimer + frameSpeed
+					If Not reverse
+						frame+=1
+						If frame > frameEnd
+							rv = ResetAnim()
+						End
+					Else
+						frame-=1
+						If frame < frameEnd
+							rv = ResetAnim()
+						End			
 					End
-				Else
-					frame-=1
-					If frame < frameEnd
-						rv = ResetAnim()
-					End			
-				End
-				frameTimer = Millisecs()
-			End	
+					frameTimer = Millisecs()
+				End	
+			End
 		End
 		Return rv
 	End
@@ -1961,9 +2050,17 @@ Class Sprite
 		SetAlpha Self.alpha
 		SetColor red, green, blue
 		If rounded
-			DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y- offsety + 0.5), rotation, scaleX, scaleY, frame)
+			If useSpriteAnimation
+				DrawImage(spriteAnimation.frames[spriteAnimation.frame].image, Floor(x - offsetx + 0.5) + spriteAnimation.frames[spriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + spriteAnimation.frames[spriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+			Else
+				DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y - offsety + 0.5), rotation, scaleX, scaleY, frame)
+			End
 		Else
-			DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+			If useSpriteAnimation
+				DrawImage(spriteAnimation.frames[spriteAnimation.frame].image, x - offsetx + spriteAnimation.frames[spriteAnimation.frame].offSetX, y - offsety + spriteAnimation.frames[spriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+			Else
+				DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+			End
 		End
 		
 		SetColor 255, 255, 255
@@ -2010,6 +2107,85 @@ Class HitBox
 		Self.w = w
 		Self.h = h
 	End
+	
+	Method Draw:Void(offsetx:Float = 0, offsety:Float = 0)
+		DrawRectOutline(x - offsetx, y - offsety, w, h)
+	End
+	
+	Method Contains:Bool(x:Int, y:Int)
+		Return Inside(x, y)
+	End
+	
+	Method Contains:Bool(X:Int, Y:Int, W:Int, H:Int)
+		Local w:Int = Self.w
+		Local h:Int = Self.h
+		If ( (w | h | W | H) < 0)
+	    	Return False
+		End
+	
+	
+		Local x:Int = Self.x
+		Local y:Int = Self.y
+		If X < x or Y < y
+	    	Return False
+		End
+		
+		w += x
+		W += X
+		If (W <= X)
+		    If (w >= x or W > w) Return False
+		Else
+		    If (w >= x And W > w) Return False
+		End
+		h += y
+		H += Y
+		If (H <= Y)
+	    	If (h >= y or H > h) Return False
+		Else
+	    	If (h >= y And H > h) Return False
+		End
+		
+		Return True
+		
+	End
+	
+	Method Inside:Bool(X:Int, Y:Int)
+		Local w:Int = Self.w
+		Local h:Int = Self.h
+		If ( (w | h) < 0) Then
+		    Return False
+		End
+
+		Local x:Int = Self.x;
+		Local y:Int = Self.y;
+		If (X < x or Y < y)
+		    Return False
+		End
+		w += x
+		h += y
+		Return ( (w < x or w > X) and (h < y or h > Y))
+	End
+	
+	Method Intersects:Bool(r:HitBox)
+		Local tw:Int = Self.w
+		Local th:Int = Self.h
+		Local rw:Int = r.w
+		Local rh:Int = r.h
+		If rw <= 0 or rh <= 0 or tw <= 0 or th <= 0 Then
+			Return False
+		End
+		Local tx:Int = Self.x
+		Local ty:Int = Self.y
+		Local rx:Int = r.x
+		Local ry:Int = r.y
+		rw += rx
+		rh += ry
+		tw += tx
+		th += ty
+		
+		Return ( (rw < rx or rw > tx) And (rh < ry or rh > ty) And (tw < tx or tw > rx) And (th < ty or th > ry))
+	End
+	
 End
 
 'summary: Particle Class
