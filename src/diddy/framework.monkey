@@ -998,7 +998,7 @@ Class ImageBank Extends StringMap<GameImage>
 	
 	Field path:String = "graphics/"
 	
-	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+	Method LoadAtlas:Void(fileName:String, format:Int = SPARROW_ATLAS, midHandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		If format = SPARROW_ATLAS
 			LoadSparrowAtlas(fileName, midHandle, readPixels, maskRed, maskGreen, maskBlue)
 		Elseif format = LIBGDX_ATLAS
@@ -1309,6 +1309,16 @@ Class ImageBank Extends StringMap<GameImage>
 			gi = Self.Get(key)
 			gi.ReadPixelsArray()
 		Next
+	End
+End
+
+Class SpriteAnimationsMap Extends StringMap<SpriteAnimation>
+		
+	Method Find:SpriteAnimation(name:String)
+		name = name.ToUpper()
+		Local i:SpriteAnimation = Self.Get(name)
+		AssertNotNull(i, "SpriteAnimation '" + name + "' not found in the SpriteAnimationsMap")
+		Return i
 	End
 End
 
@@ -1868,8 +1878,9 @@ Class Sprite
 	Field loop:Bool = True
 	Field ping:Int
 	
-	Field spriteAnimation:SpriteAnimation
+	Field currentSpriteAnimation:SpriteAnimation
 	Field useSpriteAnimation:Bool = False
+	Field spriteAnimations:SpriteAnimationsMap = New SpriteAnimationsMap
 	
 	' Scale
 	Field scaleCounter:Float = 0
@@ -1979,7 +1990,7 @@ Class Sprite
 	Method UpdateAnimation:Int()
 		Local rv:Int = 0
 		If useSpriteAnimation
-			Return spriteAnimation.UpdateAnimation()
+			Return currentSpriteAnimation.UpdateAnimation()
 		Else
 			If frameSpeed > 0
 				If Millisecs() > frameTimer + frameSpeed
@@ -2051,13 +2062,13 @@ Class Sprite
 		SetColor red, green, blue
 		If rounded
 			If useSpriteAnimation
-				DrawImage(spriteAnimation.frames[spriteAnimation.frame].image, Floor(x - offsetx + 0.5) + spriteAnimation.frames[spriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + spriteAnimation.frames[spriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+				DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, Floor(x - offsetx + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
 			Else
 				DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y - offsety + 0.5), rotation, scaleX, scaleY, frame)
 			End
 		Else
 			If useSpriteAnimation
-				DrawImage(spriteAnimation.frames[spriteAnimation.frame].image, x - offsetx + spriteAnimation.frames[spriteAnimation.frame].offSetX, y - offsety + spriteAnimation.frames[spriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+				DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, x - offsetx + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, y - offsety + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
 			Else
 				DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
 			End
