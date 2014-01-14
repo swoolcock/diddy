@@ -2050,16 +2050,17 @@ Class Sprite
 	Method Draw:Void(offsetx:Float, offsety:Float, rounded:Bool = False)
 		If Not visible Then Return
 		
-		If x - offsetx + (image.w * scaleX) + (image.h * scaleY) < 0 Or
-			x - offsetx - (image.w * scaleX) - (image.h * scaleY) >= SCREEN_WIDTH Or
-			y - offsety + (image.h  * scaleY) + (image.w * scaleX) < 0 Or 
-			y - offsety - (image.h  * scaleY) - (image.w * scaleX) >= SCREEN_HEIGHT Then Return
-
+		Local lensq:Int = image.w * image.w * scaleX * scaleX + image.h * image.h * scaleY * scaleY
+		If x - offsetx < 0 And (x - offsetx) * (x - offsetx) > lensq Then Return
+		If x - offsetx > SCREEN_WIDTH And (x - offsetx - SCREEN_WIDTH) * (x - offsetx - SCREEN_WIDTH) > lensq Then Return
+		If y - offsety < 0 And (y - offsety) * (y - offsety) > lensq Then Return
+		If y - offsety > SCREEN_HEIGHT And (y - offsety - SCREEN_HEIGHT) * (y - offsety - SCREEN_HEIGHT) > lensq Then Return
+		
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
 		
-		SetAlpha Self.alpha
-		SetColor red, green, blue
+		SetAlpha(Self.alpha)
+		SetColor(red, green, blue)
 		If rounded
 			If useSpriteAnimation
 				DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, Floor(x - offsetx + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
