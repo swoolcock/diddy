@@ -390,9 +390,9 @@ Public
 		If useFixedRateLogic
 			dt.delta = fixedRateLogicDelta
 		End
-
+		
 		If screenFade.active Then screenFade.Update()
-		If Not screenFade.active Or screenFade.allowScreenUpdate Then currentScreen.Update()
+		If Not screenFade.active Or (screenFade.allowScreenUpdate And screenFade.active) Then currentScreen.Update()
 	End
 
 	'summary: Draws debug information
