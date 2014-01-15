@@ -391,7 +391,9 @@ Public
 			dt.delta = fixedRateLogicDelta
 		End
 		
-		If screenFade.active Then screenFade.Update()
+		If screenFade.active Then
+			screenFade.Update()
+		End
 		If Not screenFade.active Or (screenFade.allowScreenUpdate And screenFade.active) Then currentScreen.Update()
 	End
 
@@ -582,7 +584,7 @@ Class ScreenFade
 	Field counter:Float
 	Field fadeMusic:Bool
 	Field fadeSound:Bool
-	Field allowScreenUpdate:Bool
+	Field allowScreenUpdate:Bool = True
 	
 	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		If active Then Return
@@ -773,7 +775,7 @@ Public
 		diddyGame.currentScreen = Self
 		If autoFadeIn Then
 			autoFadeIn = False
-			diddyGame.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic)
+			diddyGame.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic, diddyGame.screenFade.allowScreenUpdate)
 		End
 		
 		' load screens graphics
@@ -828,12 +830,12 @@ Public
 	
 	Method Update:Void() Abstract
 	
-	Method Back:Void()
+	Method Back:Void(fadeTime:Float = defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		If backScreenName="exit" Then
 			FadeToScreen(Null)
 		ElseIf backScreenName Then
 			Local scr:Screen = diddyGame.screens.Find(backScreenName)
-			If scr Then FadeToScreen(scr)
+			If scr Then FadeToScreen(scr, fadeTime, fadeSound, fadeMusic, allowScreenUpdate)
 		End
 	End
 	
