@@ -503,7 +503,8 @@ Public
 	End
 	
 	' convenience method that will trigger a fade in and call PreStart() on the screen (used for first screen)
-	Method Start:Void(firstScreen:Screen, autoFadeIn:Bool=True, fadeInTime:Float=defaultFadeTime, fadeSound:Bool=False, fadeMusic:Bool=False)
+	Method Start:Void(firstScreen:Screen, autoFadeIn:Bool = True, fadeInTime:Float = defaultFadeTime, fadeSound:Bool = False, fadeMusic:Bool = False)
+		ResetDelta()
 		firstScreen.autoFadeIn = autoFadeIn
 		If autoFadeIn Then
 			firstScreen.autoFadeInTime = fadeInTime
@@ -543,6 +544,11 @@ Public
 			Error(e.ToString(False))
 		End
 		Return 0
+	End
+	
+	Method ResetDelta:Void()
+		dt.currentticks = Millisecs()
+		dt.lastticks = dt.currentticks
 	End
 	
 	'summary: Loads in the diddydata xml file
@@ -588,6 +594,7 @@ Class ScreenFade
 	
 	Method Start:Void(fadeTime:Float, fadeOut:Bool, fadeSound:Bool = False, fadeMusic:Bool = False, allowScreenUpdate:Bool = True)
 		If active Then Return
+		diddyGame.ResetDelta()
 		active = True
 		Self.fadeTime = diddyGame.CalcAnimLength(fadeTime)
 		Self.fadeOut = fadeOut
@@ -608,7 +615,7 @@ Class ScreenFade
 
 	Method Update:Void()
 		If Not active Return
-		counter += dt.delta
+		counter += 1 * dt.delta
 		CalcRatio()
 		If fadeSound Then
 			For Local i% = 0 To SoundPlayer.MAX_CHANNELS
@@ -619,6 +626,7 @@ Class ScreenFade
 			diddyGame.SetMojoMusicVolume((ratio) * (diddyGame.musicVolume / 100.0))
 		End
 		If counter > fadeTime
+			diddyGame.ResetDelta()
 			active = False
 			If fadeOut			
 				diddyGame.currentScreen.PostFadeOut()
@@ -773,11 +781,7 @@ Public
 	Method PreStart:Void()
 		diddyGame.screens.Set(name, Self)
 		diddyGame.currentScreen = Self
-		If autoFadeIn Then
-			autoFadeIn = False
-			diddyGame.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic, diddyGame.screenFade.allowScreenUpdate)
-		End
-		
+		Load()
 		' load screens graphics
 		Local tmpImage:Image
 		For Local key:String = EachIn diddyGame.images.Keys()
@@ -798,10 +802,15 @@ Public
 				i.Load(i.path, False, i.screenName)
 			End
 		Next
+		diddyGame.ResetDelta()
+		
+		If autoFadeIn Then
+			autoFadeIn = False
+			diddyGame.screenFade.Start(autoFadeInTime, False, autoFadeInSound, autoFadeInMusic, diddyGame.screenFade.allowScreenUpdate)
+		End
 		
 		' play the screen's music if its set
 		If musicPath <> "" Then diddyGame.MusicPlay(musicPath, musicFlag)
-		
 		Start()
 	End
 	
@@ -845,6 +854,9 @@ Public
 	Method Resume:Void()
 	End
 
+	Method Load:Void()
+	End
+	
 	Method PostFadeOut:Void()
 		Kill()
 		diddyGame.nextScreen.PreStart()
@@ -986,6 +998,12 @@ Class DeltaTimer
 		currentticks = Millisecs()
 		frametime = currentticks - lastticks
 		delta = frametime / (1000.0 / targetfps)
+		If delta > 5 Then
+			If diddyGame.debugOn
+				Print "WARNING DELTA GREATER THAN 5!!! Reseting it to 1"
+			End
+			delta = 1
+		End
 		lastticks = currentticks
 	End
 End
