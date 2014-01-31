@@ -4,12 +4,16 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#include <windows.h>
-#include <string.h>
-#include <iostream>
 
-#include <time.h>
+#ifdef _WIN32
+#include <windows.h>
 #include <Shellapi.h>
+#include <iostream>
+#endif
+
+#include <string.h>
+#include <time.h>
+
 extern gxtkAudio *bb_audio_device;
 extern gxtkGraphics *bb_graphics_device;
 
@@ -29,6 +33,7 @@ class diddy
 	
 	// Returns an empty string if dialog is cancelled
 	static String openfilename() {
+		#ifdef _WIN32
 		char *filter = "All Files (*.*)\0*.*\0";
 		HWND owner = NULL;
 		OPENFILENAME ofn;
@@ -49,9 +54,14 @@ class diddy
 			fileNameStr = fileName;
 
 		return fileNameStr;
+		#endif
+		#ifdef linux
+		return "";
+		#endif
 	}
 	
 	static String savefilename() {
+		#ifdef _WIN32
 		char *filter = "All Files (*.*)\0*.*\0";
 		HWND owner = NULL;
 		OPENFILENAME ofn;
@@ -72,6 +82,10 @@ class diddy
 			fileNameStr = fileName;
 
 		return fileNameStr;
+		#endif
+		#ifdef linux
+		return "";
+		#endif
 	}
 	
 	static float mouseZ()
@@ -109,11 +123,14 @@ class diddy
 	}
 	static void launchBrowser(String address, String windowName)
 	{
+		#ifdef _WIN32
 		LPCSTR addressStr = address.ToCString<char>();
 		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
+		#endif
 	}
 	static void launchEmail(String email, String subject, String text)
 	{
+		#ifdef _WIN32
 		String tmp = "mailto:";
 		tmp+=email;
 		tmp+="&subject=";
@@ -122,6 +139,7 @@ class diddy
 		tmp+=text;
 		LPCSTR addressStr = tmp.ToCString<char>();
 		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
+		#endif
 	}
 
 	static void startVibrate(int millisecs)
