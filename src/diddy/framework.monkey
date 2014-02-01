@@ -296,9 +296,11 @@ Public
 			If autoCls Then Cls()
 			
 			' render the screen
-			currentScreen.RenderBackgroundLayers()
-			currentScreen.Render()
-			currentScreen.RenderForegroundLayers()
+			If currentScreen Then
+				currentScreen.RenderBackgroundLayers()
+				currentScreen.Render()
+				currentScreen.RenderForegroundLayers()
+			End
 			
 			If virtualResOn
 				If aspectRatioOn
@@ -307,12 +309,16 @@ Public
 				PopMatrix
 			End
 			
-			currentScreen.ExtraRender()
-			If screenFade.active Then screenFade.Render()
-			currentScreen.DebugRender()
+			If currentScreen
+				currentScreen.ExtraRender()
+				If screenFade.active Then screenFade.Render()
+				currentScreen.DebugRender()
+			End
+			
 			If debugOn
 				DrawDebug()
 			End
+
 			If drawFPSOn
 				DrawFPS()
 			End
@@ -394,7 +400,9 @@ Public
 		If screenFade.active Then
 			screenFade.Update()
 		End
-		If Not screenFade.active Or (screenFade.allowScreenUpdate And screenFade.active) Then currentScreen.Update()
+		If currentScreen Then
+			If Not screenFade.active Or (screenFade.allowScreenUpdate And screenFade.active) Then currentScreen.Update()
+		End
 	End
 
 	'summary: Draws debug information
@@ -403,7 +411,11 @@ Public
 		FPSCounter.Draw(0,0)
 		Local y:Int = 10
 		Local gap:Int = 14
-		DrawText "Screen             = "+currentScreen.name, 0, y
+		If currentScreen
+			DrawText "Screen             = "+currentScreen.name, 0, y
+		Else
+			DrawText "Screen             = null", 0, y
+		End
 		y += gap
 		DrawText "Delta              = "+FormatNumber(dt.delta, 2) , 0, y
 		y += gap
@@ -516,7 +528,7 @@ Public
 	
 	Method OnSuspend:Int()
 		Try
-			currentScreen.Suspend()
+			If currentScreen Then currentScreen.Suspend()
 		Catch e:DiddyException
 			Print(e.ToString(True))
 			Error(e.ToString(False))
@@ -528,7 +540,7 @@ Public
 		Try
 			dt.currentticks = Millisecs()
 			dt.lastticks = dt.currentticks
-			currentScreen.Resume()
+			If currentScreen Then currentScreen.Resume()
 		Catch e:DiddyException
 			Print(e.ToString(True))
 			Error(e.ToString(False))
@@ -538,7 +550,7 @@ Public
 	
 	Method OnBack:Int()
 		Try
-			currentScreen.Back()
+			If currentScreen Then currentScreen.Back()
 		Catch e:DiddyException
 			Print(e.ToString(True))
 			Error(e.ToString(False))
