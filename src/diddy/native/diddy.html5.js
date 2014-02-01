@@ -56,41 +56,9 @@ diddy.stopVibrate=function()
 {
 }
 
-diddy.getDayOfMonth=function(){
-	return new Date().getDate();
-}
-
-diddy.getDayOfWeek=function(){
-	return new Date().getDay()+1;
-}
-
-diddy.getMonth=function(){
-	return new Date().getMonth()+1;
-}
-
-diddy.getYear=function(){
-	return new Date().getFullYear();
-}
-
-diddy.getHours=function(){
-	return new Date().getHours();
-}
-
-diddy.getMinutes=function(){
-	return new Date().getMinutes();
-}
-
-diddy.getSeconds=function(){
-	return new Date().getSeconds();
-}
-
-diddy.getMilliSeconds=function(){
-	return new Date().getMilliseconds();
-}
-
 diddy.startGps=function(){
-
 }
+
 diddy.getLatitiude=function(){
 	return ""
 }

@@ -87,6 +87,54 @@ Function ExitApp:Void()
 	#End
 End
 
+Function GetDayOfMonth:Int()
+	 Local date:=GetDate()
+	 Local day:=date[2]
+	 Return day
+End
+
+Function GetDayOfWeek:Int()
+	Print "GetDayOfWeek is not supported returning -1"
+	Print "GetDayOfWeek will be removed in future versions!!!"
+	Return -1
+End
+
+Function GetMonth:Int()
+	Local date:=GetDate()
+	Local month:=date[1]
+	Return month
+End
+
+Function GetYear:Int()
+	Local date:=GetDate()
+	Local year:=date[0]
+	Return year
+End
+
+Function GetHours:Int()
+	Local date:=GetDate()
+	Local hour:=date[3]
+	Return hour
+End
+
+Function GetMinutes:Int()
+	Local date:=GetDate()
+	Local min:=date[4]
+	Return min
+End
+
+Function GetSeconds:Int()
+	Local date:=GetDate()
+	Local sec:=date[5]
+	Return sec
+End
+
+Function GetMilliSeconds:Int()
+	Local date:=GetDate()
+	Local msec:=date[6]
+	Return msec
+End
+
 Function RectsOverlap:Int(x0:Float, y0:Float, w0:Float, h0:Float, x2:Float, y2:Float, w2:Float, h2:Float)
 	If x0 > (x2 + w2) Or (x0 + w0) < x2 Then Return False
 	If y0 > (y2 + h2) Or (y0 + h0) < y2 Then Return False
