@@ -121,54 +121,6 @@ class diddy
 		}
 	}
 	
-	static int getDayOfMonth()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.DAY_OF_MONTH);
-	}
-	
-	static int getDayOfWeek()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.DAY_OF_WEEK);
-	}
-	
-	static int getMonth()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.MONTH)+1;
-	}
-	
-	static int getYear()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.YEAR);
-	}
-	
-	static int getHours()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.HOUR_OF_DAY);
-	}
-	
-	static int getMinutes()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.MINUTE);
-	}
-	
-	static int getSeconds()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.SECOND);
-	}
-	
-	static int getMilliSeconds()
-	{
-		Calendar c = Calendar.getInstance();
-		return c.get(Calendar.MILLISECOND);
-	}
-	
 	static void startGps()
 	{
 		try {

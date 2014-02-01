@@ -47,54 +47,6 @@ class diddy
 	{
 	}
 	
-	static public function getDayOfMonth():int
-	{
-		var d:Date = new Date();
-		return d.getDate();
-	}
-	
-	static public function getDayOfWeek():int
-	{
-		var d:Date = new Date();
-		return d.getDay();
-	}
-	
-	static public function getMonth():int
-	{
-		var d:Date = new Date();
-		return d.getMonth();
-	}
-
-	static public function getYear():int
-	{
-		var d:Date = new Date();
-		return d.getFullYear();
-	}
-	
-	static public function getHours():int
-	{
-		var d:Date = new Date();
-		return d.getHours();
-	}
-	
-	static public function getMinutes():int
-	{
-		var d:Date = new Date();
-		return d.getMinutes();
-	}
-	
-	static public function getSeconds():int
-	{
-		var d:Date = new Date();
-		return d.getSeconds();
-	}
-	
-	static public function getMilliSeconds():int
-	{
-		var d:Date = new Date();
-		return d.getMilliseconds();
-	}
-	
 	static public function startGps():void
 	{
 	}

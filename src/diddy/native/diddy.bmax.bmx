@@ -42,44 +42,6 @@ Type diddy
 	Function stopVibrate()
 	EndFunction
 	
-	Function getDayOfMonth:Int()
-		Local date$ = CurrentDate()
-		Return Int(date[..2])
-	EndFunction
-	
-	Function getDayOfWeek:Int()
-		Return 0
-	EndFunction
-	
-	Function getMonth:Int()
-		Local date$ = CurrentDate()
-		Return (Instr("JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC", date$[3..6].ToUpper(), 1) / 3) + 1
-	EndFunction
-	
-	Function getYear:Int()
-		Local date$ = CurrentDate()
-		Return Int(date[date.length - 4..]);
-	EndFunction
-	
-	Function getHours:Int()
-		Local time$ = CurrentTime()
-		Return Int(time[..2])
-	EndFunction
-	
-	Function getMinutes:Int()
-		Local time$ = CurrentTime()
-		Return Int(time[3..5])
-	EndFunction
-	
-	Function getSeconds:Int()
-		Local time$ = CurrentTime()
-		Return Int(time[6..8])
-	EndFunction
-	
-	Function getMilliSeconds:Int()
-		Return Millisecs()
-	EndFunction
-	
 	Function startGps()
 	EndFunction
 	
