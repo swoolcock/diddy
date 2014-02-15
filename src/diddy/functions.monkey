@@ -150,6 +150,26 @@ Function DrawRectOutline:Void(x:Int, y:Int, w:Int, h:Int)
 	DrawLine(x, y + h, x, y)
 End
 
+Function CircleOverlap:Bool(x1:Float, y1:Float, r1:Float, x2:Float, y2:Float, r2:Float)
+	dx = x1 - x2
+	dy = y1 - y2
+	r = r1 + r2
+	If dx * dx + dy * dy <= r * r Then ' collided
+		Return True
+	End
+	Return False
+End
+
+Function CircleRectsOverlap:Bool(x1:Float, y1:Float, w1:Float, h1:Float, cx:Float, cy:Float, r:Float)
+	Local testX:Float = cx
+	Local testY:Float = cy
+	If testX < x1 Then testX = x1
+	If testX > (x1 + w1) Then testX = (x1 + w1)
+	If testY < y1 Then testY = y1
+	If testY > (y1 + h1) Then testY = (y1 + h1)
+	Return ( (cx - testX) * (cx - testX) + (cy - testY) * (cy - testY)) < r * r
+End
+
 Function LoadBitmap:Image(path$, flags%=0)
 	Local pointer:Image = LoadImage(path, 1, flags)
 
