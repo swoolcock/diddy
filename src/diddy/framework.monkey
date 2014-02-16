@@ -1568,8 +1568,12 @@ Public
 		Return Self.midhandled = 1
 	End
 	
-	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
-		DrawImage(Self.image, x + offSetX, y + offSetY, rotation, scaleX, scaleY, frame)
+	Method Draw:Void(x:Float, y:Float, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0, rounded:Bool = False)
+		If rounded
+			DrawImage(Self.image, Floor(x + 0.5), Floor(y + 0.5), rotation, scaleX, scaleY, frame)
+		Else
+			DrawImage(Self.image, x + offSetX, y + offSetY, rotation, scaleX, scaleY, frame)
+		End
 	End
 	
 	Method DrawSubImage:Void(destX:Float, destY:Float, srcX:Int, srcY:Int, srcWidth:Int, srcHeight:Int, rotation:Float = 0, scaleX:Float = 1, scaleY:Float = 1, frame:Int = 0)
@@ -2128,6 +2132,11 @@ Class Sprite
 			rotationLength = length
 			rotationCounter = rotationLength 	
 		End
+	End
+	
+	Method MouseCollide:Int(mw:Int = 1, mh:Int = 1)
+		Return RectsOverlap(x + hitBox.x, y + hitBox.y, hitBox.w, hitBox.h,
+							diddyGame.mouseX, diddyGame.mouseY, mw, mh)
 	End
 	
 	Method Collide:Int(sprite:Sprite)
