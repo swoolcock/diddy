@@ -12,7 +12,7 @@ Arrays<Int>.Join([1,2,3], [4,5]) returns a new array [1,2,3,4,5]
 Arrays<String>.Fill(["a","b","c"], "d") fills the existing array and returns it ["d","d","d"] (it doesn't create a new array)
 Arrays<Int>.Slice([1,3,5,7,9], 1, 4) returns a new array [3,5,7] which is from 1 (inclusive) to 4 (exclusive)
 Arrays<Float>.Clone([1.0,2.5,3.0]) returns a new array with the same contents [1.0,2.5,3.0]
-Arrays<Int>.Copy([1,2,3,4], 1, [5,6,7,8], 2, 2) copies 2 characters from index 1 in src to index 3 in dest. dest now contains [5,6,2,3]
+Arrays<Int>.Copy([1,2,3,4], 1, [5,6,7,8], 2, 2) copies 2 characters from index 1 in src to index 2 in dest. dest now contains [5,6,2,3]
 Join accepts up to 10 arrays.  Unused parameters are assumed to be empty arrays.
 #End
 
@@ -104,7 +104,7 @@ Class Arrays<T>
 		Return rv
 	End
 	
-	'summary: Arrays<Int>.Copy([1,2,3,4], 1, [5,6,7,8], 2, 2) copies 2 characters from index 1 in src to index 3 in dest. dest now contains [5,6,2,3]
+	'summary: Arrays<Int>.Copy([1,2,3,4], 1, [5,6,7,8], 2, 2) copies 2 characters from index 1 in src to index 2 in dest. dest now contains [5,6,2,3]
 	Function Copy:Void(src:T[], srcPos:Int, dest:T[], destPos:Int, length:Int)
 		If length = 0 Then Return
 		If length < 0 Then Error("Arrays.Copy: length < 0")
