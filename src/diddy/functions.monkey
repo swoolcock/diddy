@@ -151,9 +151,9 @@ Function DrawRectOutline:Void(x:Int, y:Int, w:Int, h:Int)
 End
 
 Function CircleOverlap:Bool(x1:Float, y1:Float, r1:Float, x2:Float, y2:Float, r2:Float)
-	dx = x1 - x2
-	dy = y1 - y2
-	r = r1 + r2
+	Local dx:Float = x1 - x2
+	Local dy:Float = y1 - y2
+	Local r:Float = r1 + r2
 	If dx * dx + dy * dy <= r * r Then ' collided
 		Return True
 	End
