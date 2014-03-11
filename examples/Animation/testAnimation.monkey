@@ -32,10 +32,7 @@ Class MyGame Extends DiddyApp
 	'* Load Images
 	'***********************
 	Method LoadImages:Void()
-		' create tmpImage for animations
-		Local tmpImage:Image
-		
-		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage, False, False, "", True)
+		images.LoadAnim("Ship1.png", 64, 64, 7, Null, False, False, "", True)
 	End
 	
 	Method OverrideUpdate:Void()

@@ -178,7 +178,7 @@ Function LoadBitmap:Image(path$, flags%=0)
    	Return pointer
 End
 
-Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image)
+Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image=Null)
 	'tmpImage = loadBitmap(path) <-- This creates another image, decided to just copy the code here
 	tmpImage = LoadImage(path)
 	

@@ -31,9 +31,6 @@ Class MyGame extends DiddyApp
 	'* Load Images
 	'***********************
 	Method LoadImages:Void()
-		' create tmpImage for animations
-		Local tmpImage:Image
-		
 		images.Load("spark.png")
 	End
 End
