@@ -1365,13 +1365,15 @@ Class SpriteAnimation
 	Field pingPong:Bool = False
 	Field loop:Bool = True
 	Field ping:Int
-
-	Method New(speed:Int = 125, pingPong:Bool = False, loop:Bool = True)
+	Field randomStartFrame:bool = False
+	
+	Method New(speed:Int = 125, pingPong:Bool = False, loop:Bool = True, randomStartFrame:Bool = False)
 		frames = New GameImage[1]
 		frameEnd = 0
 		frameStart = 0
 		Self.pingPong = pingPong
 		Self.loop = loop
+		Self.randomStartFrame = randomStartFrame
 		frameSpeed = speed
 		frameTimer = Millisecs()
 		ping = 0
@@ -1381,6 +1383,9 @@ Class SpriteAnimation
 		frameEnd = frameEnd + 1
 		frames = frames.Resize(frameEnd + 1)
 		frames[frameEnd - 1] = gi
+		If randomStartFrame
+			frame = Rand(0, frameEnd)
+		End
 	End
 		
 	'summary: Animation process, deals with changing frames. Returns 1 if the animation has finished (only for non looping animations).
@@ -1395,7 +1400,7 @@ Class SpriteAnimation
 					End
 				Else
 					frame -= 1
-					If frame < frameEnd - 1
+					If frame < frameEnd
 						rv = ResetAnim()
 					End
 				End
@@ -1408,8 +1413,12 @@ Class SpriteAnimation
 	Method ResetAnim:Int()
 		If loop Then
 			If pingPong
+				If Not reverse
+					frame = frameEnd - 1
+				Else
+					frame = frameEnd
+				End
 				reverse = Not reverse
-				frame = frameEnd
 				Local ts:Int = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
@@ -1418,8 +1427,12 @@ Class SpriteAnimation
 			End
 		Else
 			If pingPong And ping <1
+				If Not reverse
+					frame = frameEnd - 1
+				Else
+					frame = frameEnd
+				End
 				reverse = Not reverse
-				frame = frameEnd
 				Local ts:Int = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
