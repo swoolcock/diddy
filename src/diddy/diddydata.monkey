@@ -93,7 +93,6 @@ Class DiddyData
 	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
 		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
 		If imagesElement <> null Then
-			Local tmpImage:Image
 			For Local node:XMLElement = Eachin imagesElement.GetChildrenByName("image")
 				Local name:String = node.GetAttribute("name").Trim()
 				Local path:String = node.GetAttribute("path").Trim()
@@ -140,7 +139,7 @@ Class DiddyData
 				
 				' if frames > 1 assume its an animation image
 				If frames > 1
-					diddyGame.images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+					diddyGame.images.LoadAnim(path, width, height, frames, Null, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				Else
 					diddyGame.images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				End

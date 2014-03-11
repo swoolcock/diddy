@@ -795,12 +795,11 @@ Public
 		diddyGame.currentScreen = Self
 		Load()
 		' load screens graphics
-		Local tmpImage:Image
 		For Local key:String = EachIn diddyGame.images.Keys()
 			Local i:GameImage = diddyGame.images.Get(key)
 			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
 				If i.frames > 1
-					i.LoadAnim(i.path, i.w, i.h, i.frames, tmpImage, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
+					i.LoadAnim(i.path, i.w, i.h, i.frames, Null, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
 				Else
 					i.Load(i.path, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
 				End
@@ -1251,7 +1250,7 @@ Class ImageBank Extends StringMap<GameImage>
 		Return i
 	End
 	
-	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
+	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image=Null, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the image in the bank!
 		Local storeKey:String = nameoverride.ToUpper()
 		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
@@ -1521,7 +1520,7 @@ Public
 		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End
 	
-	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
+	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image=Null, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		name = StripAll(file.ToUpper())
 		path = file
 		Self.midhandle = midhandle
