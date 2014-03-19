@@ -23,37 +23,44 @@ Public
 	End
 	
 	Method New(src:Stack<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.New: Source Stack must not be null")
 		AddAll(src)
 	End
 	
 	Method New(src:List<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.New: Source List must not be null")
 		AddAll(src)
 	End
 	
 	Method New(src:Set<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.New: Source Set must not be null")
 		AddAll(src)
 	End
 	
 	' AddAll
 	Method AddAll:Void(src:Stack<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddAll: Source Stack must not be null")
 		For Local val := EachIn src
 			Self.Push(val)
 		Next
 	End
 
 	Method AddAll:Void(src:List<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddAll: Source List must not be null")
 		For Local val := EachIn src
 			Self.Push(val)
 		Next
 	End
 	
 	Method AddAll:Void(src:Set<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddAll: Source Set must not be null")
 		For Local val := EachIn src
 			Self.Push(val)
 		Next
 	End
 	
 	Method AddContainer:Void(src:IContainer<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddContainer: Source IContainer must not be null")
 		For Local val := Eachin src.Items
 			Self.Push(val)
 		Next
@@ -61,24 +68,28 @@ Public
 	
 	' RemoveAll
 	Method RemoveAll:Void(src:Stack<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source Stack must not be null")
 		For Local val := EachIn src
 			Self.RemoveEach(val)
 		Next
 	End
 	
 	Method RemoveAll:Void(src:List<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source List must not be null")
 		For Local val := EachIn src
 			Self.RemoveEach(val)
 		Next
 	End
 	
 	Method RemoveAll:Void(src:Set<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source Set must not be null")
 		For Local val := Eachin src
 			Self.RemoveEach(val)
 		Next
 	End
 	
 	Method RemoveContainer:Void(src:IContainer<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveContainer: Source IContainer must not be null")
 		For Local val := Eachin src.Items
 			Self.RemoveEach(val)
 		Next
@@ -86,6 +97,7 @@ Public
 	
 	' RetainAll
 	Method RetainAll:Void(src:Stack<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainAll: Source Stack must not be null")
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
 			If Not src.Contains(val) Then
@@ -95,6 +107,7 @@ Public
 	End
 	
 	Method RetainAll:Void(src:List<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainAll: Source List must not be null")
 		Local arr:T[] = Self.ToArray()
 		For Local val := EachIn arr
 			If Not src.Contains(val) Then
@@ -104,6 +117,7 @@ Public
 	End
 	
 	Method RetainAll:Void(src:Set<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainAll: Source Set must not be null")
 		Local arr:T[] = Self.ToArray()
 		For Local val := EachIn arr
 			If Not src.Contains(val) Then
@@ -113,6 +127,7 @@ Public
 	End
 	
 	Method RetainContainer:Void(src:IContainer<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainContainer: Source IContainer must not be null")
 		#Rem FIXME
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
@@ -125,6 +140,7 @@ Public
 	
 	' ContainsAll
 	Method ContainsAll:Bool(src:Stack<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Stack must not be null")
 		For Local val := Eachin src
 			If Not Self.Contains(val) Return False
 		Next
@@ -132,6 +148,7 @@ Public
 	End
 	
 	Method ContainsAll:Bool(src:List<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source List must not be null")
 		For Local val := Eachin src
 			If Not Self.Contains(val) Return False
 		Next
@@ -139,6 +156,7 @@ Public
 	End
 	
 	Method ContainsAll:Bool(src:Set<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Set must not be null")
 		For Local val := Eachin src
 			If Not Self.Contains(val) Return False
 		Next
@@ -146,6 +164,7 @@ Public
 	End
 	
 	Method ContainsContainer:Bool(src:IContainer<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsContainer: Source IContainer must not be null")
 		For Local val := Eachin src.Items
 			If Not Self.Contains(val) Return False
 		Next
