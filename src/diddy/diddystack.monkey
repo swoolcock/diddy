@@ -1,6 +1,7 @@
 Strict
 Private
 Import diddy.containers
+Import diddy.exception
 
 Public
 #Rem monkeydoc
@@ -212,9 +213,12 @@ Public
 	End
 	
 	Method FillArray:Int(arr:T[])
-		' TODO: FillArray
-		'Return Super.ToArray()
-		Return 0
+		Local cnt:Int = Count()
+		If arr.Length < cnt Then Throw New IllegalArgumentException("DiddyStack.FillArray: Array length too small ("+arr.Length+"<"+cnt+")")
+		For Local i:Int = 0 Until Count()
+			arr[i] = Get(i)
+		Next
+		Return cnt
 	End
 	
 	Method IsEmpty:Bool()
