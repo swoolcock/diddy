@@ -13,11 +13,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ' For now, exported indentation is hardcoded to 2 spaces.
 ' Written from scratch, using as little string manipulation as possible.
 
-Import assert
-Import functions
-Import collections
-Import stringbuilder
-Import exception
+Import diddy.assert
+Import diddy.functions
+Import diddy.collections
+Import diddy.stringbuilder
+Import diddy.exception
 
 Class XMLParser
 	Const TAG_DEFAULT:Int = 0

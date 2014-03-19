@@ -7,10 +7,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import assert
-Import exception
-Import comparator
-Import quicksort
+Import diddy.assert
+Import diddy.exception
+Import diddy.comparator
+Import diddy.quicksort
 
 #Rem
 header: Monkey Collections Framework

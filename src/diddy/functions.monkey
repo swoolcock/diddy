@@ -6,11 +6,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #End
 
 Import mojo
-Import framework
-Import assert
-Import vector2d
-Import externfunctions
-Import constants
+Import diddy.framework
+Import diddy.assert
+Import diddy.vector2d
+Import diddy.externfunctions
+Import diddy.constants
 
 #If TARGET<>"html5" Then
 	Function GetBrowserName:String()

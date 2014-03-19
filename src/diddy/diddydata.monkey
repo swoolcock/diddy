@@ -7,9 +7,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import framework
-Import functions
-Import collections
+Import diddy.framework
+Import diddy.functions
+Import diddy.collections
 
 Class DiddyData
 	Method New(filename:String="diddydata.xml")

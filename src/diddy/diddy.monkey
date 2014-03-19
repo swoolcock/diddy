@@ -32,29 +32,29 @@ Diddy includes various features:
 #end
 Import mojo
 
-Import arrays
-Import assert
-Import base64
-Import collections
-Import externfunctions
-Import filesystem
-Import font
-Import functions
-Import framework
-Import gui
-Import i18n
-Import inputcache
-Import io
-Import pathFind
-Import psystem
-Import serialization
-Import simplegui
-Import storyboard
-Import stringbuilder
-Import tile
-Import tween
-Import vector2d
-Import xml
+Import diddy.arrays
+Import diddy.assert
+Import diddy.base64
+Import diddy.collections
+Import diddy.externfunctions
+Import diddy.filesystem
+Import diddy.font
+Import diddy.functions
+Import diddy.framework
+Import diddy.gui
+Import diddy.i18n
+Import diddy.inputcache
+Import diddy.io
+Import diddy.pathFind
+Import diddy.psystem
+Import diddy.serialization
+Import diddy.simplegui
+Import diddy.storyboard
+Import diddy.stringbuilder
+Import diddy.tile
+Import diddy.tween
+Import diddy.vector2d
+Import diddy.xml
 
 'summary: The constant contains the library's name
 Const name:String = "Diddy"
