@@ -57,11 +57,11 @@ Strict
 
 Import brl.json
 Import mojo
-Import functions
-Import collections
-Import inputcache
-Import xml
-Import diddydata
+Import diddy.functions
+Import diddy.collections
+Import diddy.inputcache
+Import diddy.xml
+Import diddy.diddydata
 
 'Device width and height
 Global DEVICE_WIDTH:Float

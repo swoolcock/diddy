@@ -9,7 +9,7 @@ Strict
 
 Import mojo
 Import diddy
-Import layout
+Import diddy.gui.layout
 
 Const ACTION_CLICKED:String = "clicked"
 Const ACTION_VALUE_CHANGED:String = "changed"

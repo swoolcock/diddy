@@ -7,7 +7,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import core
+Import diddy.gui.core
 
 Interface ILayoutManager
 	Method LayoutMinimum:Point(parent:Component, point:Point=Null)

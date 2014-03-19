@@ -7,8 +7,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import xml
-Import assert
+Import diddy.xml
+Import diddy.assert
 
 Interface ISerializable
 	Method Serialize:Void(serializer:Serializer)
