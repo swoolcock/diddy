@@ -15,7 +15,7 @@ Strict
 Private
 Import mojo
 Import diddy.functions
-Import diddy.collections
+Import diddy.containers
 Import diddy.xml
 Import diddy.format
 
@@ -33,10 +33,10 @@ Const KEYFRAME_COUNT:Int = 6
 
 Class Storyboard
 Private
-	Field sprites:ArrayList<StoryboardSprite> = New ArrayList<StoryboardSprite>
-	Field sounds:ArrayList<StoryboardSound> = New ArrayList<StoryboardSound>
-	Field musics:ArrayList<StoryboardMusic> = New ArrayList<StoryboardMusic>
-	Field effects:ArrayList<StoryboardEffect> = New ArrayList<StoryboardEffect>
+	Field sprites:DiddyStack<StoryboardSprite> = New DiddyStack<StoryboardSprite>
+	Field sounds:DiddyStack<StoryboardSound> = New DiddyStack<StoryboardSound>
+	Field musics:DiddyStack<StoryboardMusic> = New DiddyStack<StoryboardMusic>
+	Field effects:DiddyStack<StoryboardEffect> = New DiddyStack<StoryboardEffect>
 	Field debugMode:Bool = False
 	Field name:String
 	Field width:Float
@@ -79,7 +79,7 @@ Public
 								' create a new sprite and add it
 								Local sprite:StoryboardSprite = New StoryboardSprite(spriteNode)
 								sprite.layer = index
-								sb.sprites.Add(sprite)
+								sb.sprites.Push(sprite)
 							End
 						Next
 					End
@@ -90,10 +90,10 @@ Public
 				For Local soundNode:XMLElement = EachIn node.Children
 					If soundNode.Name = "sound" Then
 						' create a new sound and add it
-						sb.sounds.Add(New StoryboardSound(soundNode))
+						sb.sounds.Push(New StoryboardSound(soundNode))
 					ElseIf soundNode.Name = "music" Then
 						' create a new music and add it
-						sb.musics.Add(New StoryboardMusic(soundNode))
+						sb.musics.Push(New StoryboardMusic(soundNode))
 					End
 				Next
 			' effects node
@@ -101,7 +101,7 @@ Public
 				' loop on children
 				For Local effectNode:XMLElement = EachIn node.Children
 					If effectNode.Name = "flash" Then
-						sb.effects.Add(New StoryboardFlash(effectNode))
+						sb.effects.Push(New StoryboardFlash(effectNode))
 					End
 				Next
 			End
@@ -123,16 +123,16 @@ Public
 	Method Renderer:Void(renderer:StoryboardRenderer) Property Self.renderer = renderer End
 	
 	' The sprite list (read only)
-	Method Sprites:ArrayList<StoryboardSprite>() Property Return sprites End
+	Method Sprites:DiddyStack<StoryboardSprite>() Property Return sprites End
 	
 	' The effect list (read only)
-	Method Effects:ArrayList<StoryboardEffect>() Property Return effects End
+	Method Effects:DiddyStack<StoryboardEffect>() Property Return effects End
 	
 	' The sound list (read only)
-	Method Sounds:ArrayList<StoryboardSound>() Property Return sounds End
+	Method Sounds:DiddyStack<StoryboardSound>() Property Return sounds End
 	
 	' The music list (read only)
-	Method Musics:ArrayList<StoryboardMusic>() Property Return musics End
+	Method Musics:DiddyStack<StoryboardMusic>() Property Return musics End
 	
 	' DebugMode enables the timeline and time counter
 	Method DebugMode:Bool() Property Return debugMode End
@@ -211,7 +211,7 @@ Public
 		If updateTime And playing Then Self.currentTime += dt.frametime * playSpeed
 		
 		' update the current values for each sprite
-		For Local i:Int = 0 Until sprites.Size
+		For Local i:Int = 0 Until sprites.Count()
 			Local sprite:StoryboardSprite = sprites.Get(i)
 			sprite.Update(Self, currentTime)
 		Next
@@ -219,13 +219,13 @@ Public
 		' only do sounds etc. if playing
 		If playing And updateTime Then
 			' update sounds
-			For Local i:Int = 0 Until sounds.Size
+			For Local i:Int = 0 Until sounds.Count()
 				Local sound:StoryboardSound = sounds.Get(i)
 				sound.Update(Self, currentTime)
 			Next
 			
 			' update music
-			For Local i:Int = 0 Until musics.Size
+			For Local i:Int = 0 Until musics.Count()
 				Local music:StoryboardMusic = musics.Get(i)
 				music.Update(Self, currentTime)
 			Next
@@ -239,7 +239,7 @@ Public
 		End
 		
 		' update effects
-		For Local i:Int = 0 Until effects.Size
+		For Local i:Int = 0 Until effects.Count()
 			Local effect:StoryboardEffect = effects.Get(i)
 			effect.Update(Self, currentTime)
 		Next
@@ -288,13 +288,13 @@ Class StoryboardRenderer
 		SetScissor(sx, sy, sw, sh)
 		
 		' render all the sprites
-		For Local i:Int = 0 Until sb.Sprites.Size
+		For Local i:Int = 0 Until sb.Sprites.Count()
 			Local sprite:StoryboardSprite = sb.Sprites.Get(i)
 			sprite.Render(sb, Self, 0, 0, width, height)
 		Next
 		
 		' render effects
-		For Local i:Int = 0 Until sb.Effects.Size
+		For Local i:Int = 0 Until sb.Effects.Count()
 			Local effect:StoryboardEffect = sb.Effects.Get(i)
 			effect.Render(sb, Self, 0, 0, width, height)
 		Next
@@ -378,17 +378,13 @@ Public
 		nextId += 1
 	End
 	
-	Method Compare:Int(other:Object)
+	Method CompareTo:Int(other:Object)
 		Local o:StoryboardElement = StoryboardElement(other)
 		If Not o Then Return -1
 		If o = Self Then Return 0
 		If id < o.id Then Return -1
 		If id > o.id Then Return 1
 		Return 0
-	End
-	
-	Method Equals:Bool(other:Object)
-		Return Compare(other)=0
 	End
 	
 	Method Update:Void(sb:Storyboard, currentTime:Int) Abstract
@@ -488,7 +484,7 @@ Private
 	Field scale:Float=1, rotation:Float=0
 	Field red:Float=255, green:Float=255, blue:Float=255, alpha:Float=1
 	
-	Field keyframes:ArrayList<StoryboardSpriteKeyframe> = New ArrayList<StoryboardSpriteKeyframe>
+	Field keyframes:DiddyStack<StoryboardSpriteKeyframe> = New DiddyStack<StoryboardSpriteKeyframe>
 	Field previousKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
 	Field nextKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
 	
@@ -547,20 +543,20 @@ Public
 					myOffset += length
 				Next
 			Else
-				keyframes.Add(New StoryboardSpriteKeyframe(childNode, timeOffset))
+				keyframes.Push(New StoryboardSpriteKeyframe(childNode, timeOffset))
 			End
 		Next
 	End
 	
 	Method Layer:Int() Property Return layer End
 	
-	Method Compare:Int(other:Object)
+	Method CompareTo:Int(other:Object)
 		Local o:StoryboardSprite = StoryboardSprite(other)
 		If Not o Then Return -1
 		If o = Self Then Return 0
 		If layer < o.layer Then Return -1
 		If layer > o.layer Then Return 1
-		Return Super.Compare(other)
+		Return Super.CompareTo(other)
 	End
 	
 	Method Update:Void(sb:Storyboard, currentTime:Int)
@@ -577,7 +573,7 @@ Public
 		Next
 		
 		' find the keyframes either side of the current time
-		For Local i:Int = 0 Until keyframes.Size
+		For Local i:Int = 0 Until keyframes.Count()
 			Local kf:StoryboardSpriteKeyframe = keyframes.Get(i)
 			' if we've already found the next one, skip it
 			If nextKeyframes[kf.keyframeType] Then Continue
@@ -774,7 +770,7 @@ Public
 		End
 	End
 	
-	Method Compare:Int(other:Object)
+	Method CompareTo:Int(other:Object)
 		Local o:StoryboardSpriteKeyframe = StoryboardSpriteKeyframe(other)
 		If Not o Then Return -1
 		If o = Self Then Return 0
@@ -783,10 +779,6 @@ Public
 		If keyframeType < o.keyframeType Then Return -1
 		If keyframeType > o.keyframeType Then Return 1
 		Return 0
-	End
-	
-	Method Equals:Bool(other:Object)
-		Return Compare(other)=0
 	End
 	
 Private

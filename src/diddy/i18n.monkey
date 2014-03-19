@@ -33,14 +33,14 @@ End
 Function LoadI18N:Void(filename:String="i18n.xml")
 	Local parser:XMLParser = New XMLParser
 	Local doc:XMLDocument = parser.ParseFile(filename)
-	Local languages:ArrayList<XMLElement> = doc.Root.GetChildrenByName("language")
+	Local languages:DiddyStack<XMLElement> = doc.Root.GetChildrenByName("language")
 	For Local languageNode:XMLElement = EachIn languages
 		Local l:I18NLanguage = New I18NLanguage
 		l.name = languageNode.GetAttribute("name")
-		Local stringNodes:ArrayList<XMLElement> = languageNode.GetChildrenByName("string")
+		Local stringNodes:DiddyStack<XMLElement> = languageNode.GetChildrenByName("string")
 		For Local stringNode:XMLElement = EachIn stringNodes
 			Local key:String, value:String
-			For Local i:Int = 0 Until stringNode.Children.Size
+			For Local i:Int = 0 Until stringNode.Children.Count()
 				Local child:XMLElement = stringNode.Children.Get(i)
 				If child.Name = "key" Then
 					key = child.Value

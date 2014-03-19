@@ -9,7 +9,7 @@ Strict
 
 Import diddy.base64
 Import monkey.map
-Import diddy.collections
+Import diddy.containers
 Import diddy.framework
 Import diddy.xml
 
@@ -105,12 +105,12 @@ Class TiledTileMapReader Extends TileMapReader
 				' tile layer
 				Elseif mapchild.Name = NODE_LAYER Then
 					Local layer:TileMapLayer = ReadTileLayer(mapchild)
-					tileMap.layers.Add(layer)
+					tileMap.layers.Push(layer)
 				
 				' object layer
 				Elseif mapchild.Name = NODE_OBJECTGROUP Then
 					Local layer:TileMapLayer = ReadObjectLayer(mapchild)
-					tileMap.layers.Add(layer)
+					tileMap.layers.Push(layer)
 				Endif
 			Next
 		Endif
@@ -168,7 +168,7 @@ Class TiledTileMapReader Extends TileMapReader
 					If child.Name = NODE_IMAGE Then
 						rv.imageNode = ReadImage(child)
 					Elseif child.Name = NODE_TILE Then
-						rv.tileNodes.Add(ReadTile(child))
+						rv.tileNodes.Push(ReadTile(child))
 					End
 				Next
 			End
@@ -214,7 +214,7 @@ Class TiledTileMapReader Extends TileMapReader
 		
 		For Local child:XMLElement = Eachin node.Children
 			If child.Name = NODE_OBJECT Then
-				rv.objects.Add(ReadObject(child, rv))
+				rv.objects.Push(ReadObject(child, rv))
 			End
 		Next
 		
@@ -331,7 +331,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	' children
 	Field tilesets:StringMap<TileMapTileset> = New StringMap<TileMapTileset>
-	Field layers:ArrayList<TileMapLayer> = New ArrayList<TileMapLayer>
+	Field layers:DiddyStack<TileMapLayer> = New DiddyStack<TileMapLayer>
 	
 	' post-load
 	Field layerNames:StringMap<TileMapLayer> = New StringMap<TileMapLayer>
@@ -342,7 +342,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field wrapY:Bool = False
 	
 	' optimisation
-	Field layerArray:Object[] = []
+	Field layerArray:TileMapLayer[] = []
 	Field animatedTiles:TileMapTile[]
 	
 	' summary: override this to do something before a layer is rendered
@@ -416,7 +416,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	' summary: override this to perform additional post-loading functionality (remember to call Super.PostLoad() first)
 	Method PostLoad:Void()
 		Local totaltiles% = 0, ts:TileMapTileset
-		Local alltiles:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
+		Local alltiles:DiddyStack<TileMapTile> = New DiddyStack<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' load the image
 			ts.image = diddyGame.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
@@ -440,7 +440,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				ts.tiles[i].image = ts.image
 				ts.tiles[i].width = ts.tileWidth
 				ts.tiles[i].height = ts.tileHeight
-				alltiles.Add(ts.tiles[i])
+				alltiles.Push(ts.tiles[i])
 			Next
 			' update total tiles
 			totaltiles += ts.tileCount
@@ -466,12 +466,12 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Next
 	End
 	
-	Method GetAllObjects:ArrayList<TileMapObject>()
-		Local rv:ArrayList<TileMapObject> = New ArrayList<TileMapObject>
+	Method GetAllObjects:DiddyStack<TileMapObject>()
+		Local rv:DiddyStack<TileMapObject> = New DiddyStack<TileMapObject>
 		For Local layer:TileMapLayer = EachIn layers
 			If TileMapObjectLayer(layer) <> Null Then
 				For Local obj:TileMapObject = EachIn TileMapObjectLayer(layer).objects
-					rv.Add(obj)
+					rv.Push(obj)
 				Next
 			End
 		Next
@@ -592,7 +592,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local cellCount:Int, i:Int, j:Int
 		
 		' get the layers as an array
-		Local layerCount:Int = layers.Size
+		Local layerCount:Int = layers.Count()
 		If layerArray.Length < layerCount Then
 			layerArray = layers.ToArray()
 			layerCount = layerArray.Length
@@ -829,7 +829,7 @@ Class TileMapTileset Implements ITileMapPostLoad
 	
 	' children
 	Field imageNode:TileMapImage
-	Field tileNodes:ArrayList<TileMapTile> = New ArrayList<TileMapTile>
+	Field tileNodes:DiddyStack<TileMapTile> = New DiddyStack<TileMapTile>
 	
 	' post load
 	Field tiles:TileMapTile[]
@@ -918,7 +918,7 @@ Class TileMapObjectLayer Extends TileMapLayer
 	' attributes
 	Field color%
 	' children
-	Field objects:ArrayList<TileMapObject> = New ArrayList<TileMapObject>
+	Field objects:DiddyStack<TileMapObject> = New DiddyStack<TileMapObject>
 End
 
 

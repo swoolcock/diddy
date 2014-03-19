@@ -35,7 +35,7 @@ Import mojo
 Import diddy.arrays
 Import diddy.assert
 Import diddy.base64
-Import diddy.collections
+Import diddy.containers
 Import diddy.externfunctions
 Import diddy.filesystem
 Import diddy.font

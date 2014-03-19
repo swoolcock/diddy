@@ -484,7 +484,7 @@ Public
 
 		' check if it's inside a child (reverse, to honour z-order)
 		Local rv:Component = Null
-		For Local i:Int = parent.ChildrenZOrder.Size-1 To 0 Step -1
+		For Local i:Int = parent.ChildrenZOrder.Count()-1 To 0 Step -1
 			Local c:Component = parent.ChildrenZOrder.Get(i)
 			If c.Visible Then
 				rv = ComponentAtPoint(x-c.X, y-c.Y, c)
@@ -535,7 +535,7 @@ Public
 		If skinDoc = Null Then Return Null
 		If nodeName = "" Then Return Null
 		Local node:XMLElement = Null
-		For Local i:Int = 0 Until skinDoc.Root.Children.Size
+		For Local i:Int = 0 Until skinDoc.Root.Children.Count()
 			node = skinDoc.Root.Children.Get(i)
 			If node.Name = nodeName Then Return node
 		Next
