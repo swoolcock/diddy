@@ -4,6 +4,11 @@ Import diddy.containers
 Import diddy.exception
 
 Public
+#Rem monkeydoc
+	The DiddySet class extends the official Monkey Set class and implements Diddy's IContainer interface.
+	As with the other Diddy container classes, it simplifies mixing and matching of container types by sharing
+	common method names.
+#End
 Class DiddySet<T> Extends Set<T> Implements IContainer<T>
 Private
 	Global NIL:T
@@ -212,9 +217,14 @@ Public
 	End
 	
 	Method FillArray:Int(arr:T[])
-		' TODO: FillArray
-		'Return Super.ToArray()
-		Return 0
+		Local cnt:Int = Self.Count()
+		If arr.Length < cnt Then Throw New IllegalArgumentException("DiddySet.FillArray: Array length too small ("+arr.Length+"<"+cnt+")")
+		Local i:Int = 0
+		For Local v:T = EachIn Self
+			arr[i] = v
+			i += 1
+		Next
+		Return i
 	End
 	
 	Method IsEmpty:Bool()
