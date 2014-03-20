@@ -9,30 +9,46 @@ Strict
 
 Private
 Import diddy.functions
-Import diddy.comparator
+Import diddy.containers
 
 Public
 Class SortUtil<T>
 	'summary: QuickSort
-	Function QuickSort:Void(arr:T[], left:Int, right:Int, comp:IComparator, reverse:Bool = False)
+	Function QuickSort:Void(arr:T[], comp:IComparator<T> = Null, reverse:Bool = False)
+		QuickSort(arr, 0, arr.Length-1, comp, reverse)
+	End
+	
+	Function QuickSort:Void(arr:T[], left:Int, right:Int, comp:IComparator<T> = Null, reverse:Bool = False)
 		If right > left Then
 			Local pivotIndex:Int = left + (right-left)/2
-			Local pivotNewIndex:Int = SortUtil<T>.QuickSortPartition(arr, left, right, pivotIndex, comp, reverse)
+			Local pivotNewIndex:Int = QuickSortPartition(arr, left, right, pivotIndex, comp, reverse)
 			QuickSort(arr, left, pivotNewIndex - 1, comp, reverse)
 			QuickSort(arr, pivotNewIndex + 1, right, comp, reverse)
 		End
 	End
 	
+	Function QuickSortContainer:Void(cnt:IContainer<T>, comp:IComparator<T> = Null, reverse:Bool = False)
+		QuickSortContainer(cnt, 0, cnt.Count()-1, comp, reverse)
+	End
+	
+	Function QuickSortContainer:Void(cnt:IContainer<T>, left:Int, right:Int, comp:IComparator<T> = Null, reverse:Bool = False)
+		If right > left Then
+			Local pivotIndex:Int = left + (right-left)/2
+			Local pivotNewIndex:Int = QuickSortContainerPartition(cnt, left, right, pivotIndex, comp, reverse)
+			QuickSortContainer(cnt, left, pivotNewIndex - 1, comp, reverse)
+			QuickSortContainer(cnt, pivotNewIndex + 1, right, comp, reverse)
+		End
+	End
+	
 	'summary: QuickSortPartition
-	Function QuickSortPartition:Int(arr:T[], left:Int, right:Int, pivotIndex:Int, comp:IComparator, reverse:Bool = False)
+	Function QuickSortPartition:Int(arr:T[], left:Int, right:Int, pivotIndex:Int, comp:IComparator<T> = Null, reverse:Bool = False)
 		Local pivotValue:Object = arr[pivotIndex]
 		arr[pivotIndex] = arr[right]
 		arr[right] = pivotValue
-		Local storeIndex:Int = left, val:Object
+		Local storeIndex:Int = left, val:T
 		For Local i:Int = left Until right
-			Local cmprbl:IComparable = CastUtil<IComparable>.Cast(arr[i])
-			If cmprbl Then
-				If Not reverse And cmprbl.Compare(pivotValue) <= 0 Or reverse And cmprbl.Compare(pivotValue) >= 0 Then
+			If IComparableWrapper.IsComparable(lhs) Or IComparableWrapper.IsComparable(rhs) Then
+				If Not reverse And IComparableWrapper.Compare(arr[i], pivotValue) <= 0 Or reverse And IComparableWrapper.Compare(arr[i], pivotValue) >= 0 Then
 					val = arr[i]
 					arr[i] = arr[storeIndex]
 					arr[storeIndex] = val
@@ -50,6 +66,35 @@ Class SortUtil<T>
 		val = arr[storeIndex]
 		arr[storeIndex] = arr[right]
 		arr[right] = val
+		Return storeIndex
+	End
+	
+	Function QuickSortContainerPartition:Int(cnt:IContainer<T>, left:Int, right:Int, pivotIndex:Int, comp:IComparator<T> = Null, reverse:Bool = False)
+		Local pivotValue:Object = cnt.GetItem(pivotIndex)
+		cnt.SetItem(pivotIndex, cnt.GetItem(right))
+		cnt.SetItem(right, pivotValue)
+		Local storeIndex:Int = left, val:T
+		For Local i:Int = left Until right
+			Local cnti:T = cnt.GetItem(i)
+			If IComparableWrapper.IsComparable(lhs) Or IComparableWrapper.IsComparable(rhs) Then
+				If Not reverse And IComparableWrapper.Compare(cnti, pivotValue) <= 0 Or reverse And IComparableWrapper.Compare(cnti, pivotValue) >= 0 Then
+					val = cnti
+					cnt.SetItem(i, cnt.GetItem(storeIndex))
+					cnt.SetItem(storeIndex, val)
+					storeIndex += 1
+End
+			Else
+				If Not reverse And comp.Compare(cnti, pivotValue) <= 0 Or reverse And comp.Compare(cnti, pivotValue) >= 0 Then
+					val = cnti
+					cnt.SetItem(i, cnt.GetItem(storeIndex))
+					cnt.SetItem(storeIndex, val)
+					storeIndex += 1
+				End
+			End
+		Next
+		val = cnt.GetItem(storeIndex)
+		cnt.SetItem(storeIndex, cnt.GetItem(right))
+		cnt.SetItem(right, val)
 		Return storeIndex
 	End
 End

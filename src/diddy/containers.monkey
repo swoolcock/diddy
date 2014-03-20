@@ -69,9 +69,52 @@ Interface IContainer<T>
 	Method ToArray:T[]() ' undefined order in Set
 	Method FillArray:Int(arr:T[]) ' undefined order in Set
 	Method Compare:Int(lhs:T, rhs:T) ' unsupported in Set
-	Method Equals:Bool(lhs:T, rhs:T) ' unsupported in Set
+	Method Equals:Bool(lhs:T, rhs:T)
 	Method IsEmpty:Bool() ' implemented as a property in Stack
 	Method Items:IEnumerable<T>() Property
+End
+
+' hack to get around Monkey's inability to cast primitives to objects
+Class IComparableWrapper
+	Function IsComparable:Bool(src:Object)
+		Return IComparable(src) <> Null
+	End
+	
+	Function IsComparable:Bool(src:Int)
+		Return False
+	End
+	
+	Function IsComparable:Bool(src:Float)
+		Return False
+	End
+	
+	Function IsComparable:Bool(src:String)
+		Return False
+	End
+	
+	Function Compare:Int(lhs:Object, rhs:Object)
+		' we check both lhs and rhs because we always want to compare if at least one value is non-null
+		If IComparable(lhs) Then
+			' normal comparison if lhs is not null
+			Return IComparable(lhs).CompareTo(rhs)
+		ElseIf IComparable(rhs) Then
+			' reverse comparison if lhs is null but rhs is not
+			Return -IComparable(rhs).CompareTo(lhs)
+		End
+		Return 0
+	End
+	
+	Function Compare:Int(lhs:Int, rhs:Int)
+		Return 0
+	End
+	
+	Function Compare:Int(lhs:Float, rhs:Float)
+		Return 0
+	End
+	
+	Function Compare:Int(lhs:String, rhs:String)
+		Return 0
+	End
 End
 
 ' utility classes
