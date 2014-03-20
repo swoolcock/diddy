@@ -712,6 +712,12 @@ Public
 	End
 	
 	Function Cast:T(value:Object)
-		Return T(value)
+		'Return T(value) FIXME: this is no longer working for some reason
+		Return NIL
+	End
+	
+	Function IsPrimitive:Bool(value:T)
+		'Return Cast(value) = Null ' FIXME
+		Return False
 	End
 End
