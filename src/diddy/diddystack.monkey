@@ -135,14 +135,12 @@ Public
 	
 	Method RetainContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainContainer: Source IContainer must not be null")
-		#Rem FIXME
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
-			If Not src.Contains(val) Then
+			If Not src.ContainsItem(val) Then
 				Self.RemoveEach(val)
 			End
 		Next
-		#End
 	End
 	
 	' ContainsAll
