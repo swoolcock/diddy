@@ -136,13 +136,13 @@ Public
 ' Public functions
 	Function LoadFonts:Void(doc:XMLDocument)
 		fonts = New StringMap<Font>
-		Local fontNodes:ArrayList<XMLElement> = doc.Root.GetChildrenByName("font")
+		Local fontNodes:DiddyStack<XMLElement> = doc.Root.GetChildrenByName("font")
 		For Local node:XMLElement = EachIn fontNodes
 			Local f:Font = New Font
 			f.name = node.GetAttribute("name")
 			f.atlasName = node.GetAttribute("atlas")
 			f.blackAtlasName = node.GetAttribute("blackAtlas")
-			Local glyphNodes:ArrayList<XMLElement> = node.GetChildrenByName("glyph")
+			Local glyphNodes:DiddyStack<XMLElement> = node.GetChildrenByName("glyph")
 			For Local glyph:XMLElement = EachIn glyphNodes
 				Local code:Int = Int(glyph.GetAttribute("code","0"))
 				f.baseline[code] = Float(glyph.GetAttribute("baseline","0"))

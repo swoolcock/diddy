@@ -58,7 +58,7 @@ Strict
 Import brl.json
 Import mojo
 Import diddy.functions
-Import diddy.collections
+Import diddy.containers
 Import diddy.inputcache
 Import diddy.xml
 Import diddy.diddydata
@@ -1780,7 +1780,7 @@ Class GameSound
 	Field volume:Float = 1
 	Field loop:Int = 0
 	Field channel:Int
-	Field loopChannelList:IntArrayList = New IntArrayList
+	Field loopChannelList:DiddyIntStack = New DiddyIntStack
 	Field soundAvailableMillis:Int
 	Field soundDelay:Int
 	Field stopChannelBeforePlaying:Bool = true
@@ -1815,7 +1815,7 @@ Class GameSound
 			End
 			channel = SoundPlayer.PlayFx(sound, pan, rate, volume * (diddyGame.soundVolume / 100.0), loop, playChannel)
 			If loop = 1
-				loopChannelList.Add(channel)
+				loopChannelList.Push(channel)
 			End
 			soundAvailableMillis = dt.currentticks + soundDelay
 			Return True
@@ -1825,10 +1825,10 @@ Class GameSound
 	
 	Method Stop:Void()
 		SoundPlayer.PlayerStopChannel(channel)
-		If loopChannelList.Size > 0
+		If Not loopChannelList.IsEmpty()
 			Local ch:Int
-			For Local i:Int = 0 Until loopChannelList.Size
-				ch = loopChannelList.GetInt(i)
+			For Local i:Int = 0 Until loopChannelList.Count()
+				ch = loopChannelList.Get(i)
 				SoundPlayer.PlayerStopChannel(ch)
 			Next
 			loopChannelList.Clear()

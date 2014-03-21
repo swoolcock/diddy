@@ -31,7 +31,7 @@ Private
 	Field calculatedColumns:Int	
 	
 	' cached stuff
-	Field compArray:Object[] = []
+	Field compArray:Component[] = []
 	Field rowNums:Int[] = []
 	Field colNums:Int[] = []
 	Field cellTaken:Bool[] = []
@@ -120,7 +120,7 @@ Private
 	Method LayoutDelegate:Point(parent:Component, calculateMinimum:Bool, point:Point=Null)
 		' get the children (reuse the array)
 		Local compCount:Int = 0
-		If compArray.Length < parent.Children.Size Then
+		If compArray.Length < parent.Children.Count() Then
 			compArray = parent.Children.ToArray()
 			compCount = compArray.Length
 		Else

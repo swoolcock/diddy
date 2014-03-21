@@ -23,8 +23,8 @@ Class Component
 Private
 ' Private fields
 	Field alpha:Float = 1
-	Field children:ArrayList<Component> = New ArrayList<Component>
-	Field childrenZOrder:ArrayList<Component> = New ArrayList<Component>
+	Field children:DiddyStack<Component> = New DiddyStack<Component>
+	Field childrenZOrder:DiddyStack<Component> = New DiddyStack<Component>
 	
 	' external listeners (properties) - these can and should be changed by developers for their own needs
 	Field mouseListener:IMouseListener
@@ -77,7 +77,7 @@ Private
 			If focusedChild.RequestFocusDelegate(thisGui) Then Return True
 		End
 		' find first focusable child
-		For Local i:Int = 0 Until children.Size
+		For Local i:Int = 0 Until children.Count()
 			Local child:Component = children.Get(i)
 			If child.focusable Then
 				thisGui.SetFocus(child)
@@ -85,7 +85,7 @@ Private
 			End
 		Next
 		' request focus on the children
-		For Local i:Int = 0 Until children.Size
+		For Local i:Int = 0 Until children.Count()
 			Local child:Component = children.Get(i)
 			If child <> focusedChild And child.RequestFocusDelegate(thisGui) Then Return True
 		Next
@@ -100,7 +100,7 @@ Private
 	Method LoadStyles:Void(node:XMLElement)
 		If node = Null Then Return
 		' copy styles
-		For Local i:Int = 0 Until node.Children.Size
+		For Local i:Int = 0 Until node.Children.Count()
 			Local styleNode:XMLElement = node.Children.Get(i)
 			Local style:ComponentStyle = GetStyle(styleNode.GetAttribute("name"))
 			If style = Null Then style = New ComponentStyle
@@ -215,12 +215,12 @@ Public
 	End
 	
 	' Children is read only
-	Method Children:ArrayList<Component>() Property
+	Method Children:DiddyStack<Component>() Property
 		Return children
 	End
 	
 	' ChildrenZOrder is read only
-	Method ChildrenZOrder:ArrayList<Component>() Property
+	Method ChildrenZOrder:DiddyStack<Component>() Property
 		Return childrenZOrder
 	End
 	
@@ -404,8 +404,8 @@ Public
 		If Not GUIDesktop(Self) Then
 			If parent = Null Then NoParent()
 			Self.parent = parent
-			parent.children.Add(Self)
-			parent.childrenZOrder.Add(Self)
+			parent.children.Push(Self)
+			parent.childrenZOrder.Push(Self)
 			' if the parent has a layout manager, do it!
 			If parent.layoutManager <> Null Then parent.Layout()
 		Else
@@ -585,13 +585,15 @@ Public
 	Method Dispose:Void(recursing:Bool = False)
 		' we do an empty check first to save creating an enumerator object
 		If Not children.IsEmpty() Then
+			#Rem FIXME
 			Local enum:IEnumerator<Component> = children.Enumerator()
 			While enum.HasNext()
 				Local c:Component = enum.NextObject()
 				c.Dispose(True)
-				childrenZOrder.Remove(c)
+				childrenZOrder.RemoveItem(c)
 				enum.Remove()
 			End
+			#End
 		End
 		DisposeNotify()
 		Local p:Component = Self.parent
@@ -600,8 +602,8 @@ Public
 		If thisGui.CurrentFocus = Self Then thisGui.CurrentFocus = Null
 		Self.parent = Null
 		If Not recursing Then
-			p.children.Remove(Self)
-			p.childrenZOrder.Remove(Self)
+			p.children.RemoveItem(Self)
+			p.childrenZOrder.RemoveItem(Self)
 		End
 	End
 	
@@ -676,9 +678,9 @@ Public
 	' Moves this component to the top of the z-order, and tells its parent to do the same thing.
 	Method BringToFront:Void()
 		If parent = Null Then Return
-		If parent.childrenZOrder.Size > 1 And Not zOrderLocked Then
-			parent.childrenZOrder.Remove(Self)
-			parent.childrenZOrder.Add(Self)
+		If parent.childrenZOrder.Count() > 1 And Not zOrderLocked Then
+			parent.childrenZOrder.RemoveItem(Self)
+			parent.childrenZOrder.Push(Self)
 		End
 		parent.BringToFront()
 	End
@@ -686,9 +688,9 @@ Public
 	' Moves this component to the bottom of the z-order, but leaves its parent alone.
 	Method SendToBack:Void()
 		If parent = Null Then Return
-		If parent.childrenZOrder.Size > 1 And Not zOrderLocked Then
-			parent.childrenZOrder.Remove(Self)
-			parent.childrenZOrder.AddFirst(Self)
+		If parent.childrenZOrder.Count() > 1 And Not zOrderLocked Then
+			parent.childrenZOrder.RemoveItem(Self)
+			parent.childrenZOrder.InsertItem(0, Self)
 		End
 	End
 	
@@ -719,7 +721,7 @@ Public
 		' if we have no layout manager, just find the bottom-right-most component
 		If layoutManager = Null Then
 			Local w:Int = 0, h:Int = 0
-			For Local i:Int = 0 Until Children.Size
+			For Local i:Int = 0 Until Children.Count()
 				Local child:Component = Children.Get(i)
 				w = Max(w, child.X + child.Width)
 				h = Max(h, child.Y + child.Height)
@@ -979,7 +981,7 @@ Private
 ' Private methods
 	Method ApplySkin:Void()
 		Super.ApplySkin()
-		For Local i:Int = 0 Until children.Size
+		For Local i:Int = 0 Until children.Count()
 			children.Get(i).ApplySkin()
 		Next
 	End
@@ -1714,13 +1716,13 @@ End ' Class Checkbox
 Class RadioGroup
 Private
 ' Private fields
-	Field buttons:ArrayList<RadioButton> = New ArrayList<RadioButton>
+	Field buttons:DiddyStack<RadioButton> = New DiddyStack<RadioButton>
 	Field currentValue:String
 	
 Public
 ' Properties
 	' RadioButtons is read only
-	Method RadioButtons:ArrayList<RadioButton>() Property
+	Method RadioButtons:DiddyStack<RadioButton>() Property
 		Return buttons
 	End
 	
@@ -1765,13 +1767,13 @@ Public
 	Method AddButton:Void(button:RadioButton, value:String)
 		button.radioValue = value
 		button.radioGroup = Self
-		buttons.Add(button)
+		buttons.Push(button)
 	End
 	
 	Method RemoveButton:Void(button:RadioButton)
 		button.radioValue = ""
 		button.radioGroup = Null
-		buttons.Remove(button)
+		buttons.RemoveItem(button)
 	End
 	
 	Method ValueChanged:Void(newValue:String, newButton:RadioButton, oldValue:String, oldButton:RadioButton)

@@ -12,40 +12,40 @@ Import diddy
 Class ParticleSystem Implements IPSReader
 Private
 ' Private fields
-	Field groups:ArrayList<ParticleGroup>
-	Field emitters:ArrayList<Emitter>
+	Field groups:DiddyStack<ParticleGroup>
+	Field emitters:DiddyStack<Emitter>
 	
 Public
 ' Properties
-	Method Groups:ArrayList<ParticleGroup>() Property
+	Method Groups:DiddyStack<ParticleGroup>() Property
 		Return groups
 	End
 	
-	Method Emitters:ArrayList<Emitter>() Property
+	Method Emitters:DiddyStack<Emitter>() Property
 		Return emitters
 	End
 	
 ' Constructors
 	Method New()
-		groups = New ArrayList<ParticleGroup>
-		emitters = New ArrayList<Emitter>
+		groups = New DiddyStack<ParticleGroup>
+		emitters = New DiddyStack<Emitter>
 	End
 	
 	Method New(doc:XMLDocument)
-		groups = New ArrayList<ParticleGroup>
-		emitters = New ArrayList<Emitter>
+		groups = New DiddyStack<ParticleGroup>
+		emitters = New DiddyStack<Emitter>
 		ReadXML(doc.Root)
 	End
 	
 	Method New(node:XMLElement)
-		groups = New ArrayList<ParticleGroup>
-		emitters = New ArrayList<Emitter>
+		groups = New DiddyStack<ParticleGroup>
+		emitters = New DiddyStack<Emitter>
 		ReadXML(node)
 	End
 	
 ' Public methods
 	Method GetGroup:ParticleGroup(name:String)
-		For Local i:Int = 0 Until groups.Size
+		For Local i:Int = 0 Until groups.Count()
 			If groups.Get(i).Name = name Then
 				Return groups.Get(i)
 			End
@@ -54,7 +54,7 @@ Public
 	End
 	
 	Method GetEmitter:Emitter(name:String)
-		For Local i:Int = 0 Until emitters.Size
+		For Local i:Int = 0 Until emitters.Count()
 			If emitters.Get(i).Name = name Then
 				Return emitters.Get(i)
 			End
@@ -65,7 +65,7 @@ Public
 	Method Render:Void(scrollX:Float = 0, scrollY:Float = 0)
 		Local rgb:Float[] = GetColor()
 		Local alpha:Float = GetAlpha()
-		For Local i:Int = 0 Until groups.Size
+		For Local i:Int = 0 Until groups.Count()
 			groups.Get(i).Render(scrollX, scrollY)
 		Next
 		SetAlpha(alpha)
@@ -73,42 +73,42 @@ Public
 	End
 	
 	Method Update:Void(delta:Float)
-		For Local i:Int = 0 Until groups.Size
+		For Local i:Int = 0 Until groups.Count()
 			groups.Get(i).Update(delta)
 		Next
 	End
 	
 	Method ReadXML:Void(node:XMLElement)
 		' read from a <psystem> node
-		Local children:ArrayList<XMLElement> = node.Children
-		For Local i:Int = 0 Until children.Size
+		Local children:DiddyStack<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Count()
 			If children.Get(i).Name = "groups" Then
 				' parse groups
-				Local groupNodes:ArrayList<XMLElement> = children.Get(i).Children
-				For Local j:Int = 0 Until groupNodes.Size
+				Local groupNodes:DiddyStack<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until groupNodes.Count()
 					Local groupNode:XMLElement = groupNodes.Get(j)
 					If groupNode.Name = "group" Then
 						Local group:ParticleGroup = New ParticleGroup(groupNode)
-						groups.Add(group)
+						groups.Push(group)
 					End
 				Next
 			ElseIf children.Get(i).Name = "emitters" Then
 				' parse emitters
-				Local emitterNodes:ArrayList<XMLElement> = children.Get(i).Children
-				For Local j:Int = 0 Until emitterNodes.Size
+				Local emitterNodes:DiddyStack<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until emitterNodes.Count()
 					Local emitterNode:XMLElement = emitterNodes.Get(j)
 					If emitterNode.Name = "emitter" Then
 						Local emitter:Emitter = New Emitter(emitterNode)
-						emitters.Add(emitter)
+						emitters.Push(emitter)
 					End
 				Next
 			End
 		Next
 		' go through the emitters and set the groups and death emitters by name
-		For Local i:Int = 0 Until emitters.Size
+		For Local i:Int = 0 Until emitters.Count()
 			Local group:ParticleGroup = GetGroup(emitters.Get(i).groupName)
 			If group <> Null Then emitters.Get(i).Group = group
-			For Local j:Int = 0 Until emitters.Get(i).deathEmitterLinks.Size
+			For Local j:Int = 0 Until emitters.Get(i).deathEmitterLinks.Count()
 				Local deathEmitter:Emitter = GetEmitter(emitters.Get(i).deathEmitterLinks.Get(j).name)
 				If deathEmitter <> Null Then emitters.Get(i).deathEmitterLinks.Get(j).deathEmitter = deathEmitter
 			Next
@@ -244,7 +244,7 @@ Private
 	Field groupName:String      ' temporary, only for reading XML
 
 ' Death emitters
-	Field deathEmitterLinks:ArrayList<DeathEmitterLink> ' the death emitters will fire at the particle's point of death
+	Field deathEmitterLinks:DiddyStack<DeathEmitterLink> ' the death emitters will fire at the particle's point of death
 	                                                    ' using the particle's normalised velocity
 Public
 ' Properties
@@ -1231,17 +1231,17 @@ Public
 		End
 	End
 	
-	Method DeathEmitterLinks:ArrayList<DeathEmitterLink>() Property
+	Method DeathEmitterLinks:DiddyStack<DeathEmitterLink>() Property
 		Return deathEmitterLinks
 	End
 	
 ' Constructors
 	Method New()
-		deathEmitterLinks = New ArrayList<DeathEmitterLink>
+		deathEmitterLinks = New DiddyStack<DeathEmitterLink>
 	End
 	
 	Method New(node:XMLElement)
-		deathEmitterLinks = New ArrayList<DeathEmitterLink>
+		deathEmitterLinks = New DiddyStack<DeathEmitterLink>
 		ReadXML(node)
 	End
 
@@ -1764,11 +1764,11 @@ Public
 		If node.HasAttribute("RotationSpeedSpreadRadians") Then RotationSpeedSpreadRadians = Float(node.GetAttribute("RotationSpeedSpreadRadians"))
 		
 		' death emitters
-		For Local i:Int = 0 Until node.Children.Size
+		For Local i:Int = 0 Until node.Children.Count()
 			Local childNode:XMLElement = node.Children.Get(i)
 			If childNode.Name = "deathemitter" Then
 				Local del:DeathEmitterLink = New DeathEmitterLink(childNode)
-				deathEmitterLinks.Add(del)
+				deathEmitterLinks.Push(del)
 			End
 		Next
 	End
@@ -1866,15 +1866,15 @@ Private
 	Field deadCount:Int = 0
 	
 	' constants for the group
-	Field forces:ArrayList<Force>
-	Field forcesArray:Object[]
+	Field forces:DiddyStack<Force>
+	Field forcesArray:Force[]
 	Field rgbArray:Int[3]
 	
 	Field name:String
 	
 	Method Init(maxParticles:Int)
 		Self.maxParticles = maxParticles
-		forces = New ArrayList<Force>
+		forces = New DiddyStack<Force>
 		
 		x = New Float[maxParticles]
 		y = New Float[maxParticles]
@@ -1968,7 +1968,7 @@ Public
 		Return maxParticles
 	End
 	
-	Method Forces:ArrayList<Force>() Property
+	Method Forces:DiddyStack<Force>() Property
 		Return forces
 	End
 	
@@ -1980,7 +1980,7 @@ Public
 	End
 
 	Method GetForce:Force(name:String)
-		For Local i:Int = 0 Until forces.Size
+		For Local i:Int = 0 Until forces.Count()
 			If forces.Get(i).Name = name Then
 				Return forces.Get(i)
 			End
@@ -1999,9 +1999,9 @@ Public
 	End
 
 	Method Update:Void(delta:Float)
-		' cache the force arraylist first
+		' cache the force DiddyStack first
 		Local forceCount:Int = 0
-		If forcesArray.Length < forces.Size Then
+		If forcesArray.Length < forces.Count() Then
 			forcesArray = forces.ToArray()
 			forceCount = forcesArray.Length
 		Else
@@ -2107,7 +2107,7 @@ Public
 		Next
 		' now fire off any emitters
 		For Local i:Int = 0 Until deadCount
-			For Local j:Int = 0 Until deadEmitters[i].deathEmitterLinks.Size
+			For Local j:Int = 0 Until deadEmitters[i].deathEmitterLinks.Count()
 				Local del:DeathEmitterLink = deadEmitters[i].deathEmitterLinks.Get(j)
 				Local c:Float = del.chance
 				If c = 1 Or c > 0 And Rnd() <= c Then
@@ -2225,17 +2225,17 @@ Public
 		' read the rest of the properties
 		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
 		' read the forces
-		Local children:ArrayList<XMLElement> = node.Children
-		For Local i:Int = 0 Until children.Size
+		Local children:DiddyStack<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Count()
 			Local forceNode:XMLElement = children.Get(i)
 			If forceNode.Name = "constantforce" Then
 				' constant
 				Local cf:ConstantForce = New ConstantForce(forceNode)
-				forces.Add(cf)
+				forces.Push(cf)
 			ElseIf forceNode.Name = "pointforce" Then
 				' point
 				Local pf:PointForce = New PointForce(forceNode)
-				forces.Add(pf)
+				forces.Push(pf)
 			End
 		Next
 	End

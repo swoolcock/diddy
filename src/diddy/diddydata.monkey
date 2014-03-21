@@ -9,7 +9,7 @@ Strict
 
 Import diddy.framework
 Import diddy.functions
-Import diddy.collections
+Import diddy.containers
 
 Class DiddyData
 	Method New(filename:String="diddydata.xml")
@@ -79,7 +79,7 @@ Class DiddyData
 				For Local layerNode:XMLElement = Eachin layersNode.GetChildrenByName("layer")
 					If Not scr.layers Then scr.layers = New DiddyDataLayers
 					Local layer:DiddyDataLayer = New DiddyDataLayer
-					scr.layers.Add(layer)
+					scr.layers.Push(layer)
 					layer.InitFromXML(layerNode)
 				Next
 			End
@@ -176,18 +176,18 @@ Class DiddyData
 	End
 End
 
-Class DiddyDataLayers Extends ArrayList<DiddyDataLayer>
-	Method Find:DiddyDataLayer(name:String)
+Class DiddyDataLayers Extends DiddyStack<DiddyDataLayer>
+	Method FindLayer:DiddyDataLayer(name:String)
 		name = name.ToLower()
-		For Local i:Int = 0 Until Size
+		For Local i:Int = 0 Until Count()
 			Local layer:DiddyDataLayer = Get(i)
 			If layer.name.ToLower() = name Then Return layer
 		Next
 		Return Null
 	End
 	
-	Method Find:DiddyDataLayer(index:Int)
-		For Local i:Int = 0 Until Size
+	Method FindLayer:DiddyDataLayer(index:Int)
+		For Local i:Int = 0 Until Count()
 			Local layer:DiddyDataLayer = Get(i)
 			If layer.index = index Then Return layer
 		Next
@@ -196,9 +196,9 @@ Class DiddyDataLayers Extends ArrayList<DiddyDataLayer>
 	
 	Method FindObject:DiddyDataObject(name:String)
 		name = name.ToLower()
-		For Local i:Int = 0 Until Size
+		For Local i:Int = 0 Until Count()
 			Local layer:DiddyDataLayer = Get(i)
-			Local obj:DiddyDataObject = layer.objects.Find(name)
+			Local obj:DiddyDataObject = layer.objects.FindObject(name)
 			If obj Then Return obj
 		Next
 		Return Null
@@ -215,20 +215,16 @@ Class DiddyDataLayer Implements IComparable
 		index = Int(node.GetAttribute("index", "0").Trim())
 		For Local child:XMLElement = Eachin node.GetChildrenByName("object")
 			Local obj:DiddyDataObject = New DiddyDataObject
-			objects.Add(obj)
+			objects.Push(obj)
 			obj.InitFromXML(child)
 		Next
 	End
 	
-	Method Compare:Int(other:Object)
+	Method CompareTo:Int(other:Object)
 		Local ol:DiddyDataLayer = DiddyDataLayer(other)
 		If Not ol Or ol = Self Or ol.index = Self.index Then Return 0
 		If ol.index < Self.index Then Return 1
 		Return -1
-	End
-	
-	Method Equals:Bool(other:Object)
-		Return other = Self Or DiddyDataLayer(other) And DiddyDataLayer(other).index = Self.index
 	End
 	
 	Method Render:Void(xoffset:Float=0, yoffset:Float=0)
@@ -240,10 +236,10 @@ Class DiddyDataLayer Implements IComparable
 	End
 End
 
-Class DiddyDataObjects Extends ArrayList<DiddyDataObject>
-	Method Find:DiddyDataObject(name:String)
+Class DiddyDataObjects Extends DiddyStack<DiddyDataObject>
+	Method FindObject:DiddyDataObject(name:String)
 		name = name.ToLower()
-		For Local i:Int = 0 Until Size
+		For Local i:Int = 0 Until Count()
 			Local obj:DiddyDataObject = Get(i)
 			If obj.name.ToLower() = name Then Return obj
 		Next

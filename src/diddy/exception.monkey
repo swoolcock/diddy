@@ -110,3 +110,9 @@ Class XMLParseException Extends DiddyException
 		Super.New(message, cause)
 	End
 End
+
+Class UnsupportedOperationException Extends DiddyException
+	Method New(message:String="Unsupported operation.", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
+End
