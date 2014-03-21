@@ -12,12 +12,13 @@ Function Main:Int()
 End
 
 Class MyApp Extends App
-	Field font18:GLText
+	Field font20:GLText
 	Field font10:GLText
+	Field rotation:Int
 	
 	Method OnCreate:Int()
-		font18 = GLText.GetNewInstance()
-		font18.Load("Roboto-Regular.ttf", 18, 2, 2)
+		font20 = GLText.GetNewInstance()
+		font20.Load("Roboto-Regular.ttf", 18, 2, 2)
 		
 		font10 = GLText.GetNewInstance()
 		font10.Load("Roboto-Regular.ttf", 10, 2, 2)
@@ -27,22 +28,29 @@ Class MyApp Extends App
 	End
 	
 	Method OnUpdate:Int()
+		rotation += 5
 		Return True
 	End
 
 	Method OnRender:Int()
 		Cls(10, 100, 100)
 		
-		Rotate 0
-		SetColor 255, 255, 255
-		DrawText("Testing...", 10, 10)
 		Local date:Int[] = GetDate();
-		font18.Draw("Hello World! " + date[6], 10, 30)
-		font10.Draw("Hello World! " + date[6], 10, 60)
 		
-		Rotate 45
-		SetColor 255, 0, 0
-		font18.Draw("Hello World Again! " + date[6], 10, 90)
+		PushMatrix
+			Translate 100, 100
+			Rotate rotation
+			SetColor 255, 255, 255		
+			font20.Draw("Hello Font20! " + date[6], 10, 30)
+			font10.Draw("Hello font10! " + date[6], 10, 60)
+		PopMatrix
+		
+		PushMatrix
+			Rotate 0
+			SetColor 255, 0, 0
+			font20.Draw("Hello Font20 Again! " + date[5], 10, 90)
+			font10.Draw("Hello font10 Again! " + date[5], 10, 120)
+		PopMatrix
 		
 		Return True
 	End
