@@ -177,6 +177,19 @@ class GLText{
 	}
 	
 	public void Draw(String text, float x, float y)  {
+		c_GraphicsContext gc = bb_graphics.g_context;
+
+		//FIXME: copied code from c_GraphicsContext.p_Validate() as I can't call it for some reason
+		if ((gc.m_matDirty)!=0) {
+			bb_graphics.g_renderDevice.SetMatrix(bb_graphics.g_context.m_ix,
+								bb_graphics.g_context.m_iy,
+								bb_graphics.g_context.m_jx,
+								bb_graphics.g_context.m_jy,
+								bb_graphics.g_context.m_tx,
+								bb_graphics.g_context.m_ty);
+			gc.m_matDirty=0;
+		}
+		
 		float chrHeight = cellHeight * scaleY;          // Calculate Scaled Character Height
 		float chrWidth = cellWidth * scaleX;            // Calculate Scaled Character Width
 		int len = text.length();                        // Get String Length
