@@ -138,11 +138,14 @@ Class Arrays<T>
 	End
 	
 	'summary: returns a new array that is reversed
-	Function Reverse:Void(arr:T[])
-		For Local i:Int = 0 Until arr.Length/2
-			Local tmp:T = arr[i]
-			arr[i] = arr[arr.Length-i-1]
-			arr[arr.Length-i-1] = tmp
+	Function Reverse:Void(arr:T[], startIndex:Int=0, endIndex:Int=-1)
+		If startIndex < 0 Then startIndex = 0
+		If endIndex < 0 Or endIndex > arr.Length Then endIndex = arr.Length
+		If startIndex >= endIndex Then Return
+		For Local i:Int = 0 Until (endIndex-startIndex)/2
+			Local tmp:T = arr[i+startIndex]
+			arr[i+startIndex] = arr[endIndex-i-1]
+			arr[endIndex-i-1] = tmp
 		Next
 	End
 	

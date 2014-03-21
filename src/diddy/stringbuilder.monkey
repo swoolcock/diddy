@@ -292,7 +292,7 @@ Public
 	Method Reverse:StringBuilder()
 		If length <= 0 Then Return Self
 		dirty = True
-		Arrays<Int>.Reverse(characters)
+		Arrays<Int>.Reverse(characters, 0, length)
 		Return Self
 	End
 	
