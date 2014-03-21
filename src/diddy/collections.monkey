@@ -7,10 +7,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import assert
-Import exception
-Import comparator
-Import quicksort
+Import diddy.assert
+Import diddy.exception
+Import diddy.comparator
+Import diddy.quicksort
 
 #Rem
 header: Monkey Collections Framework
@@ -485,7 +485,7 @@ Public
 		If size <= 1 Then Return ' can't sort 0 or 1 elements
 		If comp = Null Then comp = Self.Comparator
 		If comp = Null Then comp = DEFAULT_COMPARATOR
-		QuickSort(elements, 0, size-1, comp, reverse)
+		SortUtil<Object>.QuickSort(elements, 0, size-1, comp, reverse)
 		modCount += 1
 	End
 	

@@ -7,11 +7,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import base64
+Import diddy.base64
 Import monkey.map
-Import collections
-Import framework
-Import xml
+Import diddy.collections
+Import diddy.framework
+Import diddy.xml
 
 ' TileMapPropertyContainer
 ' Classes that extend this will automatically instantiate a property container and expose it.

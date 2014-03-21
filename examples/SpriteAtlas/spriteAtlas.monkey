@@ -24,10 +24,8 @@ Class MyGame Extends DiddyApp
 	End
 	
 	Method LoadImages:Void()
-		' create tmpImage for animations
-		Local tmpImage:Image
 		' load normal sprite
-		images.LoadAnim("Ship1.png", 64, 64, 7, tmpImage)
+		images.LoadAnim("Ship1.png", 64, 64, 7)
 		' load sparrow atlas sprites
 		images.LoadAtlas("sprites.xml", images.SPARROW_ATLAS, True, True)
 		' load atlas zombie

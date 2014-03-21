@@ -9,7 +9,7 @@ Strict
 
 Import mojo
 Import diddy
-Import layout
+Import diddy.gui.layout
 
 Const ACTION_CLICKED:String = "clicked"
 Const ACTION_VALUE_CHANGED:String = "changed"
@@ -549,5 +549,8 @@ Public
 End ' Class GUI
 
 Function PlayComponentSound:Void(comp:Component, soundName:String)
-	' TODO: play sounds!
+	' dynamically load the sound and play it
+	Local snd:GameSound = Null
+	If soundName Then snd = diddyGame.sounds.Load(soundName)
+	If snd Then snd.Play()
 End

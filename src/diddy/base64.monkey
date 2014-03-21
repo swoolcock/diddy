@@ -8,7 +8,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Strict
 
 Private
-Import stringbuilder
+Import diddy.stringbuilder
 
 Public
 
