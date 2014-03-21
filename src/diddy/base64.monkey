@@ -8,7 +8,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Strict
 
 Private
-Import diddy.stringbuilder
+Import brl.databuffer
+Import brl.datastream
 
 Public
 
@@ -16,7 +17,8 @@ Public
 ' enabling padOutput will pad the ending of the output with equals characters (=) to next 4-byte boundary
 Function EncodeBase64:String(src:Int[], padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
 	If src.Length = 0 Then Return ""
-	Local rv:StringBuilder = New StringBuilder(Int(src.Length*4.0/3.0+10))
+	Local buffer:DataBuffer = New DataBuffer(Int(src.Length*4.0/3.0+10))
+	Local addr:Int = 0
 	Local s1:Int, s2:Int, s3:Int, a:Int, b:Int, c:Int, d:Int, i:Int
 	Local charsAdded:Int = 0
 	
@@ -37,23 +39,31 @@ Function EncodeBase64:String(src:Int[], padOutput:Bool=False, lineWrap:Bool=Fals
 		If i+2 >= src.Length Then d = 64
 		
 		' append target bytes, adding a line wrap if we must
-		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 And charsAdded > 1 Then rv.Append("~n")
-		rv.AppendByte(BASE64_CHARS[a]); charsAdded += 1
-		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
-		rv.AppendByte(BASE64_CHARS[b]); charsAdded += 1
+		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 And charsAdded > 1 Then
+			buffer.PokeByte(addr, "~n"[0]); addr += 1
+		End
+		buffer.PokeByte(addr, BASE64_CHARS[a]); addr += 1; charsAdded += 1
+		If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then
+			buffer.PokeByte(addr, "~n"[0]); addr += 1
+		End
+		buffer.PokeByte(addr, BASE64_CHARS[b]); addr += 1; charsAdded += 1
 		If c < 64 Or padOutput Then
-			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
-			rv.AppendByte(BASE64_CHARS[c]); charsAdded += 1
+			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then
+				buffer.PokeByte(addr, "~n"[0]); addr += 1
+			End
+			buffer.PokeByte(addr, BASE64_CHARS[c]); addr += 1; charsAdded += 1
 		End
 		If d < 64 Or padOutput Then
-			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then rv.Append("~n")
-			rv.AppendByte(BASE64_CHARS[d]); charsAdded += 1
+			If lineWrap And lineWrapWidth > 0 And charsAdded Mod lineWrapWidth = 0 Then
+				buffer.PokeByte(addr, "~n"[0]); addr += 1
+			End
+			buffer.PokeByte(addr, BASE64_CHARS[d]); addr += 1; charsAdded += 1
 		End
 		
 		' next 3 bytes!
 		i += 3
 	Until i >= src.Length
-	Return rv.ToString()
+	Return buffer.PeekString(0, addr)
 End
 
 Function EncodeBase64:String(src:String, padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
