@@ -14,13 +14,13 @@ Strict
 
 Private
 Import mojo
-Import functions
-Import collections
-Import xml
-Import format
+Import diddy.functions
+Import diddy.collections
+Import diddy.xml
+Import diddy.format
 
 Public
-Import exception
+Import diddy.exception
 
 Const KEYFRAME_POSITION:Int = 0
 Const KEYFRAME_ALPHA:Int = 1

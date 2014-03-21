@@ -9,7 +9,7 @@ Strict
 
 Import mojo
 Import diddy
-Import core
+Import diddy.gui.core
 
 Const SKIN_NODE_NONE:String = ""
 Const SKIN_NODE_WINDOW:String = "window"

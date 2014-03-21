@@ -7,7 +7,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import functions
+Import diddy.functions
 
 ' Monkey converts primitives to strings when calling this function.
 Function Format:String(fmt:String, arg1:String="", arg2:String="", arg3:String="", arg4:String="", arg5:String="", arg6:String="", arg7:String="", arg8:String="", arg9:String="", arg10:String="")

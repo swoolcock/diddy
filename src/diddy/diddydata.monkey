@@ -7,9 +7,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import framework
-Import functions
-Import collections
+Import diddy.framework
+Import diddy.functions
+Import diddy.collections
 
 Class DiddyData
 	Method New(filename:String="diddydata.xml")
@@ -69,7 +69,7 @@ Class DiddyData
 				Local musicNode:XMLElement = resourcesNode.GetFirstChildByName("music")
 				If musicNode <> Null Then
 					Local musicPath:String = musicNode.GetAttribute("path").Trim()
-					Local musicFlag:Int = Int(musicNode.GetAttribute("flag").Trim())
+					Local musicFlag:Int = Int(musicNode.GetAttribute("flag", "0").Trim())
 					scr.SetMusic(musicPath, Int(musicFlag))
 				End
 			Next
@@ -93,19 +93,18 @@ Class DiddyData
 	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
 		Local imagesElement:XMLElement = xmlElement.GetFirstChildByName("images")
 		If imagesElement <> null Then
-			Local tmpImage:Image
 			For Local node:XMLElement = Eachin imagesElement.GetChildrenByName("image")
 				Local name:String = node.GetAttribute("name").Trim()
 				Local path:String = node.GetAttribute("path").Trim()
-				Local frames:Int = Int(node.GetAttribute("frames").Trim())
-				Local width:Int = Int(node.GetAttribute("width").Trim())
-				Local height:Int = Int(node.GetAttribute("height").Trim())
+				Local frames:Int = Int(node.GetAttribute("frames", "0").Trim())
+				Local width:Int = Int(node.GetAttribute("width", "0").Trim())
+				Local height:Int = Int(node.GetAttribute("height", "0").Trim())
 				Local midhandle:String = node.GetAttribute("midhandle").Trim()
 				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
 				Local readPixels:String = node.GetAttribute("readPixels").Trim()
-				Local maskRed:Int = Int(node.GetAttribute("maskRed").Trim())
-				Local maskGreen:Int = Int(node.GetAttribute("maskGreen").Trim())
-				Local maskBlue:Int = Int(node.GetAttribute("maskBlue").Trim())
+				Local maskRed:Int = Int(node.GetAttribute("maskRed", "255").Trim())
+				Local maskGreen:Int = Int(node.GetAttribute("maskGreen", "0").Trim())
+				Local maskBlue:Int = Int(node.GetAttribute("maskBlue", "255").Trim())
 				
 				Local midhandleBool:Bool
 				If midhandle
@@ -140,7 +139,7 @@ Class DiddyData
 				
 				' if frames > 1 assume its an animation image
 				If frames > 1
-					diddyGame.images.LoadAnim(path, width, height, frames, tmpImage, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
+					diddyGame.images.LoadAnim(path, width, height, frames, Null, midhandleBool, ignoreCacheBool, name, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				Else
 					diddyGame.images.Load(path, name, midhandleBool, ignoreCacheBool, readPixelsBool, maskRed, maskGreen, maskBlue, preLoad, screenName)
 				End
@@ -155,7 +154,7 @@ Class DiddyData
 				Local name:String = node.GetAttribute("name").Trim()
 				Local path:String = node.GetAttribute("path").Trim()
 				Local ignoreCache:String = node.GetAttribute("ignoreCache").Trim()
-				Local soundDelay:String = node.GetAttribute("soundDelay").Trim()
+				Local soundDelay:String = node.GetAttribute("soundDelay", "0").Trim()
 				
 				If diddyGame.debugOn
 					Print "name 		= " + name

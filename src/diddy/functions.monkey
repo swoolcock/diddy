@@ -6,11 +6,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #End
 
 Import mojo
-Import framework
-Import assert
-Import vector2d
-Import externfunctions
-Import constants
+Import diddy.framework
+Import diddy.assert
+Import diddy.vector2d
+Import diddy.externfunctions
+Import diddy.constants
 
 #If TARGET<>"html5" Then
 	Function GetBrowserName:String()
@@ -178,7 +178,7 @@ Function LoadBitmap:Image(path$, flags%=0)
    	Return pointer
 End
 
-Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image)
+Function LoadAnimBitmap:Image(path$, w%, h%, count%, tmpImage:Image=Null)
 	'tmpImage = loadBitmap(path) <-- This creates another image, decided to just copy the code here
 	tmpImage = LoadImage(path)
 	
@@ -679,5 +679,45 @@ Function InterpolateWithEase:Float(startValue:Float, endValue:Float, progress:Fl
 			Return startValue + (-2*(progress*progress*progress) + 3*(progress*progress)) * (endValue - startValue)
 		Default
 			Return Lerp(startValue, endValue, progress);
+	End
+End
+
+' summary:
+' CastUtil is a utility class to allow casting of primitives to Null in the case that the variable type is unknown.
+' Assuming Hello is a class, and T is a generic in the current scope...
+' [code]
+' Local foo:T = <something>
+' Local bar:Hello = CastUtil<Hello>.Cast(foo) ' returns Null if foo is primitive
+' Local baz:Hello = Hello(foo) ' error if foo is primitive
+' [/code]
+Class CastUtil<T>
+Private
+	Global NIL:T
+
+Public
+	Function Cast:T(value:Int)
+		Return NIL
+	End
+	
+	Function Cast:T(value:Float)
+		Return NIL
+	End
+	
+	Function Cast:T(value:String)
+		Return NIL
+	End
+	
+	Function Cast:T(value:Bool)
+		Return NIL
+	End
+	
+	Function Cast:T(value:Object)
+		'Return T(value) FIXME: this is no longer working for some reason
+		Return NIL
+	End
+	
+	Function IsPrimitive:Bool(value:T)
+		'Return Cast(value) = Null ' FIXME
+		Return False
 	End
 End

@@ -7,8 +7,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import functions
-Import assert
+Import diddy.functions
+Import diddy.assert
 
 Class Reader Abstract
 Private

@@ -7,7 +7,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import core
-Import components
-Import layout
+Import diddy.gui.core
+Import diddy.gui.components
+Import diddy.gui.layout
 
