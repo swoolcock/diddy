@@ -13,7 +13,6 @@ GLText.GetNewInstance=function()
 
 GLText.prototype.Load=function(font, size, xpad, ypad)
 {
-	print("here");
 	this.font = font;
 	this.size = size;
 
@@ -43,7 +42,7 @@ GLText.prototype.Draw=function(text, x, y)
 {
 	var canvas = document.getElementById( "GameCanvas" );
 	var ctx = canvas.getContext('2d');
-	//ctx.font = this.size + 'px "Vast Shadow"';
+
 	ctx.font = this.size + 'px "'+this.font+'"';
 	ctx.textBaseline = 'top';
 	ctx.fillText(text, x, y);	
