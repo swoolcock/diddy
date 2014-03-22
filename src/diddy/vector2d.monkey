@@ -7,10 +7,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Private
-Import diddy.functions
-
 Public
+
 'Summary: 2D Vector Class
 Class Vector2D
 	Field x:Float
@@ -217,6 +215,6 @@ Class Vector2D
 	
 	'summary: Calculate distance between two points - overload using x,y
 	Method Distance:Float(x:float, y:float)
-		Return CalcDistance(Self.x, Self.y, x, y)
+		Return Sqrt((Self.x-x) * (Self.x-x) + (Self.y-y) * (Self.y-y))
 	End
 End
