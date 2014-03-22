@@ -40,9 +40,11 @@ Class Vector2D
 	End
 	
 	'summary: Swaps x and y around
-	Method SwapXY:Void(x:Float, y:Float)
-		Self.x = y
-		Self.y = x
+	Method SwapXY:Vector2D()
+		Local tmp:Float = Self.x
+		Self.x = Self.y
+		Self.y = tmp
+		Return Self
 	End
 	
 	'summary: Makes x and y zero
