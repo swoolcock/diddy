@@ -20,6 +20,13 @@ Class DiddyStack<T> Extends Stack<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	
+	Method CheckRange:Void(index:Int, low:Int=0, high:Int=-1)
+		If high < 0 Then high = Self.Count()
+		If index < low Or index >= high Then
+			Throw New IndexOutOfBoundsException("DiddyStack.CheckRange: index " + index + " not in range " + low + " <= index < " + high)
+		End
+	End
+	
 Public
 	Method New()
 		Super.New()
@@ -186,10 +193,16 @@ Public
 	End
 	
 	Method InsertItem:Void(index:Int, val:T)
+#If CONFIG="debug" Then
+		CheckRange(index,,Self.Count()+1)
+#End
 		Self.Insert(index, val)
 	End
 	
 	Method DeleteItem:T(index:Int)
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Local rv:T = Self.Get(index)
 		Self.Remove(index)
 		Return rv
@@ -204,10 +217,16 @@ Public
 	End
 	
 	Method GetItem:T(index:Int)
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Return Self.Get(index)
 	End
 	
 	Method SetItem:Void(index:Int, value:T)
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Self.Set(index, value)
 	End
 	
