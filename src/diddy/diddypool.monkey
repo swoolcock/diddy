@@ -85,7 +85,10 @@ Public
 	End
 	
 	Method FreeAll:Void()
-		freeObjects.AddAll(Self)
+		For Local obj:T = EachIn Self
+			freeObjects.Push(obj)
+			If IPoolable(obj) Then IPoolable(obj).Reset()
+		Next
 		Self.Clear()
 	End
 	
@@ -95,5 +98,9 @@ Public
 	
 	Method FreeCount:Int()
 		Return freeObjects.Count()
+	End
+	
+	Method ClearFree:Void()
+		freeObjects.Clear()
 	End
 End
