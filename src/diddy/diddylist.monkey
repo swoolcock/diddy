@@ -20,6 +20,13 @@ Class DiddyList<T> Extends List<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	
+	Method CheckRange:Void(index:Int, low:Int=0, high:Int=-1)
+		If high < 0 Then high = Self.Count()
+		If index < low Or index >= high Then
+			Throw New IndexOutOfBoundsException("DiddyList.CheckRange: index " + index + " not in range " + low + " <= index < " + high)
+		End
+	End
+	
 Public
 	Method New()
 		Super.New()
@@ -186,6 +193,9 @@ Public
 	End
 	
 	Method InsertItem:Void(index:Int, val:T)
+#If CONFIG="debug" Then
+		CheckRange(index,,Self.Count()+1)
+#End
 		If index = 0 Or Self.IsEmpty() Then
 			Self.AddFirst(val)
 		ElseIf index >= Self.Count() Then
@@ -196,21 +206,14 @@ Public
 			If item Then
 				Self.InsertBefore(item, val)
 			End
-			#Rem
-			Local node:list.Node<T> = Self.FirstNode()
-			While node
-				If Self.Equals(node.Value(), val) Then
-					New list.Node<T>(node, node.PrevNode())
-					Exit
-				End
-				node = node.NextNode()
-			End
-			#End
 		End
 	End
 	
 	Method DeleteItem:T(index:Int)
 		If Self.IsEmpty() Then Return NIL
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Local i:Int = 0
 		Local node:list.Node<T> = Self.FirstNode()
 		While node
@@ -235,6 +238,9 @@ Public
 	
 	Method GetItem:T(index:Int)
 		If Self.IsEmpty() Then Return NIL
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Local i:Int = 0
 		Local node:list.Node<T> = Self.FirstNode()
 		While node
@@ -247,6 +253,9 @@ Public
 	
 	Method SetItem:Void(index:Int, value:T)
 		If Self.IsEmpty() Then Return
+#If CONFIG="debug" Then
+		CheckRange(index)
+#End
 		Local i:Int = 0
 		Local node:list.Node<T> = Self.FirstNode()
 		While node

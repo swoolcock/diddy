@@ -27,6 +27,10 @@ Interface IEnumerable<T>
 	Method ObjectEnumerator:IEnumerator<T>()
 End
 
+Interface IPoolable
+	Method Reset:Void()
+End
+
 Interface IContainer<T>
 	' custom properties
 	Method Comparator:IComparator<T>() Property ' unsupported in Set

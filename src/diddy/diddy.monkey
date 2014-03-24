@@ -38,6 +38,10 @@ Import diddy.base64
 Import diddy.containers
 Import diddy.constants
 Import diddy.diddydata
+Import diddy.diddylist
+Import diddy.diddypool
+Import diddy.diddyset
+Import diddy.diddystack
 Import diddy.exception
 Import diddy.externfunctions
 Import diddy.filesystem
