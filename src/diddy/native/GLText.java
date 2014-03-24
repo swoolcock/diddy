@@ -45,6 +45,8 @@ class GLText{
 	float scaleX, scaleY;                              // Font Scale (X,Y Axis)
 	float spaceX;  
 
+	boolean allChars;
+	
 	Activity activity;
 	Context context;
 	AssetManager assets;
@@ -85,9 +87,22 @@ class GLText{
 		spaceX = 0.0f;
 	}
 	
+	public boolean CreateText(String file, String text, int size){
+		return Load(file, text, size, 0, 0);
+	}
+	
 	public boolean Load(String file, int size, int padX, int padY){
+		return Load(file, "", size, padX, padY);
+	}
+	
+	public boolean Load(String file, String text, int size, int padX, int padY){
 		// Append monkey folder!!!
 		file = "monkey/"+file;
+		
+		allChars = false;
+		if ("".equals(text))
+			allChars = true;
+		
 		
 		// load the font and setup paint instance for drawing
 		Typeface tf = Typeface.createFromAsset( assets, file );  // Create the Typeface from Font File
@@ -126,42 +141,64 @@ class GLText{
 
 		// set character height to font height
 		charHeight = fontHeight;                        // Set Character Height
-
-		// find the maximum size, validate, and setup cell sizes
-		cellWidth = (int)charWidthMax + ( 2 * fontPadX );  // Set Cell Width
-		cellHeight = (int)charHeight + ( 2 * fontPadY );  // Set Cell Height
-		int maxSize = cellWidth > cellHeight ? cellWidth : cellHeight;  // Save Max Size (Width/Height)
-		if ( maxSize < FONT_SIZE_MIN || maxSize > FONT_SIZE_MAX )  // IF Maximum Size Outside Valid Bounds
-			return false;                                // Return Error
-
+		
+		int maxSize = 0;
+		
+		if (allChars) {
+			// find the maximum size, validate, and setup cell sizes
+			cellWidth = (int)charWidthMax + ( 2 * fontPadX );  // Set Cell Width
+			cellHeight = (int)charHeight + ( 2 * fontPadY );  // Set Cell Height
+			maxSize = cellWidth > cellHeight ? cellWidth : cellHeight;  // Save Max Size (Width/Height)
+			if ( maxSize < FONT_SIZE_MIN || maxSize > FONT_SIZE_MAX )  // IF Maximum Size Outside Valid Bounds
+				return false;                                // Return Error
+		} else  {
+			cellWidth = (int)charWidthMax * text.length();
+			cellHeight = (int)charHeight;
+			maxSize = cellWidth;
+		}
 		// set texture size based on max font size (width or height)
 		// NOTE: these values are fixed, based on the defined characters. when
 		// changing start/end characters (CHAR_START/CHAR_END) this will need adjustment too!
-		if ( maxSize <= 24 )                            // IF Max Size is 18 or Less
-			textureSize = 256;                           // Set 256 Texture Size
-		else if ( maxSize <= 40 )                       // ELSE IF Max Size is 40 or Less
-			textureSize = 512;                           // Set 512 Texture Size
-		else if ( maxSize <= 80 )                       // ELSE IF Max Size is 80 or Less
-			textureSize = 1024;                          // Set 1024 Texture Size
-		else                                            // ELSE IF Max Size is Larger Than 80 (and Less than FONT_SIZE_MAX)
-			textureSize = 2048;                          // Set 2048 Texture Size
+		Bitmap bitmap;
+		if (allChars) {
+			if ( maxSize <= 24 )                            // IF Max Size is 18 or Less
+				textureSize = 256;                           // Set 256 Texture Size
+			else if ( maxSize <= 40 )                       // ELSE IF Max Size is 40 or Less
+				textureSize = 512;                           // Set 512 Texture Size
+			else if ( maxSize <= 80 )                       // ELSE IF Max Size is 80 or Less
+				textureSize = 1024;                          // Set 1024 Texture Size
+			else                                            // ELSE IF Max Size is Larger Than 80 (and Less than FONT_SIZE_MAX)
+				textureSize = 2048;                          // Set 2048 Texture Size
+				
+			// create an empty bitmap (alpha only)
+			bitmap = Bitmap.createBitmap( textureSize, textureSize, Bitmap.Config.ARGB_8888 );//Bitmap.Config.ALPHA_8 );  // Create Bitmap
 		
-		// create an empty bitmap (alpha only)
-		Bitmap bitmap = Bitmap.createBitmap( textureSize, textureSize, Bitmap.Config.ARGB_8888 );//Bitmap.Config.ALPHA_8 );  // Create Bitmap
+		} else {
+			textureSize = getNextPOT(maxSize);
+			int textureSizeH = getNextPOT(cellHeight);
+
+			// create an empty bitmap (alpha only)
+			bitmap = Bitmap.createBitmap( textureSize, textureSizeH, Bitmap.Config.ARGB_8888 );//Bitmap.Config.ALPHA_8 );  // Create Bitmap
+		}
+
 		Canvas canvas = new Canvas( bitmap );           // Create Canvas for Rendering to Bitmap
 		bitmap.eraseColor( 0x00000000 );                // Set Transparent Background (ARGB)
 
 		// render each of the characters to the canvas (ie. build the font map)
 		float x = fontPadX;                             // Set Start Position (X)
 		float y = ( cellHeight - 1 ) - fontDescent - fontPadY;  // Set Start Position (Y)
-		for ( char c = CHAR_START; c <= CHAR_END; c++ )  {  // FOR Each Character
-			s[0] = c;                                    // Set Character to Draw
-			canvas.drawText( s, 0, 1, x, y, paint );     // Draw Character
-			x += cellWidth;                              // Move to Next Character
-			if ( ( x + cellWidth - fontPadX ) > textureSize )  {  // IF End of Line Reached
-				x = fontPadX;                             // Set X for New Row
-				y += cellHeight;                          // Move Down a Row
+		if (allChars) {
+			for ( char c = CHAR_START; c <= CHAR_END; c++ )  {  // FOR Each Character
+				s[0] = c;                                    // Set Character to Draw
+				canvas.drawText( s, 0, 1, x, y, paint );     // Draw Character
+				x += cellWidth;                              // Move to Next Character
+				if ( ( x + cellWidth - fontPadX ) > textureSize )  {  // IF End of Line Reached
+					x = fontPadX;                             // Set X for New Row
+					y += cellHeight;                          // Move Down a Row
+				}
 			}
+		} else {
+			canvas.drawText( text, x, y, paint );
 		}
 		s[0] = CHAR_NONE;                               // Set Character to Use for NONE
 		
@@ -183,19 +220,32 @@ class GLText{
 		return true;
 	}
 	
-	public void Draw(String text, float x, float y)  {
-		c_GraphicsContext gc = bb_graphics.g_context;
+	private int getNextPOT(int a) {
+		int b = 1;
+		while (b < a){
+			b = b << 1;
+		}
+		return b;
+	}
 
+	private void SetMatrix() {
 		//FIXME: copied code from c_GraphicsContext.p_Validate() as I can't call it for some reason
-		if ((gc.m_matDirty)!=0) {
+		if ((bb_graphics.g_context.m_matDirty)!=0) {
 			bb_graphics.g_renderDevice.SetMatrix(bb_graphics.g_context.m_ix,
 								bb_graphics.g_context.m_iy,
 								bb_graphics.g_context.m_jx,
 								bb_graphics.g_context.m_jy,
 								bb_graphics.g_context.m_tx,
 								bb_graphics.g_context.m_ty);
-			gc.m_matDirty=0;
+			bb_graphics.g_context.m_matDirty=0;
 		}
+	}
+	
+	public void Draw(String text, float x, float y)  {
+		if (!allChars)
+			return;
+			
+		SetMatrix();
 		
 		float chrHeight = cellHeight * scaleY;          // Calculate Scaled Character Height
 		float chrWidth = cellWidth * scaleX;            // Calculate Scaled Character Width
@@ -214,6 +264,7 @@ class GLText{
 	}
 	
 	public void DrawTexture(float x, float y)  {
+		SetMatrix();
 		bb_graphics.g_renderDevice.DrawSurface(surface, x, y);
 	}
 }

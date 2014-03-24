@@ -7,10 +7,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Private
-Import diddy.functions
-
 Public
+
 'Summary: 2D Vector Class
 Class Vector2D
 	Field x:Float
@@ -42,9 +40,11 @@ Class Vector2D
 	End
 	
 	'summary: Swaps x and y around
-	Method SwapXY:Void(x:Float, y:Float)
-		Self.x = y
-		Self.y = x
+	Method SwapXY:Vector2D()
+		Local tmp:Float = Self.x
+		Self.x = Self.y
+		Self.y = tmp
+		Return Self
 	End
 	
 	'summary: Makes x and y zero
@@ -217,6 +217,6 @@ Class Vector2D
 	
 	'summary: Calculate distance between two points - overload using x,y
 	Method Distance:Float(x:float, y:float)
-		Return CalcDistance(Self.x, Self.y, x, y)
+		Return Sqrt((Self.x-x) * (Self.x-x) + (Self.y-y) * (Self.y-y))
 	End
 End

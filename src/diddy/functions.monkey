@@ -552,8 +552,8 @@ Function BresenhamLine:Vector2D[](startPos:Vector2D, endPos:Vector2D)
 	Local swapped:Bool = False
 	
 	If steep
-		startPos.SwapXY(startPos.x, startPos.y)
-		endPos.SwapXY(endPos.x, endPos.y)
+		startPos.Set(startPos.y, startPos.x)
+		endPos.Set(endPos.y, endPos.x)
 	End
 	
 	If startPos.x > endPos.x

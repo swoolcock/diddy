@@ -19,7 +19,9 @@ Import diddy.containers
 Import diddy.stringbuilder
 Import diddy.exception
 
+Public
 Class XMLParser
+Private
 	Const TAG_DEFAULT:Int = 0
 	Const TAG_COMMENT:Int = 1
 	Const TAG_CDATA:Int = 2
@@ -349,14 +351,6 @@ Class XMLParser
 		Return e
 	End
 
-	Method ParseFile:XMLDocument(filename:String)
-		Local xmlString:String = LoadString(filename)
-		If Not xmlString Then
-			Throw New XMLParseException("XMLParser.ParseFile: Error: Cannot load " + filename)
-		End
-		Return ParseString(xmlString)
-	End
-	
 	Method TrimString:Void(startIdx:Int, endIdx:Int, trimmed:Int[])
 		Local trimStart:Int = startIdx, trimEnd:Int = endIdx
 		While trimEnd > trimStart
@@ -377,6 +371,15 @@ Class XMLParser
 		End
 		trimmed[0] = trimStart
 		trimmed[1] = trimEnd
+	End
+	
+Public
+	Method ParseFile:XMLDocument(filename:String)
+		Local xmlString:String = LoadString(filename)
+		If Not xmlString Then
+			Throw New XMLParseException("XMLParser.ParseFile: Error: Cannot load " + filename)
+		End
+		Return ParseString(xmlString)
 	End
 	
 	' parses an xml doc, currently doesn't support nested PI or prolog
@@ -592,6 +595,7 @@ Private
 	Field name:String
 	Field value:String
 
+Public
 ' Constructors
 	Method New(name:String, value:String)
 		Self.name = name
