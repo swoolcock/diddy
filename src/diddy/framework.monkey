@@ -828,9 +828,8 @@ Public
 	Method RenderBackgroundLayers:Void()
 		If layers Then
 			For Local layer:DiddyDataLayer = EachIn layers
-				If layer.index < 0 Then
-					layer.Render()
-				End
+				If layer.index >= 0 Then Return
+				layer.Render()
 			Next
 		End
 	End
