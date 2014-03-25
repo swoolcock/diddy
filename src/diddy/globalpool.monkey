@@ -15,7 +15,7 @@ Private
 	Global objects:Stack<T> = New Stack<T>
 	
 Public
-	Function Obtain:T()
+	Function Allocate:T()
 		If Not objects.IsEmpty() Then Return objects.Pop()
 		Return New T
 	End
