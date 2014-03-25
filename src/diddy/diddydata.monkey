@@ -232,7 +232,7 @@ Class DiddyDataLayer Implements IComparable
 	End
 	
 	Method Render:Void(xoffset:Float=0, yoffset:Float=0)
-		For Local obj:DiddyDataObject = Eachin objects
+		For Local obj:DiddyDataObject = EachIn objects
 			If obj.visible Then
 				obj.Render(xoffset, yoffset)
 			End

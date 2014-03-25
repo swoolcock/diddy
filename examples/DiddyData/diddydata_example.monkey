@@ -6,7 +6,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #End
 
 Strict
-#REFLECTION_FILTER="*"
+#REFLECTION_FILTER="diddydata_example;diddy.framework"
 
 ' must import reflection first so that diddydata knows about the user's Screen classes
 Import reflection
@@ -19,7 +19,7 @@ End
 
 Class MyGame Extends DiddyApp
 	Method Create:Void()
-	'	debugOn = True
+'		debugOn = True
 		LoadDiddyData()
 		Start(screens.Find("Title"), True, defaultFadeTime, True, True)
 	End	
