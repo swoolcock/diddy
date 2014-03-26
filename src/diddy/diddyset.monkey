@@ -61,14 +61,14 @@ Public
 	
 	Method AddAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.AddAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			Self.Insert(val)
 		Next
 	End
 	
 	Method AddContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.AddContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.Insert(val)
 		Next
 	End
@@ -90,14 +90,14 @@ Public
 	
 	Method RemoveAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.RemoveAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			Self.Remove(val)
 		Next
 	End
 	
 	Method RemoveContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.RemoveContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.Remove(val)
 		Next
 	End
@@ -126,7 +126,7 @@ Public
 	Method RetainAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.RetainAll: Source Set must not be null")
 		Local arr:T[] = Self.ToArray()
-		For Local val := Eachin arr
+		For Local val := EachIn arr
 			If Not src.Contains(val) Then
 				Self.Remove(val)
 			End
@@ -136,7 +136,7 @@ Public
 	Method RetainContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.RetainContainer: Source IContainer must not be null")
 		Local arr:T[] = Self.ToArray()
-		For Local val := Eachin arr
+		For Local val := EachIn arr
 			If Not src.ContainsItem(val) Then
 				Self.Remove(val)
 			End
@@ -146,7 +146,7 @@ Public
 	' ContainsAll
 	Method ContainsAll:Bool(src:Stack<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.ContainsAll: Source Stack must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -154,7 +154,7 @@ Public
 	
 	Method ContainsAll:Bool(src:List<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.ContainsAll: Source List must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -162,7 +162,7 @@ Public
 	
 	Method ContainsAll:Bool(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.ContainsAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -170,7 +170,7 @@ Public
 	
 	Method ContainsContainer:Bool(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddySet.ContainsContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -255,8 +255,24 @@ Public
 		Return Super.IsEmpty()
 	End
 	
-	Method Items:IEnumerable<T>() Property
-		Return New WrappedSetEnumerable<T>(Self)
+	Method Reverse:Void()
+		Throw New UnsupportedOperationException
+	End
+	
+	Method SwapItems:Void(index1:Int, index2:Int)
+		Throw New UnsupportedOperationException
+	End
+	
+	Method Shuffle:Void()
+		Throw New UnsupportedOperationException
+	End
+	
+	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+		Return New WrappedSetEnumerable<T>(Self, pred)
+	End
+	
+	Method Truncate:Void(size:Int)
+		Throw New UnsupportedOperationException
 	End
 	
 	Method Comparator:IComparator<T>() Property

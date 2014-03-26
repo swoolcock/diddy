@@ -68,14 +68,14 @@ Public
 	
 	Method AddAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.AddAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			Self.AddLast(val)
 		Next
 	End
 	
 	Method AddContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.AddContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.AddLast(val)
 		Next
 	End
@@ -97,14 +97,14 @@ Public
 	
 	Method RemoveAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.RemoveAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			Self.RemoveEach(val)
 		Next
 	End
 	
 	Method RemoveContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.RemoveContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.RemoveEach(val)
 		Next
 	End
@@ -143,7 +143,7 @@ Public
 	Method RetainContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.RetainContainer: Source Container must not be null")
 		Local arr:T[] = Self.ToArray()
-		For Local val := Eachin arr
+		For Local val := EachIn arr
 			If Not src.ContainsItem(val) Then
 				Self.RemoveEach(val)
 			End
@@ -177,7 +177,7 @@ Public
 	
 	Method ContainsContainer:Bool(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyList.ContainsContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -318,8 +318,32 @@ Public
 		Return Super.IsEmpty()
 	End
 	
-	Method Items:IEnumerable<T>() Property
-		Return New WrappedListEnumerable<T>(Self)
+	Method Reverse:Void()
+		For Local i:Int = 0 Until Count()/2
+			SwapItems(i, Count()-i-1)
+		Next
+	End
+	
+	Method SwapItems:Void(index1:Int, index2:Int)
+		Local temp:T = GetItem(index1)
+		SetItem(index1, GetItem(index2))
+		SetItem(index2, temp)
+	End
+	
+	Method Shuffle:Void()
+		For Local i:Int = Count() - 1 To 0 Step -1
+			SwapItems(i, Rnd(i))
+		Next
+	End
+	
+	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+		Return New WrappedListEnumerable<T>(Self, pred)
+	End
+	
+	Method Truncate:Void(size:Int)
+		While Count() > size
+			RemoveLast()
+		End
 	End
 	
 Private
