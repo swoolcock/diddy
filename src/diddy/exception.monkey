@@ -116,3 +116,9 @@ Class UnsupportedOperationException Extends DiddyException
 		Super.New(message, cause)
 	End
 End
+
+Class FormatException Extends DiddyException
+	Method New(message:String="", cause:Throwable=Null)
+		Super.New(message, cause)
+	End
+End
