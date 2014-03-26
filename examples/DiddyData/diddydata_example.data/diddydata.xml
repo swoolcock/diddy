@@ -23,6 +23,7 @@
 			<resources>
 				<images>
 					<image path="planet2.png" name="planet" />
+					<image path="minimap.png" name="minimap" />
 					<image path="sprites/GAster32.png" name="GAster32" width="32" height="32" frames="16" />
 				</images>
 				<sounds>
@@ -41,6 +42,7 @@
 				<!-- non-negative values get drawn after Render() -->
 				<layer name="hud" index="0">
 					<!-- put your HUD here -->
+					<object name="minimap" image="minimap" x="110" y="500" />
 				</layer>
 			</layers>
 		</screen>
