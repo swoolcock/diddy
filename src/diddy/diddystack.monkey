@@ -75,7 +75,7 @@ Public
 	
 	Method AddContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.Push(val)
 		Next
 	End
@@ -97,14 +97,14 @@ Public
 	
 	Method RemoveAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			Self.RemoveEach(val)
 		Next
 	End
 	
 	Method RemoveContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			Self.RemoveEach(val)
 		Next
 	End
@@ -113,7 +113,7 @@ Public
 	Method RetainAll:Void(src:Stack<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainAll: Source Stack must not be null")
 		Local arr:T[] = Self.ToArray()
-		For Local val := Eachin arr
+		For Local val := EachIn arr
 			If Not src.Contains(val) Then
 				Self.RemoveEach(val)
 			End
@@ -143,7 +143,7 @@ Public
 	Method RetainContainer:Void(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainContainer: Source IContainer must not be null")
 		Local arr:T[] = Self.ToArray()
-		For Local val := Eachin arr
+		For Local val := EachIn arr
 			If Not src.ContainsItem(val) Then
 				Self.RemoveEach(val)
 			End
@@ -153,7 +153,7 @@ Public
 	' ContainsAll
 	Method ContainsAll:Bool(src:Stack<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Stack must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -161,7 +161,7 @@ Public
 	
 	Method ContainsAll:Bool(src:List<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source List must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -169,7 +169,7 @@ Public
 	
 	Method ContainsAll:Bool(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Set must not be null")
-		For Local val := Eachin src
+		For Local val := EachIn src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -177,7 +177,7 @@ Public
 	
 	Method ContainsContainer:Bool(src:IContainer<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsContainer: Source IContainer must not be null")
-		For Local val := Eachin src.Items
+		For Local val := EachIn src.Items()
 			If Not Self.Contains(val) Return False
 		Next
 		Return True
@@ -270,8 +270,36 @@ Public
 		Return Super.IsEmpty()
 	End
 	
-	Method Items:IEnumerable<T>() Property
-		Return New WrappedStackEnumerable<T>(Self)
+	Method Reverse:Void()
+		For Local i:Int = 0 Until Count()/2
+			SwapItems(i, Count()-i-1)
+		Next
+	End
+	
+	Method SwapItems:Void(index1:Int, index2:Int)
+#If CONFIG="debug" Then
+		CheckRange(index1)
+		CheckRange(index2)
+#End
+		Local temp:T = Self.Get(index1)
+		Self.Set(index1, Self.Get(index2))
+		Self.Set(index2, temp)
+	End
+	
+	Method Shuffle:Void()
+		For Local i:Int = Count() - 1 To 0 Step -1
+			SwapItems(i, Rnd(i))
+		Next
+	End
+	
+	Method Truncate:Void(size:Int)
+		While Count() > size
+			Pop()
+		End
+	End
+	
+	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+		Return New WrappedStackEnumerable<T>(Self, pred)
 	End
 	
 Private
