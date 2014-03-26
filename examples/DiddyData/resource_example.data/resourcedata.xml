@@ -1,0 +1,9 @@
+<diddy screenWidth="800" screenHeight="600" useAspectRatio="true">
+	<global>
+		<resources>
+			<images>
+				<image path="planet2.png" name="planet" />
+			</images>
+		</resources>
+	</global>
+</diddy>
