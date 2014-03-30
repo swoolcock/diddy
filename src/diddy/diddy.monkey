@@ -35,6 +35,7 @@ Import mojo
 Import diddy.arrays
 Import diddy.assert
 Import diddy.base64
+Import diddy.collections
 Import diddy.containers
 Import diddy.constants
 Import diddy.diddydata
