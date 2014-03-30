@@ -82,7 +82,7 @@ Class SortUtil<T>
 					cnt.SetItem(i, cnt.GetItem(storeIndex))
 					cnt.SetItem(storeIndex, val)
 					storeIndex += 1
-End
+				End
 			Else
 				If Not reverse And comp.Compare(cnti, pivotValue) <= 0 Or reverse And comp.Compare(cnti, pivotValue) >= 0 Then
 					val = cnti
