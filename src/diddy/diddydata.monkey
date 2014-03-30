@@ -50,44 +50,46 @@ Class DiddyData
 		LoadXMLSounds(resourcesElement)
 				
 		Local screenElement:XMLElement = rootElement.GetFirstChildByName("screens")
-		For Local node:XMLElement = EachIn screenElement.GetChildrenByName("screen")
-			Local name:String = node.GetAttribute("name").Trim()
-			Local clazz:String = node.GetAttribute("class").Trim()
-			
-			If diddyGame.debugOn
-				Print "name  = " + name
-				Print "class = " + clazz
-			End
-			Local ci:ClassInfo = GetClass(clazz)
-			Local scr:Screen = Screen(ci.NewInstance())
-			scr.name = name
-			
-			For Local resourcesNode:XMLElement = Eachin node.GetChildrenByName("resources")
-				LoadXMLImages(resourcesNode, True, scr.name)
-				LoadXMLSounds(resourcesNode, True, scr.name)
+		If screenElement
+			For Local node:XMLElement = EachIn screenElement.GetChildrenByName("screen")
+				Local name:String = node.GetAttribute("name").Trim()
+				Local clazz:String = node.GetAttribute("class").Trim()
 				
-				Local musicNode:XMLElement = resourcesNode.GetFirstChildByName("music")
-				If musicNode <> Null Then
-					Local musicPath:String = musicNode.GetAttribute("path").Trim()
-					Local musicFlag:Int = Int(musicNode.GetAttribute("flag", "0").Trim())
-					scr.SetMusic(musicPath, Int(musicFlag))
+				If diddyGame.debugOn
+					Print "name  = " + name
+					Print "class = " + clazz
 				End
-			Next
-			
-			Local layersNode:XMLElement = node.GetFirstChildByName("layers")
-			If layersNode Then
-				For Local layerNode:XMLElement = Eachin layersNode.GetChildrenByName("layer")
-					If Not scr.layers Then scr.layers = New DiddyDataLayers
-					Local layer:DiddyDataLayer = New DiddyDataLayer
-					scr.layers.Push(layer)
-					layer.InitFromXML(layerNode)
+				Local ci:ClassInfo = GetClass(clazz)
+				Local scr:Screen = Screen(ci.NewInstance())
+				scr.name = name
+				
+				For Local resourcesNode:XMLElement = Eachin node.GetChildrenByName("resources")
+					LoadXMLImages(resourcesNode, True, scr.name)
+					LoadXMLSounds(resourcesNode, True, scr.name)
+					
+					Local musicNode:XMLElement = resourcesNode.GetFirstChildByName("music")
+					If musicNode <> Null Then
+						Local musicPath:String = musicNode.GetAttribute("path").Trim()
+						Local musicFlag:Int = Int(musicNode.GetAttribute("flag", "0").Trim())
+						scr.SetMusic(musicPath, Int(musicFlag))
+					End
 				Next
-			End
-			
-			If scr.layers Then scr.layers.Sort()
-			
-			diddyGame.screens.Add(name.ToUpper(), scr)
-		Next
+				
+				Local layersNode:XMLElement = node.GetFirstChildByName("layers")
+				If layersNode Then
+					For Local layerNode:XMLElement = Eachin layersNode.GetChildrenByName("layer")
+						If Not scr.layers Then scr.layers = New DiddyDataLayers
+						Local layer:DiddyDataLayer = New DiddyDataLayer
+						scr.layers.Push(layer)
+						layer.InitFromXML(layerNode)
+					Next
+				End
+				
+				If scr.layers Then scr.layers.Sort()
+				
+				diddyGame.screens.Add(name.ToUpper(), scr)
+			Next
+		End
 	End
 	
 	Method LoadXMLImages:Void(xmlElement:XMLElement, preLoad:Bool = False, screenName:String = "")
