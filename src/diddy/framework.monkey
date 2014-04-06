@@ -62,6 +62,7 @@ Import diddy.containers
 Import diddy.inputcache
 Import diddy.xml
 Import diddy.diddydata
+Import diddy.math
 
 'Device width and height
 Global DEVICE_WIDTH:Float
@@ -1944,6 +1945,10 @@ Class Sprite
 	Field rotation:Float
 	Field rotationSpeed:Float = 1
 	
+	' timer
+	Field timer:Float
+	Field timerSpeed:Float = 0.01
+	
 	Method New(img:GameImage, x:Float, y:Float)
 		Self.image = img
 		Self.x = x
@@ -1988,6 +1993,21 @@ Class Sprite
 		Self.y+=Self.dy * dt.delta
 		
 		If ygravity > 0 Then dy += ygravity * dt.delta
+	End
+	
+	Method UpdateTimer:Void(loop:Bool, stopWhenFinished:Bool)
+		timer += timerSpeed * dt.delta
+		
+		If stopWhenFinished
+			If timer >= 1 Then
+				timer = 1
+			End
+		ElseIf loop
+			If timer >= 1 Then
+				timer = 0
+			End
+		End
+		
 	End
 	
 	Method ManageScale:Void()
