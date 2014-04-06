@@ -149,8 +149,8 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next
 	End
 
-	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String="")
-		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name)
+	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False)
+		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name, drawText)
 		If orientation = VERTICAL
 			IncreaseHeight(b)
 		Else
@@ -159,8 +159,8 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b
 	End
 
-	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String="")
-		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name)
+	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String = "", drawText:Bool = False)
+		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name, drawText)
 		If orientation = VERTICAL
 			IncreaseHeight(b)
 		Else
@@ -191,8 +191,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 
-	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String)
+	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String, drawText:Bool = False)
 		Local b:SimpleButton = New SimpleButton
+		b.drawText = drawText
 		b.name = StripAll(buttonImage.name.ToUpper())
 		b.image = buttonImage
 		b.image.SetHandle(0, 0)
@@ -204,8 +205,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b		
 	End
 
-	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String)
+	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String, drawText:Bool = False)
 		Local b:SimpleButton = New SimpleButton
+		b.drawText = drawText
 		b.Load(buttonImageFile, mouseOverFile)
 		b = ProcessButton(b, name)
 		Return b
@@ -214,6 +216,7 @@ Class SimpleMenu Extends List<SimpleButton>
 	Method ProcessButton:SimpleButton(b:SimpleButton, name:String)
 		b.useVirtualRes = Self.useVirtualRes
 		b.orientation = Self.orientation
+		b.text = name
 		If name <> "" Then b.name = name.ToUpper()
 		If orientation = VERTICAL
 			b.CentreX(nextY)
@@ -273,6 +276,11 @@ Class SimpleMenu Extends List<SimpleButton>
 	End
 End
 
+Class SimpleButtonDrawDelegate
+	Method Draw:Void(text:String, x:Float, y:Float)
+	End
+End
+
 Class SimpleButton Extends Sprite
 	Field active:Int = 1
 	Field clicked:Int = 0
@@ -286,6 +294,9 @@ Class SimpleButton Extends Sprite
 	Field imageSelectedMO:GameImage
 	Field useVirtualRes:Bool = False
 	Field orientation:Int = VERTICAL
+	Field drawText:Bool
+	Field text:String
+	Field simpleButtonDrawDelegate:SimpleButtonDrawDelegate
 	
 	Method Precache:Void()
 		If image<>null
@@ -307,6 +318,13 @@ Class SimpleButton Extends Sprite
 		Else
 			DrawImage Self.image.image, x, y
 		EndIf
+		If drawText
+			If simpleButtonDrawDelegate <> Null
+				simpleButtonDrawDelegate.Draw(text, x + Self.image.w2, y)
+			Else
+				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
+			End
+		End
 		SetAlpha 1
 	End
 	
