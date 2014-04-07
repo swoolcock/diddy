@@ -5,31 +5,29 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
-#rem
-header:The main module for Diddy
+#Rem
+Header: The main module for Diddy.
 Diddy includes various features:
-[list]
-[*]External functions
-[*][a framework.monkey.html]Screen Based Framework[/a]
-[*]Input Cache
-[*]Tweening
-[*][a collections.monkey.html]Collections[/a]
-[*][a assert.monkey.html]Assertions[/a]
-[*]GUI
-[*]Simple GUI
-[*]Serialization
-[*]XML Parser
-[*]Base64 Encoding/Decoding
-[*]IO
-[*]Tiled Loader
-[*]Filesystem Wrapper
-[*]i18n
-[*]Particle System
-[*]String Builder
-[*]Storyboarding
-[*][a vector2d.monkey.html]Vector2d[/a]
-[/list]
-#end
+* External functions
+* Screen Based Framework
+* Input Cache
+* Tweening
+* Collections
+* Assertions
+* Skinned GUI
+* Simple GUI
+* Serialization
+* XML Parser
+* Base64 Encoding/Decoding
+* IO
+* Tiled Loader
+* Filesystem Wrapper
+* i18n
+* Particle System
+* String Builder
+* Storyboarding
+* Vector2d
+#End
 Import mojo
 
 Import diddy.arrays
@@ -67,5 +65,7 @@ Import diddy.tween
 Import diddy.vector2d
 Import diddy.xml
 
-'summary: The constant contains the library's name
+#Rem
+Summary: The name constant contains the library's name, "Diddy".
+#End
 Const name:String = "Diddy"

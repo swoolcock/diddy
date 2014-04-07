@@ -5,6 +5,10 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
+#Rem
+Header: Provides a simple implementation of sprintf.
+#End
+
 Strict
 
 Private
@@ -13,9 +17,18 @@ Import diddy.exception
 
 Public
 
-' This is a very simple implementation of sprintf.  I can't guarantee that it'll be bulletproof at this time, so use at your own risk!
-' Note that due to Monkey's lack of varargs, Format accepts a maximum of 10 optional arguments.  Arguments are parsed up until the first Null.
-' TODO: round floats rather than truncating them
+#Rem
+Summary: This is a simple implementation of sprintf.
+Note that due to Monkey's lack of varargs, Format accepts a maximum of 10 optional arguments.
+Arguments are parsed up until the first empty string.
+TODO: round floats rather than truncating them
+[code]
+Print Format("The answer to the ultimate question of life, the universe, and everything is %d.", 42)
+Print Format("Pi is approximately %.5f", PI)
+Print Format("My name is %s.", "Philip J Fry")
+Print Format("I bought a %dmL bottle of %s for $%.2f - what a ripoff!", 600, "Coke", 4.50)
+[/code]
+#End
 Function Format:String(fmt:String, arg1:String="", arg2:String="", arg3:String="", arg4:String="", arg5:String="", arg6:String="", arg7:String="", arg8:String="", arg9:String="", arg10:String="")
 	Local args:String[] = [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10]
 	Local argcount:Int = 0

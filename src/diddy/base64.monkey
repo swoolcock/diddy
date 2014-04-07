@@ -5,6 +5,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
+#Rem
+Header: Provides Base64 encoding/decoding functions.
+Base64 is a useful method for converting non-printable characters and other binary data to printable text.
+Due to the way base64 works, the encoded string will generally be approximately 33% larger.
+Base64 can also be used as a cheap way to obfuscate text.  Although it can be decoded easily, it's useful
+for hiding text from the casual user (for example, to prevent the player from accidentally reading spoilers).
+#End
+
 Strict
 
 Private
@@ -13,8 +21,15 @@ Import brl.datastream
 
 Public
 
-' enabling lineWrap will wrap the string every lineWrapWidth characters (defaults to 80)
-' enabling padOutput will pad the ending of the output with equals characters (=) to next 4-byte boundary
+#Rem
+Summary: This function will convert an array of Ints into a base64 encoded string.
+Enabling lineWrap will wrap the string every lineWrapWidth characters (defaults to 80).
+Enabling padOutput will pad the ending of the output with equals characters (=) to next 4-byte boundary.
+[code]
+Print EncodeBase64([1,2,3,4,5]) ' prints "AQIDBAU"
+Print EncodeBase64([1,2,3,4,5], True) ' prints "AQIDBAU="
+[/code]
+#End
 Function EncodeBase64:String(src:Int[], padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
 	If src.Length = 0 Then Return ""
 	Local buffer:DataBuffer = New DataBuffer(Int(src.Length*4.0/3.0+10))
@@ -66,14 +81,35 @@ Function EncodeBase64:String(src:Int[], padOutput:Bool=False, lineWrap:Bool=Fals
 	Return buffer.PeekString(0, addr)
 End
 
+#Rem
+Summary: This function will convert a (usually readable) String into a base64 encoded string.
+Enabling lineWrap will wrap the string every lineWrapWidth characters (defaults to 80).
+Enabling padOutput will pad the ending of the output with equals characters (=) to next 4-byte boundary.
+[code]
+Print EncodeBase64("any carnal pleasure.") ' prints "YW55IGNhcm5hbCBwbGVhc3VyZS4"
+Print EncodeBase64("any carnal pleasure.", True) ' prints "YW55IGNhcm5hbCBwbGVhc3VyZS4="
+[/code]
+#End
 Function EncodeBase64:String(src:String, padOutput:Bool=False, lineWrap:Bool=False, lineWrapWidth:Int=80)
 	Return EncodeBase64(src.ToChars(), padOutput, lineWrap, lineWrapWidth)
 End
 
+#Rem
+Summary: This function will convert a base64 encoded string into another (usually readable) string.
+[code]
+Print DecodeBase64("YW55IGNhcm5hbCBwbGVhc3VyZS4") ' prints "any carnal pleasure."
+[/code]
+#End
 Function DecodeBase64:String(src:String)
 	Return String.FromChars(DecodeBase64Bytes(src))
 End
 
+#Rem
+Summary: This function will convert a base64 encoded string into an array of Ints.
+[code]
+DecodeBase64Bytes("AQIDBAU") ' returns an Int array [1,2,3,4,5]
+[/code]
+#End
 Function DecodeBase64Bytes:Int[](src:String)
 	InitBase64()
 	Local a:Int, b:Int, c:Int, d:Int, i:Int, j:Int

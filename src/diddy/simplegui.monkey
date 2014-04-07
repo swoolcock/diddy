@@ -5,11 +5,19 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
+#Rem
+Header: A collection of very simple GUI elements, usually for a basic menu system.
+#End
+
 Import diddy
 
 Const VERTICAL:Int = 0
 Const HORIZONTAL:Int = 1
 	
+#Rem
+Summary: Provides a group of buttons that automatically handle mouseover images and sounds.
+The buttons are automatically layed out horizontally or vertically, so only the menu itself needs to be positioned.
+#End
 Class SimpleMenu Extends List<SimpleButton>
 	Field x:Float, y:Float
 	Field buttonGap:Int = 0
@@ -29,10 +37,17 @@ Class SimpleMenu Extends List<SimpleButton>
 		Error "Please use a different constructor"
 	End
 	
+#Rem
+Summary: Creates a new SimpleMenu with the specified configuration.
+#End
 	Method New(soundMouseOverFile$, soundClickFile$, x:Int, y:Int, gap:Int, useVirtualRes:Bool, orientation:Int = VERTICAL)
 		Init(soundMouseOverFile, soundClickFile, x, y, gap, useVirtualRes, orientation)
 	End
 	
+#Rem
+Summary: Initialises the menu (internal method).
+Developers do not need to call this.
+#End
 	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int, useVirtualRes:Bool, orientation:Int)
 		Self.Clear()
 		Self.useVirtualRes = useVirtualRes
@@ -57,6 +72,11 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 
+#Rem
+Summary: Calculates and returns the minimum width of the menu required to fit all buttons at their current positions.
+See [[CalcHeight]].
+Developers do not need to call this.
+#End
 	Method CalcWidth:Int()
 		Local left:Int=10000
 		Local right:Int=-10000
@@ -69,6 +89,11 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return w
 	End
 	
+#Rem
+Summary: Calculates and returns the minimum height of the menu required to fit all buttons at their current positions.
+See [[CalcWidth]].
+Developers do not need to call this.
+#End
 	Method CalcHeight:Int()
 		Local top:Int=10000
 		Local bot:Int=-10000
@@ -81,6 +106,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return h
 	End
 	
+#Rem
+Summary: Sets the X coordinate of the menu, moving all the buttons with it.
+#End
 	Method SetX:Void(thex#)
 		CalcLeft()
 		Local oldx# = x	
@@ -92,6 +120,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next	
 	End
 		
+#Rem
+Summary: Sets the Y coordinate of the menu, moving all the buttons with it.
+#End	
 	Method SetY:Void(they#)
 		CalcTop()
 		Local oldy# = y	
@@ -103,6 +134,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next		
 	End
 	
+#Rem
+Summary: Sets the x coordinate of the menu to be that of the leftmost button.
+Developers do not need to call this.
+#End
 	Method CalcLeft:Void()
 		x = 10000
 		Local b:SimpleButton
@@ -111,6 +146,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next						
 	End
 		
+#Rem
+Summary: Sets the y coordinate of the menu to be that of the topmost button.
+Developers do not need to call this.
+#End	
 	Method CalcTop:Void()
 		y = 10000
 		Local b:SimpleButton
@@ -119,6 +158,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next						
 	End
 	
+#Rem
+Summary: Sets the x coordinate of the menu to be centred horizontally on the screen.
+#End
 	Method CentreHoriz:Void()
 		CalcWidth()
 		if useVirtualRes
@@ -128,6 +170,9 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 	
+#Rem
+Summary: Sets the y coordinate of the menu to be centred vertically on the screen.
+#End
 	Method CentreVert:Void()
 		CalcHeight()
 		if useVirtualRes
@@ -137,11 +182,17 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 
+#Rem
+Summary: Sets the x and y coordinates of the menu to be centred both horizontally and vertically on the screen.
+#End
 	Method Centre:Void()
 		CentreHoriz()
 		CentreVert()
 	End
 	
+#Rem
+Summary: Sets the alpha for each button to the passed value.
+#End
 	Method SetMenuAlpha:Void(alpha:Float)
 		Local b:SimpleButton
 		For b = EachIn Self
@@ -149,6 +200,13 @@ Class SimpleMenu Extends List<SimpleButton>
 		Next
 	End
 
+#Rem
+Summary: Creates a new [[SimpleButton]] and initialises it with the specified image, mouseover image, and name.
+The button is added to the end of the menu and is positioned to fit the current menu orientation.
+[code]
+Local sb:SimpleButton = menu.AddButton(diddyGame.images.Find("newgame"), diddyGame.images.Find("newgameMO"), "New Game")
+[/code]
+#End
 	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False)
 		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name, drawText)
 		If orientation = VERTICAL
@@ -159,6 +217,13 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b
 	End
 
+#Rem
+Summary: Creates a new [[SimpleButton]] and initialises it with the specified image, mouseover image, and name.
+The button is added to the end of the menu and is positioned to fit the current menu orientation.
+[code]
+Local sb:SimpleButton = menu.AddButton("newgame", "newgameMO", "New Game")
+[/code]
+#End
 	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String = "", drawText:Bool = False)
 		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name, drawText)
 		If orientation = VERTICAL
@@ -169,6 +234,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b
 	End
 	
+#Rem
+Summary: Increases the height of the menu to fit the passed SimpleButton.
+Developers do not need to call this.
+#End
 	Method IncreaseHeight:Void(b:SimpleButton)
 		nextY = nextY + b.image.h + buttonGap
 
@@ -180,6 +249,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		End			
 	End
 
+#Rem
+Summary: Increases the width of the menu to fit the passed SimpleButton.
+Developers do not need to call this.
+#End
 	Method IncreaseWidth:Void(b:SimpleButton)
 		nextX = nextX + b.image.w + buttonGap
 
@@ -191,6 +264,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 
+#Rem
+Summary: Internal method to add a button to the menu.
+Developers do not need to call this.
+#End
 	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String, drawText:Bool = False)
 		Local b:SimpleButton = New SimpleButton
 		b.drawText = drawText
@@ -205,6 +282,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b		
 	End
 
+#Rem
+Summary: Internal method to add a button to the menu.
+Developers do not need to call this.
+#End
 	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String, drawText:Bool = False)
 		Local b:SimpleButton = New SimpleButton
 		b.drawText = drawText
@@ -213,6 +294,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b
 	End
 	
+#Rem
+Summary: Internal method to add a button to the menu.
+Developers do not need to call this.
+#End
 	Method ProcessButton:SimpleButton(b:SimpleButton, name:String)
 		b.useVirtualRes = Self.useVirtualRes
 		b.orientation = Self.orientation
@@ -230,6 +315,12 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return b
 	End
 		
+#Rem
+Summary: Finds the button in the menu with the given name.
+[code]
+Local sb:SimpleButton = menu.Find("New Game")
+[/code]
+#End
 	Method FindButton:SimpleButton(name:String)
 		name = name.ToUpper()
 		Local b:SimpleButton
@@ -239,6 +330,18 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return Null
 	End
 	
+#Rem
+Summary: Returns 1 if the button with the specified name was clicked since the last call to [[Update]].
+[code]
+menu.Update()
+...
+If menu.Clicked("New Game") Then
+	' start a new game
+ElseIf menu.Clicked("Quit") Then
+	' exit the game
+End
+[/code]
+#End
 	Method Clicked:Int(name:String)
 		name = name.ToUpper()
 		If name = clickedName
@@ -249,6 +352,10 @@ Class SimpleMenu Extends List<SimpleButton>
 		End
 	End
 	
+#Rem
+Summary: Determines whether the user clicked on a button, such that the next call to [[Clicked]] can test for it.
+This should be called only once, towards the start of your [[Screen.Update]] implementation, or [[App.OnUpdate]].
+#End
 	Method Update:Int()
 		If diddyGame.screenFade.active
 			Return 0
@@ -263,12 +370,18 @@ Class SimpleMenu Extends List<SimpleButton>
 		Return 1
 	End
 	
+#Rem
+Summary: Delegates to [[Sprite.Precache]] on each of the buttons.
+#End
 	Method Precache:Void()
 		For Local b:SimpleButton = EachIn Self
 			b.Precache()
 		Next
 	End
 	
+#Rem
+Summary: Delegates to [[SimpleButton.Draw]] on each of the buttons.
+#End
 	Method Draw:Void()
 		For Local b:SimpleButton = EachIn Self
 			b.Draw()
@@ -281,6 +394,9 @@ Class SimpleButtonDrawDelegate
 	End
 End
 
+#Rem
+Summary: Represents a button in a [[SimpleMenu]].
+#End
 Class SimpleButton Extends Sprite
 	Field active:Int = 1
 	Field clicked:Int = 0
@@ -298,12 +414,20 @@ Class SimpleButton Extends Sprite
 	Field text:String
 	Field simpleButtonDrawDelegate:SimpleButtonDrawDelegate
 	
+#Rem
+Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
+Developers do not need to call this.
+#End
 	Method Precache:Void()
 		If image<>null
 			Super.Precache()
 		End
 	End
 	
+#Rem
+Summary: Renders the button.
+Developers do not need to call this.
+#End
 	Method Draw:Void()
 		If active = 0 Then Return
 		SetAlpha Self.alpha
@@ -328,6 +452,10 @@ Class SimpleButton Extends Sprite
 		SetAlpha 1
 	End
 	
+#Rem
+Summary: Fires a button click.
+Developers do not need to call this.
+#End
 	Method Click:Void()
 		If clicked = 0
 			clicked = 1
@@ -337,6 +465,9 @@ Class SimpleButton Extends Sprite
 		End
 	End
 	
+#Rem
+Summary: Centres the button horizontally within the screen, also setting the Y position to the passed value.
+#End
 	Method CentreX:Void(yCoord:Int)
 		if useVirtualRes
 			MoveTo((SCREEN_WIDTH-image.w)/2, yCoord)
@@ -346,6 +477,9 @@ Class SimpleButton Extends Sprite
 		
 	End
 	
+#Rem
+Summary: Centres the button vertically within the screen, also setting the X position to the passed value.
+#End
 	Method CentreY:Void(xCoord:Int)
 		If useVirtualRes
 			MoveTo((SCREEN_HEIGHT-image.h)/2, xCoord)
@@ -354,16 +488,26 @@ Class SimpleButton Extends Sprite
 		End
 	End
 	
+#Rem
+Summary: Moves the button by the passed number of pixels.
+#End
 	Method MoveBy:Void(dx:Float,dy:Float)
 		x+=dx
 		y+=dy
 	End Method
 
+#Rem
+Summary: Moves the button to the exact specified location.
+#End
 	Method MoveTo:Void(dx:Float,dy:Float)
 		x=dx
 		y=dy
 	End Method
 		
+#Rem
+Summary: Loads the required images and sounds for the button.
+Developers do not need to call this.
+#End
 	Method Load:Void(buttonImage:String, mouseOverImage:String = "", soundMouseOverFile:String="", soundClickFile:String="")
 		Self.image = New GameImage
 		image.Load(diddyGame.images.path + buttonImage, False)
@@ -385,6 +529,9 @@ Class SimpleButton Extends Sprite
 		End
 	End
 	
+#Rem
+Summary: Sets additional images so that the button can be used as a toggle button.
+#End
 	Method SetSelectedImage:Void(buttonImage:String, buttonImageMO:String = "")
 		imageSelected = New GameImage
 		imageSelected.Load(diddyGame.images.path + buttonImage, False)
@@ -396,6 +543,10 @@ Class SimpleButton Extends Sprite
 
 	End
 	
+#Rem
+Summary: Updates the clicked status of the button, and plays mouseover sounds.
+Developers only need to call this if they are using the button outside of a [[SimpleMenu]].
+#End
 	Method Update:Void()
 		If active = 0 or disabled Then Return
 		Local mx:Int = diddyGame.mouseX
@@ -423,6 +574,9 @@ Class SimpleButton Extends Sprite
 	End
 End
 
+#Rem
+Summary: Represents a slider control, often used for volume levels.
+#End
 Class SimpleSlider Extends Sprite
 	Field active:Int
 	Field dotImage:GameImage
@@ -432,6 +586,9 @@ Class SimpleSlider Extends Sprite
 	Field borderY:Int=5
 	Field useVirtualRes:Bool = False
 	
+#Rem
+Summary: Creates a new [[SimpleSlider]] with the specified configuration.
+#End
 	Method New(barFile:String, dotFile:String, x:Int, y:int, border:int = 0, name:String="", borderY:int=5, useVirtualRes:Bool = True)
 		Self.image = New GameImage
 		Self.useVirtualRes = useVirtualRes
@@ -453,6 +610,9 @@ Class SimpleSlider Extends Sprite
 		Self.active = 1
 	End
 	
+#Rem
+Summary: Sets the value of the slider (between 0 and 100 inclusive) and updates the position of the bar.
+#End
 	Method SetValue:Void(toSet:int)
 		value = toSet
 		If toSet < 0 Then value = 0	
@@ -461,6 +621,11 @@ Class SimpleSlider Extends Sprite
 		dotX = x + border + (percent * (image.w - (border * 2))) - dotImage.w2
 	End Method
 		
+#Rem
+Summary: Updates the value of the slider if the user has dragged somewhere on it.
+This should be called only once per slider, towards the start of your [[Screen.Update]] implementation, or [[App.OnUpdate]].
+Returns 1 if the slider changed value since the last frame, otherwise 0.
+#End
 	Method Update:Int()
 		Local change:Int=0
 		If active
@@ -491,6 +656,9 @@ Class SimpleSlider Extends Sprite
 		Return change
 	End
 	
+#Rem
+Summary: Renders the slider.
+#End
 	Method Draw:Void()
 		If active
 			DrawImage(image.image,x,y)
