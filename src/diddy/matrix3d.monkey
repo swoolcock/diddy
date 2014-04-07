@@ -5,12 +5,20 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
+#Rem
+Header: Provides a simple 3D matrix.  Integrates with the [[Vector2D]] class.
+#End
+
 Strict
 
 Private
 Import diddy.vector2d
 
 Public
+
+#Rem
+Summary: Provides a simple 3D matrix.  Integrates with the [[Vector2D]] class.
+#End
 Class Matrix3D
 Public
 	' +-           -+
@@ -32,16 +40,37 @@ Private
 	Field tmp:Float[] = New Float[9]
 	
 Public
+#Rem
+Summary: Holds the values of the 3D matrix.  The constants M00 to M22 represent row and column.
+The array is thus numbered: [M00, M10, M20, M01, M11, M21, M02, M12, M22]
+#End
 	Field val:Float[] = New Float[9]
 	
+#Rem
+Summary: Creates a new Matrix3D, initialised to the identity matrix.
+See [[Identity]].
+#End
 	Method New()
 		Identity()
 	End
 
+#Rem
+Summary: Creates a new Matrix3D that is a copy of the passed matrix.
+#End
 	Method New(matrix:Matrix3D)
 		SetToMatrix(matrix)
 	End
 
+#Rem
+Summary: Sets this matrix to be the identity matrix.
+[code]
++-     -+
+| 1 0 0 |
+| 0 1 0 |
+| 0 0 1 |
++-     -+
+[/code]
+#End
 	Method Identity:Matrix3D()
 		val[M00] = 1
 		val[M10] = 0
@@ -55,10 +84,16 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Performs a cross multiplication of this matrix and the passed one.
+#End
 	Method CrossMultiply:Matrix3D(m:Matrix3D)
 		Return CrossMultiply(m.val)
 	End
 	
+#Rem
+Summary: Performs a cross multiplication of this matrix and the passed array.
+#End
 	Method CrossMultiply:Matrix3D(arr:Float[])
 		Local v00:Float = val[M00] * arr[M00] + val[M01] * arr[M10] + val[M02] * arr[M20]
 		Local v01:Float = val[M00] * arr[M01] + val[M01] * arr[M11] + val[M02] * arr[M21]
@@ -85,6 +120,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Set the matrix to be a pure rotation matrix (no scale or translation).
+#End
 	Method SetToRotation:Matrix3D(degrees:Float)
 		Local cos:Float = Cos(degrees)
 		Local sin:Float = Sin(degrees)
@@ -104,6 +142,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Set the matrix to be a pure translation matrix (no scale or rotation).
+#End
 	Method SetToTranslation:Matrix3D(x:Float, y:Float)
 		val[M00] = 1
 		val[M10] = 0
@@ -120,6 +161,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Set the matrix to be a pure translation matrix (no scale or rotation).
+#End
 	Method SetToTranslation:Matrix3D(translation:Vector2D)
 		val[M00] = 1
 		val[M10] = 0
@@ -136,6 +180,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Set the matrix to be a pure scale matrix (no rotation or translation).
+#End
 	Method SetToScaling:Matrix3D(scaleX:Float, scaleY:Float)
 		val[M00] = scaleX
 		val[M10] = 0
@@ -149,10 +196,16 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Calculates and returns the determinant of this matrix.
+#End
 	Method Determinant:Float()
 		Return val[M00] * val[M11] * val[M22] + val[M01] * val[M12] * val[M20] + val[M02] * val[M10] * val[M21] - val[M00] * val[M12] * val[M21] - val[M01] * val[M10] * val[M22] - val[M02] * val[M11] * val[M20]
 	End
 
+#Rem
+Summary: Inverts the matrix.  Note: The cross product of a matrix and its inverse is the identity matrix.
+#End
 	Method Inverse:Matrix3D()
 		Local d:Float = Determinant()
 		If d = 0 Then Return Self
@@ -182,6 +235,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Sets this matrix to be the same as the passed one.
+#End
 	Method SetToMatrix:Matrix3D(mat:Matrix3D)
 		For Local i:Int = 0 Until val.Length
 			val[i] = mat.val[i]
@@ -189,18 +245,27 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Adjusts the absolute translation of the matrix by the passed vector.
+#End
 	Method ScalarTranslate:Matrix3D(vector:Vector2D)
 		val[M02] += vector.x
 		val[M12] += vector.y
 		Return Self
 	End
 
+#Rem
+Summary: Adjusts the absolute translation of the matrix by the passed values.
+#End
 	Method ScalarTranslate:Matrix3D(x:Float, y:Float)
 		val[M02] += x
 		val[M12] += y
 		Return Self
 	End
 
+#Rem
+Summary: Translates the matrix by the passed values.
+#End
 	Method Translate:Matrix3D(x:Float, y:Float)
 		tmp[M00] = 1
 		tmp[M10] = 0
@@ -217,6 +282,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Translates the matrix by the passed vector.
+#End
 	Method Translate:Matrix3D(translation:Vector2D)
 		tmp[M00] = 1
 		tmp[M10] = 0
@@ -233,6 +301,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Rotates the matrix by the passed angle (degrees).
+#End
 	Method Rotate:Matrix3D(angle:Float)
 		If angle = 0 Then Return Self
 		Local cos:Float = Cos(angle)
@@ -253,6 +324,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Scales the matrix by the passed values.
+#End
 	Method Scale:Matrix3D(scaleX:Float, scaleY:Float)
 		tmp[M00] = scaleX
 		tmp[M10] = 0
@@ -267,6 +341,9 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Scales the matrix by the passed vector.
+#End
 	Method Scale:Matrix3D(v:Vector2D)
 		tmp[M00] = v.x
 		tmp[M10] = 0
@@ -281,18 +358,27 @@ Public
 		Return Self
 	End
 
+#Rem
+Summary: Scales the matrix by a scalar value.
+#End
 	Method ScalarScale:Matrix3D(s:Float)
 		val[M00] *= s
 		val[M11] *= s
 		Return Self
 	End
 
+#Rem
+Summary: Scales the matrix by a scalar value.
+#End
 	Method ScalarScale:Matrix3D(v:Vector2D)
 		val[M00] *= v.x
 		val[M11] *= v.y
 		Return Self
 	End
 
+#Rem
+Summary: Transposes the matrix (values flipped about the diagonal).
+#End
 	Method Transpose:Matrix3D()
 		Local v01:Float = val[M10]
 		Local v02:Float = val[M20]

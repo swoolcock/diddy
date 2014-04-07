@@ -5,13 +5,15 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
-' Diddy XML parser
-' This is a very simple XML parser, and expects a document to be as close to well-formed as possible.
-' The only real leniency it has is that attributes may be defined without surrounding quotes/double quotes.
-' All XML characters should be escaped in strings. &gt; &lt; etc.
-' Currently it supports regular tag and attribute definitions, processing instructions, and skipping comments.
-' For now, exported indentation is hardcoded to 2 spaces.
-' Written from scratch, using as little string manipulation as possible.
+#Rem
+Header: Diddy XML DOM parser
+This is a very simple XML DOM parser, and expects a document to be as close to well-formed as possible.
+The only real leniency it has is that attributes may be defined without surrounding quotes/double quotes.
+All XML characters should be escaped in strings. &gt; &lt; etc.
+Currently it supports regular tag and attribute definitions, processing instructions, and skipping comments.
+For now, exported indentation is hardcoded to 2 spaces.
+Written from scratch, using as little string manipulation as possible.
+#End
 
 Import diddy.assert
 Import diddy.functions
@@ -20,6 +22,9 @@ Import diddy.stringbuilder
 Import diddy.exception
 
 Public
+#Rem
+Summary: Parses XML files and/or strings to generate an XMLDocument instance.
+#End
 Class XMLParser
 Private
 	Const TAG_DEFAULT:Int = 0
@@ -374,6 +379,13 @@ Private
 	End
 	
 Public
+#Rem
+Summary: Reads and parses an XML file using the LoadString method.
+Currently doesn't support nested PI or prolog.
+[code]
+Local doc:XMLDocument = New XMLParser().ParseFile("foo.xml")
+[/code]
+#End
 	Method ParseFile:XMLDocument(filename:String)
 		Local xmlString:String = LoadString(filename)
 		If Not xmlString Then
@@ -381,8 +393,14 @@ Public
 		End
 		Return ParseString(xmlString)
 	End
-	
-	' parses an xml doc, currently doesn't support nested PI or prolog
+
+#Rem
+Summary: Parses an XML string.
+Currently doesn't support nested PI or prolog.
+[code]
+Local doc:XMLDocument = New XMLParser().ParseString("<foo></foo>")
+[/code]
+#End
 	Method ParseString:XMLDocument(str:String)
 		Self.str = str
 		
@@ -534,6 +552,9 @@ Public
 	End
 End
 
+#Rem
+Summary: Defines an XML DOM.
+#End
 Class XMLDocument
 Private
 	Field xmlVersion:String = "1.0"
@@ -544,16 +565,25 @@ Private
 	
 Public
 	
-' Constructors
+#Rem
+Summary: Instantiates a new XMLDocument with an optional root element name.
+If no root name is passed, the root node will be null, and the document is invalid.
+#End
 	Method New(rootName:String="")
 		If rootName <> "" Then root = New XMLElement(rootName)
 	End
 
+#Rem
+Summary: Instantiates a new XMLDocument with the passed root node.
+#End
 	Method New(root:XMLElement)
 		Self.root = root
 	End
 	
-' Methods
+#Rem
+Summary: Generates an XML string from the XMLDocument.
+Optionally formats the string.  Default is formatted.
+#End
 	Method ExportString:String(formatXML:Bool = True)
 		' we start with the xml instruction
 		Local output:String = "<?xml version=~q"+xmlVersion+"~q encoding=~q"+xmlEncoding+"~q?>"
@@ -564,27 +594,45 @@ Public
 		Return output
 	End
 
+#Rem
+Summary: Saves the XMLDocument to a file.
+Currently unimplemented.
+#End
 	Method SaveFile:Void(filename:String)
 		' TODO when file IO is ready!
 	End
 
-' Properties
+#Rem
+Summary: Returns the DOM root element.
+#End
 	Method Root:XMLElement() Property
 		Return root
 	End
 	
+#Rem
+Summary: Returns a DiddyStack of prologs.
+#End
 	Method Prologs:DiddyStack<XMLElement>() Property
 		Return prologs
 	End
 	
+#Rem
+Summary: Returns a DiddyStack of processing instructions.
+#End
 	Method ProcessingInstructions:DiddyStack<XMLElement>() Property
 		Return pi
 	End
 	
+#Rem
+Summary: Returns the XML version of this document.
+#End
 	Method Version:String() Property
 		Return xmlVersion
 	End
 	
+#Rem
+Summary: Returns the string encoding of this document.
+#End
 	Method Encoding:String() Property
 		Return xmlEncoding
 	End
