@@ -50,6 +50,7 @@ Private
 		Else
 			cache = String.FromChars(characters[0..length])
 		End
+		Return cache
 	End
 	
 Public

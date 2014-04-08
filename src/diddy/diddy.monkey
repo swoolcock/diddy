@@ -34,8 +34,8 @@ Import diddy.arrays
 Import diddy.assert
 Import diddy.base64
 Import diddy.collections
-Import diddy.containers
 Import diddy.constants
+Import diddy.containers
 Import diddy.diddydata
 Import diddy.diddylist
 Import diddy.diddypool
@@ -48,10 +48,12 @@ Import diddy.font
 Import diddy.format
 Import diddy.framework
 Import diddy.functions
+Import diddy.globalpool
 Import diddy.gui
 Import diddy.i18n
 Import diddy.inputcache
 Import diddy.io
+Import diddy.math
 Import diddy.matrix3d
 Import diddy.pathFind
 Import diddy.psystem
