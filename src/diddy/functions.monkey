@@ -11,6 +11,7 @@ Import diddy.assert
 Import diddy.vector2d
 Import diddy.externfunctions
 Import diddy.constants
+Import diddy.arrays
 
 #If TARGET<>"html5" Then
 	Function GetBrowserName:String()
