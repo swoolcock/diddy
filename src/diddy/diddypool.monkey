@@ -28,28 +28,36 @@ Private
 		End
 	End
 	
-Public
-	Method New(initialCapacity:Int=0)
-		Super.New()
-		For Local i:Int = 0 Until initialCapacity
+	Method Prepopulate:Void(amount:Int)
+		For Local i:Int = 0 Until amount
 			freeObjects.Push(New T)
 		Next
 	End
 
-	Method New(data:T[])
+Public
+	Method New(initialCapacity:Int=0)
+		Super.New()
+		Prepopulate(initialCapacity)
+	End
+	
+	Method New(data:T[], initialCapacity:Int=0)
 		Super.New(data)
+		Prepopulate(initialCapacity)
 	End
 	
-	Method New(src:Stack<T>)
+	Method New(src:Stack<T>, initialCapacity:Int=0)
 		Super.New(src)
+		Prepopulate(initialCapacity)
 	End
 	
-	Method New(src:List<T>)
+	Method New(src:List<T>, initialCapacity:Int=0)
 		Super.New(src)
+		Prepopulate(initialCapacity)
 	End
 	
-	Method New(src:Set<T>)
+	Method New(src:Set<T>, initialCapacity:Int=0)
 		Super.New(src)
+		Prepopulate(initialCapacity)
 	End
 	
 	Method Allocate:T(count:Int=1)
