@@ -29,7 +29,7 @@ Const KEYFRAME_SCALE_VECTOR:Int = 3
 Const KEYFRAME_ROTATION:Int = 4
 Const KEYFRAME_COLOR:Int = 5
 Const KEYFRAME_HANDLE:Int = 6
-Const KEYFRAME_COUNT:Int = 6
+Const KEYFRAME_COUNT:Int = 7
 
 Class Storyboard
 Private
@@ -48,10 +48,10 @@ Private
 	Field renderer:StoryboardRenderer
 
 Public
-	Function LoadXML:Storyboard(filename:String)
+	Function LoadXML:Storyboard(filename:String="storyboard.xml")
 		' open the xml file
 		Local parser:XMLParser = New XMLParser
-		Local doc:XMLDocument = parser.ParseFile("storyboard.xml")
+		Local doc:XMLDocument = parser.ParseFile(filename)
 		Local root:XMLElement = doc.Root
 		
 		' create a new storyboard
