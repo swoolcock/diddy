@@ -18,38 +18,9 @@ End
 Global gameScreen:GameScreen
 
 Class MyGame Extends DiddyApp
-
 	Method Create:Void()
-		'SetGraphics(1280,960)
-		'SetScreenSize(640,480)
-		LoadImages()
-		
 		gameScreen = New GameScreen
 		Start(gameScreen)
-	End
-	
-	'***********************
-	'* Load Images
-	'***********************
-	Method LoadImages:Void()
-		images.Load("bar.png")
-		images.Load("bg.jpg")
-		images.Load("black.png")
-		images.Load("bmbs.png")
-		images.Load("clouds.png")
-		images.Load("layer1.png")
-		images.Load("layer2.png")
-		images.Load("layer3.png")
-		images.Load("loadoverlay.png")
-		images.Load("LSB.png")
-		images.Load("nebula.png")
-		images.Load("nebula2.png")
-		images.Load("planet.png")
-		images.Load("SBB.png")
-		images.Load("sun.png")
-		images.Load("white.png")
-		images.Load("X.png")
-		sounds.Load("soft-hitwhistle.wav")
 	End
 End
 

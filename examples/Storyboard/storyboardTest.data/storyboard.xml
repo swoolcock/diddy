@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <storyboard name="test" width="640" height="480" length="103110">
+	<resources>
+		<image name="bg" file="graphics/bg.jpg" />
+		<image name="bar" file="graphics/bar.png" />
+		<image name="loadoverlay" file="graphics/loadoverlay.png" />
+		<image name="bmbs" file="graphics/bmbs.png" />
+		<image name="LSB" file="graphics/LSB.png" />
+		<image name="layer1" file="graphics/layer1.png" />
+		<image name="layer2" file="graphics/layer2.png" />
+		<image name="layer3" file="graphics/layer3.png" />
+		<image name="nebula" file="graphics/nebula.png" />
+		<image name="nebula2" file="graphics/nebula2.png" />
+		<image name="X" file="graphics/X.png" />
+		<image name="SBB" file="graphics/SBB.png" />
+		<image name="sun" file="graphics/sun.png" />
+		<image name="planet" file="graphics/planet.png" />
+		<sound name="soft-hitwhistle" file="sounds/soft-hitwhistle.wav" />
+		<music name="SplitInSynapse" file="music/SplitInSynapse.ogg" length="10104" />
+	</resources>
 	<sounds>
 		<sound soundName="soft-hitwhistle" time="5000" />
-		<music musicName="SplitInSynapse.ogg" time="0" length="8000" loop="true" />
+		<music musicName="SplitInSynapse" time="0" loop="true" />
 	</sounds>
 	<sprites>
 		<layer index="-1">

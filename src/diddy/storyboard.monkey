@@ -37,6 +37,9 @@ Private
 	Field sounds:DiddyStack<StoryboardSound> = New DiddyStack<StoryboardSound>
 	Field musics:DiddyStack<StoryboardMusic> = New DiddyStack<StoryboardMusic>
 	Field effects:DiddyStack<StoryboardEffect> = New DiddyStack<StoryboardEffect>
+	Field imageResources:StringMap<StoryboardImageResource> = New StringMap<StoryboardImageResource>
+	Field soundResources:StringMap<StoryboardSoundResource> = New StringMap<StoryboardSoundResource>
+	Field musicResources:StringMap<StoryboardMusicResource> = New StringMap<StoryboardMusicResource>
 	Field debugMode:Bool = False
 	Field name:String
 	Field width:Float
@@ -96,6 +99,24 @@ Public
 						sb.musics.Push(New StoryboardMusic(soundNode))
 					End
 				Next
+			' resources node
+			ElseIf node.Name = "resources" Then
+				' loop on children
+				For Local resourceNode:XMLElement = EachIn node.Children
+					Local name:String = resourceNode.GetAttribute("name","")
+					Local file:String = resourceNode.GetAttribute("file","")
+					If name And file Then
+						If resourceNode.Name = "image" Then
+							Local midHandle:Bool = resourceNode.GetAttribute("midHandle","true").ToLower() = "true"
+							sb.imageResources.Add(name, New StoryboardImageResource(name, file, midHandle))
+						ElseIf resourceNode.Name = "sound" Then
+							sb.soundResources.Add(name, New StoryboardSoundResource(name, file))
+						ElseIf resourceNode.Name = "music" Then
+							Local length:Int = Int(resourceNode.GetAttribute("length","0"))
+							sb.musicResources.Add(name, New StoryboardMusicResource(name, file, length))
+						End
+					End
+				Next
 			' effects node
 			ElseIf node.Name = "effects" Then
 				' loop on children
@@ -133,6 +154,15 @@ Public
 	
 	' The music list (read only)
 	Method Musics:DiddyStack<StoryboardMusic>() Property Return musics End
+	
+	' The image resources list (read only)
+	Method ImageResources:StringMap<StoryboardImageResource>() Property Return imageResources End
+	
+	' The sound resources list (read only)
+	Method SoundResources:StringMap<StoryboardSoundResource>() Property Return soundResources End
+	
+	' The sound resources list (read only)
+	Method MusicResources:StringMap<StoryboardMusicResource>() Property Return musicResources End
 	
 	' DebugMode enables the timeline and time counter
 	Method DebugMode:Bool() Property Return debugMode End
@@ -247,6 +277,82 @@ Public
 	
 	Method Render:Void(x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		Renderer.Render(Self, x, y, width, height)
+	End
+End
+
+Class StoryboardResource
+Private
+	Field name:String
+	Field file:String
+	
+Public
+	Method Name:String() Property; Return name; End
+	Method File:String() Property; Return file; End
+	
+	Method New(name:String, file:String)
+		Self.name = name
+		Self.file = file
+	End
+End
+
+Class StoryboardTemplateResource<T> Extends StoryboardResource
+Private
+	Field resource:T
+	
+Public
+	Method New(name:String, file:String)
+		Super.New(name, file)
+	End
+	
+	Method Resource:T() Property
+		If resource Then Return resource
+		resource = LoadResource()
+		Return resource
+	End
+	
+	Method LoadResource:T() Abstract
+End
+
+Class StoryboardMusicResource Extends StoryboardResource
+Private
+	Field length:Int
+	
+Public
+	Method Length:Int() Property; Return length; End
+	
+	Method New(name:String, file:String, length:Int = 0)
+		Super.New(name, file)
+		Self.length = length
+	End
+End
+
+Class StoryboardImageResource Extends StoryboardTemplateResource<Image>
+Private
+	Field midHandle:Bool = True
+	
+Public
+	Method MidHandle:Bool() Property; Return midHandle; End
+	
+	Method New(name:String, file:String, midHandle:Bool=True)
+		Super.New(name, file)
+		Self.midHandle = midHandle
+	End
+	
+	Method LoadResource:Image()
+		Local flags:Int = Image.DefaultFlags
+		If midHandle Then flags = Image.MidHandle
+		Return LoadImage(Self.File,,flags)
+	End
+End
+
+Class StoryboardSoundResource Extends StoryboardTemplateResource<Sound>
+Public
+	Method New(name:String, file:String)
+		Super.New(name, file)
+	End
+	
+	Method LoadResource:Sound()
+		Return LoadSound(Self.File)
 	End
 End
 
@@ -395,7 +501,7 @@ Class StoryboardSound Extends StoryboardElement
 Private
 	Const SOUND_THRESHOLD:Int = 100
 	Field soundName:String
-	Field sound:GameSound
+	Field sound:Sound
 	Field time:Int
 	
 Public
@@ -410,9 +516,11 @@ Public
 		Local shouldPlay:Bool = currentTime >= time And Self.currentTime < time And currentTime - time < SOUND_THRESHOLD
 		Self.currentTime = currentTime
 		If shouldPlay Then
-			If Not sound Then sound = diddyGame.sounds.Find(soundName)
-			If Not sound Then Return
-			sound.Play()
+			If Not sound Then
+				Local res:StoryboardSoundResource = sb.SoundResources.Get(soundName)
+				If res Then sound = res.Resource
+			End
+			If sound Then SoundPlayer.PlayFx(sound)
 		End
 	End
 	
@@ -429,7 +537,7 @@ Private
 	Const MUSIC_THRESHOLD:Int = 50
 	Field musicName:String
 	Field time:Int
-	Field length:Int
+	
 	Field channel:Int
 	Field loop:Bool = False
 	
@@ -437,26 +545,32 @@ Public
 	Method New(node:XMLElement)
 		musicName = node.GetAttribute("musicName","")
 		time = Int(node.GetAttribute("time","0"))
-		length = Int(node.GetAttribute("length","0"))
 		name = node.GetAttribute("name","")
 		loop = node.GetAttribute("loop","true").ToLower() = "true"
 	End
 	
 	Method Update:Void(sb:Storyboard, currentTime:Int)
+		Local res:StoryboardMusicResource = sb.MusicResources.Get(musicName)
+		Local length:Int = 0
+		If res Then length = res.Length
 		' find out if we're inside the music
-		If currentTime >= Self.time And (currentTime < Self.time+Self.length Or Self.loop) Then
+		If currentTime >= Self.time And (currentTime < Self.time+length Or Self.loop) Then
 			' if we're not playing, need to start playing
 			If Not musicPlaying Then
 				musicPlaying = True
 				StopMusic()
 				performSeekTime = currentTime-Self.time
-				If loop Then
-					diddyGame.MusicPlay(musicName, 1)
-					performSeekTime = performSeekTime Mod Self.length
+				If res Then
+					If loop Then
+						PlayMusic(res.File, 1)
+						performSeekTime = performSeekTime Mod length
+					Else
+						PlayMusic(res.File, 0)
+					End
+					performSeek = performSeekTime >= MUSIC_THRESHOLD
 				Else
-					diddyGame.MusicPlay(musicName, 0)
+					performSeek = False
 				End
-				performSeek = performSeekTime >= MUSIC_THRESHOLD
 			End
 		End
 	End
@@ -470,7 +584,7 @@ Class StoryboardSprite Extends StoryboardElement
 Private
 	Field layer:Int
 	Field imageName:String
-	Field image:GameImage
+	Field image:Image
 	
 	' these are read from the <sprite> tag and are used as the first keyframe
 	Field firstX:Float=0, firstY:Float=0
@@ -489,27 +603,19 @@ Private
 	Field nextKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
 	
 Public
-	Method SpriteImage:GameImage() Property
-		If Not image Then image = diddyGame.images.Find(imageName)
-		If Not image Then
-			Print "Couldn't load "+imageName+" for sprite."
-			Return Null
-		End
-		Return image
-	End
+	Method ImageName:String() Property Return imageName End
+	Method ImageName:Void(imageName:String) Property Self.imageName = imageName End
 	
 	Method X:Float() Property Return x End
 	Method Y:Float() Property Return y End
 	
 	Method Width:Float() Property
-		Local image:GameImage = SpriteImage
-		If image Then Return image.image.Width()
+		If image Then Return image.Width()
 		Return 0
 	End
 	
 	Method Height:Float() Property
-		Local image:GameImage = SpriteImage
-		If image Then Return image.image.Height()
+		If image Then Return image.Height()
 		Return 0
 	End
 	
@@ -601,10 +707,9 @@ Public
 	Method Render:Void(sb:Storyboard, renderer:StoryboardRenderer=Null, x:Float=0, y:Float=0, width:Float=-1, height:Float=-1)
 		If alpha = 0 Then Return
 		If Not renderer Then renderer = sb.Renderer
-		Local image:GameImage = SpriteImage
 		If Not image Then
-			Print "Couldn't load "+imageName+" for sprite."
-			Return
+			Local res:StoryboardImageResource = sb.ImageResources.Get(imageName)
+			If res Then image = res.Resource
 		End
 		' translation, scale, rotation, handle, other effects
 		PushMatrix
@@ -615,7 +720,7 @@ Public
 		SetColor red, green, blue
 		SetAlpha alpha
 		If renderer.PreRenderSprite(sb, Self, x, y, width, height) Then
-			image.Draw(0, 0)
+			If image Then DrawImage(image, 0, 0)
 			renderer.PostRenderSprite(sb, Self, x, y, width, height)
 		End
 		PopMatrix
@@ -764,8 +869,8 @@ Public
 				sprite.green = rgbArray[1]
 				sprite.blue = rgbArray[2]
 			Case KEYFRAME_HANDLE
-				If sprite And sprite.image And sprite.image.image Then
-					sprite.image.image.SetHandle(InterpolateWithEase(prevKF.values[0], values[0], progress, ease), InterpolateWithEase(prevKF.values[1], values[1], progress, ease))
+				If sprite And sprite.image Then
+					sprite.image.SetHandle(InterpolateWithEase(prevKF.values[0], values[0], progress, ease), InterpolateWithEase(prevKF.values[1], values[1], progress, ease))
 				End
 		End
 	End
