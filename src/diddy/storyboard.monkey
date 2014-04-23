@@ -591,12 +591,14 @@ Private
 	field firstScaleX:Float=1, firstScaleY:Float=1
 	Field firstScale:Float=1, firstRotation:Float=0
 	Field firstRed:Float=255, firstGreen:Float=255, firstBlue:Float=255, firstAlpha:Float=1
+	Field firstHandleX:Float=0, firstHandleY:Float=0
 	
 	' these are the values at the current time
 	Field x:Float=0, y:Float=0
 	field scaleX:Float=1, scaleY:Float=1
 	Field scale:Float=1, rotation:Float=0
 	Field red:Float=255, green:Float=255, blue:Float=255, alpha:Float=1
+	Field handleX:Float=0, handleY:Float=0
 	
 	Field keyframes:DiddyStack<StoryboardSpriteKeyframe> = New DiddyStack<StoryboardSpriteKeyframe>
 	Field previousKeyframes:StoryboardSpriteKeyframe[] = New StoryboardSpriteKeyframe[KEYFRAME_COUNT]
@@ -632,6 +634,8 @@ Public
 		firstGreen = Float(node.GetAttribute("green","255"))
 		firstBlue = Float(node.GetAttribute("blue","255"))
 		firstAlpha = Float(node.GetAttribute("alpha","0"))
+		firstHandleX = Float(node.GetAttribute("handleX","0"))
+		firstHandleY = Float(node.GetAttribute("handleY","0"))
 		CreateKeyframesFromXML(node)
 		keyframes.Sort()
 	End
@@ -671,6 +675,7 @@ Public
 		scaleX = firstScaleX; scaleY = firstScaleY
 		scale = firstScale; rotation = firstRotation
 		red = firstRed; green = firstGreen; blue = firstBlue; alpha = firstAlpha
+		handleX = firstHandleX; handleY = firstHandleY
 		
 		' clear the keyframe arrays
 		For Local i:Int = 0 Until previousKeyframes.Length
@@ -717,6 +722,7 @@ Public
 		Scale scaleX, scaleY
 		Scale scale, scale
 		Rotate rotation
+		If image Then Translate -Self.handleX*image.Width(), -Self.handleY*image.Height()
 		SetColor red, green, blue
 		SetAlpha alpha
 		If renderer.PreRenderSprite(sb, Self, x, y, width, height) Then
@@ -870,7 +876,8 @@ Public
 				sprite.blue = rgbArray[2]
 			Case KEYFRAME_HANDLE
 				If sprite And sprite.image Then
-					sprite.image.SetHandle(InterpolateWithEase(prevKF.values[0], values[0], progress, ease), InterpolateWithEase(prevKF.values[1], values[1], progress, ease))
+					sprite.handleX = InterpolateWithEase(prevKF.values[0], values[0], progress, ease)
+					sprite.handleY = InterpolateWithEase(prevKF.values[1], values[1], progress, ease)
 				End
 		End
 	End
@@ -892,7 +899,7 @@ Private
 		Select keyframeType
 			Case KEYFRAME_ROTATION, KEYFRAME_SCALE, KEYFRAME_ALPHA
 				InitArray(1, value1)
-			Case KEYFRAME_POSITION, KEYFRAME_SCALE_VECTOR
+			Case KEYFRAME_POSITION, KEYFRAME_SCALE_VECTOR, KEYFRAME_HANDLE
 				InitArray(2, value1, value2)
 			Case KEYFRAME_COLOR
 				InitArray(3, value1, value2, value3)
