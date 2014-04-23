@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<storyboard name="test" width="640" height="480" length="103110">
+	<resources>
+		<image name="bg" file="bg.jpg" />
+		<image name="bar" file="bar.png" />
+		<image name="loadoverlay" file="loadoverlay.png" />
+		<image name="bmbs" file="bmbs.png" />
+		<image name="LSB" file="LSB.png" />
+		<image name="layer1" file="layer1.png" />
+		<image name="layer2" file="layer2.png" />
+		<image name="layer3" file="layer3.png" />
+		<image name="nebula" file="nebula.png" />
+		<image name="nebula2" file="nebula2.png" />
+		<image name="X" file="X.png" />
+		<image name="SBB" file="SBB.png" />
+		<image name="sun" file="sun.png" />
+		<image name="planet" file="planet.png" />
+		<sound name="soft-hitwhistle" file="soft-hitwhistle.wav" />
+		<music name="SplitInSynapse" file="SplitInSynapse.ogg" length="10104" />
+	</resources>
+	<sounds>
+		<sound soundName="soft-hitwhistle" time="5000" />
+		<music musicName="SplitInSynapse" time="0" loop="true" />
+	</sounds>
+	<sprites>
+		<layer index="-1">
+			<sprite imageName="bg" x="320.00" y="240.00" alpha="1" />
+			<sprite imageName="black" x="320.00" y="240.00" alpha="1">
+				<alpha time="2475" alpha="1" />
+				<alpha time="2523" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="bar" x="58.00" y="295.00" alpha="0">
+				<position time="956" x="58" y="295" />
+				<position time="2428" x="324" y="295" tween="true" />
+				<alpha time="956" alpha="1" />
+				<alpha time="1146" alpha="0" tween="true" />
+				<alpha time="1336" alpha="1" tween="true" />
+				<alpha time="1526" alpha="0" tween="true" />
+				<alpha time="1716" alpha="1" tween="true" />
+				<alpha time="1906" alpha="0" tween="true" />
+				<alpha time="2096" alpha="1" tween="true" />
+				<alpha time="2286" alpha="0" tween="true" />
+				<alpha time="2428" alpha="1" tween="true" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+		</layer>
+		<layer index="1">
+			<sprite imageName="loadoverlay" x="320.00" y="240.00" alpha="1">
+				<alpha time="2428" alpha="1" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="bmbs" x="456.00" y="122.00" alpha="0">
+				<alpha time="2475" alpha="0" />
+				<alpha time="4754" alpha="1" tween="true" />
+				<alpha time="7032" alpha="0" tween="true" />
+				<scale time="2475" scale="0.55" />
+				<scale time="7032" scale="0.78" tween="true" />
+			</sprite>
+			<sprite imageName="LSB" x="320.00" y="357.00" alpha="0">
+				<alpha time="0" alpha="0" />
+				<alpha time="577" alpha="1" tween="true" />
+				<alpha time="2428" alpha="1" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="layer1" x="320.00" y="240.00" alpha="0">
+				<alpha time="2475" alpha="1" />
+				<alpha time="14627" alpha="0" />
+				<scale time="2475" scale="1" />
+				<scale time="14627" scale="3.3" tween="true" />
+			</sprite>
+			<sprite imageName="layer2" x="320.00" y="240.00" alpha="0">
+				<alpha time="14627" alpha="1" />
+				<alpha time="26779" alpha="0" />
+				<scale time="14627" scale="1" />
+				<scale time="26779" scale="5" tween="true" />
+			</sprite>
+			<sprite imageName="nebula" x="320.00" y="240.00" alpha="0">
+				<alpha time="26779" alpha="1" />
+				<alpha time="38931" alpha="0" />
+				<scale time="26779" scale="0.10" />
+				<scale time="38931" scale="1.33" tween="true" />
+			</sprite>
+			<sprite imageName="nebula2" x="320.00" y="240.00" alpha="0">
+				<alpha time="75387" alpha="1" />
+				<scale time="75387" scale="0.3" />
+				<scale time="99691" scale="1.4" tween="true" />
+				<alpha time="99691" alpha="1" />
+				<alpha time="102539" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="X" x="320.00" y="180.00" alpha="0" scale="1">
+				<group time="1004" length="95" loopCount="16">
+					<alpha time="0" alpha="1" />
+					<alpha time="48" alpha="0" />
+				</group>
+				<scale time="1716" scale="0.9" />
+			</sprite>
+			<sprite imageName="X" x="320.00" y="180.00" alpha="0">
+				<alpha time="0" alpha="0" />
+				<alpha time="956" alpha="1" tween="true" />
+				<scale time="956" scale="0.80" />
+				<alpha time="2475" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="SBB" x="118.00" y="95.00" alpha="0">
+				<alpha time="8551" alpha="0" />
+				<alpha time="10830" alpha="1" tween="true" />
+				<alpha time="12349" alpha="0" tween="true" />
+				<scale time="8551" scale="0.3" />
+				<scale time="12349" scale="0.4" tween="true" />
+			</sprite>
+			<sprite imageName="layer3" x="320.00" y="240.00" alpha="0">
+				<alpha time="75387" alpha="1" />
+				<scale time="75387" scale="0.75" />
+				<scale time="102539" scale="1" tween="true" />
+				<alpha time="102539" alpha="1" />
+				<alpha time="103108" alpha="0" tween="true" />
+			</sprite>
+			<sprite imageName="sun" x="320.00" y="240.00" alpha="0">
+				<alpha time="51178" alpha="1" />
+				<alpha time="75387" alpha="0" />
+				<scale time="51178" scale="0.3" />
+				<scale time="75339" scale="0.7" tween="true" />
+				<position time="51178" x="293" y="254" />
+				<position time="75387" x="187" y="167" tween="true" />
+			</sprite>
+			<sprite imageName="planet" x="120.00" y="150.00">
+				<alpha time="38931" alpha="1" />
+				<alpha time="75339" alpha="1" />
+				<alpha time="75387" alpha="0" tween="true"/>
+				<position time="38931" x="120" y="150" />
+				<position time="75387" x="444" y="470" tween="true" />
+				<scale time="38931" scale="0.28" />
+				<scale time="75387" scale="2.06" tween="true" />
+			</sprite>
+		</layer>
+	</sprites>
+	<effects>
+		<flash time="2475" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="14627" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="26779" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="38931" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="51178" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+		<flash time="75387" leadIn="50" leadOut="350" alpha="1.00" red="255" green="255" blue="255" />
+	</effects>
+</storyboard>

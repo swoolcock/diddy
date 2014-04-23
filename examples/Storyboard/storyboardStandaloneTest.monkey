@@ -7,46 +7,53 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import diddy
+Import mojo
 Import diddy.storyboard
+Import diddy.externfunctions
 
 Function Main:Int()
 	New MyGame()
 	Return 0
 End
 
-Global gameScreen:GameScreen
-
-Class MyGame Extends DiddyApp
-	Method Create:Void()
-		gameScreen = New GameScreen
-		Start(gameScreen)
-	End
-End
-
-
-Class GameScreen Extends Screen
+Class MyGame Extends App
+	Field lastFrameMillis:Int
+	Field thisFrameMillis:Int = -1
+	Field deltaMillis:Int
+	
 	Field sb:Storyboard
 	Field scale:Float = 1
 	Field seeking:Bool = False
 	
-	Method New()
-		name = "Storyboard Test"
-	End
-	
-	Method Start:Void()
+	Method OnCreate:Int()
+		SetUpdateRate(60)
 		sb = Storyboard.LoadXML("storyboard.xml")
 		sb.Play()
+		Return 0
 	End
 	
-	Method Render:Void()
+	Method OnRender:Int()
 		Cls
 		SetAlpha(1)
 		SetColor(255,255,255)
-		sb.Render(0,0,SCREEN_WIDTH*scale,SCREEN_HEIGHT*scale)
+		sb.Render(0,0,DeviceWidth()*scale,DeviceHeight()*scale)
+		Return 0
 	End
-
-	Method Update:Void()
+	
+	Method OnResume:Int()
+		lastFrameMillis = Millisecs()
+		thisFrameMillis = lastFrameMillis
+		deltaMillis = 0
+		Return 0
+	End
+	
+	Method OnUpdate:Int()
+		' delta time
+		If thisFrameMillis < 0 Then thisFrameMillis = Millisecs()
+		lastFrameMillis = thisFrameMillis
+		thisFrameMillis = Millisecs()
+		deltaMillis = thisFrameMillis - lastFrameMillis
+		
 		' Hit R to reload the storyboard
 		If KeyHit(KEY_R) Then sb = Storyboard.LoadXML("storyboard.xml")
 		
@@ -87,7 +94,7 @@ Class GameScreen Extends Screen
 		' left click to move the position (doesn't line up perfectly with the slider, for now)
 		If MouseDown(0) Then
 			If MouseHit() Then seeking = True
-			sb.SeekTo(Int(sb.Length * Float(MouseX())/DEVICE_WIDTH))
+			sb.SeekTo(Int(sb.Length * Float(MouseX())/DeviceWidth()))
 		ElseIf seeking Then
 			seeking = False
 		End
@@ -99,6 +106,8 @@ Class GameScreen Extends Screen
 		End
 		
 		' update the storyboard (don't increment the time while seeking - it makes no sense!)
-		sb.Update(Not seeking, dt.frametime)
+		sb.Update(Not seeking, deltaMillis)
+		
+		Return 0
 	End
 End
