@@ -236,9 +236,9 @@ Public
 	End
 	
 	' Updates all the transformations, increasing the current play time based on dt.frametime and the play speed.
-	Method Update:Void(updateTime:Bool=True)
+	Method Update:Void(updateTime:Bool=True, millisPassed:Int=0)
 		' update the current time based on the millis since the last frame and the play speed, if we should
-		If updateTime And playing Then Self.currentTime += dt.frametime * playSpeed
+		If updateTime And playing Then Self.currentTime += millisPassed * playSpeed
 		
 		' update the current values for each sprite
 		For Local i:Int = 0 Until sprites.Count()
