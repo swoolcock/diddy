@@ -8,7 +8,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #if HOST="macos" And TARGET="glfw"
 	Import "native/diddy.${TARGET}.mac.${LANG}"
 #else
-	Import "native/diddy.${TARGET}.${LANG}"
+	#if TARGET="winrt"
+		Import "native/diddy.cpp"
+	#else
+		Import "native/diddy.${TARGET}.${LANG}"
+	#end
 #end
 
 Extern
