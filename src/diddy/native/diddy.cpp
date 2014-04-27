@@ -1,0 +1,72 @@
+/*
+Copyright (c) 2011 Steve Revill and Shane Woolcock
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+class diddy
+{
+	public:
+
+	static float mouseZ()
+	{
+		return 0.0f;
+	}
+	
+	static void mouseZInit()
+	{
+		return;
+	}
+
+	static int systemMillisecs() {
+		return 0;
+	}
+	
+	static void setGraphics(int w, int h)
+	{
+	}
+	
+	static void setMouse(int x, int y)
+	{
+	}
+	
+	static void showKeyboard()
+	{
+	}
+	static void launchBrowser(String address, String windowName)
+	{
+	}
+	static void launchEmail(String email, String subject, String text)
+	{
+	}
+
+	static void startVibrate(int millisecs)
+	{
+	}
+	static void stopVibrate()
+	{
+	}
+	
+	static void startGps()
+	{
+	}
+	static String getLatitiude()
+	{
+		return "";
+	}
+	static String getLongitude()
+	{
+		return "";
+	}
+	static void showAlertDialog(String title, String message)
+	{
+	}
+	static String getInputString()
+	{
+		return "";
+	}
+	static int seekMusic(int timeMillis)
+	{
+		return 1;
+	}
+};
