@@ -60,6 +60,7 @@ Import diddy.psystem
 Import diddy.quicksort
 Import diddy.serialization
 Import diddy.simplegui
+Import diddy.singleton
 Import diddy.storyboard
 Import diddy.stringbuilder
 Import diddy.tile
