@@ -21,7 +21,7 @@ Function QuinticTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	Return diff / 2 * (t * t * t * t * t + 2) + b
 End
 
-Function Tween:Float(p1:Float, p2:Float, t:Float)
+Function TweenCalc:Float(p1:Float, p2:Float, t:Float)
 	Return p1 + t * (p2 - p1)
 End
 
