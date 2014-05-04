@@ -49,3 +49,8 @@ Function TweenDown:Float(p1:Float, p2:Float, t:Float)
 	v = 1 - Pow(1 - v, 2) 'InvSquared
 	Return p1 + v * (p2 - p1)
 End
+
+Function Bezier:Float(p1:Float, p2:Float, cp1:Float, cp2:Float, t:Float)
+	Local v:Float = p1 * Pow( (1 - t), 3) + 3 * cp1 * Pow( (1 - t), 2) * t + 3 * cp2 * (1 - t) * Pow(t, 2) + p2 * Pow(t, 3)
+	Return v
+End
