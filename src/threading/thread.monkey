@@ -8,7 +8,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Strict
 
 ' Check the availability of threading for the target
-#If TARGET <> "ios" And TARGET <> "stdcpp" And TARGET <> "glfw" And TARGET <> "android" And TARGET <> "bmax" Then
+#If TARGET <> "ios" And TARGET <> "stdcpp" And TARGET <> "glfw" And TARGET <> "android" And TARGET <> "bmax" And TARGET <> "xna" Then
 #Error "Threading is not yet supported for target '${TARGET}'."
 #End
 
@@ -17,6 +17,22 @@ Strict
 #If LANG="cpp" Then
 Import "native/TinyThread++-1.0/source/tinythread.cpp"
 Import "native/threading.cpp"
+
+' C# targets use a stripped version of Spring.Threading
+#ElseIf LANG="cs" Then
+Import "native/threading.${TARGET}.${LANG}"
+Import "native/Spring.Threading/Threading/Helpers/FIFOWaitNodeQueue.cs"
+Import "native/Spring.Threading/Threading/Helpers/IWaitNodeQueue.cs"
+Import "native/Spring.Threading/Threading/Helpers/IQueuedSync.cs"
+Import "native/Spring.Threading/Threading/Helpers/WaitNode.cs"
+Import "native/Spring.Threading/Threading/Locks/ConditionVariable.cs"
+Import "native/Spring.Threading/Threading/Locks/FIFOConditionVariable.cs"
+Import "native/Spring.Threading/Threading/Locks/ICondition.cs"
+Import "native/Spring.Threading/Threading/Locks/IExclusiveLock.cs"
+Import "native/Spring.Threading/Threading/Locks/ILock.cs"
+Import "native/Spring.Threading/Threading/Locks/ReentrantLock.cs"
+
+' Other targets use their own implementation
 #Else
 Import "native/threading.${TARGET}.${LANG}"
 #End
