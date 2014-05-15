@@ -12,22 +12,22 @@ N/S = not supported (can't do it natively)
 TODO = not yet implemented (can do it, but not yet coded)
 Yes = finished
 
-Implemented: MonkeyMax  GLFW  stdcpp  Android  iOS  Flash  WinRT  HTML5  XNA
+Implemented: MonkeyMax  GLFW  stdcpp  Android  iOS   XNA   WinRT  Flash  HTML5  PSM  Ouya  WinPhone8
 Thread
-.Start()     Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
-.Cancel()    TODO       TODO  TODO    Yes      TODO N/S    TODO   N/S    TODO
-.Join()      Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    TODO
+.Start()     Yes        Yes   Yes     Yes      Yes   Yes   TODO   N/S    N/S    ?    ?     ?
+.Cancel()    TODO       TODO  TODO    Yes      TODO  TODO  TODO   N/S    N/S    ?    ?     ?
+.Join()      Yes        Yes   Yes     Yes      Yes   TODO  TODO   N/S    N/S    ?    ?     ?
 
 Mutex
-.Lock()      Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
-.TryLock()   Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
-.Unlock()    Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
+.Lock()      Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
+.TryLock()   Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
+.Unlock()    Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
 
 CondVar
-.Wait()      Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
-.TimedWait() N/S        N/S   N/S     Yes      N/S  N/S    TODO   N/S    Yes
-.Signal()    Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
-.Broadcast() Yes        Yes   Yes     Yes      Yes  N/S    TODO   N/S    Yes
+.Wait()      Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
+.TimedWait() N/S        N/S   N/S     Yes      N/S   Yes   N/S    N/S    N/S    ?    ?     ?
+.Signal()    Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
+.Broadcast() Yes        Yes   Yes     Yes      Yes   Yes   N/S    N/S    N/S    ?    ?     ?
 
 Note that some features are not available on all targets.  I may try to find a workaround for these.
 
@@ -51,6 +51,9 @@ https://code.google.com/p/netconcurrent/
 
 C# currently requires a hack to trans to move the "using" statements to the top of the file in the same way it handles Java's imports.
 Hack is forthcoming.
+
+The native threading support WinRT provides for Metro apps is exceedingly limited, and I don't think I'll ever be able to emulate
+mutexes and condvars.  I may still be able to implement threads using work items, but there will no synchronization.
 
 Be aware that the developer of Monkey (Mark Sibly) has expressed concerns that true multithreading may affect Monkey's garbage collection.
 
