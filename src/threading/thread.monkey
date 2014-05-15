@@ -157,7 +157,7 @@ Public
 	End
 	
 	Method TimedWait:Void(timeout:Float)
-#If TARGET <> "android" Then
+#If TARGET <> "android" And TARGET <> "xna" Then
 		Error("CondVar.TimedWait is not supported on target '${TARGET}'.")
 #Else
 		ExtTimedWait(mutex, timeout)
