@@ -495,17 +495,17 @@ Summary: Centres the button vertically within the screen, also setting the X pos
 Summary: Moves the button by the passed number of pixels.
 #End
 	Method MoveBy:Void(dx:Float,dy:Float)
-		x+=dx
-		y+=dy
-	End Method
+		x += dx
+		y += dy
+	End
 
 #Rem
 Summary: Moves the button to the exact specified location.
 #End
 	Method MoveTo:Void(dx:Float,dy:Float)
-		x=dx
-		y=dy
-	End Method
+		x = dx
+		y = dy
+	End
 		
 #Rem
 Summary: Loads the required images and sounds for the button.
@@ -515,7 +515,7 @@ Developers do not need to call this.
 		Self.image = New GameImage
 		image.Load(diddyGame.images.path + buttonImage, False)
 		
-		if  mouseOverImage <> ""
+		If mouseOverImage <> ""
 			imageMouseOver = New GameImage
 			imageMouseOver.Load(diddyGame.images.path + mouseOverImage, False)
 		End
@@ -539,11 +539,10 @@ Summary: Sets additional images so that the button can be used as a toggle butto
 		imageSelected = New GameImage
 		imageSelected.Load(diddyGame.images.path + buttonImage, False)
 		
-		if  buttonImageMO <> ""
+		If buttonImageMO <> ""
 			imageSelectedMO = New GameImage
 			imageSelectedMO.Load(diddyGame.images.path + buttonImageMO, False)
 		End
-
 	End
 	
 #Rem
@@ -554,7 +553,7 @@ Developers only need to call this if they are using the button outside of a [[Si
 		If active = 0 or disabled Then Return
 		Local mx:Int = diddyGame.mouseX
 		Local my:Int = diddyGame.mouseY
-		if not useVirtualRes
+		If not useVirtualRes
 			mx = MouseX()
 			my = MouseY()
 		End
@@ -622,8 +621,8 @@ Summary: Sets the value of the slider (between 0 and 100 inclusive) and updates 
 		If toSet > 100 Then value = 100
 		Local percent:Float = value/100.0		
 		dotX = x + border + (percent * (image.w - (border * 2))) - dotImage.w2
-	End Method
-		
+	End
+
 #Rem
 Summary: Updates the value of the slider if the user has dragged somewhere on it.
 This should be called only once per slider, towards the start of your [[Screen.Update]] implementation, or [[App.OnUpdate]].
@@ -639,7 +638,7 @@ Returns 1 if the slider changed value since the last frame, otherwise 0.
 				mx = MouseX()
 				my = MouseY()
 			End
-			If mx >= x-buffer And mx < x + image.w + buffer And my >= y-borderY And my < y+image.h+borderY
+			If mx >= x - buffer And mx < x + image.w + buffer And my >= y - borderY And my < y + image.h + borderY
 				If MouseDown(MOUSE_LEFT)
 					If mx <= x+border
 						SetValue(0)
@@ -687,6 +686,12 @@ Class SimpleDialog
 	Field fadeOutSpeed:Float
 	Field titleDrawDelegate:SimpleTextDrawDelegate
 	Field alphaControl:Float
+	Field text:String
+	Field textX:Int
+	Field textY:Int
+	Field textDrawDelegate:SimpleTextDrawDelegate
+	Field textColor:Int[3]
+	
 #Rem
 Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 #End	
@@ -701,6 +706,11 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		fadeInSpeed = 0.05
 		fadeOutSpeed = 0.08
 		alphaControl = 0.4
+		textX = SCREEN_WIDTH2
+		textY = titleY + 50
+		textColor[0] = 255
+		textColor[1] = 255
+		textColor[2] = 255
 	End
 	
 #Rem
@@ -731,6 +741,15 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 	End
 	
 #Rem
+Summary: Set the colour of the text
+#END
+	Method SetTextColor:Void(r:Int, g:Int, b:Int)
+		textColor[0] = r
+		textColor[1] = g
+		textColor[2] = b
+	End
+	
+#Rem
 Summary: Renders the dialog.
 #End	
 	Method Draw:Void()
@@ -742,8 +761,15 @@ Summary: Renders the dialog.
 			Else
 				DrawText(title, titleX, titleY, 0.5, 0.5)
 			End
-			
+			SetColor(textColor[0], textColor[1], textColor[2])
+			If textDrawDelegate <> Null Then
+				textDrawDelegate.Draw(text, textX, textY)
+			Else
+				DrawText(text, textX, textY, 0.5, 0.5)
+			End
+			SetColor(255, 255, 255)
 			menu.Draw()
+			
 			
 			SetAlpha 1
 		End
