@@ -389,7 +389,10 @@ Summary: Delegates to [[SimpleButton.Draw]] on each of the buttons.
 	End
 End
 
-Class SimpleButtonDrawDelegate
+#Rem
+Summary: A Delegate so that the developer can override the drawing of text on widgets
+#END
+Class SimpleTextDrawDelegate
 	Method Draw:Void(text:String, x:Float, y:Float)
 	End
 End
@@ -412,7 +415,7 @@ Class SimpleButton Extends Sprite
 	Field orientation:Int = VERTICAL
 	Field drawText:Bool
 	Field text:String
-	Field simpleButtonDrawDelegate:SimpleButtonDrawDelegate
+	Field textDrawDelegate:SimpleTextDrawDelegate
 	
 #Rem
 Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
@@ -443,8 +446,8 @@ Developers do not need to call this.
 			DrawImage Self.image.image, x, y
 		EndIf
 		If drawText
-			If simpleButtonDrawDelegate <> Null
-				simpleButtonDrawDelegate.Draw(text, x + Self.image.w2, y)
+			If textDrawDelegate <> Null
+				textDrawDelegate.Draw(text, x + Self.image.w2, y)
 			Else
 				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
 			End
@@ -663,6 +666,86 @@ Summary: Renders the slider.
 		If active
 			DrawImage(image.image,x,y)
 			DrawImage(dotImage.image,dotX,dotY)		
+		End
+	End
+End
+
+#Rem
+Summary: Provides a dialog which a menu can be added to
+#End
+Class SimpleDialog
+	Field alpha:Float = 0
+	Field menu:SimpleMenu
+	Field title:String
+	Field image:GameImage
+	Field show:Bool
+	Field titleX:Int
+	Field titleY:Int
+	Field x:Int
+	Field y:Int
+	Field fadeInSpeed:Float
+	Field fadeOutSpeed:Float
+	Field titleDrawDelegate:SimpleTextDrawDelegate
+	Field alphaControl:Float
+#Rem
+Summary: Creates a new [[SimpleDialog]] with the specified configuration.
+#End	
+	Method New(menu:SimpleMenu, image:GameImage)
+		Self.alpha = 0
+		Self.menu = menu
+		Self.image = image
+		x = SCREEN_WIDTH2
+		y = SCREEN_HEIGHT2
+		titleX = SCREEN_WIDTH2
+		titleY = 40
+		fadeInSpeed = 0.05
+		fadeOutSpeed = 0.08
+		alphaControl = 0.4
+	End
+	
+#Rem
+Summary: Updates the dialog, controls the alpha and menu (menu is only usable if alpha is greater than alphaControl
+#End	
+	Method Update:Void()
+		If show
+			If alpha < 1
+				alpha += fadeInSpeed * dt.delta
+			Else
+				alpha = 1
+			End
+			menu.SetMenuAlpha(alpha)
+
+			If alpha > alphaControl Then
+				menu.Update()
+			End
+		Else
+			If alpha > 0
+				alpha -= fadeOutSpeed * dt.delta
+				If alpha < 0 Then alpha = 0
+				menu.SetMenuAlpha(alpha)
+			Else
+				alpha = 0
+				show = False
+			End
+		End	
+	End
+	
+#Rem
+Summary: Renders the dialog.
+#End	
+	Method Draw:Void()
+		If alpha > 0
+			SetAlpha alpha
+			image.Draw(x, y)
+			If titleDrawDelegate <> Null Then
+				titleDrawDelegate.Draw(title, titleX, titleY)
+			Else
+				DrawText(title, titleX, titleY, 0.5, 0.5)
+			End
+			
+			menu.Draw()
+			
+			SetAlpha 1
 		End
 	End
 End
