@@ -392,7 +392,7 @@ End
 #Rem
 Summary: A Delegate so that the developer can override the drawing of text on widgets
 #END
-Class SimpleTextDrawDelegate
+Class SimpleTextDrawDelegate Abstract
 	Method Draw:Void(text:String, x:Float, y:Float)
 	End
 End
@@ -678,17 +678,17 @@ Class SimpleDialog
 	Field title:String
 	Field image:GameImage
 	Field show:Bool
-	Field titleX:Int
-	Field titleY:Int
-	Field x:Int
-	Field y:Int
+	Field titleX:Float
+	Field titleY:Float
+	Field x:Float
+	Field y:Float
 	Field fadeInSpeed:Float
 	Field fadeOutSpeed:Float
 	Field titleDrawDelegate:SimpleTextDrawDelegate
 	Field alphaControl:Float
 	Field text:String
-	Field textX:Int
-	Field textY:Int
+	Field textX:Float
+	Field textY:Float
 	Field textDrawDelegate:SimpleTextDrawDelegate
 	Field textColor:Int[3]
 	
@@ -723,16 +723,17 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 			Else
 				alpha = 1
 			End
-			menu.SetMenuAlpha(alpha)
-
-			If alpha > alphaControl Then
-				menu.Update()
+			If menu
+				menu.SetMenuAlpha(alpha)
+				If alpha > alphaControl Then
+					menu.Update()
+				End
 			End
 		Else
 			If alpha > 0
 				alpha -= fadeOutSpeed * dt.delta
 				If alpha < 0 Then alpha = 0
-				menu.SetMenuAlpha(alpha)
+				If menu Then menu.SetMenuAlpha(alpha)
 			Else
 				alpha = 0
 				show = False
@@ -768,10 +769,53 @@ Summary: Renders the dialog.
 				DrawText(text, textX, textY, 0.5, 0.5)
 			End
 			SetColor(255, 255, 255)
-			menu.Draw()
-			
+			If menu Then menu.Draw()
 			
 			SetAlpha 1
+		End
+	End
+	
+#Rem
+Summary: Moves the dialong by the set amounts along with text and menus
+#End
+	Method MoveBy:Void(x:Float, y:Float, moveButtons:Bool = True)
+		Self.x += x
+		Self.y += y
+		Self.textX += x
+		Self.textY += y
+		Self.titleX += x
+		Self.titleY += y
+		
+		If moveButtons
+			If menu
+				For Local b:SimpleButton = EachIn Self.menu
+					b.MoveBy(x, y)
+				Next
+			End
+		End
+	End
+	
+	Method MoveTo:Void(newX:Float, newY:Float, moveButtons:Bool = True)
+		Local oldx:Float = x
+		Local oldy:Float = y
+		
+		Self.x = newX
+		Self.y = newY
+
+		Local diffX:Float = x - oldx
+		Local diffY:Float = y - oldy
+		
+		Self.textX += diffX
+		Self.textY += diffY
+		Self.titleX += diffX
+		Self.titleY += diffY
+		
+		If moveButtons
+			If menu
+				For Local b:SimpleButton = EachIn Self.menu
+					b.MoveBy(diffX, diffY)
+				Next
+			End
 		End
 	End
 End
