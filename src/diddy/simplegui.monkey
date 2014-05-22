@@ -738,7 +738,9 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 				alpha = 0
 				show = False
 			End
-		End	
+		End
+		If alpha < 0 Then alpha = 0
+		If alpha > 1 Then alpha = 1
 	End
 	
 #Rem
