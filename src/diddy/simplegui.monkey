@@ -195,6 +195,8 @@ Summary: Sets the alpha for each button to the passed value.
 #End
 	Method SetMenuAlpha:Void(alpha:Float)
 		Local b:SimpleButton
+		If alpha < 0 Then alpha = 0
+		if alpha > 1 Then alpha = 1
 		For b = EachIn Self
 			b.alpha = alpha
 		Next
@@ -691,7 +693,8 @@ Class SimpleDialog
 	Field textY:Float
 	Field textDrawDelegate:SimpleTextDrawDelegate
 	Field textColor:Int[3]
-	
+	Field dx:Float
+	Field dy:Float
 #Rem
 Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 #End	
