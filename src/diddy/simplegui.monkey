@@ -776,7 +776,7 @@ Summary: Renders the dialog.
 	End
 	
 #Rem
-Summary: Moves the dialong by the set amounts along with text and menus
+Summary: Moves the dialog by the set amounts along with text and menus
 #End
 	Method MoveBy:Void(x:Float, y:Float, moveButtons:Bool = True)
 		Self.x += x
@@ -795,27 +795,10 @@ Summary: Moves the dialong by the set amounts along with text and menus
 		End
 	End
 	
+#Rem
+Summary: Moves the dialog to the set coords along with text and menus
+#End	
 	Method MoveTo:Void(newX:Float, newY:Float, moveButtons:Bool = True)
-		Local oldx:Float = x
-		Local oldy:Float = y
-		
-		Self.x = newX
-		Self.y = newY
-
-		Local diffX:Float = x - oldx
-		Local diffY:Float = y - oldy
-		
-		Self.textX += diffX
-		Self.textY += diffY
-		Self.titleX += diffX
-		Self.titleY += diffY
-		
-		If moveButtons
-			If menu
-				For Local b:SimpleButton = EachIn Self.menu
-					b.MoveBy(diffX, diffY)
-				Next
-			End
-		End
+		MoveBy(newX - x, newY - y, moveButtons)
 	End
 End
