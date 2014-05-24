@@ -261,7 +261,7 @@ Class FileStream Extends DataConversion
 		
 		#If CONFIG="debug"
     	' how can we recover from an error if you stop the program?
-			Error errStr
+			Print errStr
 		#End
 	End Method
 End
