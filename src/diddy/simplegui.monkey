@@ -693,6 +693,8 @@ Class SimpleDialog
 	Field textY:Float
 	Field textDrawDelegate:SimpleTextDrawDelegate
 	Field textColor:Int[3]
+	Field titleColor:Int[3]
+	Field color:Int[3]
 	Field dx:Float
 	Field dy:Float
 #Rem
@@ -711,9 +713,9 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		alphaControl = 0.4
 		textX = SCREEN_WIDTH2
 		textY = titleY + 50
-		textColor[0] = 255
-		textColor[1] = 255
-		textColor[2] = 255
+		SetTextColor(255, 255, 255)
+		SetTitleColor(255, 255, 255)
+		SetImageColor(255, 255, 255)
 	End
 	
 #Rem
@@ -747,6 +749,15 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 	End
 	
 #Rem
+Summary: Set the colour of the image
+#END	
+	Method SetImageColor:Void(r:Int, g:Int, b:Int)
+		color[0] = r
+		color[1] = g
+		color[2] = b
+	End
+		
+#Rem
 Summary: Set the colour of the text
 #END
 	Method SetTextColor:Void(r:Int, g:Int, b:Int)
@@ -754,25 +765,40 @@ Summary: Set the colour of the text
 		textColor[1] = g
 		textColor[2] = b
 	End
-	
+
+#Rem
+Summary: Set the colour of the title
+#END
+	Method SetTitleColor:Void(r:Int, g:Int, b:Int)
+		titleColor[0] = r
+		titleColor[1] = g
+		titleColor[2] = b
+	End
+
+		
 #Rem
 Summary: Renders the dialog.
 #End	
 	Method Draw:Void()
 		If alpha > 0
 			SetAlpha alpha
+			SetColor(color[0], color[1], color[2])
 			image.Draw(x, y)
+			
+			SetColor(titleColor[0], titleColor[1], titleColor[2])
 			If titleDrawDelegate <> Null Then
 				titleDrawDelegate.Draw(title, titleX, titleY)
 			Else
 				DrawText(title, titleX, titleY, 0.5, 0.5)
 			End
+			
 			SetColor(textColor[0], textColor[1], textColor[2])
 			If textDrawDelegate <> Null Then
 				textDrawDelegate.Draw(text, textX, textY)
 			Else
 				DrawText(text, textX, textY, 0.5, 0.5)
 			End
+			
 			SetColor(255, 255, 255)
 			If menu Then menu.Draw()
 			
