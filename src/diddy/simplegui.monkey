@@ -559,13 +559,18 @@ Developers only need to call this if they are using the button outside of a [[Si
 			mx = MouseX()
 			my = MouseY()
 		End
-		If mx >= x And mx < x+image.w And my >= y And my < y+image.h Then
-			If mouseOver = 0
-				if soundMouseOver <> null
-					soundMouseOver.Play()
+		If mx >= x And mx < x + image.w And my >= y And my < y + image.h Then
+			#if TARGET="android" or TARGET="ios"
+			#Else
+				If mouseOver = 0
+					if soundMouseOver <> null
+						soundMouseOver.Play()
+					End
 				End
-			End
-			mouseOver = 1
+				mouseOver = 1
+			#End
+			
+
 			If MouseHit() Then
 				Click()
 			Else

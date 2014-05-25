@@ -243,55 +243,59 @@ Public
 		End
 	End
 
+	Method PerformVirtualResolution:Void()
+		If virtualResOn
+			PushMatrix
+			If aspectRatioOn
+				If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT) Or deviceChanged
+					DEVICE_WIDTH = DeviceWidth()
+					DEVICE_HEIGHT = DeviceHeight()
+					deviceChanged = False
+	
+					Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
+					If deviceRatio >= aspectRatio
+						multi = DEVICE_WIDTH / SCREEN_WIDTH
+						heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
+						widthBorder = 0
+					Else
+						multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
+						widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
+						heightBorder = 0
+					End
+				
+					vsx = Max(0.0, widthBorder )
+					vsy = Max(0.0, heightBorder )
+					vsw = Min(DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
+					vsh = Min(DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
+					
+					virtualScaledW = (SCREEN_WIDTH * multi)
+					virtualScaledH = (SCREEN_HEIGHT * multi)
+					
+					virtualXOff = (DEVICE_WIDTH - virtualScaledW) * 0.5
+					virtualYOff = (DEVICE_HEIGHT - virtualScaledH) * 0.5
+					
+					virtualXOff = virtualXOff / multi
+					virtualYOff = virtualYOff/ multi
+				End
+				
+				SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
+				Cls 0, 0, 0
+				
+				SetScissor vsx, vsy, vsw, vsh
+	
+				Scale multi, multi
+	
+				Translate virtualXOff, virtualYOff 
+			Else
+				Scale SCREENX_RATIO, SCREENY_RATIO
+			End
+		End
+	End
+	
 	Method OnRender:Int()
 		Try
 			FPSCounter.Update()
-			If virtualResOn
-				PushMatrix
-				If aspectRatioOn
-					If (DeviceWidth() <> DEVICE_WIDTH) Or (DeviceHeight() <> DEVICE_HEIGHT) Or deviceChanged
-						DEVICE_WIDTH = DeviceWidth()
-						DEVICE_HEIGHT = DeviceHeight()
-						deviceChanged = False
-
-						Local deviceRatio:Float = DEVICE_HEIGHT / DEVICE_WIDTH
-						If deviceRatio >= aspectRatio
-							multi = DEVICE_WIDTH / SCREEN_WIDTH
-							heightBorder = (DEVICE_HEIGHT - SCREEN_HEIGHT * multi) * 0.5
-							widthBorder = 0
-						Else
-							multi = DEVICE_HEIGHT / SCREEN_HEIGHT 
-							widthBorder = (DEVICE_WIDTH - SCREEN_WIDTH * multi) * 0.5
-							heightBorder = 0
-						End
-					
-						vsx = Max(0.0, widthBorder )
-						vsy = Max(0.0, heightBorder )
-						vsw = Min(DEVICE_WIDTH - widthBorder * 2.0, DEVICE_WIDTH)
-						vsh = Min(DEVICE_HEIGHT- heightBorder * 2.0, DEVICE_HEIGHT)
-						
-						virtualScaledW = (SCREEN_WIDTH * multi)
-						virtualScaledH = (SCREEN_HEIGHT * multi)
-						
-						virtualXOff = (DEVICE_WIDTH - virtualScaledW) * 0.5
-						virtualYOff = (DEVICE_HEIGHT - virtualScaledH) * 0.5
-						
-						virtualXOff = virtualXOff / multi
-						virtualYOff = virtualYOff/ multi
-					End
-					
-					SetScissor 0, 0, DEVICE_WIDTH , DEVICE_HEIGHT 
-					Cls 0, 0, 0
-					
-					SetScissor vsx, vsy, vsw, vsh
-		
-					Scale multi, multi
-
-					Translate virtualXOff, virtualYOff 
-				Else
-					Scale SCREENX_RATIO, SCREENY_RATIO
-				End
-			End
+			PerformVirtualResolution()
 			
 			' auto cls
 			If autoCls Then Cls()
@@ -336,7 +340,7 @@ Public
 			Local mouseOffsetX:Float = MouseX() - DEVICE_WIDTH * 0.5
 			Local x:Float = (mouseOffsetX / multi) / 1 + (SCREEN_WIDTH * 0.5)
 			mouseX = x
-			Local mouseOffsetY:Float = MouseY() - DEVICE_HEIGHT * 0.5
+			Local mouseOffsetY:Float = MouseY() -DEVICE_HEIGHT * 0.5
 			Local y:Float = (mouseOffsetY / multi) / 1 + (SCREEN_HEIGHT * 0.5)
 			mouseY = y
 		Else
@@ -692,18 +696,34 @@ Class LoadingBar
 	Method SetSteps:Void(steps:Int)
 		Self.steps = steps
 		stepSize = fullImage.Width() / steps
-	End Method
+	End
 
 	Method Progress:Void()
+		Print "Please use LoadingScreen.Progress!"
+	End
+	
+	Method MoveBar:Void()
 		currentStep = currentStep + 1
+		#If CONFIG="debug"
+			Print "Loadingbar currentStep = " + currentStep
+		#End 
 		position = currentStep * stepSize
 		If position > fullImage.Width() Then position = fullImage.Width()
 		If currentStep = steps Then finished = True
-	End Method
+	End
 	
 	Method Draw:Void()
 		DrawImage(emptyImage, x, y)
 		DrawImageRect(fullImage, x, y, 0, 0, position, fullImage.Height())
+	End
+End
+
+'summary: Simple DrawDelegate Class for the Loading Screen
+Class LoadingScreenDelegate Abstract
+	Method Load:Void()
+	End
+	
+	Method Draw:Void()
 	End
 End
 
@@ -713,6 +733,8 @@ Class LoadingScreen Extends Screen
 	Field destination:Screen
 	Field loadingBar:LoadingBar
 	Field image:Image
+	Field loadingScreenDelegate:LoadingScreenDelegate
+	Field rendering:Bool
 	
 	Method New()
 		name = "loading"
@@ -728,6 +750,7 @@ Class LoadingScreen Extends Screen
 		loadingBar.fullImage = LoadBitmap(loadingFullBarPath, Image.MidHandle)
 		loadingBar.emptyImage = LoadBitmap(loadingEmptyBarPath, Image.MidHandle)
 		loadingBar.SetSteps(steps)
+		rendering = False
 	End
 	
 	Method Start:Void()
@@ -737,12 +760,19 @@ Class LoadingScreen Extends Screen
 	
 	Method Render:Void()
 		Cls()
+		If not diddyGame.screenFade.active Then rendering = True
 		DrawImage image, SCREEN_WIDTH2, SCREEN_HEIGHT2
 		loadingBar.Draw()
-	End 
+		If loadingScreenDelegate Then loadingScreenDelegate.Draw()
+	End
+	
+	Method Progress:Void()
+		loadingBar.MoveBar()
+	End
 	
 	Method Update:Void()
-		If KeyHit(KEY_SPACE) Then 
+		If loadingScreenDelegate And rendering Then loadingScreenDelegate.Load()
+		If KeyHit(KEY_SPACE) Then
 			loadingBar.Progress()
 		End
 		If loadingBar.finished
