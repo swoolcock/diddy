@@ -489,85 +489,113 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Return Null
 	End
 	
+	Method RenderLayer:Void(layerName:String, bx:Int, by:Int, bw:Int, bh:Int, sx:Float = 1, sy:Float = 1)
+		Local layer:TileMapLayer
+		For Local l:TileMapLayer = EachIn layers
+			If l.name.ToUpper() = layerName.ToUpper()
+				layer = l
+				Exit
+			End
+		End
+		RenderLayer(layer, bx, by, bw, bh, sx, sy)
+	End
+	
+	Method RenderLayer:Void(layer:TileMapLayer, bx:Int, by:Int, bw:Int, bh:Int, sx:Float = 1, sy:Float = 1)
+		Local x:Int, y:Int, rx:Int, ry:Int, mx:Int, my:Int, mx2:Int, my2:Int, modx:Int, mody:Int
+		If layer.visible And TileMapTileLayer(layer) <> Null Then
+			Local tl:TileMapTileLayer = TileMapTileLayer(layer)
+			Local mapTile:TileMapTile, gid%
+			PreRenderLayer(layer)
+			' ortho
+			If orientation = MAP_ORIENTATION_ORTHOGONAL Then
+				modx = (bx * tl.parallaxScaleX) Mod tileWidth
+				mody = (by * tl.parallaxScaleY) Mod tileHeight
+				y = by + tileHeight - tl.maxTileHeight
+				my = Int(Floor(Float(by * tl.parallaxScaleY) / Float(tileHeight)))
+				While y < by + bh + tl.maxTileHeight
+					x = bx + tileWidth - tl.maxTileWidth
+					mx = Int(Floor(Float(bx * tl.parallaxScaleX) / Float(tileWidth)))
+					While x < bx + bw + tl.maxTileWidth
+						If (wrapX Or (mx >= 0 And mx < width)) And (wrapY Or (my >= 0 And my < height)) Then
+							mx2 = mx
+							my2 = my
+							While mx2 < 0
+								mx2 += width
+							End
+							While mx2 >= width
+								mx2 -= width
+							End
+							While my2 < 0
+								my2 += height
+							End
+							While my2 >= height
+								my2 -= height
+							End
+							gid = tl.mapData.cells[mx2 + my2*tl.mapData.width].gid
+							If gid > 0 Then
+								mapTile = tiles[gid - 1]
+								
+								If modx < 0 Then modx += tileWidth
+								If mody < 0 Then mody += tileHeight
+								rx = x - modx - bx
+								ry = y - mody - by
+
+								DrawTile(tl, mapTile, rx, ry)
+							End
+						End
+						x += tileWidth
+						mx += 1
+					End
+					y += tileHeight
+					my += 1
+				End
+
+			' iso
+			Elseif orientation = MAP_ORIENTATION_ISOMETRIC Then
+				' TODO: wrapping
+				For y = 0 Until tl.width + tl.height
+					ry = y
+					rx = 0
+					While ry >= tl.height
+						ry -= 1
+						rx += 1
+					Wend
+					While ry >= 0 And rx < tl.width
+						gid = tl.mapData.cells[rx + ry*tl.mapData.width].gid
+						If gid > 0 Then
+							mapTile = tiles[gid - 1]
+							DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2 - bx, (rx + ry + 2) * tileHeight / 2 - mapTile.height - by)
+						Endif
+						ry -= 1
+						rx += 1
+					End
+				Next
+			End
+			PostRenderLayer(layer)
+		End
+	End
+	
 	' bx,by,bw,bh = render bounds (screen)
 	' sx,sy = scale x/y (float, defaults to 1) i'll do this later
 	' wx,wy = wrap x/y (boolean, defaults to false)
-	Method RenderMap:Void(bx%, by%, bw%, bh%, sx# = 1, sy# = 1)
+	Method RenderMap:Void(bx:Int, by:Int, bw:Int, bh:Int, sx:Float = 1, sy:Float = 1, layerName:String = "ALL")
 		PreRenderMap()
-		Local x%, y%, rx%, ry%, mx%, my%, mx2%, my2%, modx%, mody%
-		For Local layer:TileMapLayer = Eachin layers
-			If layer.visible And TileMapTileLayer(layer) <> Null Then
-				Local tl:TileMapTileLayer = TileMapTileLayer(layer)
-				Local mapTile:TileMapTile, gid%
-				PreRenderLayer(layer)
-				' ortho
-				If orientation = MAP_ORIENTATION_ORTHOGONAL Then
-					modx = (bx * tl.parallaxScaleX) Mod tileWidth
-					mody = (by * tl.parallaxScaleY) Mod tileHeight
-					y = by + tileHeight - tl.maxTileHeight
-					my = Int(Floor(Float(by * tl.parallaxScaleY) / Float(tileHeight)))
-					While y < by + bh + tl.maxTileHeight
-						x = bx + tileWidth - tl.maxTileWidth
-						mx = Int(Floor(Float(bx * tl.parallaxScaleX) / Float(tileWidth)))
-						While x < bx + bw + tl.maxTileWidth
-							If (wrapX Or (mx >= 0 And mx < width)) And (wrapY Or (my >= 0 And my < height)) Then
-								mx2 = mx
-								my2 = my
-								While mx2 < 0
-									mx2 += width
-								End
-								While mx2 >= width
-									mx2 -= width
-								End
-								While my2 < 0
-									my2 += height
-								End
-								While my2 >= height
-									my2 -= height
-								End
-								gid = tl.mapData.cells[mx2 + my2*tl.mapData.width].gid
-								If gid > 0 Then
-									mapTile = tiles[gid - 1]
-									
-									If modx < 0 Then modx += tileWidth
-									If mody < 0 Then mody += tileHeight
-									rx = x - modx - bx
-									ry = y - mody - by
-
-									DrawTile(tl, mapTile, rx, ry)
-								End
-							End
-							x += tileWidth
-							mx += 1
-						End
-						y += tileHeight
-						my += 1
-					End
-
-				' iso
-				Elseif orientation = MAP_ORIENTATION_ISOMETRIC Then
-					' TODO: wrapping
-					For y = 0 Until tl.width + tl.height
-						ry = y
-						rx = 0
-						While ry >= tl.height
-							ry -= 1
-							rx += 1
-						Wend
-						While ry >= 0 And rx < tl.width
-							gid = tl.mapData.cells[rx + ry*tl.mapData.width].gid
-							If gid > 0 Then
-								mapTile = tiles[gid - 1]
-								DrawTile(tl, mapTile, (rx - ry - 1) * tileWidth / 2 - bx, (rx + ry + 2) * tileHeight / 2 - mapTile.height - by)
-							Endif
-							ry -= 1
-							rx += 1
-						End
-					Next
+		
+		If layerName = "ALL" Then
+			For Local layer:TileMapLayer = EachIn layers
+				RenderLayer(layer, bx, by, bw, bh, sx, sy)
+			Next
+		Else
+			Local layer:TileMapLayer
+			For Local l:TileMapLayer = EachIn layers
+				If l.name.ToUpper() = layerName.ToUpper()
+					layer = l
+					Exit
 				End
-				PostRenderLayer(layer)
 			End
-		Next
+			RenderLayer(layer, bx, by, bw, bh, sx, sy)
+		End
+		
 		PostRenderMap()
 	End
 	
