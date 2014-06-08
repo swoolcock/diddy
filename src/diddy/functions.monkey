@@ -95,8 +95,6 @@ Function GetDayOfMonth:Int()
 End
 
 Function GetDayOfWeek:Int()
-	Print "GetDayOfWeek is not supported returning -1"
-	Print "GetDayOfWeek will be removed in future versions!!!"
 	Return -1
 End
 
