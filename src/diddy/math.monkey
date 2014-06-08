@@ -84,3 +84,27 @@ Function EaseInOutBounceTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	End
 	Return EaseOutBounceTween(t * 2 - d, 0, diff, d) * 0.5 + diff * 0.5 + b
 End
+
+Function BackEaseInTween:Float(b:Float, c:Float, t:Float, d:Float = 1, s:Float = 2)
+	Local diff:Float = c - b
+	t /= d
+	Return diff * t * t * ( (s + 1) * t - s) + b
+End
+
+Function BackEaseOutTween:Float(b:Float, c:Float, t:Float, d:Float = 1, s:Float = 2)
+	Local diff:Float = c - b
+	t = t / d - 1
+	Return diff * (t * t * ( (s + 1) * t + s) + 1) + b
+End
+
+Function BackEaseInOutTween:Float(b:Float, c:Float, t:Float, d:Float = 1, s:Float = 2)
+	Local diff:Float = c - b
+	Local s2:Float = s
+	t /= d / 2
+	s2 *= 1.525
+	If t < 1
+		Return diff / 2 * (t * t * ( (s2 + 1) * t - s2)) + b
+	End
+	t -= 2
+	Return diff / 2 * (t * t * ( (s2 + 1) * t + s2) + 2) + b
+End
