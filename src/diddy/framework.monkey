@@ -1495,6 +1495,8 @@ Public
 	Field h:Int
 	Field w2:Float
 	Field h2:Float
+	Field w4:Float
+	Field h4:Float
 	Field midhandled:Int = 0
 	Field frames:Int
 	
@@ -1588,8 +1590,10 @@ Public
 		If image <> Null Then
 			w = image.Width()
 			h = image.Height()
-			w2 = w/2
-			h2 = h/2
+			w2 = w / 2
+			h2 = h / 2
+			w4 = w / 4
+			h4 = h / 4
 		End
 	End
 	
@@ -1998,8 +2002,10 @@ Class Sprite
 		If image <> Null Then
 			image.w = image.image.Width()
 			image.h = image.image.Height()
-			image.w2 = image.w/2
-			image.h2 = image.h/2
+			image.w2 = image.w / 2
+			image.h2 = image.h / 2
+			image.w4 = image.w / 4
+			image.h4 = image.h / 4
 		End	
 	End
 	
