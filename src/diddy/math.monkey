@@ -55,12 +55,12 @@ Function Bezier:Float(p1:Float, p2:Float, cp1:Float, cp2:Float, t:Float)
 	Return v
 End
 
-Function EaseInBounceTween:Float(t:Float, b:Float, c:Float, d:Float = 1)
+Function EaseInBounceTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	Local diff:Float = c - b
 	Return diff - EaseOutBounceTween(d - t, 0, diff, d) + b
 End
 
-Function EaseOutBounceTween:Float(t:Float, b:Float, c:Float, d:Float = 1)
+Function EaseOutBounceTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	Local diff:Float = c - b
 	t /= d
 	If (t < (1 / 2.75))
@@ -77,7 +77,7 @@ Function EaseOutBounceTween:Float(t:Float, b:Float, c:Float, d:Float = 1)
 	End
 End
 
-Function EaseInOutBounceTween:Float(t:Float, b:Float, c:Float, d:Float = 1)
+Function EaseInOutBounceTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	Local diff:Float = c - b
 	If (t < d / 2)
 		Return EaseInBounceTween(t * 2, 0, diff, d) * 0.5 + b
