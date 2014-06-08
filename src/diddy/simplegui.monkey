@@ -702,6 +702,15 @@ Class SimpleDialog
 	Field color:Int[3]
 	Field dx:Float
 	Field dy:Float
+	Field ox:Float
+	Field oy:Float
+	Field ex:Float
+	Field ey:Float
+	
+	' timer
+	Field timer:Float
+	Field timerSpeed:Float = 0.01
+	
 #Rem
 Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 #End	
@@ -779,8 +788,24 @@ Summary: Set the colour of the title
 		titleColor[1] = g
 		titleColor[2] = b
 	End
-
+	
+#Rem
+Summary: Controls the timer
+#End
+	Method UpdateTimer:Void(loop:Bool, stopWhenFinished:Bool)
+		timer += timerSpeed * dt.delta
 		
+		If stopWhenFinished
+			If timer >= 1 Then
+				timer = 1
+			End
+		ElseIf loop
+			If timer >= 1 Then
+				timer = 0
+			End
+		End
+		
+	End	
 #Rem
 Summary: Renders the dialog.
 #End	
