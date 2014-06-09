@@ -59,6 +59,7 @@ Import diddy.pathFind
 Import diddy.psystem
 Import diddy.quicksort
 Import diddy.serialization
+Import diddy.snapfling
 Import diddy.simplegui
 Import diddy.singleton
 Import diddy.storyboard

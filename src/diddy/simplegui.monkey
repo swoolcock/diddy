@@ -8,6 +8,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #Rem
 Header: A collection of very simple GUI elements, usually for a basic menu system.
 #End
+Strict
 
 Import diddy
 
