@@ -6,14 +6,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #End
 
 #Rem
-Header: Provides the DiddyStack class and associated utility classes.
+Header: Provides the SnapFlingStack class.
 #End
 
 Strict
 
 Import diddy
 
-Class SnapFlingStack<SnapFlingObject> Extends DiddyStack<SnapFlingObject>
+Class SnapFlingStack Extends DiddyStack<SnapFlingObject>
 	Field selected:SnapFlingObject
 	Field endPositionX:Int = SCREEN_WIDTH2
 	Field timerSpeed:Float = 0.04

@@ -26,7 +26,7 @@ Class MyGame Extends DiddyApp
 End
 
 Class GameScreen Extends Screen
-	Field dialogs:SnapFlingStack<SnapFlingObject>
+	Field dialogs:SnapFlingStack
 	Field scroll:GameImage
 		
 	Method New()
@@ -38,7 +38,7 @@ Class GameScreen Extends Screen
 	End
 		
 	Method Start:Void()
-		dialogs = New SnapFlingStack<SnapFlingObject>
+		dialogs = New SnapFlingStack
 		For Local i:Int = 0 To 2
 			Local d:MySimpleDialog = New MySimpleDialog(Null, scroll)
 			d.title = "MySimpleDialog " + (i + 1)
