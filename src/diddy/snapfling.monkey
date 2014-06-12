@@ -20,17 +20,16 @@ Class SnapFlingStack Extends DiddyStack<SnapFlingObject>
 	
 	Method Update:Void()
 		For Local i:SnapFlingObject = EachIn Self
-			i.Update()		
+			i.Update()
 			If i <> selected
 				' slow down the objects
-				i.SetDx(i.GetDx() * 0.95 * dt.delta)
-				
+				i.SetDx(i.GetDx() * 0.95)
 				' stop run away floats
-				If i.GetDx() <> 0 and Abs(i.GetDx()) < 0.3 Then
+				If (i.GetDx() <> 0 and Abs(i.GetDx()) < 0.3) Then
 					i.SetDx(0)
 					GetSelectedObject()
 				End
-				i.MoveByXY(i.GetDx(), 0)
+				i.MoveByXY(i.GetDx() * dt.delta, 0)
 			End
 		Next
 		If selected
