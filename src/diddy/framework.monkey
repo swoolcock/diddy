@@ -2462,3 +2462,62 @@ End
 Function MouseYSpeed:Int()
 	Return diddyGame.diddyMouse.MouseYSpeed()
 End
+
+#Rem
+Summary: Simple SplashScreen
+#End
+Class SplashScreen Extends Screen
+	Field img:Image
+	Field timeOut:Float
+	Field fade:Bool
+	Field nextScreen:Screen
+	Field imagePath:String
+	Field flags:Int
+	Field x:Int, y:Float
+	Field debug:Bool
+	Field clsColor:Int[3]
+		
+	Method New(imagePath:String, flags:Int, x:Int, y:Int, nextScreen:Screen, debug:Bool = False)
+		name = "Splash"
+		Self.imagePath = imagePath
+		Self.flags = flags
+		Self.nextScreen = nextScreen
+		Self.x = x
+		Self.y = y
+		Self.debug = debug
+		SetClsColor(255, 255, 255)
+	End
+	
+	Method SetClsColor:Void(r:Int = 0, g:Int = 0, b:Int = 0)
+		clsColor[0] = r
+		clsColor[1] = g
+		clsColor[2] = b
+	End
+		
+	Method Start:Void()
+		fade = False
+	End
+	
+	Method Load:Void()
+		img = LoadBitmap("graphics/" + imagePath, flags)
+	End
+	
+	Method Update:Void()
+		' if debug is set the splash screen is only displayed briefly
+		If debug
+			timeOut += 100
+		End
+		If timeOut < 70
+			timeOut += 1 * dt.delta
+		Else
+			If not fade
+				FadeToScreen(nextScreen)
+			End
+		End
+	End
+	
+	Method Render:Void()
+		Cls(clsColor[0], clsColor[1], clsColor[2])
+		DrawImage(img, x, y)
+	End
+End
