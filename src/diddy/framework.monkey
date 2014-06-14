@@ -2468,7 +2468,8 @@ Summary: Simple SplashScreen
 #End
 Class SplashScreen Extends Screen
 	Field img:Image
-	Field timeOut:Float
+	Field time:Float
+	Field timeOut:Float = 100
 	Field fade:Bool
 	Field nextScreen:Screen
 	Field imagePath:String
@@ -2477,7 +2478,7 @@ Class SplashScreen Extends Screen
 	Field debug:Bool
 	Field clsColor:Int[3]
 		
-	Method New(imagePath:String, flags:Int, x:Int, y:Int, nextScreen:Screen, debug:Bool = False)
+	Method New(imagePath:String, flags:Int, x:Int, y:Int, nextScreen:Screen, timeOut:Int = 100, debug:Bool = False)
 		name = "Splash"
 		Self.imagePath = imagePath
 		Self.flags = flags
@@ -2485,7 +2486,8 @@ Class SplashScreen Extends Screen
 		Self.x = x
 		Self.y = y
 		Self.debug = debug
-		SetClsColor(255, 255, 255)
+		Self.timeOut = timeOut
+		SetClsColor(0, 0, 0)
 	End
 	
 	Method SetClsColor:Void(r:Int = 0, g:Int = 0, b:Int = 0)
@@ -2505,10 +2507,10 @@ Class SplashScreen Extends Screen
 	Method Update:Void()
 		' if debug is set the splash screen is only displayed briefly
 		If debug
-			timeOut += 100
+			time += 100
 		End
-		If timeOut < 70
-			timeOut += 1 * dt.delta
+		If time < timeOut
+			time += 1 * dt.delta
 		Else
 			If not fade
 				FadeToScreen(nextScreen)
