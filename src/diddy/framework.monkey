@@ -458,7 +458,10 @@ Public
 	
 	'summary: Draws current FPS at 0,0
 	Method DrawFPS:Void()
+		Local oldcolor:Float[] = GetColor()
+		SetColor(255, 255, 255)
 		DrawText FPSCounter.totalFPS, 0, 0
+		SetColor(oldcolor[0], oldcolor[1], oldcolor[2])
 	End
 	
 	'summary: Wrapper for PlayMusic
