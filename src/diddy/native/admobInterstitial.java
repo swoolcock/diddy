@@ -5,7 +5,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import com.google.ads.*;
+import com.google.android.gms.ads.*;
 
 /**
  * Simple Admob Interstitial support for Monkey
@@ -30,7 +30,7 @@ class AdmobInterstitial implements Runnable{
 	// displays the ad to the user if it is ready
 	public void ShowAd( ){
 		if (interstitialAd != null ) {
-			if (interstitialAd.isReady()) {
+			if (interstitialAd.isLoaded()) {
 				interstitialAd.show();
 			}
 		}
@@ -45,34 +45,36 @@ class AdmobInterstitial implements Runnable{
 	// loads an ad
 	private void loadAd(){
 		if (interstitialAd != null ) {
-			AdRequest adRequest = new AdRequest();
-			interstitialAd.loadAd(adRequest);
+			AdRequest.Builder adRequest = new AdRequest.Builder();
+			interstitialAd.loadAd(adRequest.build());
 		}
 	}
 	
 	// the runner
 	public void run(){
 		Activity activity = BBAndroidGame.AndroidGame().GetActivity();
-		interstitialAd = new InterstitialAd( activity, adUnitId );
+		interstitialAd = new InterstitialAd( activity );
+		interstitialAd.setAdUnitId(adUnitId);
 		
 		// set listener so we load a new ad when the user closes one
 		interstitialAd.setAdListener(new AdListener() {
 		
-			public void onDismissScreen(Ad ad) {
+			public void onAdFailedToLoad(int errorCode) {
+			}			
+			
+			public void onAdClosed() {
 				loadAd();
 			}
 			
-			public void onFailedToReceiveAd(Ad ad, AdRequest.ErrorCode error) {
-			}			
-			
-			public void onLeaveApplication(Ad ad) {
+			public void onAdLeftApplication() {
 			}
 			
-			public void onPresentScreen(Ad ad) {
+			public void onAdLoaded() {
 			}
 			
-			public void onReceiveAd(Ad ad) {
+			public void onAdOpened() {
 			}
+
 		});
 		
 		// load the first ad
