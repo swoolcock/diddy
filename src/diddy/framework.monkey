@@ -1944,6 +1944,7 @@ Class Sprite
 	Field visible:Bool = True
 	Field x:Float, y:Float
 	Field ox:Float, oy:Float
+	Field ex:Float, ey:Float
 	Field dx:Float, dy:Float
 	Field speedX:Float, speedY:Float, speed:Float
 	Field maxXSpeed:Float, maxYSpeed:Float
@@ -2481,15 +2482,14 @@ Class SplashScreen Extends Screen
 	Field debug:Bool
 	Field clsColor:Int[3]
 		
-	Method New(imagePath:String, flags:Int, x:Int, y:Int, nextScreen:Screen, timeOut:Int = 100, debug:Bool = False)
+	Method New(imagePath:String, flags:Int, x:Int, y:Int, nextScreen:Screen, timeOut:Int = 250)
 		name = "Splash"
 		Self.imagePath = imagePath
 		Self.flags = flags
 		Self.nextScreen = nextScreen
 		Self.x = x
 		Self.y = y
-		Self.debug = debug
-		Self.timeOut = timeOut
+		Self.timeOut = diddyGame.CalcAnimLength(timeOut)
 		SetClsColor(0, 0, 0)
 	End
 	

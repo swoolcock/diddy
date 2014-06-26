@@ -5,6 +5,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #End
 
+Function LinearTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
+	Local diff:Float = c - b
+	Return diff * t / d + b
+End
+
 Function QuadTween:Float(b:Float, c:Float, t:Float, d:Float = 1)
 	Local diff:Float = c - b
 	t /= d / 2
@@ -35,7 +40,7 @@ Function SmoothStep:Float(x:Float, interpSmooth:Int = 1)
 		x *= x * (3 - 2 * x)
 	Next
 
-	Return x' x*x * (3-2*x)
+	Return x
 End
 
 Function TweenUp:Float(p1:Float, p2:Float, t:Float)
