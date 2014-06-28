@@ -45,8 +45,20 @@ class diddy
 		android.view.inputmethod.InputMethodManager inputMgr = (android.view.inputmethod.InputMethodManager)BBAndroidGame._androidGame._activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
 		inputMgr.toggleSoftInput(0, 0);
 	}
-	
+
 	static void showAlertDialog(String title, String message)
+	{
+		alert = new AlertDialog.Builder(BBAndroidGame._androidGame._activity);
+		alert.setTitle(title);
+		alert.setMessage(message);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+			}
+		});
+		alert.show();
+	}
+	
+	static void showInputDialog(String title, String message)
 	{
 		alert = new AlertDialog.Builder(BBAndroidGame._androidGame._activity);
 		alert.setTitle(title);

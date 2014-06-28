@@ -70,6 +70,16 @@ Extern
 		#End
 	#End
 	
+	#If TARGET="android" Then
+		Function ShowInputDialog:Void(title:String, message:String) = "diddy.showInputDialog"		
+	#Else
+		Public
+			Function ShowInputDialog:Void(title:String, message:String)
+				Print "Stub for ShowInputDialog"
+			End		
+	#End
+	
+Extern
 	#If TARGET="html5" Then
 		Function GetBrowserName:String()="diddy.getBrowserName"
 		Function GetBrowserVersion:String()="diddy.getBrowserVersion"
