@@ -159,7 +159,15 @@ class BBGameService extends ActivityDelegate {
 
 	public void BeginUserSignIn() {
 		if(IsNetworkAvailable()) {
-			mHelper.beginUserInitiatedSignIn();
+			if (mHelper != null) {
+				if (mHelper.mGoogleApiClient != null) {
+					mHelper.beginUserInitiatedSignIn();
+				} else {
+					System.out.println("mHelper.mGoogleApiClient is NULL");
+				}
+			} else {
+				System.out.println("mHelper is NULL");
+			}
 		}
 	}
 
