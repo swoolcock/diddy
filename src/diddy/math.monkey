@@ -113,3 +113,59 @@ Function BackEaseInOutTween:Float(b:Float, c:Float, t:Float, d:Float = 1, s:Floa
 	t -= 2
 	Return diff / 2 * (t * t * ( (s2 + 1) * t + s2) + 2) + b
 End
+
+Class RandomSource
+Private
+	Field currentSeed:Float
+
+	Method NextRnd:Float()
+		' cache global seed
+		Local lastSeed:Float = Seed
+		' update it to be ours
+		Seed = Self.currentSeed
+		' call global Rnd function
+		Local thisRnd:Float = Rnd()
+		' update our seed
+		Self.currentSeed = Seed
+		' reset global seed
+		Seed = lastSeed
+		' return the random float
+		Return thisRnd
+	End
+	
+Public
+	Method CurrentSeed:Float() Property Return currentSeed End
+	Method CurrentSeed:Void(currentSeed:Float) Property Self.currentSeed = currentSeed End
+	
+	Method New()
+		currentSeed = Seed
+	End
+	
+	Method New(seed:Int)
+		currentSeed = seed
+	End
+	
+	Method New(other:RandomSource)
+		currentSeed = other.CurrentSeed
+	End
+	
+	Method NextInt:Int()
+		Return (NextInt($10000) Shl 16) | NextInt($10000)
+	End
+	
+	Method NextInt:Int(n:Int)
+		Return Int(NextRnd() * n)
+	End
+	
+	Method NextInt:Int(low:Int, high:Int)
+		Return low + Int(NextRnd() * (high-low))
+	End
+	
+	Method NextFloat:Float()
+		Return NextRnd()
+	End
+	
+	Method NextBool:Bool()
+		Return NextRnd() >= 0.5
+	End
+End
