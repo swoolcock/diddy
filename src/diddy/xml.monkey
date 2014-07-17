@@ -653,6 +653,34 @@ Public
 	Method Matches:Bool(check:String)
 		Return check = name + "=" + value
 	End
+	
+	Method Name:String() Property
+		Return name
+	End
+	
+	Method Value:String() Property
+		Return value
+	End
+	
+	Method StringValue:String(def:String)
+		If Not value Then Return def
+		Return value
+	End
+	
+	Method FloatValue:Float(def:Float)
+		If Not value Then Return def
+		Return Float(value)
+	End
+	
+	Method IntValue:Int(def:Int)
+		If Not value Then Return def
+		Return Int(value)
+	End
+	
+	Method BoolValue:Bool(def:Bool)
+		If Not value Then Return def
+		Return value.ToLower() = "true" Or value = "1"
+	End
 End
 
 Class XMLElement
@@ -887,6 +915,10 @@ Public
 	
 	Method Value:Void(value:String) Property
 		Self.value = value
+	End
+	
+	Method Attributes:DiddyStack<XMLAttribute>() Property
+		Return attributes
 	End
 End
 
