@@ -116,11 +116,12 @@ End
 
 Class RandomSource
 Private
-	Field currentSeed:Float
+	Field currentSeed:Int
+	Field snapshotSeed:Int
 
 	Method NextRnd:Float()
 		' cache global seed
-		Local lastSeed:Float = Seed
+		Local lastSeed:Int = Seed
 		' update it to be ours if it's not the system one
 		If Self <> SystemSource Then Seed = Self.currentSeed
 		' call global Rnd function
@@ -136,19 +137,22 @@ Private
 Public
 	Global SystemSource:RandomSource = New RandomSource
 	
-	Method CurrentSeed:Float() Property Return currentSeed End
-	Method CurrentSeed:Void(currentSeed:Float) Property Self.currentSeed = currentSeed End
+	Method CurrentSeed:Int() Property Return currentSeed End
+	Method CurrentSeed:Void(currentSeed:Int) Property Self.currentSeed = currentSeed End
 	
 	Method New()
 		currentSeed = Seed
+		snapshotSeed = currentSeed
 	End
 	
 	Method New(seed:Int)
 		currentSeed = seed
+		snapshotSeed = currentSeed
 	End
 	
 	Method New(other:RandomSource)
 		currentSeed = other.CurrentSeed
+		snapshotSeed = currentSeed
 	End
 	
 	Method NextInt:Int()
@@ -169,5 +173,13 @@ Public
 	
 	Method NextBool:Bool()
 		Return NextRnd() >= 0.5
+	End
+	
+	Method Snapshot:Void()
+		snapshotSeed = currentSeed
+	End
+	
+	Method Rollback:Void()
+		currentSeed = snapshotSeed
 	End
 End
