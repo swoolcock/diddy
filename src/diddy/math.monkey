@@ -121,19 +121,21 @@ Private
 	Method NextRnd:Float()
 		' cache global seed
 		Local lastSeed:Float = Seed
-		' update it to be ours
-		Seed = Self.currentSeed
+		' update it to be ours if it's not the system one
+		If Self <> SystemSource Then Seed = Self.currentSeed
 		' call global Rnd function
 		Local thisRnd:Float = Rnd()
 		' update our seed
 		Self.currentSeed = Seed
-		' reset global seed
-		Seed = lastSeed
+		' reset global seed if it's not the system one
+		If Self <> SystemSource Then Seed = lastSeed
 		' return the random float
 		Return thisRnd
 	End
 	
 Public
+	Global SystemSource:RandomSource = New RandomSource
+	
 	Method CurrentSeed:Float() Property Return currentSeed End
 	Method CurrentSeed:Void(currentSeed:Float) Property Self.currentSeed = currentSeed End
 	
@@ -158,7 +160,7 @@ Public
 	End
 	
 	Method NextInt:Int(low:Int, high:Int)
-		Return low + Int(NextRnd() * (high-low))
+		Return low + Int(NextRnd() * (high-low+1))
 	End
 	
 	Method NextFloat:Float()
