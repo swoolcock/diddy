@@ -114,6 +114,90 @@ Function BackEaseInOutTween:Float(b:Float, c:Float, t:Float, d:Float = 1, s:Floa
 	Return diff / 2 * (t * t * ( (s2 + 1) * t + s2) + 2) + b
 End
 
+Function IntToRoman:String(input:Int)
+	Local s:String = ""
+    While input >= 1000
+        s += "M"
+        input -= 1000
+	End
+    While input >= 900
+        s += "CM"
+        input -= 900
+	End
+    While input >= 500
+        s += "D"
+        input -= 500
+    End
+    While input >= 400
+        s += "CD"
+        input -= 400
+    End
+    While input >= 100
+        s += "C"
+        input -= 100
+    End
+    While input >= 90
+        s += "XC"
+        input -= 90
+    End
+    While input >= 50
+        s += "L"
+        input -= 50
+    End
+    While input >= 40
+        s += "XL"
+        input -= 40
+    End
+    While input >= 10
+        s += "X"
+        input -= 10
+    End
+    While input >= 9
+        s += "IX"
+        input -= 9
+    End
+    While input >= 5
+        s += "V"
+        input -= 5
+    End
+    While input >= 4
+        s += "IV"
+        input -= 4
+    End
+    While input >= 1
+        s += "I"
+        input -= 1
+    End
+    Return s
+End
+
+Function RomanToInt:Int(input:String)
+	Local last:Int = 1
+	Local this:Int = 1
+	Local rv:Int = 0
+	For Local i:Int = input.Length-1 To 0 Step -1
+		last = this
+		Select input[i]
+			Case "I"[0]
+				this = 1
+			Case "V"[0]
+				this = 5
+			Case "X"[0]
+				this = 10
+			Case "L"[0]
+				this = 50
+			Case "C"[0]
+				this = 100
+			Case "D"[0]
+				this = 500
+			Case "M"[0]
+				this = 1000
+		End
+		If last > this Then rv -= this Else rv += this
+	Next
+	Return rv
+End
+
 Class RandomSource
 Private
 	Field currentSeed:Int
