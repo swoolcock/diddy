@@ -266,4 +266,8 @@ Public
 	Method Rollback:Void()
 		currentSeed = snapshotSeed
 	End
+	
+	Method Reseed:Void()
+		currentSeed = NextInt()
+	End
 End
