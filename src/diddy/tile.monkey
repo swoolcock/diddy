@@ -370,7 +370,11 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	' summary: override this to draw a tile
 	Method DrawTile:Void(tileLayer:TileMapTileLayer, mapTile:TileMapTile, x:Int, y:Int)
 		' default draw call
-		mapTile.image.DrawTile(x, y, mapTile.id, 0, 1, 1)
+		If mapTile.image Then
+			mapTile.image.DrawTile(x, y, mapTile.id, 0, 1, 1)
+		ElseIf mapTile.rawImage Then
+			DrawImageRect(mapTile.rawImage, x, y, mapTile.srcX, mapTile.srcY, mapTile.width, mapTile.height, 0, 1, 1)
+		End
 	End
 	
 	' summary: override this to create a custom tile class
@@ -418,10 +422,25 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local totaltiles% = 0, ts:TileMapTileset
 		Local alltiles:DiddyStack<TileMapTile> = New DiddyStack<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
-			' load the image
-			ts.image = diddyGame.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
-			' get the cell count
-			ts.tileCount = ts.image.tileCount
+			' try to load the image from the image bank if we're using the framework
+			If diddyGame Then ts.image = diddyGame.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
+			If ts.image Then
+				' get the cell count
+				ts.tileCount = ts.image.tileCount
+				ts.tileCountX = ts.image.tileCountX
+				ts.tileCountY = ts.image.tileCountY
+			Else
+				' if we couldn't get the image, load it with LoadImage
+				ts.rawImage = LoadImage(ts.imageNode.source)
+				If ts.rawImage Then
+					ts.tileCountX = (ts.rawImage.Width() - ts.margin) / (ts.tileWidth + ts.spacing)
+					ts.tileCountY = (ts.rawImage.Height() - ts.margin) / (ts.tileHeight + ts.spacing)
+					ts.tileCount = ts.tileCountX * ts.tileCountY
+				Else
+					Print "Couldn't find tileset image: "+ts.imageNode.source
+					Return
+				End
+			End
 			
 			' update max tile size
 			If maxTileWidth < ts.tileWidth Then maxTileWidth = ts.tileWidth
@@ -438,8 +457,14 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				End
 				ts.tiles[i].gid = ts.firstGid + i
 				ts.tiles[i].image = ts.image
+				ts.tiles[i].rawImage = ts.rawImage
 				ts.tiles[i].width = ts.tileWidth
 				ts.tiles[i].height = ts.tileHeight
+				' if we're using the raw image we need to precache some stuff
+				If ts.rawImage Then
+					ts.tiles[i].srcX = ts.margin + (ts.tileWidth + ts.spacing) * (i Mod ts.tileCountX)
+					ts.tiles[i].srcY = ts.margin + (ts.tileHeight + ts.spacing) * (i / ts.tileCountX)
+				End
 				alltiles.Push(ts.tiles[i])
 			Next
 			' update total tiles
@@ -810,24 +835,25 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Scrolls the map based on the changeX and changeY
 	Method Scroll:Void(changeX:Float, changeY:Float)
-		diddyGame.scrollX += changeX
-		diddyGame.scrollY += changeY
-		
-		If diddyGame.scrollX < 0 Then
-			diddyGame.scrollX = 0
-		Else
-			Local maxX:Int = width * tileWidth - SCREEN_WIDTH
-			If diddyGame.scrollX > maxX Then diddyGame.scrollX = maxX
-		End
-		
-		If diddyGame.scrollY < 0 Then
-			diddyGame.scrollY = 0
-		Else
-			Local maxY:Int = height * tileHeight - SCREEN_HEIGHT
-			If diddyGame.scrollY > maxY Then diddyGame.scrollY = maxY
+		If diddyGame Then
+			diddyGame.scrollX += changeX
+			diddyGame.scrollY += changeY
+			
+			If diddyGame.scrollX < 0 Then
+				diddyGame.scrollX = 0
+			Else
+				Local maxX:Int = width * tileWidth - SCREEN_WIDTH
+				If diddyGame.scrollX > maxX Then diddyGame.scrollX = maxX
+			End
+			
+			If diddyGame.scrollY < 0 Then
+				diddyGame.scrollY = 0
+			Else
+				Local maxY:Int = height * tileHeight - SCREEN_HEIGHT
+				If diddyGame.scrollY > maxY Then diddyGame.scrollY = maxY
+			End
 		End
 	End
-	
 End
 
 'summary: Simple Collision Data Class
@@ -862,7 +888,10 @@ Class TileMapTileset Implements ITileMapPostLoad
 	' post load
 	Field tiles:TileMapTile[]
 	Field image:GameImage
+	Field rawImage:Image
 	Field tileCount:Int
+	Field tileCountX:Int
+	Field tileCountY:Int
 	
 	Method PostLoad:Void()
 	End
@@ -1023,7 +1052,6 @@ End
 
 Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field id%
-	Field image:GameImage
 	Field width:Int
 	Field height:Int
 	Field gid:Int
@@ -1034,13 +1062,23 @@ Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field hasAnimDirection:Bool
 	Field animated:Bool
 	
+	' assigned from the tileset
+	Field image:GameImage
+	Field rawImage:Image
+	Field srcX:Int
+	Field srcY:Int
+	
 	Method New(id:Int)
 		Self.id = id
 	End
 	
 	Method PostLoad:Void()
 		If properties.Has(PROP_TILE_ANIM_DELAY) Then
-			animDelay = diddyGame.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
+			If diddyGame Then
+				animDelay = diddyGame.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
+			Else
+				animDelay = properties.Get(PROP_TILE_ANIM_DELAY).GetInt()
+			End
 			animated = True
 		End
 		If properties.Has(PROP_TILE_ANIM_NEXT) Then animNext = properties.Get(PROP_TILE_ANIM_NEXT).GetInt()
