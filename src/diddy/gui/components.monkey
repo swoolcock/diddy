@@ -109,6 +109,10 @@ Private
 		Next
 	End
 	
+Public
+	' Public Fields
+	' Note that these are public for now so they can be referenced from core.monkey
+	' Please don't use them directly!!!
 	Method ApplySkin:Void()
 		Local thisGUI:GUI = FindGUI()
 		Local node:XMLElement = thisGUI.GetSkinNode(GetSkinNodeName())
@@ -118,10 +122,7 @@ Private
 		End
 	End
 	
-Public
-' Public Fields
-	' Note that these are public for now so they can be referenced from core.monkey
-	' Please don't use them directly!!!
+
 	Field mouseHover:Bool = False
 	Field mouseDown:Bool = False
 	Field focusedChild:Component

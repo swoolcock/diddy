@@ -197,6 +197,7 @@ Private
 	Field layoutEnabled:Bool = False
 	
 ' Private methods
+Public
 	Method PushScissor:Void(x:Float, y:Float, w:Float, h:Float)
 		' don't use assert, for speed on android (one less method call)
 		If scissorDepth >= scissors.Length Then
@@ -391,7 +392,7 @@ Private
 		End
 	End
 	
-Public
+
 ' Properties
 	' LayoutEnabled is read/write
 	Method LayoutEnabled:Bool() Property
