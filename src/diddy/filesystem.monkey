@@ -8,23 +8,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Strict
 Import mojo
 
-Class FileSystem Extends DataConversion
+Class VirtualFileSystem Extends DataConversion
 'Private
 	Field delimiter:String
 	Field _header:String = "MKYDATA"
 	Field fileData:String
-	Field index:StringMap<FileStream>
+	Field index:StringMap<VirtualFileStream>
 'Public
 	
-	Function Create:FileSystem(delimiter:String = String.FromChar(9)) 'tab-delimited by default
-		Local t:FileSystem = New FileSystem
+	Function Create:VirtualFileSystem(delimiter:String = String.FromChar(9)) 'tab-delimited by default
+		Local t:VirtualFileSystem = New VirtualFileSystem
 		t.delimiter = delimiter
 		t.LoadAll()
 		Return t
 	End
 	
-	Method WriteFile:FileStream(filename:String)
-		Local f:FileStream = new FileStream
+	Method WriteFile:VirtualFileStream(filename:String)
+		Local f:VirtualFileStream = new VirtualFileStream
 		f.filename = filename.ToLower()
 		f.ptr = 0
 		f.delimiter = Self.delimiter
@@ -32,13 +32,13 @@ Class FileSystem Extends DataConversion
 		Return f	
 	End
 	
-	Method ReadFile:FileStream(filename:String)
+	Method ReadFile:VirtualFileStream(filename:String)
 		filename = filename.ToLower()
 		
 		' Check existence
 		if Not Self.index.Contains(filename) Then Return Null
 		
-		Local f:FileStream
+		Local f:VirtualFileStream
 		f = Self.index.ValueForKey(filename)
 		f.ptr = 0
 		f.arr = f.data.Split(f.delimiter)
@@ -57,7 +57,7 @@ Class FileSystem Extends DataConversion
 	
 	Method ListDir:Void()
 		Local filename:String
-		Local stream:FileStream
+		Local stream:VirtualFileStream
 		Print "Directory Listing:"
 		For filename = EachIn Self.index.Keys()
 			stream = Self.index.ValueForKey(filename)
@@ -73,7 +73,7 @@ Class FileSystem Extends DataConversion
 	End
 	
 	Method SaveAll:Void()
-		Local f:FileStream
+		Local f:VirtualFileStream
 		Self.fileData = Self._header'header
 		Self.fileData+= Self.delimiter
 		self.fileData+= Self.IntToString(Self.index.Count())'number of files in index
@@ -97,13 +97,13 @@ Class FileSystem Extends DataConversion
 	Method LoadAll:Void()
 		Local numFiles:Int
 		Local numElements:Int
-		Local stream:FileStream
+		Local stream:VirtualFileStream
 		Local len:Int
 		Local ptr:Int
 		Local elementCounter:Int
 		Local arr:String[]
 		Self.fileData = LoadState()
-		self.index = New StringMap<FileStream>
+		self.index = New StringMap<VirtualFileStream>
 		if Self.fileData.Length() > 0
 			arr = Self.fileData.Split(Self.delimiter)
 			if arr[ptr] = Self._header
@@ -113,7 +113,7 @@ Class FileSystem Extends DataConversion
 				ptr+=1
 				if numFiles > 0				
 					For Local n:Int = 1 to numFiles
-						stream = New FileStream
+						stream = New VirtualFileStream
 						'filename
 						stream.delimiter = Self.delimiter
 						stream.filename = arr[ptr] ; ptr+=1
@@ -142,7 +142,7 @@ End
 
 
 
-Class FileStream Extends DataConversion
+Class VirtualFileStream Extends DataConversion
 	Field filename:String
 	Field ptr:Int
 'Private
