@@ -7,7 +7,598 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Class Tween
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Imports
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+Import containers
+Import diddystack
+Import globalpool
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Public Constants
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+' Common field names, for convenience
+Const TWEEN_X:Int = 0
+Const TWEEN_Y:Int = TWEEN_X+1
+Const TWEEN_XY:Int = TWEEN_Y+1
+Const TWEEN_WIDTH:Int = TWEEN_XY+1
+Const TWEEN_HEIGHT:Int = TWEEN_WIDTH+1
+Const TWEEN_ROTATION:Int = TWEEN_HEIGHT+1
+Const TWEEN_SCALE:Int = TWEEN_ROTATION+1
+Const TWEEN_SCALE_X:Int = TWEEN_SCALE+1
+Const TWEEN_SCALE_Y:Int = TWEEN_SCALE_X+1
+Const TWEEN_SCALE_XY:Int = TWEEN_SCALE_Y+1
+' If using common field names, custom ones should be defined as TWEEN_CUSTOM+0, TWEEN_CUSTOM+1, etc.
+' This leaves room to add more helper field names in the future.
+Const TWEEN_CUSTOM:Int = TWEEN_SCALE_XY+1
+
+' Callback triggers
+Const CALLBACK_BEGIN:Int = $01
+Const CALLBACK_START:Int = $02
+Const CALLBACK_END:Int = $04
+Const CALLBACK_COMPLETE:Int = $08
+Const CALLBACK_BACK_BEGIN:Int = $10
+Const CALLBACK_BACK_START:Int = $20
+Const CALLBACK_BACK_END:Int = $40
+Const CALLBACK_BACK_COMPLETE:Int = $80
+Const CALLBACK_ANY_FORWARD:Int = $0f
+Const CALLBACK_ANY_BACKWARD:Int = $f0
+Const CALLBACK_ANY:Int = $ff
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Public API
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#Rem
+Implement this interface to tell your object how it should tween.
+#End
+Interface ITweenable
+	Method GetValues:Int(tweenType:Int, returnValues:Float[])
+	Method SetValues:Void(tweenType:Int, newValues:Float[])
+End
+
+#Rem
+Extend this class to tell the Tweening framework how to tween the T class.
+#End
+#Rem
+Class TweenAccessor<T> Abstract
+	Method New()
+		tweenAccessors.Add(Self)
+	End
+	
+	Method GetValues:Int(target:T, tweenType:Int, returnValues:Float[]) Abstract
+	Method SetValues:Void(target:T, tweenType:Int, newValues:Float[]) Abstract
+End
+#End
+
+Interface TweenCallback
+	Method OnEvent:Void(type:Int, source:ITween)
+End
+
+Class Tween Extends BaseTween
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Fields
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	' globals
+	Global combinedAttrsLimit:Int = 3
+	Global waypointsLimit:Int = 0
+	
+	' Main
+	Field target:Object ' FIXME: use generics?
+	'TODO Field accessor:TweenAccessor<T>
+	Field type:Int
+	Field equation:TweenEquation
+	Field path:TweenPath
+
+	' General
+	Field isFrom:Bool
+	Field isRelative:Bool
+	Field combinedAttrsCnt:Int
+	Field waypointsCnt:Int
+
+	' Values
+	Field startValues:Float[] = New Float[combinedAttrsLimit]
+	Field targetValues:Float[] = New Float[combinedAttrsLimit]
+	Field waypoints:Float[] = New Float[waypointsLimit * combinedAttrsLimit]
+	
+	' Buffers
+	Field accessorBuffer:Float[] = New Float[combinedAttrsLimit]
+	Field pathBuffer:Float[] = New Float[(2+waypointsLimit)*combinedAttrsLimit]
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' Public overrides
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+	Method Reset:Void()
+		Super.Reset()
+		
+		target = Null
+		'accessor = Null
+		type = -1
+		equation = Null
+		path = Null
+
+		isFrom = False
+		isRelative = False
+		combinedAttrsCnt = 0
+		waypointsCnt = 0
+
+		If accessorBuffer.Length <> combinedAttrsLimit Then
+			accessorBuffer = New Float[combinedAttrsLimit]
+		End
+
+		If pathBuffer.Length <> (2+waypointsLimit)*combinedAttrsLimit Then
+			pathBuffer = New Float[(2+waypointsLimit)*combinedAttrsLimit]
+		End
+	End
+
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' General private methods
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method Setup(target:Object, tweenType:Int, duration:Float) {
+		'FIXME if (duration < 0) throw new RuntimeException("Duration can't be negative");
+
+		Self.target = target
+		'this.targetClass = target != null ? findTargetClass() : null;
+		Self.type = tweenType
+		Self.duration = duration
+	End
+
+'''''''''''''''''''''''''''''''
+' Abstract private methods
+'''''''''''''''''''''''''''''''
+Private
+	
+'''''''''''''''''''''''''''''''
+' General public methods
+'''''''''''''''''''''''''''''''
+Public
+	Method New()
+		Reset()
+	End
+	
+	Method Target:Tween(targetValue1:Float, targetValue2:Float)
+		targetValues[0] = targetValue1
+		targetValues[1] = targetValue2
+		Return Self
+	End
+	
+	Method Target:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float)
+		targetValues[0] = targetValue1
+		targetValues[1] = targetValue2
+		targetValues[2] = targetValue3
+		Return Self
+	End
+	
+'''''''''''''''''''''''''''''''
+' Properties
+'''''''''''''''''''''''''''''''
+Public
+#Rem
+	Method Accessor:TweenAccessor<T>() Property
+		' if we already have an accessor assigned, use that
+		If accessor Then Return accessor
+		
+		' bring the accessors out into the temp array
+		Local amt:Int = tweenAccessors.Count()
+		If tweenAccessorArray.Length < amt Then
+			tweenAccessorArray = tweenAccessors.ToArray()
+		Else
+			amt = tweenAccessors.FillArray(tweenAccessorArray)
+		End
+		
+		' loop on each registered accessor
+		For Local i:Int = 0 Until amt
+			Local ta:TweenAccessor<T> = TweenAccessor<T>(tweenAccessorArray[i])
+			If ta Then
+				' we found one, so assign it and return it
+				accessor = ta
+				Return ta
+			End
+		Next
+		
+		' couldn't find one, so return null
+		Return Null
+	End
+	
+	Method Accessor:Void(accessor:TweenAccessor<T>) Property
+		Self.accessor = accessor
+	End
+#End
+
+	Method Ease:TweenEquation() Property
+		Return equation
+	End ' FIXME
+	
+	Method Ease:Tween(easeEquation:TweenEquation) Property
+		Self.equation = easeEquation
+		Return Self
+	End
+	
+	Method Target:Tween(targetValue:Float) Property
+		targetValues[0] = targetValue
+		Return Self
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Factory methods
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+	Function TweenTo:Tween(target:Object, tweenType:Int, duration:Float)
+		Local tween:Tween = GlobalPool<Tween>.Allocate()
+		tween.Setup(target, tweenType, duration)
+		'FIXME tween.ease(Quad.INOUT);
+		'FIXME tween.path(TweenPaths.catmullRom);
+		Return tween
+	End
+	
+	Function TweenFrom:Tween(target:Object, tweenType:Int, duration:Float)
+		Local tween:Tween = GlobalPool<Tween>.Allocate()
+		tween.Setup(target, tweenType, duration)
+		'FIXME tween.ease(Quad.INOUT);
+		'FIXME tween.path(TweenPaths.catmullRom);
+		tween.isFrom = True
+		Return tween
+	End
+	
+	Function Set:Tween(target:Object, tweenType:Int)
+		Local tween:Tween = GlobalPool<Tween>.Allocate()
+		tween.Setup(target, tweenType, 0)
+		'FIXME tween.ease(Quad.INOUT)
+		Return tween
+	End
+	
+	Function Call:Tween(callback:TweenCallback)
+		Local tween:Tween = GlobalPool<Tween>.Allocate()
+		tween.Setup(Null, -1, 0)
+		tween.Callback = callback
+		tween.CallbackTriggers = CALLBACK_START
+		Return tween
+	End
+
+	Function Mark:Tween()
+		Local tween:Tween = GlobalPool<Tween>.Allocate()
+		tween.Setup(Null, -1, 0)
+		Return tween
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Chained private method overrides
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Public wrappers for private chained methods/properties
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+	Method Build:Tween()
+		Return Tween(_Build())
+	End
+	
+	Method AddDelay:Tween(delay:Float)
+		Return Tween(_AddDelay(delay))
+	End
+	
+	Method Repeat:Tween(count:Int, delay:Float)
+		Return Tween(_Repeat(count, delay))
+	End
+	
+	Method RepeatYoyo:Tween(count:Int, delay:Float)
+		Return Tween(_RepeatYoyo(count, delay))
+	End
+	
+	Method Callback:Tween(callback:TweenCallback) Property
+		Return Tween(_SetCallback(callback))
+	End
+	
+	Method CallbackTriggers:Tween(flags:Int) Property
+		Return Tween(_SetCallbackTriggers(flags))
+	End
+	
+	Method UserData:Tween(data:Object) Property
+		Return Tween(_SetUserData(data))
+	End
+	
+	Method Start:Tween()
+		Return Tween(_Start())
+	End
+	
+	Method Start:Tween(manager:TweenManager)
+		Return Tween(_Start(manager))
+	End
+End
+
+Class Timeline Extends BaseTween
+End
+
+Class BaseTween Implements IPoolable Abstract
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Fields
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	' General
+	Field currentStep:Int;
+	Field repeatCnt:Int
+	Field isIterationStep:Bool
+	Field isYoyo:Bool
+
+	' Timings
+	Field delay:Float
+	Field duration:Float
+	Field repeatDelay:Float
+	Field currentTime:Float
+	Field deltaTime:Float
+	Field isStarted:Bool ' true when the object is started
+	Field isInitialized:Bool ' true after the delay
+	Field isFinished:Bool ' true when all repetitions are done
+	Field isKilled:Bool ' true if kill() was called
+	Field isPaused:Bool ' true if pause() was called
+
+	' Misc
+	Field callback:TweenCallback
+	Field callbackTriggers:Int
+	Field userData:Object
+
+	' Package access
+	Field isAutoRemoveEnabled:Bool
+	Field isAutoStartEnabled:Bool
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' General private methods
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method ForceToStart:Void()
+		currentTime = -delay
+		currentStep = -1
+		isIterationStep = False
+		If IsReverse(0) Then ForceEndValues() Else ForceStartValues()
+	End
+
+	Method ForceToEnd:Void(time:Float)
+		currentTime = time - FullDuration
+		currentStep = repeatCnt*2 + 1
+		isIterationStep = False
+		If IsReverse(repeatCnt*2) Then ForceStartValues() Else ForceEndValues()
+	End
+	
+	Method CallCallback:Void(type:Int)
+		If callback And (callbackTriggers & type) > 0 Then callback.OnEvent(type, Self)
+	End
+	
+	Method IsReverse:Bool(_step:Int)
+		Return isYoyo And Abs(_step Mod 4) = 2
+	End
+
+	Method IsValid:Bool(_step:Int)
+		Return (_step >= 0 And _step <= repeatCnt*2) Or repeatCnt < 0
+	End
+
+	Method KillTarget:Void(target:Object)
+		If ContainsTarget(target) Then Kill()
+	End
+
+	Method KillTarget:Void(target:Object, tweenType:Int)
+		If ContainsTarget(target, tweenType) Then Kill()
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Chained private methods, should be wrapped with a public method in subclasses
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method _Build:BaseTween()
+		Return Self
+	End
+	
+	Method _AddDelay:BaseTween(delay:Float)
+		Self.delay += delay
+		Return Self
+	End
+	
+	Method _Repeat:BaseTween(count:Int, delay:Float)
+		'if (isStarted) throw new RuntimeException("You can't change the repetitions of a tween or timeline once it is started");
+		repeatCnt = count
+		If delay >= 0 Then repeatDelay = delay Else repeatDelay = 0
+		isYoyo = False
+		Return Self
+	End
+	
+	Method _RepeatYoyo:BaseTween(count:Int, delay:Float)
+		'if (isStarted) throw new RuntimeException("You can't change the repetitions of a tween or timeline once it is started");
+		repeatCnt = count
+		If delay >= 0 Then repeatDelay = delay Else repeatDelay = 0
+		isYoyo = True
+		Return Self
+	End
+	
+	Method _SetCallback:BaseTween(callback:TweenCallback)
+		Self.callback = callback
+		Return Self
+	End
+	
+	Method _SetCallbackTriggers:BaseTween(flags:Int)
+		Self.callbackTriggers = flags
+		Return Self
+	End
+	
+	Method _SetUserData:BaseTween(data:Object)
+		userData = data
+		Return Self
+	End
+	
+	Method _Start:BaseTween()
+		_Build()
+		currentTime = 0
+		isStarted = True
+		Return Self
+	End
+	
+	Method _Start:BaseTween(manager:TweenManager)
+		manager.Add(Self)
+		Return Self
+	End
+	
+'''''''''''''''''''''''''''''''
+' Abstract private methods
+'''''''''''''''''''''''''''''''
+Private
+	' pure abstract
+	Method ForceStartValues:Void() Abstract
+	Method ForceEndValues:Void() Abstract
+	Method ContainsTarget:Bool(target:Object) Abstract
+	Method ContainsTarget:Bool(target:Object, tweenType:Int) Abstract
+	
+	' empty implementation
+	Method InitializeOverride:Void() End
+	Method UpdateOverride:Void(_step:Int, lastStep:Int, isIterationStep:Bool, delta:Float) End
+	
+'''''''''''''''''''''''''''''''
+' General public methods
+'''''''''''''''''''''''''''''''
+Public
+	Method Reset:Void()
+		currentStep = -2
+		repeatCnt = 0
+		isIterationStep = False
+		isYoyo = False
+
+		delay = 0
+		duration = 0
+		repeatDelay = 0
+		currentTime = 0
+		deltaTime = 0
+		isStarted = False
+		isInitialized = False
+		isFinished = False
+		isKilled = False
+		isPaused = False
+
+		callback = Null
+		callbackTriggers = CALLBACK_COMPLETE
+		userData = Null
+
+		isAutoRemoveEnabled = True
+		isAutoStartEnabled = True
+	End
+	
+	Method Kill:Void()
+		isKilled = True
+	End
+	
+	Method Free:Void()
+	End
+	
+	Method Pause:Void()
+		isPaused = True
+	End
+	
+	Method Resume:Void()
+		isPaused = False
+	End
+	
+'''''''''''''''''''''''''''''''
+' Properties
+'''''''''''''''''''''''''''''''
+Public
+	Method Delay:Float() Property
+		Return delay
+	End
+	
+	Method Duration:Float() Property
+		Return duration
+	End
+	
+	Method RepeatCount:Int() Property
+		Return repeatCnt
+	End
+	
+	Method RepeatDelay:Float() Property
+		Return repeatDelay
+	End
+	
+	Method FullDuration:Float() Property
+		If repeatCnt < 0 Then Return -1
+		Return delay + duration + (repeatDelay + duration) * repeatCnt
+	End
+	
+	Method UserData:Object() Property
+		Return userData
+	End
+	
+	Method CurrentStep:Int() Property
+		Return currentStep
+	End
+	
+	Method CurrentTime:Float() Property
+		Return currentTime
+	End
+	
+	Method IsStarted:Bool() Property
+		Return isStarted
+	End
+	
+	Method IsInitialized:Bool() Property
+		Return isInitialized
+	End
+	
+	Method IsFinished:Bool() Property
+		Return isFinished Or isKilled
+	End
+	
+	Method IsYoyo:Bool() Property
+		Return isYoyo
+	End
+	
+	Method IsPaused:Bool() Property
+		Return isPaused
+	End
+End ' End Class BaseTween
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Implementation
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+
+#Rem
+' declared outside TweenAccessor class so that it's not bound to <T>
+Global tweenAccessors:DiddyStack<Object> = New DiddyStack<Object>
+Global tweenAccessorArray:Object[]
+#End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Deprecated Tween class
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Class TweenDep
 	Const TWEEN_TYPE_LINEAR%  = 0
 	Const TWEEN_TYPE_SINE%    = 1
 	Const TWEEN_TYPE_BOUNCE%  = 2
@@ -17,7 +608,7 @@ Class Tween
 	Const TWEEN_NEXT_DIE%     = 3 ' Kills the tween entirely
 	Const MAX_TWEENS:Int = 200
   
-	Global tweens:Tween[MAX_TWEENS]
+	Global tweens:TweenDep[MAX_TWEENS]
 	Global lastFreeTween:Int = 0
 	Global minIndex:Int = -1
 	Global maxIndex:Int = -1
@@ -57,14 +648,14 @@ Class Tween
 
 	Function CacheTweens:Void()
 		For Local i:Int = 0 Until MAX_TWEENS
-			tweens[i] = New Tween(i)
+			tweens[i] = New TweenDep(i)
 		Next
 	End
 
 	Function FindEmpty:Int()
 		Local i%=lastFreeTween
 		Repeat
-			If tweens[i] = Null Then tweens[i] = New Tween
+			If tweens[i] = Null Then tweens[i] = New TweenDep
 			If Not tweens[i].active Then
 				Return i
 			End
@@ -74,7 +665,7 @@ Class Tween
 		Return -1
 	End
   
-	Function CreateSine:Tween(tweenLength:Int, waveOffset#=0, wavePhase#=0, waveAmplitude#=1, waveLength#=1)
+	Function CreateSine:TweenDep(tweenLength:Int, waveOffset#=0, wavePhase#=0, waveAmplitude#=1, waveLength#=1)
 		' find a free tween slot and die if we couldn't
 		Local idx:Int = FindEmpty()
 		If idx < 0 Then Return Null
@@ -102,7 +693,7 @@ Class Tween
 		Return tweens[idx]
 	End
 
-	Function CreateCosine:Tween(tweenLength:Int, waveOffset#=0, wavePhase#=0, waveAmplitude#=1, waveLength#=1)
+	Function CreateCosine:TweenDep(tweenLength:Int, waveOffset#=0, wavePhase#=0, waveAmplitude#=1, waveLength#=1)
 		' find a free tween slot and die if we couldn't
 		Local idx:Int = FindEmpty()
 		If idx < 0 Then Return Null
@@ -136,7 +727,7 @@ Class Tween
 		Return tweens[idx]
 	End
 
-	Function CreateLinear:Tween(tweenLength:Int, linearStart#, linearEnd#, linearInitial#)
+	Function CreateLinear:TweenDep(tweenLength:Int, linearStart#, linearEnd#, linearInitial#)
 		' find a free tween slot and die if we couldn't
 		Local idx:Int = FindEmpty()
 		If idx < 0 Then Return Null
@@ -163,7 +754,7 @@ Class Tween
 		Return tweens[idx]
 	End
 
-	Function CreateBounce:Tween(tweenLength:Int, bounceStart#, bounceEnd#, bounceInitial#)
+	Function CreateBounce:TweenDep(tweenLength:Int, bounceStart#, bounceEnd#, bounceInitial#)
 		' find a free tween slot and die if we couldn't
 		Local idx:Int = FindEmpty()
 		If idx < 0 Then Return Null
@@ -190,7 +781,7 @@ Class Tween
 		Return tweens[idx]
 	End
 	
-	Method AddChain:Void(newTween:Tween)
+	Method AddChain:Void(newTween:TweenDep)
 		AddChain(newTween.thisIndex)
 	End
 	
@@ -241,8 +832,8 @@ Class Tween
 	End
 	
 	Function UpdateTween:Void(index:Int, delta:Int)
-		Local t:Tween = tweens[index]
-		Local at:Tween = t
+		Local t:TweenDep = tweens[index]
+		Local at:TweenDep = t
 		
 		' if this is not the first tween in a chain, die
 		If t.chainFirst >= 0 And t.chainFirst <> index Then Return
@@ -281,7 +872,7 @@ Class Tween
 	
 	Function CalcValue:Float(index:Int)
 		Local progress:Float, value:Float
-		Local t:Tween = tweens[index]
+		Local t:TweenDep = tweens[index]
 		Select t.type
 			Case TWEEN_TYPE_LINEAR
 				progress = Float(t.currentTicks)/Float(t.length)
