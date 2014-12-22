@@ -177,13 +177,13 @@ Private
 		End
 		
 		If duration < EPSILON And delta < EPSILON Then
-			If IsReverse(_step) Then it.SetValues(type, startValues) Else it.SetValues(type, targetValues)
+			If IsReverse(_step) Then target.SetValues(type, startValues) Else target.SetValues(type, targetValues)
 			Return
 		End
 		
 		' Normal behaviour
 		
-		Local time:Float = GetCurrentTime()
+		Local time:Float = CurrentTime
 		If IsReverse(_step) Then time = duration - time
 		Local t:Float = equation.Compute(time/duration)
 		
@@ -694,6 +694,93 @@ Private
 	End
 	
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private overrides
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	' NOTE: the java version caches children.size() before loops... performance? safety check?
+	Method UpdateOverride:Void(_step:Int, lastStep:Int, isIterationStep:Bool, delta:Float)
+		If Not isIterationStep And _step > lastStep Then
+			' assert delta >= 0
+			Local dt:Float = delta+1
+			If isReverse(lastStep) Then dt = -delta-1
+			For Local i:Int = 0 Until children.Count()
+				children.Get(i).Update(dt)
+			End
+			Return
+		End
+		
+		If Not isIterationStep And _step < lastStep Then
+			' assert delta <= 0
+			Local dt:Float = delta+1
+			If isReverse(lastStep) Then dt = -delta-1
+			For Local i:Int = children.Count()-1 To 0 Step -1
+				children.Get(i).Update(dt)
+			Next
+			Return
+		End
+		
+		' assert isIterationStep
+		
+		If _step > lastStep Then
+			If isReverse(_step) Then
+				ForceEndValues()
+			Else
+				ForceStartValues()
+			End
+			For Local i:Int = 0 Until children.Count()
+				children.Get(i).Update(delta)
+			Next
+		ElseIf _step < lastStep Then
+			If isReverse(_step) Then
+				ForceStartValues()
+			Else
+				ForceEndValues()
+			End
+			For Local i:Int = children.Count()-1 To 0 Step -1
+				children.Get(i).Update(delta)
+			Next
+		Else
+			Local dt:Float = delta
+			If isReverse(_step) Then dt = -delta
+			If delta >= 0 Then
+				For Local i:Int = 0 Until children.Count()
+					children.Get(i).Update(dt)
+				Next
+			Else
+				For Local i:Int = children.Count()-1 To 0 Step -1
+					children.Get(i).Update(dt)
+				Next
+			End
+		End
+	End
+	
+	Method ForceStartValues:Void()
+		For Local i:Int = 0 Until children.Count()
+			children.Get(i).ForceToStart()
+		Next
+	End
+	
+	Method ForceEndValues:Void()
+		For Local i:Int = 0 Until children.Count()
+			children.Get(i).ForceToEnd(duration)
+		Next
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable)
+		For Local i:Int = 0 Until children.Count()
+			If children.Get(i).ContainsTarget(target) Then Return True
+		Next
+		Return False
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable, tweenType:Int)
+		For Local i:Int = 0 Until children.Count()
+			If children.Get(i).ContainsTarget(target, tweenType) Then Return True
+		Next
+		Return False
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Factory methods
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Public
@@ -915,10 +1002,6 @@ Public
 	Method FullDuration:Float() Property
 		If repeatCnt < 0 Then Return -1
 		Return delay + duration + (repeatDelay + duration) * repeatCnt
-	End
-	
-	Method UserData:Object() Property
-		Return userData
 	End
 	
 	Method CurrentStep:Int() Property
@@ -1388,6 +1471,56 @@ Class EaseInOutElastic Extends TweenEquation
 		If t = 1 Then Return 1
 		' TODO
 		Return 0
+	End
+End
+
+Class TweenPath Abstract
+	Global linear:PathLinear = New PathLinear
+	Global catmullRom:PathCatmullRom = New PathCatmullRom
+	
+	Method Compute:Float(t:Float, points:Float[], pointsCnt:Int) Abstract
+End
+
+Class PathLinear Extends TweenPath
+	Method Compute:Float(t:Float, points:Float[], pointsCnt:Int)
+		Local segment:Int = Floor((pointsCnt-1)*t)
+		segment = Max(segment, 0)
+		segment = Min(segment, pointsCnt-2)
+		t = t*(pointsCnt-1) - segment
+		Return points[segment] + t * (points[segment+1] - points[segment])
+	End
+End
+
+Class PathCatmullRom Extends TweenPath
+Public
+	Method Compute:Float(t:Float, points:Float[], pointsCnt:Int)
+		Local segment:Int = Floor((pointsCnt-1)*t)
+		segment = Max(segment, 0)
+		segment = Min(segment, pointsCnt-2)
+		t = t*(pointsCnt-1) - segment
+
+		If segment = 0 Then
+			Return CatmullRomSpline(points[0], points[0], points[1], points[2], t)
+		End
+
+		If segment = pointsCnt-2 Then
+			Return CatmullRomSpline(points[pointsCnt-3], points[pointsCnt-2], points[pointsCnt-1], points[pointsCnt-1], t)
+		End
+
+		Return CatmullRomSpline(points[segment-1], points[segment], points[segment+1], points[segment+2], t)
+	End
+	
+Private
+	Method CatmullRomSpline:Float(a:Float, b:Float, c:Float, d:Float, t:Float)
+		Local t1:Float = (c - a) * 0.5
+		Local t2:Float = (d - b) * 0.5
+
+		Local h1:Float = 2 * t * t * t - 3 * t * t + 1
+		Local h2:Float = -2 * t * t * t + 3 * t * t
+		Local h3:Float = t * t * t - 2 * t * t + t
+		Local h4:Float = t * t * t - t * t
+
+		Return b * h1 + c * h2 + t1 * h3 + t2 * h4
 	End
 End
 
