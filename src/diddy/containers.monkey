@@ -25,6 +25,7 @@ Import diddystack
 Import diddyset
 Import diddylist
 Import diddypool
+Import exception
 
 #Rem
 Summary: Indicates that an object of this class should be able to compare itself with another instance, primarily for sorting.
@@ -367,6 +368,11 @@ Returns True if they are logically equal, otherwise False.
 Summary: Returns True if there are no elements in the container, otherwise False.
 #End
 	Method IsEmpty:Bool()
+	
+#Rem
+Summary: Returns a read-only wrapper on this container.
+#End
+	Method ReadOnly:ReadOnlyContainer<T>()
 End
 
 #Rem
@@ -731,5 +737,180 @@ Summary: Returns a WrappedSetEnumerator with the optional predicate.
 #End
 	Method ObjectEnumerator:IEnumerator<T>()
 		Return New WrappedSetEnumerator<T>(s.ObjectEnumerator(), pred)
+	End
+End
+
+Class ReadOnlyContainer<T> Implements IContainer<T> Final
+Private
+	Field source:IContainer<T>
+
+	Method ThrowReadOnly:Void()
+		Throw New UnsupportedOperationException("The container is read only.")
+	End
+	
+Public
+	Method New(source:IContainer<T>)
+		If Not source Then Throw New IllegalArgumentException("ReadOnlyContainer.New: Source container must not be null")
+		Self.source = source
+	End
+	
+	Method Comparator:IComparator<T>() Property
+		Return source.Comparator
+	end
+	
+	Method Comparator:Void(comparator:IComparator<T>) Property
+		ThrowReadOnly()
+	End
+	
+	Method AddAll:Void(src:Stack<T>)
+		ThrowReadOnly()
+	End
+	
+	Method AddAll:Void(src:List<T>)
+		ThrowReadOnly()
+	End
+	
+	Method AddAll:Void(src:Set<T>)
+		ThrowReadOnly()
+	End
+	
+	Method AddContainer:Void(src:IContainer<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RemoveAll:Void(src:Stack<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RemoveAll:Void(src:List<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RemoveAll:Void(src:Set<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RemoveContainer:Void(src:IContainer<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RetainAll:Void(src:Stack<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RetainAll:Void(src:List<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RetainAll:Void(src:Set<T>)
+		ThrowReadOnly()
+	End
+	
+	Method RetainContainer:Void(src:IContainer<T>)
+		ThrowReadOnly()
+	End
+	
+	Method ContainsAll:Bool(src:Stack<T>)
+		Return source.ContainsAll(src)
+	End
+	
+	Method ContainsAll:Bool(src:List<T>)
+		Return source.ContainsAll(src)
+	End
+		
+	Method ContainsAll:Bool(src:Set<T>)
+		Return source.ContainsAll(src)
+	End
+	
+	Method ContainsContainer:Bool(src:IContainer<T>)
+		Return source.ContainsContainer(src)
+	End
+	
+	Method AddItem:Void(val:T)
+		ThrowReadOnly()
+	End
+	
+	Method RemoveItem:Void(val:T)
+		ThrowReadOnly()
+	End
+	
+	Method InsertItem:Void(index:Int, val:T)
+		ThrowReadOnly()
+	End
+	
+	Method DeleteItem:T(index:Int)
+		ThrowReadOnly()
+	End
+	
+	Method ClearAll:Void()
+		ThrowReadOnly()
+	End
+	
+	Method ContainsItem:Bool(val:T)
+		Return source.ContainsItem(val)
+	End
+	
+	Method GetItem:T(index:Int)
+		Return source.GetItem(index)
+	End
+	
+	Method SetItem:Void(index:Int, value:T)
+		ThrowReadOnly()
+	End
+	
+	Method FindItem:Int(value:T)
+		Return source.FindItem(value)
+	End
+	
+	Method SortItems:Void(ascending:Bool = True)
+		ThrowReadOnly()
+	End
+	
+	Method Reverse:Void()
+		ThrowReadOnly()
+	End
+	
+	Method Shuffle:Void()
+		ThrowReadOnly()
+	End
+	
+	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+		Return source.Items(pred)
+	End
+	
+	Method SwapItems:Void(index1:Int, index2:Int)
+		ThrowReadOnly()
+	End
+	
+	Method Truncate:Void(size:Int)
+		ThrowReadOnly()
+	End
+	
+	Method Count:Int()
+		Return source.Count()
+	End
+	
+	Method ToArray:T[]()
+		Return source.ToArray()
+	End
+	
+	Method FillArray:Int(arr:T[])
+		Return source.FillArray(arr)
+	End
+	
+	Method Compare:Int(lhs:T, rhs:T)
+		Return source.Compare(lhs, rhs)
+	End
+	
+	Method Equals:Bool(lhs:T, rhs:T)
+		Return source.Equals(lhs, rhs)
+	End
+	
+	Method IsEmpty:Bool()
+		Return source.IsEmpty()
+	End
+	
+	Method ReadOnly:ReadOnlyContainer<T>()
+		Return New ReadOnlyContainer<T>(Self)
 	End
 End

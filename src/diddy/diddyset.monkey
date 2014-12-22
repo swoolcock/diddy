@@ -433,6 +433,13 @@ Summary: Throws an UnsupportedOperationException, since Set is unordered and it 
 	Method Comparator:Void(comparator:IComparator<T>) Property
 		Throw New UnsupportedOperationException
 	End
+	
+#Rem
+Summary: Returns a read-only wrapper on this container.
+#End
+	Method ReadOnly:ReadOnlyContainer<T>()
+		Return New ReadOnlyContainer<T>(Self)
+	End
 End
 
 Class DiddyIntSet Extends DiddySet<Int>

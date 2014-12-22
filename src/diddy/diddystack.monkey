@@ -478,6 +478,13 @@ Summary: Setter for the current sorting comparator.
 Allows sorting without implementing IComparable.
 #End
 	Method Comparator:Void(comparator:IComparator<T>) Property; Self.comparator = comparator; End
+	
+#Rem
+Summary: Returns a read-only wrapper on this container.
+#End
+	Method ReadOnly:ReadOnlyContainer<T>()
+		Return New ReadOnlyContainer<T>(Self)
+	End
 End
 
 #Rem
