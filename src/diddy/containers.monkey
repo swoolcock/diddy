@@ -742,6 +742,8 @@ End
 
 Class ReadOnlyContainer<T> Implements IContainer<T> Final
 Private
+	Global NIL:T
+	
 	Field source:IContainer<T>
 
 	Method ThrowReadOnly:Void()
@@ -840,6 +842,7 @@ Public
 	
 	Method DeleteItem:T(index:Int)
 		ThrowReadOnly()
+		Return NIL
 	End
 	
 	Method ClearAll:Void()
