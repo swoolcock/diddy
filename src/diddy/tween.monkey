@@ -14,6 +14,14 @@ Private
 Import containers
 Import diddystack
 Import globalpool
+Import arrays
+Import exception
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Constants
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+Const EPSILON:Float = 0.00000000001
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Public Constants
@@ -58,22 +66,8 @@ Interface ITweenable
 	Method SetValues:Void(tweenType:Int, newValues:Float[])
 End
 
-#Rem
-Extend this class to tell the Tweening framework how to tween the T class.
-#End
-#Rem
-Class TweenAccessor<T> Abstract
-	Method New()
-		tweenAccessors.Add(Self)
-	End
-	
-	Method GetValues:Int(target:T, tweenType:Int, returnValues:Float[]) Abstract
-	Method SetValues:Void(target:T, tweenType:Int, newValues:Float[]) Abstract
-End
-#End
-
 Interface TweenCallback
-	Method OnEvent:Void(type:Int, source:ITween)
+	Method OnEvent:Void(type:Int, source:BaseTween)
 End
 
 Class Tween Extends BaseTween
@@ -86,11 +80,11 @@ Private
 	Global waypointsLimit:Int = 0
 	
 	' Main
-	Field target:Object ' FIXME: use generics?
-	'TODO Field accessor:TweenAccessor<T>
+	Field target:ITweenable
 	Field type:Int
 	Field equation:TweenEquation
 	Field path:TweenPath
+	Field easeArgs:Float[]
 
 	' General
 	Field isFrom:Bool
@@ -104,7 +98,7 @@ Private
 	Field waypoints:Float[] = New Float[waypointsLimit * combinedAttrsLimit]
 	
 	' Buffers
-	Field accessorBuffer:Float[] = New Float[combinedAttrsLimit]
+	Field tweenBuffer:Float[] = New Float[combinedAttrsLimit]
 	Field pathBuffer:Float[] = New Float[(2+waypointsLimit)*combinedAttrsLimit]
 	
 ''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -115,7 +109,6 @@ Public
 		Super.Reset()
 		
 		target = Null
-		'accessor = Null
 		type = -1
 		equation = Null
 		path = Null
@@ -125,24 +118,118 @@ Public
 		combinedAttrsCnt = 0
 		waypointsCnt = 0
 
-		If accessorBuffer.Length <> combinedAttrsLimit Then
-			accessorBuffer = New Float[combinedAttrsLimit]
+		If tweenBuffer.Length <> combinedAttrsLimit Then
+			tweenBuffer = New Float[combinedAttrsLimit]
 		End
 
 		If pathBuffer.Length <> (2+waypointsLimit)*combinedAttrsLimit Then
 			pathBuffer = New Float[(2+waypointsLimit)*combinedAttrsLimit]
 		End
 	End
+	
+	Method Free:Void()
+		GlobalPool<Tween>.Free(Self)
+	End
 
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private overrides
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method InitializeOverride:Void()
+		If Not target Then Return
+		
+		target.GetValues(type, startValues)
+		For Local i:Int = 0 Until combinedAttrsCnt
+			If isRelative Then targetValues[i] += startValues[i]
+			
+			For Local ii:Int = 0 Until waypointsCnt
+				If isRelative Then waypoints[ii*combinedAttrsCnt+i] += startValues[i]
+			Next
+			
+			If isFrom Then
+				Local tmp:Float = startValues[i]
+				startValues[i] = targetValues[i]
+				targetValues[i] = tmp
+			End
+		Next
+	End
+	
+	Method UpdateOverride:Void(_step:Int, lastStep:Int, isIterationStep:Bool, delta:Float)
+		If Not target Or Not equation Then Return
+		
+		' Case iteration end has been reached
+		
+		If Not isIterationStep And _step > lastStep Then
+			If IsReverse(lastStep) Then target.SetValues(type, startValues) Else target.SetValues(type, targetValues)
+			Return
+		End
+		
+		If Not isIterationStep And _step < lastStep Then
+			If IsReverse(lastStep) Then target.SetValues(type, targetValues) Else target.SetValues(type, startValues)
+			Return
+		End
+		
+		' Case duration equals zero
+		
+		If duration < EPSILON And delta > -EPSILON Then
+			If IsReverse(_step) Then target.SetValues(type, targetValues) Else target.SetValues(type, startValues)
+			Return
+		End
+		
+		If duration < EPSILON And delta < EPSILON Then
+			If IsReverse(_step) Then it.SetValues(type, startValues) Else it.SetValues(type, targetValues)
+			Return
+		End
+		
+		' Normal behaviour
+		
+		Local time:Float = GetCurrentTime()
+		If IsReverse(_step) Then time = duration - time
+		Local t:Float = equation.Compute(time/duration)
+		
+		If waypointsCnt = 0 Or Not path Then
+			For Local i:Int = 0 Until combinedAttrsCnt
+				tweenBuffer[i] = startValues[i] + t * (targetValues[i] - startValues[i])
+			Next
+		Else
+			For Local i:Int = 0 Until combinedAttrsCnt
+				pathBuffer[0] = startValues[i]
+				pathBuffer[1+waypointsCnt] = targetValues[i]
+				For Local ii:Int = 0 Until waypointsCnt
+					pathBuffer[ii+1] = waypoints[ii*combinedAttrsCnt+i]
+				Next
+				tweenBuffer[i] = path.Compute(t, pathBuffer, waypointsCnt+2)
+			Next
+		End
+		
+		target.SetValues(type, tweenBuffer)
+	End
+	
+	Method ForceStartValues:Void()
+		If Not target Then Return
+		target.SetValues(type, startValues)
+	End
+	
+	Method ForceEndValues:Void()
+		If Not target Then Return
+		target.SetValues(type, targetValues)
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable)
+		Return Self.target = target
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable, tweenType:Int)
+		Return Self.target = target And Self.type = tweenType
+	End
+	
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 ' General private methods
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 Private
-	Method Setup(target:Object, tweenType:Int, duration:Float) {
-		'FIXME if (duration < 0) throw new RuntimeException("Duration can't be negative");
-
+	Method Setup:Void(target:ITweenable, tweenType:Int, duration:Float)
+		If duration < 0 Then Throw New IllegalArgumentException("Duration can't be negative")
 		Self.target = target
-		'this.targetClass = target != null ? findTargetClass() : null;
 		Self.type = tweenType
 		Self.duration = duration
 	End
@@ -160,6 +247,11 @@ Public
 		Reset()
 	End
 	
+	Method Target:Tween(targetValue:Float)
+		targetValues[0] = targetValue
+		Return Self
+	End
+	
 	Method Target:Tween(targetValue1:Float, targetValue2:Float)
 		targetValues[0] = targetValue1
 		targetValues[1] = targetValue2
@@ -173,61 +265,156 @@ Public
 		Return Self
 	End
 	
+	Method Target:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float, targetValue4:Float)
+		targetValues[0] = targetValue1
+		targetValues[1] = targetValue2
+		targetValues[2] = targetValue3
+		targetValues[3] = targetValue4
+		Return Self
+	End
+	
+	Method Target:Tween(targetValues:Float[])
+		'FIXME if (targetValues.length > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		Arrays<Float>.Copy(targetValues, 0, Self.targetValues, 0, targetValues.Length)
+		Return Self
+	End
+	
+	Method TargetRelative:Tween(targetValue:Float)
+		isRelative = True
+		If IsInitialized() Then
+			targetValues[0] = targetValue + startValues[0]
+		Else
+			targetValues[0] = targetValue
+		End
+		Return Self
+	End
+	
+	Method TargetRelative:Tween(targetValue1:Float, targetValue2:Float)
+		isRelative = True
+		If IsInitialized() Then
+			targetValues[0] = targetValue1 + startValues[0]
+			targetValues[1] = targetValue2 + startValues[1]
+		Else
+			targetValues[0] = targetValue1
+			targetValues[1] = targetValue2
+		End
+		Return Self
+	End
+	
+	Method TargetRelative:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float)
+		isRelative = True
+		If IsInitialized() Then
+			targetValues[0] = targetValue1 + startValues[0]
+			targetValues[1] = targetValue2 + startValues[1]
+			targetValues[2] = targetValue3 + startValues[2]
+		Else
+			targetValues[0] = targetValue1
+			targetValues[1] = targetValue2
+			targetValues[2] = targetValue3
+		End
+		Return Self
+	End
+	
+	Method TargetRelative:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float, targetValue4:Float)
+		isRelative = True
+		If IsInitialized() Then
+			targetValues[0] = targetValue1 + startValues[0]
+			targetValues[1] = targetValue2 + startValues[1]
+			targetValues[2] = targetValue3 + startValues[2]
+			targetValues[3] = targetValue4 + startValues[3]
+		Else
+			targetValues[0] = targetValue1
+			targetValues[1] = targetValue2
+			targetValues[2] = targetValue3
+			targetValues[3] = targetValue4
+		End
+		Return Self
+	End
+	
+	Method TargetRelative:Tween(targetValues:Float[])
+		'FIXME if (targetValues.length > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		If Not IsInitialized() Then
+			Arrays<Float>.Copy(targetValues, 0, Self.targetValues, 0, targetValues.Length)
+		Else
+			For Local i:Int = 0 Until targetValues.Length
+				Self.targetValues[i] = targetValues[i] + startValues[i]
+			Next
+		End
+
+		isRelative = True
+		Return Self
+	End
+	
+	Method Waypoint:Tween(targetValue:Float)
+		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		waypoints[waypointsCnt] = targetValue
+		waypointsCnt += 1
+		Return Self
+	End
+	
+	Method Waypoint:Tween(targetValue1:Float, targetValue2:Float)
+		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		waypoints[waypointsCnt*2] = targetValue1
+		waypoints[waypointsCnt*2+1] = targetValue2
+		waypointsCnt += 1
+		Return Self
+	End
+	
+	Method Waypoint:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float)
+		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		waypoints[waypointsCnt*3] = targetValue1
+		waypoints[waypointsCnt*3+1] = targetValue2
+		waypoints[waypointsCnt*3+2] = targetValue3
+		waypointsCnt += 1
+		Return Self
+	End
+	
+	Method Waypoint:Tween(targetValues:Float[])
+		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		Arrays<Float>.Copy(targetValues, 0, waypoints, waypointsCnt*targetValues.Length, targetValues.Length)
+		waypointsCnt += 1
+		Return Self
+	End
+	
 '''''''''''''''''''''''''''''''
 ' Properties
 '''''''''''''''''''''''''''''''
 Public
-#Rem
-	Method Accessor:TweenAccessor<T>() Property
-		' if we already have an accessor assigned, use that
-		If accessor Then Return accessor
-		
-		' bring the accessors out into the temp array
-		Local amt:Int = tweenAccessors.Count()
-		If tweenAccessorArray.Length < amt Then
-			tweenAccessorArray = tweenAccessors.ToArray()
-		Else
-			amt = tweenAccessors.FillArray(tweenAccessorArray)
-		End
-		
-		' loop on each registered accessor
-		For Local i:Int = 0 Until amt
-			Local ta:TweenAccessor<T> = TweenAccessor<T>(tweenAccessorArray[i])
-			If ta Then
-				' we found one, so assign it and return it
-				accessor = ta
-				Return ta
-			End
-		Next
-		
-		' couldn't find one, so return null
-		Return Null
-	End
-	
-	Method Accessor:Void(accessor:TweenAccessor<T>) Property
-		Self.accessor = accessor
-	End
-#End
-
-	Method Ease:TweenEquation() Property
-		Return equation
-	End ' FIXME
-	
 	Method Ease:Tween(easeEquation:TweenEquation) Property
 		Self.equation = easeEquation
 		Return Self
 	End
 	
-	Method Target:Tween(targetValue:Float) Property
-		targetValues[0] = targetValue
+	Method Path:Tween(path:TweenPath) Property
+		Self.path = path
 		Return Self
 	End
 	
+	Method Target:ITweenable() Property
+		Return target
+	End
+	
+	Method Type:Int() Property
+		Return type
+	End
+	
+	Method Ease:TweenEquation() Property
+		Return equation
+	End
+	
+	Method TargetValues:Float[]() Property
+		Return targetValues
+	End
+	
+	Method CombinedAttributesCount:Int() Property
+		Return combinedAttrsCnt
+	End
+
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Factory methods
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Public
-	Function TweenTo:Tween(target:Object, tweenType:Int, duration:Float)
+	Function TweenTo:Tween(target:ITweenable, tweenType:Int, duration:Float)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, duration)
 		'FIXME tween.ease(Quad.INOUT);
@@ -235,7 +422,7 @@ Public
 		Return tween
 	End
 	
-	Function TweenFrom:Tween(target:Object, tweenType:Int, duration:Float)
+	Function TweenFrom:Tween(target:ITweenable, tweenType:Int, duration:Float)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, duration)
 		'FIXME tween.ease(Quad.INOUT);
@@ -244,7 +431,7 @@ Public
 		Return tween
 	End
 	
-	Function Set:Tween(target:Object, tweenType:Int)
+	Function Set:Tween(target:ITweenable, tweenType:Int)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, 0)
 		'FIXME tween.ease(Quad.INOUT)
@@ -269,6 +456,12 @@ Public
 ' Chained private method overrides
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Private
+	Method _Build:BaseTween()
+		If Not target Then Return Self
+		combinedAttrsCnt = target.GetValues(type, tweenBuffer)
+		'FIXME if (combinedAttrsCnt > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		Return Self
+	End
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Public wrappers for private chained methods/properties
@@ -282,8 +475,8 @@ Public
 		Return Tween(_AddDelay(delay))
 	End
 	
-	Method Repeat:Tween(count:Int, delay:Float)
-		Return Tween(_Repeat(count, delay))
+	Method RepeatLoop:Tween(count:Int, delay:Float)
+		Return Tween(_RepeatLoop(count, delay))
 	End
 	
 	Method RepeatYoyo:Tween(count:Int, delay:Float)
@@ -312,6 +505,209 @@ Public
 End
 
 Class Timeline Extends BaseTween
+Public
+	Const SEQUENCE:Int = 0
+	Const PARALLEL:Int = 1
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' Private Fields
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Field children:DiddyStack<BaseTween> = New DiddyStack<BaseTween>
+	Field current:Timeline
+	Field parent:Timeline
+	Field mode:Int
+	Field isBuilt:Bool
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''
+' General private methods
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method Setup:Void(mode:Int)
+		Self.mode = mode
+		Self.current = Self
+	End
+	
+'''''''''''''''''''''''''''''''
+' General public methods
+'''''''''''''''''''''''''''''''
+Public
+	Method New()
+		Reset()
+	End
+	
+	Method Reset:Void()
+		Super.Reset()
+		children.Clear()
+		current = Null
+		parent = Null
+		isBuilt = False
+	End
+	
+	Method Kill:Void()
+		isKilled = True
+	End
+	
+	Method Free:Void()
+		For Local i:Int = 0 Until children.Count()
+			Local obj:BaseTween = children.Get(i)
+			obj.Free()
+		Next
+		GlobalPool<Timeline>.Free(Self)
+	End
+	
+	Method Pause:Void()
+		isPaused = True
+	End
+	
+	Method Resume:Void()
+		isPaused = False
+	End
+	
+	Method Push:Timeline(tween:Tween)
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		current.children.Push(tween)
+		Return Self
+	End
+	
+	Method Push:Timeline(timeline:Timeline)
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		If timeline.current <> timeline Then Throw New DiddyException("You forgot to call a few 'end()' statements in your pushed timeline")
+		timeline.parent = current
+		current.children.Push(timeline)
+		Return Self
+	End
+	
+	Method PushPause:Timeline(time:Float)
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		current.children.Push(Tween.Mark().Delay(time))
+		Return Self
+	End
+	
+	Method BeginSequence:Timeline()
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		Local tl:Timeline = GlobalPool<Timeline>.Allocate()
+		tl.parent = current
+		tl.mode = SEQUENCE
+		current.children.Push(tl)
+		current = tl
+		Return Self
+	End
+	
+	Method BeginParallel:Timeline()
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		Local tl:Timeline = GlobalPool<Timeline>.Allocate()
+		tl.parent = current
+		tl.mode = PARALLEL
+		current.children.Push(tl)
+		current = tl
+		Return Self
+	End
+	
+	Method EndTimeline:Timeline()
+		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
+		If current = Self Then Throw New DiddyException("Nothing to end...")
+		current = current.parent
+		Return Self
+	End
+	
+	Method Children:IContainer<BaseTween>()
+		If isBuilt Then Return current.children.ReadOnly()
+		Return current.children
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Public wrappers for private chained methods/properties
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+	Method Build:Timeline()
+		Return Timeline(_Build())
+	End
+	
+	Method AddDelay:Timeline(delay:Float)
+		Return Timeline(_AddDelay(delay))
+	End
+	
+	Method RepeatLoop:Timeline(count:Int, delay:Float)
+		Return Timeline(_RepeatLoop(count, delay))
+	End
+	
+	Method RepeatYoyo:Timeline(count:Int, delay:Float)
+		Return Timeline(_RepeatYoyo(count, delay))
+	End
+	
+	Method Callback:Timeline(callback:TweenCallback) Property
+		Return Timeline(_SetCallback(callback))
+	End
+	
+	Method CallbackTriggers:Timeline(flags:Int) Property
+		Return Timeline(_SetCallbackTriggers(flags))
+	End
+	
+	Method UserData:Timeline(data:Object) Property
+		Return Timeline(_SetUserData(data))
+	End
+	
+	Method Start:Timeline()
+		Return Timeline(_Start())
+	End
+	
+	Method Start:Timeline(manager:TweenManager)
+		Return Timeline(_Start(manager))
+	End
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Chained private method overrides
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private
+	Method _Build:BaseTween()
+		If isBuilt Then Return Self
+		
+		duration = 0
+		For Local i:Int = 0 Until children.Count()
+			Local obj:BaseTween = children.Get(i)
+			If obj.RepeatCount < 0 Then Throw New DiddyException("You can't push an object with infinite repetitions in a timeline")
+			obj.Build()
+			
+			Select mode
+				Case SEQUENCE
+					Local tDelay:Float = duration
+					duration += obj.FullDuration
+					obj.delay += tDelay
+					
+				Case PARALLEL
+					duration = Max(duration, obj.FullDuration)
+			End
+		Next
+		
+		isBuilt = True
+		Return Self
+	End
+	
+	Method _Start:BaseTween()
+		Super._Start()
+		For Local i:Int = 0 Until children.Count()
+			Local obj:BaseTween = children.Get(i)
+			obj._Start()
+		Next
+		Return Self
+	End
+	
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Factory methods
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
+	Function CreateSequence:Timeline()
+		Local tl:Timeline = GlobalPool<Timeline>.Allocate()
+		tl.Setup(SEQUENCE)
+		Return tl
+	End
+	
+	Function CreateParallel:Timeline()
+		Local tl:Timeline = GlobalPool<Timeline>.Allocate()
+		tl.Setup(PARALLEL)
+		Return tl
+	End
 End
 
 Class BaseTween Implements IPoolable Abstract
@@ -320,7 +716,7 @@ Class BaseTween Implements IPoolable Abstract
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 Private
 	' General
-	Field currentStep:Int;
+	Field currentStep:Int
 	Field repeatCnt:Int
 	Field isIterationStep:Bool
 	Field isYoyo:Bool
@@ -336,15 +732,13 @@ Private
 	Field isFinished:Bool ' true when all repetitions are done
 	Field isKilled:Bool ' true if kill() was called
 	Field isPaused:Bool ' true if pause() was called
-
+	Field isAutoRemoveEnabled:Bool
+	Field isAutoStartEnabled:Bool
+	
 	' Misc
 	Field callback:TweenCallback
 	Field callbackTriggers:Int
 	Field userData:Object
-
-	' Package access
-	Field isAutoRemoveEnabled:Bool
-	Field isAutoStartEnabled:Bool
 	
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 ' General private methods
@@ -376,11 +770,11 @@ Private
 		Return (_step >= 0 And _step <= repeatCnt*2) Or repeatCnt < 0
 	End
 
-	Method KillTarget:Void(target:Object)
+	Method KillTarget:Void(target:ITweenable)
 		If ContainsTarget(target) Then Kill()
 	End
 
-	Method KillTarget:Void(target:Object, tweenType:Int)
+	Method KillTarget:Void(target:ITweenable, tweenType:Int)
 		If ContainsTarget(target, tweenType) Then Kill()
 	End
 	
@@ -397,8 +791,8 @@ Private
 		Return Self
 	End
 	
-	Method _Repeat:BaseTween(count:Int, delay:Float)
-		'if (isStarted) throw new RuntimeException("You can't change the repetitions of a tween or timeline once it is started");
+	Method _RepeatLoop:BaseTween(count:Int, delay:Float)
+		If isStarted Then Throw New DiddyException("You can't change the repetitions of a tween or timeline once it is started")
 		repeatCnt = count
 		If delay >= 0 Then repeatDelay = delay Else repeatDelay = 0
 		isYoyo = False
@@ -406,7 +800,7 @@ Private
 	End
 	
 	Method _RepeatYoyo:BaseTween(count:Int, delay:Float)
-		'if (isStarted) throw new RuntimeException("You can't change the repetitions of a tween or timeline once it is started");
+		If isStarted Then Throw New DiddyException("You can't change the repetitions of a tween or timeline once it is started")
 		repeatCnt = count
 		If delay >= 0 Then repeatDelay = delay Else repeatDelay = 0
 		isYoyo = True
@@ -447,8 +841,8 @@ Private
 	' pure abstract
 	Method ForceStartValues:Void() Abstract
 	Method ForceEndValues:Void() Abstract
-	Method ContainsTarget:Bool(target:Object) Abstract
-	Method ContainsTarget:Bool(target:Object, tweenType:Int) Abstract
+	Method ContainsTarget:Bool(target:ITweenable) Abstract
+	Method ContainsTarget:Bool(target:ITweenable, tweenType:Int) Abstract
 	
 	' empty implementation
 	Method InitializeOverride:Void() End
@@ -554,21 +948,452 @@ Public
 	Method IsPaused:Bool() Property
 		Return isPaused
 	End
+	
+'''''''''''''''''''''''''''''''
+' Update engine
+'''''''''''''''''''''''''''''''
+Public
+	Method Update:Void(delta:Float)
+		If Not isStarted Or isPaused Or isKilled Then Return
+		
+		deltaTime = delta
+		
+		If Not isInitialized Then Initialize()
+		
+		If isInitialized Then
+			TestRelaunch()
+			UpdateStep()
+			TestCompletion()
+		End
+		
+		currentTime += deltaTime
+		deltaTime = 0
+	End
+	
+Private
+	Method Initialize:Void()
+		If currentTime+deltaTime >= delay Then
+			InitializeOverride()
+			isInitialized = True
+			isIterationStep = True
+			currentStep = 0
+			deltaTime -= delay-currentTime
+			currentTime = 0
+			CallCallback(CALLBACK_BEGIN)
+			CallCallback(CALLBACK_START)
+		End
+	End
+	
+	Method TestRelaunch:Void()
+		If Not isIterationStep And repeatCnt >= 0 And currentStep < 0 And currentTime+deltaTime >= 0 Then
+			isIterationStep = True
+			currentStep = 0
+			Local delta:Float = -currentTime
+			deltaTime -= delta
+			currentTime = 0
+			CallCallback(CALLBACK_BEGIN)
+			CallCallback(CALLBACK_START)
+			UpdateOverride(currentStep, currentStep-1, isIterationStep, delta)
+		ElseIf Not isIterationStep And repeatCnt >= 0 And currentStep > repeatCnt*2 And currentTime+deltaTime < 0 Then
+			isIterationStep = True
+			currentStep = repeatCnt*2
+			Local delta:Float = -currentTime
+			deltaTime -= delta
+			currentTime = duration
+			CallCallback(CALLBACK_BACK_BEGIN)
+			CallCallback(CALLBACK_BACK_START)
+			UpdateOverride(currentStep, currentStep+1, isIterationStep, delta)
+		End
+	End
+	
+	Method UpdateStep:Void()
+		While IsValid(currentStep)
+			If Not isIterationStep And currentTime+deltaTime <= 0 Then
+				isIterationStep = True
+				currentStep -= 1
+				
+				Local delta:Float = -currentTime
+				deltaTime -= delta
+				currentTime = duration
+				
+				If IsReverse(currentStep) Then ForceStartValues() Else ForceEndValues()
+				CallCallback(CALLBACK_BACK_START)
+				UpdateOverride(currentStep, currentStep+1, isIterationStep, delta)
+			ElseIf Not isIterationStep And currentTime+deltaTime >= repeatDelay Then
+				isIterationStep = True
+				currentStep += 1
+				
+				Local delta:Float = repeatDelay-currentTime
+				deltaTime -= delta
+				currentTime = 0
+				
+				If IsReverse(currentStep) Then ForceEndValues() Else ForceStartValues()
+				CallCallback(CALLBACK_START)
+				UpdateOverride(currentStep, currentStep-1, isIterationStep, delta)
+			ElseIf isIterationStep And currentTime+deltaTime < 0 Then
+				isIterationStep = False
+				currentStep -= 1
+				
+				Local delta:Float = -currentTime
+				deltaTime -= delta
+				currentTime = 0
+				
+				UpdateOverride(currentStep, currentStep+1, isIterationStep, delta)
+				CallCallback(CALLBACK_BACK_END)
+				
+				If currentStep < 0 And repeatCnt >= 0 Then
+					CallCallback(CALLBACK_BACK_COMPLETE)
+				Else
+					currentTime = repeatDelay
+				End
+			ElseIf isIterationStep And currentTime+DeltaTime > duration Then
+				isIterationStep = False
+				currentStep += 1
+				
+				Local delta:Float = duration-currentTime
+				deltaTime -= delta
+				currentTime = duration
+				
+				UpdateOverride(currentStep, currentStep-1, isIterationStep, delta)
+				CallCallback(CALLBACK_END)
+				
+				If currentStep > repeatCnt*2 And repeatCnt >= 0 Then CallCallback(CALLBACK_COMPLETE)
+				currentTime = 0
+			ElseIf isIterationStep Then
+				Local delta:Float = deltaTime
+				deltaTime -= delta
+				currentTime += delta
+				UpdateOverride(currentStep, currentStep, isIterationStep, delta)
+				Exit
+			Else
+				Local delta:Float = deltaTime
+				deltaTime -= delta
+				currentTime += delta
+				Exit
+			End
+		End
+	End
+	
+	Method TestCompletion:Void()
+		isFinished = repeatCnt >= 0 And (currentStep > repeatCnt*2 Or currentStep < 0)
+	End
+	
 End ' End Class BaseTween
+
+Class TweenEquation Abstract
+Public
+	Global easeNone:TweenEquation = New EaseLinear
+	Global easeInQuad:TweenEquation = New EaseInQuad
+	Global easeOutQuad:TweenEquation = New EaseOutQuad
+	Global easeInOutQuad:TweenEquation = New EaseInOutQuad
+	Global easeInCubic:TweenEquation = New EaseInCubic
+	Global easeOutCubic:TweenEquation = New EaseOutCubic
+	Global easeInOutCubic:TweenEquation = New EaseInOutCubic
+	Global easeInQuart:TweenEquation = New EaseInQuart
+	Global easeOutQuart:TweenEquation = New EaseOutQuart
+	Global easeInOutQuart:TweenEquation = New EaseInOutQuart
+	Global easeInQuint:TweenEquation = New EaseInQuint
+	Global easeOutQuint:TweenEquation = New EaseOutQuint
+	Global easeInOutQuint:TweenEquation = New EaseInOutQuint
+	Global easeInCirc:TweenEquation = New EaseInCirc
+	Global easeOutCirc:TweenEquation = New EaseOutCirc
+	Global easeInOutCirc:TweenEquation = New EaseInOutCirc
+	Global easeInSine:TweenEquation = New EaseInSine
+	Global easeOutSine:TweenEquation = New EaseOutSine
+	Global easeInOutSine:TweenEquation = New EaseInOutSine
+	Global easeInExpo:TweenEquation = New EaseInExpo
+	Global easeOutExpo:TweenEquation = New EaseOutExpo
+	Global easeInOutExpo:TweenEquation = New EaseInOutExpo
+	Global easeInBack:TweenEquation = New EaseInBack
+	Global easeOutBack:TweenEquation = New EaseOutBack
+	Global easeInOutBack:TweenEquation = New EaseInOutBack
+	Global easeInBounce:TweenEquation = New EaseInBounce
+	Global easeOutBounce:TweenEquation = New EaseOutBounce
+	Global easeInOutBounce:TweenEquation = New EaseInOutBounce
+	Global easeInElastic:TweenEquation = New EaseInElastic
+	Global easeOutElastic:TweenEquation = New EaseOutElastic
+	Global easeInOutElastic:TweenEquation = New EaseInOutElastic
+	
+	Method Compute:Float(t:Float, args:Float[]=[]) Abstract
+End
+
+Class EaseLinear Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return t
+	End
+End
+
+Class EaseInQuad Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return t*t
+	End
+End
+
+Class EaseOutQuad Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t = 1-t
+		Return 1-(t*t)
+	End
+End
+
+Class EaseInOutQuad Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t *= 2
+		If t < 1 Then Return t*t / 2
+		t -= 2
+		Return 1 - t*t / 2
+	End
+End
+
+Class EaseInCubic Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return t*t*t
+	End
+End
+
+Class EaseOutCubic Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t = 1-t
+		Return 1-(t*t*t)
+	End
+End
+
+Class EaseInOutCubic Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t *= 2
+		If t < 1 Then Return t*t*t / 2
+		t -= 2
+		Return 1 - t*t*t / 2
+	End
+End
+
+Class EaseInQuart Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return t*t*t*t
+	End
+End
+
+Class EaseOutQuart Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t = 1-t
+		Return 1-(t*t*t*t)
+	End
+End
+
+Class EaseInOutQuart Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t *= 2
+		If t < 1 Then Return t*t*t*t / 2
+		t -= 2
+		Return 1 - t*t*t*t / 2
+	End
+End
+
+Class EaseInQuint Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return t*t*t*t*t
+	End
+End
+
+Class EaseOutQuint Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t = 1-t
+		Return 1-(t*t*t*t*t)
+	End
+End
+
+Class EaseInOutQuint Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t *= 2
+		If t < 1 Then Return t*t*t*t*t / 2
+		t -= 2
+		Return 1 - t*t*t*t*t / 2
+	End
+End
+
+Class EaseInCirc Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return 1 - Sqrt(1 - t*t)
+	End
+End
+
+Class EaseOutCirc Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t = 1-t
+		Return Sqrt(1 - t*t)
+	End
+End
+
+Class EaseInOutCirc Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		t *= 2
+		If t < 1 Then Return (1-Sqrt(1 - t*t)) / 2
+		t -= 2
+		Return 1 - Sqrt(1 - t*t) / 2
+	End
+End
+
+Class EaseInSine Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return Cos(t*90)
+	End
+End
+
+Class EaseOutSine Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return Sin(t*90)
+	End
+End
+
+Class EaseInOutSine Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return Sin(t*180)
+	End
+End
+
+Class EaseInExpo Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		Return Pow(2, 10*(t-1)) - 0.001
+	End
+End
+
+Class EaseOutExpo Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 1 Then Return 1
+		Return 1.001 * (-Pow(2, -10 * t) + 1)
+	End
+End
+
+Class EaseInOutExpo Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		If t = 1 Then Return 1
+		t *= 2
+		If t < 1 Then Return (Pow(2, 10*(t-1)) - 0.001) / 2
+		t -= 2
+		Return 1 - (Pow(2, 10*(t-1)) - 0.001) / 2
+	End
+End
+
+Class EaseInBack Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Local overshoot:Float = 1.70158
+		If args.Length >= 1 Then overshoot = args[0]
+		Return t*t*((overshoot+1)*t-overshoot)
+	End
+End
+
+Class EaseOutBack Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Local overshoot:Float = 1.70158
+		If args.Length >= 1 Then overshoot = args[0]
+		t -= 1
+		Return t*t*((overshoot+1)*t+overshoot) + 1
+	End
+End
+
+Class EaseInOutBack Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Local overshoot:Float = 1.70158
+		If args.Length >= 1 Then overshoot = args[0]
+		overshoot *= 1.525
+		t *= 2
+		If t < 1 Then Return t*t*((overshoot+1)*t-overshoot) / 2
+		t -= 2
+		Return (t*t*((overshoot+1)*t+overshoot) + 2) / 2
+	End
+End
+
+Class EaseInBounce Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return 1 - EaseOutBounce.EaseOutMagic(1 - t)
+	End
+End
+
+Class EaseOutBounce Extends TweenEquation
+Private
+	' black magic!
+	Function EaseOutMagic:Float(t:Float)
+		If t < 1 / 2.75 Then
+			Return 7.5625 * t * t
+		ElseIf t < 2 / 2.75 Then
+			t -= 1.5 / 2.75
+			Return 7.5625 * t * t + 0.75
+		ElseIf t < 2.5 / 2.75 Then
+			t -= 2.25 / 2.75
+			Return 7.5625 * t * t + 0.9375
+		Else
+			t -= 2.625 / 2.75
+			Return 7.5625 * t * t + 0.984375
+		End
+	End
+	
+Public
+	Method Compute:Float(t:Float, args:Float[]=[])
+		Return EaseOutMagic(t)
+	End
+End
+
+Class EaseInOutBounce Extends TweenEquation
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		If t = 1 Then Return 1
+		t *= 2
+		If t < 1 Then Return (Pow(2, 10*(t-1)) - 0.001) / 2
+		t -= 2
+		Return 1 - (Pow(2, 10*(t-1)) - 0.001) / 2
+	End
+End
+
+Class EaseInElastic Extends TweenEquation
+	' [amplitude=1, period=0.3]
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		If t = 1 Then Return 1
+		Local period:Float = 0.3
+		If args.Length >= 2 Then period = args[1]
+		Local amplitude:Float = 1
+		Local overshoot:Float = period/4
+		If args.Length >= 1 And args[0] > 1 Then
+			amplitude = args[0]
+			overshoot = period / 180 * ASin(1/amplitude)
+		End
+		t -= 1
+		Return -(amplitude * Pow(2, 10*t) * Sin((t-overshoot)*180 / period))
+	End
+End
+
+Class EaseOutElastic Extends TweenEquation
+	' [amplitude=1, period=0.3]
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		If t = 1 Then Return 1
+		Local period:Float = 0.3
+		If args.Length >= 2 Then period = args[1]
+		Local amplitude:Float = 1
+		Local overshoot:Float = period/4
+		If args.Length >= 1 And args[0] > 1 Then
+			amplitude = args[0]
+			overshoot = period / 180 * ASin(1/amplitude)
+		End
+		Return amplitude * Pow(2, -10*t) * Sin((t-overshoot)*180 / period) + 1
+	End
+End
+
+Class EaseInOutElastic Extends TweenEquation
+	' [amplitude=1, period=0.3]
+	Method Compute:Float(t:Float, args:Float[]=[])
+		If t = 0 Then Return 0
+		If t = 1 Then Return 1
+		' TODO
+		Return 0
+	End
+End
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Private Implementation
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Private
-
-#Rem
-' declared outside TweenAccessor class so that it's not bound to <T>
-Global tweenAccessors:DiddyStack<Object> = New DiddyStack<Object>
-Global tweenAccessorArray:Object[]
-#End
-
-
-
 
 
 
@@ -598,6 +1423,7 @@ Global tweenAccessorArray:Object[]
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Deprecated Tween class
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Public
 Class TweenDep
 	Const TWEEN_TYPE_LINEAR%  = 0
 	Const TWEEN_TYPE_SINE%    = 1
