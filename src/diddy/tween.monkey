@@ -580,7 +580,7 @@ Public
 	
 	Method PushPause:Timeline(time:Float)
 		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
-		current.children.Push(Tween.Mark().Delay(time))
+		current.children.Push(Tween.Mark().AddDelay(time))
 		Return Self
 	End
 	
@@ -667,7 +667,7 @@ Private
 		For Local i:Int = 0 Until children.Count()
 			Local obj:BaseTween = children.Get(i)
 			If obj.RepeatCount < 0 Then Throw New DiddyException("You can't push an object with infinite repetitions in a timeline")
-			obj.Build()
+			obj._Build()
 			
 			Select mode
 				Case SEQUENCE
@@ -693,6 +693,10 @@ Private
 		Return Self
 	End
 	
+	Method _Start:BaseTween(manager:TweenManager)
+		Return Super._Start(manager)
+	End
+	
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Private overrides
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -702,7 +706,7 @@ Private
 		If Not isIterationStep And _step > lastStep Then
 			' assert delta >= 0
 			Local dt:Float = delta+1
-			If isReverse(lastStep) Then dt = -delta-1
+			If IsReverse(lastStep) Then dt = -delta-1
 			For Local i:Int = 0 Until children.Count()
 				children.Get(i).Update(dt)
 			End
@@ -712,7 +716,7 @@ Private
 		If Not isIterationStep And _step < lastStep Then
 			' assert delta <= 0
 			Local dt:Float = delta+1
-			If isReverse(lastStep) Then dt = -delta-1
+			If IsReverse(lastStep) Then dt = -delta-1
 			For Local i:Int = children.Count()-1 To 0 Step -1
 				children.Get(i).Update(dt)
 			Next
@@ -722,7 +726,7 @@ Private
 		' assert isIterationStep
 		
 		If _step > lastStep Then
-			If isReverse(_step) Then
+			If IsReverse(_step) Then
 				ForceEndValues()
 			Else
 				ForceStartValues()
@@ -731,7 +735,7 @@ Private
 				children.Get(i).Update(delta)
 			Next
 		ElseIf _step < lastStep Then
-			If isReverse(_step) Then
+			If IsReverse(_step) Then
 				ForceStartValues()
 			Else
 				ForceEndValues()
@@ -741,7 +745,7 @@ Private
 			Next
 		Else
 			Local dt:Float = delta
-			If isReverse(_step) Then dt = -delta
+			If IsReverse(_step) Then dt = -delta
 			If delta >= 0 Then
 				For Local i:Int = 0 Until children.Count()
 					children.Get(i).Update(dt)
@@ -1129,7 +1133,7 @@ Private
 				Else
 					currentTime = repeatDelay
 				End
-			ElseIf isIterationStep And currentTime+DeltaTime > duration Then
+			ElseIf isIterationStep And currentTime+deltaTime > duration Then
 				isIterationStep = False
 				currentStep += 1
 				
@@ -1521,6 +1525,85 @@ Private
 		Local h4:Float = t * t * t - t * t
 
 		Return b * h1 + c * h2 + t1 * h3 + t2 * h4
+	End
+End
+
+Class TweenManager
+Private
+	Field objects:DiddyStack<BaseTween> = New DiddyStack<BaseTween>
+	Field isPaused:Bool = False
+	
+Public
+	Method Add:TweenManager(object:BaseTween)
+		If Not objects.Contains(object) Then objects.Push(object)
+		If object.isAutoStartEnabled Then object._Start()
+		Return Self
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable)
+		For Local i:Int = 0 Until objects.Count()
+			If objects.Get(i).ContainsTarget(target) Then Return True
+		Next
+		Return False
+	End
+	
+	Method ContainsTarget:Bool(target:ITweenable, tweenType:Int)
+		For Local i:Int = 0 Until objects.Count()
+			If objects.Get(i).ContainsTarget(target, tweenType) Then Return True
+		Next
+		Return False
+	End
+	
+	Method KillAll:Void()
+		For Local i:Int = 0 Until objects.Count()
+			objects.Get(i).Kill()
+		Next
+	End
+	
+	Method KillTarget:Void(target:ITweenable)
+		For Local i:Int = 0 Until objects.Count()
+			objects.Get(i).KillTarget(target)
+		Next
+	End
+	
+	Method KillTarget:Void(target:ITweenable, tweenType:Int)
+		For Local i:Int = 0 Until objects.Count()
+			objects.Get(i).KillTarget(target, tweenType)
+		Next
+	End
+	
+	Method Pause:Void()
+		isPaused = True
+	End
+	
+	Method Resume:Void()
+		isPaused = False
+	End
+	
+	Method Update:Void(delta:Float)
+		For Local i:Int = objects.Count()-1 To 0 Step -1
+			Local obj:BaseTween = objects.Get(i)
+			If obj.IsFinished And obj.isAutoRemoveEnabled Then
+				objects.Remove(i)
+				obj.Free()
+			End
+		Next
+		
+		If Not isPaused Then
+			If delta >= 0 Then
+				For Local i:Int = 0 Until objects.Count()
+					objects.Get(i).Update(delta)
+				Next
+			Else
+				For Local i:Int = objects.Count()-1 To 0 Step -1
+					objects.Get(i).Update(delta)
+				Next
+			End
+		End
+	End
+	
+	Method Count:Int()
+		Return objects.Count()
 	End
 End
 
