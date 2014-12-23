@@ -1534,6 +1534,8 @@ Private
 	Field isPaused:Bool = False
 	
 Public
+	Global DefaultManager:TweenManager = New TweenManager
+	
 	Method Add:TweenManager(object:BaseTween)
 		If Not objects.Contains(object) Then objects.Push(object)
 		If object.isAutoStartEnabled Then object._Start()
