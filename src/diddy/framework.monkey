@@ -63,6 +63,7 @@ Import diddy.inputcache
 Import diddy.xml
 Import diddy.diddydata
 Import diddy.math
+Import diddy.tween
 
 'Device width and height
 Global DEVICE_WIDTH:Float
@@ -401,6 +402,8 @@ Public
 		If useFixedRateLogic
 			dt.delta = fixedRateLogicDelta
 		End
+		
+		If TweenManager.DefaultManager Then TweenManager.DefaultManager.Update(dt.frametime*0.001)
 		
 		If screenFade.active Then
 			screenFade.Update()
