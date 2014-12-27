@@ -24,20 +24,20 @@ Class MyApp Extends App
 	Field lastTime:Int = -1
 	Field thisTime:Int = -1
 	Field deltaTime:Int = -1
-	Field linearTween:Tween
-	Field bounceTween:Tween
-	Field sineTween:Tween
-	Field chainTween:Tween
+	Field linearTween:TweenDep
+	Field bounceTween:TweenDep
+	Field sineTween:TweenDep
+	Field chainTween:TweenDep
 	
 	Method OnCreate:Int()
-		Tween.CacheTweens()
+		TweenDep.CacheTweens()
 		SetUpdateRate(60)
-		linearTween = Tween.CreateLinear(1000, TWEEN_X, TWEEN_X+TWEEN_WIDTH, TWEEN_X)
-		bounceTween = Tween.CreateBounce(1500, TWEEN_X+TWEEN_WIDTH, TWEEN_X, TWEEN_X+TWEEN_WIDTH)
-		sineTween = Tween.CreateSine(3000,TWEEN_X+(TWEEN_WIDTH/2),0,TWEEN_WIDTH/2)
-		chainTween = Tween.CreateLinear(2000,TWEEN_X,TWEEN_X+TWEEN_WIDTH,TWEEN_X)
-		chainTween.AddChain(Tween.CreateBounce(1000,TWEEN_X+TWEEN_WIDTH,TWEEN_X,TWEEN_X+TWEEN_WIDTH))
-		chainTween.AddChain(Tween.CreateSine(4000,TWEEN_X+(TWEEN_WIDTH/2),0.25,TWEEN_WIDTH/2,2.0/3.0))
+		linearTween = TweenDep.CreateLinear(1000, TWEEN_X, TWEEN_X+TWEEN_WIDTH, TWEEN_X)
+		bounceTween = TweenDep.CreateBounce(1500, TWEEN_X+TWEEN_WIDTH, TWEEN_X, TWEEN_X+TWEEN_WIDTH)
+		sineTween = TweenDep.CreateSine(3000,TWEEN_X+(TWEEN_WIDTH/2),0,TWEEN_WIDTH/2)
+		chainTween = TweenDep.CreateLinear(2000,TWEEN_X,TWEEN_X+TWEEN_WIDTH,TWEEN_X)
+		chainTween.AddChain(TweenDep.CreateBounce(1000,TWEEN_X+TWEEN_WIDTH,TWEEN_X,TWEEN_X+TWEEN_WIDTH))
+		chainTween.AddChain(TweenDep.CreateSine(4000,TWEEN_X+(TWEEN_WIDTH/2),0.25,TWEEN_WIDTH/2,2.0/3.0))
 		Return 0
 	End
 	
@@ -47,7 +47,7 @@ Class MyApp Extends App
 		If lastTime < 0 Then lastTime = thisTime
 		deltaTime = thisTime - lastTime
 		
-		Tween.UpdateAll(deltaTime)
+		TweenDep.UpdateAll(deltaTime)
 		
 		Return 0
 	End
@@ -94,19 +94,19 @@ Class MyApp Extends App
 		Return 0
 	End
 	
-	Method PrintTweenState:Void(twn:Tween, x%, y%)
-		Local t:Tween = twn
-		If twn.chainFirst >= 0 Then twn = Tween.tweens[twn.chainActive]
+	Method PrintTweenState:Void(twn:TweenDep, x%, y%)
+		Local t:TweenDep = twn
+		If twn.chainFirst >= 0 Then twn = TweenDep.tweens[twn.chainActive]
 		Select twn.type
-			Case Tween.TWEEN_TYPE_LINEAR
+			Case TweenDep.TWEEN_TYPE_LINEAR
 				DrawText("Linear: len="+twn.length+", start="+twn.linearStart+", end="+twn.linearEnd+
 						", initial="+twn.linearInitial, x, y)
 
-			Case Tween.TWEEN_TYPE_BOUNCE
+			Case TweenDep.TWEEN_TYPE_BOUNCE
 				DrawText("Bounce: len="+twn.length+", start="+twn.bounceStart+", end="+twn.bounceEnd+
 						", initial="+twn.bounceInitial, x, y)
 
-			Case Tween.TWEEN_TYPE_SINE
+			Case TweenDep.TWEEN_TYPE_SINE
 				DrawText("Sine: len="+twn.length+", off="+twn.waveOffset+", phase="+twn.wavePhase+
 						", amp="+twn.waveAmplitude+", wavelen="+twn.waveLength, x, y)
 		End
