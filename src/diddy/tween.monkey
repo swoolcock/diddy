@@ -495,11 +495,7 @@ Public
 		Return Tween(_SetUserData(data))
 	End
 	
-	Method Start:Tween()
-		Return Tween(_Start())
-	End
-	
-	Method Start:Tween(manager:TweenManager)
+	Method Start:Tween(manager:TweenManager=TweenManager.DefaultManager)
 		Return Tween(_Start(manager))
 	End
 End
@@ -648,11 +644,7 @@ Public
 		Return Timeline(_SetUserData(data))
 	End
 	
-	Method Start:Timeline()
-		Return Timeline(_Start())
-	End
-	
-	Method Start:Timeline(manager:TweenManager)
+	Method Start:Timeline(manager:TweenManager=TweenManager.DefaultManager)
 		Return Timeline(_Start(manager))
 	End
 
@@ -684,17 +676,15 @@ Private
 		Return Self
 	End
 	
-	Method _Start:BaseTween()
-		Super._Start()
-		For Local i:Int = 0 Until children.Count()
-			Local obj:BaseTween = children.Get(i)
-			obj._Start()
-		Next
+	Method _Start:BaseTween(manager:TweenManager=TweenManager.DefaultManager)
+		Super._Start(manager)
+		If Not manager Then
+			For Local i:Int = 0 Until children.Count()
+				Local obj:BaseTween = children.Get(i)
+				obj._Start(Null)
+			Next
+		End
 		Return Self
-	End
-	
-	Method _Start:BaseTween(manager:TweenManager)
-		Return Super._Start(manager)
 	End
 	
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -913,15 +903,14 @@ Private
 		Return Self
 	End
 	
-	Method _Start:BaseTween()
-		_Build()
-		currentTime = 0
-		isStarted = True
-		Return Self
-	End
-	
-	Method _Start:BaseTween(manager:TweenManager)
-		manager.Add(Self)
+	Method _Start:BaseTween(manager:TweenManager=TweenManager.DefaultManager)
+		If Not manager Then
+			_Build()
+			currentTime = 0
+			isStarted = True
+		Else
+			manager.Add(Self)
+		End
 		Return Self
 	End
 	
@@ -1538,7 +1527,7 @@ Public
 	
 	Method Add:TweenManager(object:BaseTween)
 		If Not objects.Contains(object) Then objects.Push(object)
-		If object.isAutoStartEnabled Then object._Start()
+		If object.isAutoStartEnabled Then object._Start(Null)
 		Return Self
 	End
 	
