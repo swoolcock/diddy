@@ -109,7 +109,11 @@ If T implements the IPoolable interface, IPoolable.Reset() will be called on tha
 		If val Then
 			Self.RemoveItem(val)
 			freeObjects.Push(val)
-			If IPoolable(val) Then IPoolable(val).Reset()
+			If IPoolable(val) Then
+				IPoolable(val).Reset()
+			Else
+				ResetObject(val)
+			End
 		End
 	End
 	
@@ -124,7 +128,11 @@ If T implements the IPoolable interface, IPoolable.Reset() will be called on tha
 		Local val:T = Self.DeleteItem(index)
 		If val Then
 			freeObjects.Push(val)
-			If IPoolable(val) Then IPoolable(val).Reset()
+			If IPoolable(val) Then
+				IPoolable(val).Reset()
+			Else
+				ResetObject(val)
+			End
 		End
 	End
 	
@@ -133,9 +141,13 @@ Summary: Removes all objects from the DiddyPool and puts them on the end of the 
 If T implements the IPoolable interface, IPoolable.Reset() will be called on each object in turn.
 #End
 	Method FreeAll:Void()
-		For Local obj:T = EachIn Self
+		For Local obj:T = Eachin Self
 			freeObjects.Push(obj)
-			If IPoolable(obj) Then IPoolable(obj).Reset()
+			If IPoolable(obj) Then
+				IPoolable(obj).Reset()
+			Else
+				ResetObject(obj)
+			End
 		Next
 		Self.Clear()
 	End
@@ -159,5 +171,11 @@ Summary: Clears the contents of the "free object" stack.
 #End
 	Method ClearFree:Void()
 		freeObjects.Clear()
+	End
+	
+#Rem
+Summary: Called when freeing an object if T does not implement IPoolable.
+#End
+	Method ResetObject:Void(obj:T)
 	End
 End
