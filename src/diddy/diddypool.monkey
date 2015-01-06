@@ -109,11 +109,8 @@ If T implements the IPoolable interface, IPoolable.Reset() will be called on tha
 		If val Then
 			Self.RemoveItem(val)
 			freeObjects.Push(val)
-			If IPoolable(val) Then
-				IPoolable(val).Reset()
-			Else
-				ResetObject(val)
-			End
+			Local ip:IPoolable = IPoolable(val)
+			If ip Then ip.Reset() Else ResetObject(val)
 		End
 	End
 	
@@ -128,11 +125,8 @@ If T implements the IPoolable interface, IPoolable.Reset() will be called on tha
 		Local val:T = Self.DeleteItem(index)
 		If val Then
 			freeObjects.Push(val)
-			If IPoolable(val) Then
-				IPoolable(val).Reset()
-			Else
-				ResetObject(val)
-			End
+			Local ip:IPoolable = IPoolable(val)
+			If ip Then ip.Reset() Else ResetObject(val)
 		End
 	End
 	
@@ -143,11 +137,8 @@ If T implements the IPoolable interface, IPoolable.Reset() will be called on eac
 	Method FreeAll:Void()
 		For Local obj:T = Eachin Self
 			freeObjects.Push(obj)
-			If IPoolable(obj) Then
-				IPoolable(obj).Reset()
-			Else
-				ResetObject(obj)
-			End
+			Local ip:IPoolable = IPoolable(obj)
+			If ip Then ip.Reset() Else ResetObject(obj)
 		Next
 		Self.Clear()
 	End
