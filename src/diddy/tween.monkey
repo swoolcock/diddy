@@ -42,9 +42,15 @@ Const TWEEN_SCALE:Int = TWEEN_ROTATION+1
 Const TWEEN_SCALE_X:Int = TWEEN_SCALE+1
 Const TWEEN_SCALE_Y:Int = TWEEN_SCALE_X+1
 Const TWEEN_SCALE_XY:Int = TWEEN_SCALE_Y+1
+Const TWEEN_RED:Int = TWEEN_SCALE_XY+1
+Const TWEEN_GREEN:Int = TWEEN_RED+1
+Const TWEEN_BLUE:Int = TWEEN_GREEN+1
+Const TWEEN_ALPHA:Int = TWEEN_BLUE+1
+Const TWEEN_RGB:Int = TWEEN_ALPHA+1
+Const TWEEN_RGBA:Int = TWEEN_RGB+1
 ' If using common field names, custom ones should be defined as TWEEN_CUSTOM+0, TWEEN_CUSTOM+1, etc.
 ' This leaves room to add more helper field names in the future.
-Const TWEEN_CUSTOM:Int = TWEEN_SCALE_XY+1
+Const TWEEN_CUSTOM:Int = TWEEN_RGBA+1
 
 ' Callback triggers
 Const CALLBACK_BEGIN:Int = $01
@@ -70,10 +76,16 @@ Interface ITweenable
 	Method SetValues:Void(tweenType:Int, newValues:Float[])
 End
 
+#Rem
+Implement this interface to create a callback that will be executed by the tween manager.
+#End
 Interface TweenCallback
 	Method OnEvent:Void(type:Int, source:BaseTween)
 End
 
+#Rem
+Configures and manages individual tween event.  Tween objects are automatically pooled.
+#End
 Class Tween Extends BaseTween
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Private Fields
@@ -239,11 +251,6 @@ Private
 	End
 
 '''''''''''''''''''''''''''''''
-' Abstract private methods
-'''''''''''''''''''''''''''''''
-Private
-	
-'''''''''''''''''''''''''''''''
 ' General public methods
 '''''''''''''''''''''''''''''''
 Public
@@ -278,7 +285,7 @@ Public
 	End
 	
 	Method Target:Tween(targetValues:Float[])
-		'FIXME if (targetValues.length > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		If targetValues.Length > combinedAttrsLimit Then Throw New IllegalArgumentException("Target values array exceeds combined limit.")
 		Arrays<Float>.Copy(targetValues, 0, Self.targetValues, 0, targetValues.Length)
 		Return Self
 	End
@@ -336,7 +343,7 @@ Public
 	End
 	
 	Method TargetRelative:Tween(targetValues:Float[])
-		'FIXME if (targetValues.length > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		If targetValues.Length > combinedAttrsLimit Then Throw New IllegalArgumentException("Target values array exceeds combined limit.")
 		If Not IsInitialized() Then
 			Arrays<Float>.Copy(targetValues, 0, Self.targetValues, 0, targetValues.Length)
 		Else
@@ -350,14 +357,14 @@ Public
 	End
 	
 	Method Waypoint:Tween(targetValue:Float)
-		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		If waypointsCnt = waypointsLimit Then Throw New IllegalArgumentException("Waypoint limit reached.")
 		waypoints[waypointsCnt] = targetValue
 		waypointsCnt += 1
 		Return Self
 	End
 	
 	Method Waypoint:Tween(targetValue1:Float, targetValue2:Float)
-		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		If waypointsCnt = waypointsLimit Then Throw New IllegalArgumentException("Waypoint limit reached.")
 		waypoints[waypointsCnt*2] = targetValue1
 		waypoints[waypointsCnt*2+1] = targetValue2
 		waypointsCnt += 1
@@ -365,7 +372,7 @@ Public
 	End
 	
 	Method Waypoint:Tween(targetValue1:Float, targetValue2:Float, targetValue3:Float)
-		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		If waypointsCnt = waypointsLimit Then Throw New IllegalArgumentException("Waypoint limit reached.")
 		waypoints[waypointsCnt*3] = targetValue1
 		waypoints[waypointsCnt*3+1] = targetValue2
 		waypoints[waypointsCnt*3+2] = targetValue3
@@ -374,7 +381,7 @@ Public
 	End
 	
 	Method Waypoint:Tween(targetValues:Float[])
-		'FIXME if (waypointsCnt == waypointsLimit) throwWaypointsLimitReached();
+		If waypointsCnt = waypointsLimit Then Throw New IllegalArgumentException("Waypoint limit reached.")
 		Arrays<Float>.Copy(targetValues, 0, waypoints, waypointsCnt*targetValues.Length, targetValues.Length)
 		waypointsCnt += 1
 		Return Self
@@ -421,7 +428,7 @@ Public
 	Function TweenTo:Tween(target:ITweenable, tweenType:Int, duration:Float)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, duration)
-		'FIXME tween.ease(Quad.INOUT);
+		tween.Ease = TweenEquation.easeInOutQuad
 		'FIXME tween.path(TweenPaths.catmullRom);
 		Return tween
 	End
@@ -429,16 +436,16 @@ Public
 	Function TweenFrom:Tween(target:ITweenable, tweenType:Int, duration:Float)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, duration)
-		'FIXME tween.ease(Quad.INOUT);
+		tween.Ease = TweenEquation.easeInOutQuad
 		'FIXME tween.path(TweenPaths.catmullRom);
 		tween.isFrom = True
 		Return tween
 	End
 	
-	Function Set:Tween(target:ITweenable, tweenType:Int)
+	Function TweenSet:Tween(target:ITweenable, tweenType:Int)
 		Local tween:Tween = GlobalPool<Tween>.Allocate()
 		tween.Setup(target, tweenType, 0)
-		'FIXME tween.ease(Quad.INOUT)
+		tween.Ease = TweenEquation.easeInOutQuad
 		Return tween
 	End
 	
@@ -463,7 +470,7 @@ Private
 	Method _Build:BaseTween()
 		If Not target Then Return Self
 		combinedAttrsCnt = target.GetValues(type, tweenBuffer)
-		'FIXME if (combinedAttrsCnt > combinedAttrsLimit) throwCombinedAttrsLimitReached();
+		If combinedAttrsCnt > combinedAttrsLimit Then Throw New IllegalArgumentException("Combined attribute limit reached.")
 		Return Self
 	End
 
@@ -572,7 +579,7 @@ Public
 	
 	Method Push:Timeline(timeline:Timeline)
 		If isBuilt Then Throw New DiddyException("You can't push anything to a timeline once it is started")
-		If timeline.current <> timeline Then Throw New DiddyException("You forgot to call a few 'end()' statements in your pushed timeline")
+		If timeline.current <> timeline Then Throw New DiddyException("You forgot to call a few 'EndTimeline()' statements in your pushed timeline")
 		timeline.parent = current
 		current.children.Push(timeline)
 		Return Self
@@ -728,7 +735,7 @@ Private
 			For Local i:Int = 0 Until children.Count()
 				children.Get(i).Update(delta)
 			Next
-		ElseIf _step < lastStep Then
+		Elseif _step < lastStep Then
 			If IsReverse(_step) Then
 				ForceStartValues()
 			Else
@@ -1074,7 +1081,7 @@ Private
 			CallCallback(CALLBACK_BEGIN)
 			CallCallback(CALLBACK_START)
 			UpdateOverride(currentStep, currentStep-1, isIterationStep, delta)
-		ElseIf Not isIterationStep And repeatCnt >= 0 And currentStep > repeatCnt*2 And currentTime+deltaTime < 0 Then
+		Elseif Not isIterationStep And repeatCnt >= 0 And currentStep > repeatCnt*2 And currentTime+deltaTime < 0 Then
 			isIterationStep = True
 			currentStep = repeatCnt*2
 			Local delta:Float = -currentTime
