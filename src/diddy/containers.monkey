@@ -415,12 +415,15 @@ Otherwise, IComparable.CompareTo() is called.
 #End
 	Function Compare:Int(lhs:Object, rhs:Object)
 		' we check both lhs and rhs because we always want to compare if at least one value is non-null
-		If IComparable(lhs) Then
+		Local cmp:IComparable = IComparable(lhs)
+		If cmp Then
 			' normal comparison if lhs is not null
-			Return IComparable(lhs).CompareTo(rhs)
-		ElseIf IComparable(rhs) Then
+			Return cmp.CompareTo(rhs)
+		End
+		cmp = IComparable(rhs)
+		If cmp Then
 			' reverse comparison if lhs is null but rhs is not
-			Return -IComparable(rhs).CompareTo(lhs)
+			Return -cmp.CompareTo(lhs)
 		End
 		Return 0
 	End
