@@ -1096,95 +1096,219 @@ Class ImageBank Extends StringMap<GameImage>
 	End
 	
 	Method LoadLibGdxAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+		'Detail:
+		'Instead of going straight line by line and assuming a specific
+		'order we need to loop through every entry and store all values
+		'we are interested in.
+		'If a new entry starts (or file ends) the current entry is tried
+		'to get loaded.
+		'
+		'Header is processed before entries.
+		'To avoid problems with empty lines, they get stripped before.
+
+
 		Local str:String = LoadAtlasString(fileName)
-		Local all:String[] = str.Split("~n")
-		Local spriteFileName:String = all[0].Trim()
-		Local pointer:Image = LoadImage(path + spriteFileName)
-		AssertNotNull(pointer, "Error loading bitmap atlas "+ path + spriteFileName)
-		Local atlasGameImageName:String = SaveAtlasToBank(pointer, fileName)
-		
-		Local line:String = ""
-		Local i:Int = 4
-		Local xy:String[] =["",""]
+		Local raw:String[] = str.Split("~n")
+		'skip empty files
+		If raw.Length() = 0 Then Return 
+
+		'=== PREPARE FILE CONTENT ===
+		'remove empty lines
+		'doing it this way saves array modifications on a per-line-base
+		'We also trim the cleaned lines (although properties are
+		'intended by double space "  ")
+		Local emptyLines:Int = 0
+		For Local s:String = Eachin raw
+			If s.Trim() = "" Then emptyLines += 1
+		Next
+
+		Local lines:String[ raw.Length() - emptyLines ]
+		emptyLines = 0
+		For Local index:Int = 0 Until raw.Length()
+			If raw[index].Trim() = "" Then emptyLines += 1;Continue
+			lines[ index - emptyLines ] = raw[ index ].Trim()
+		Next
+		'now "lines" contains only non-empty content
+
+
+		'=== LOAD FROM CONTENT ===
+		Local atlasImage:Image
+		Local atlasGameImageName:String
+		Local spriteFileName:String
+		Local spriteSize:Int[2]
+		Local spriteFormat:String
+		Local spriteFilter:String
+		Local spriteRepeat:String
+
+		Local entryName:String
+		Local entryRotate:Bool
+		Local entryXY:Int[2]
+		Local entrySize:Int[2]
+		Local entryOrig:Int[2]
+		Local entryOffset:Int[2]
+		Local entryIndex:Int
+
 		Local debug:Bool = False
-		While True
-			' name of the image
-			line = all[i].Trim()
-			If debug Then Print "name = "+line
-			If line = "" Then Exit
-			Local name:String = line
-			'rotate
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "rotate = "+line
-			Local rotate:String = line
-			' x and y
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "x and y = "+line
-			xy = line[ (line.FindLast(":")+1)..].Split(",")
-			Local x:Int = Int(xy[0].Trim())
-			Local y:Int = Int(xy[1].Trim())
-			' width and height
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "width and height = "+line
-			xy = line[ (line.FindLast(":")+1)..].Split(",")
-			Local width:Int = Int(xy[0].Trim())
-			Local height:Int = Int(xy[1].Trim())
-			' origX and origY
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "origX and origY = "+line
-			xy = line[ (line.FindLast(":")+1)..].Split(",")
-			Local origX:Int = Int(xy[0].Trim())
-			Local origY:Int = Int(xy[1].Trim())
-			' offsets
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "offsets = "+line
-			xy = line[ (line.FindLast(":")+1)..].Split(",")
-			Local offsetX:Int = Int(xy[0].Trim())
-			Local offsetY:Int = Int(xy[1].Trim())
-			'index
-			i+=1
-			line = all[i].Trim()
-			If debug Then Print "index = "+line
-			Local index:Int = Int(line[ (line.FindLast(":") + 1) ..].Trim())
-			i+=1
-			Local gi:GameImage = New GameImage
-			If index > - 1
-				name += index
+
+		Local configName:String, configValues:String[]
+		Local newConfigGroup:Bool = True, nextLineEndsConfigGroup:Bool = False
+		Local headerLoaded:Bool = False
+
+		For Local i:Int = 0 Until lines.Length()
+			'prepare names and values
+			If lines[i].Find(":") > 0
+				configName = lines[i][.. lines[i].FindLast(":")]			
+				configValues = lines[i][ (lines[i].FindLast(":")+1)..].Split(",")
+				For Local j:Int = 0 Until configValues.Length()
+					configValues[j] = configValues[j].Trim()
+				Next
+				newConfigGroup = False
+			Else
+				configName = lines[i]
+				newConfigGroup = True
 			End
-			If debug
-				Print "name    = " + name
-				Print "x       = " + x
-				Print "y       = " + y
-				Print "width   = " + width
-				Print "height  = " + height
-				Print "origX   = " + origX
-				Print "origY   = " + origY
-				Print "offsetX = " + offsetX
-				Print "offsetY = " + offsetY
-				Print "index   = " + index
+			'last line ends current group
+			If i + 1 >= lines.Length() 
+				nextLineEndsConfigGroup = True
+			'current group ends because new group starts then
+			Elseif lines[i + 1].Find(":") <= 0
+				nextLineEndsConfigGroup = True
+			Else
+				nextLineEndsConfigGroup = False
 			End
 			
-			gi.name = name.ToUpper()
-			gi.image = pointer.GrabImage(x, y, width, height)
-			gi.CalcSize()
-			gi.MidHandle(midHandle)
+			'assign them according to their type
+			'1) name
+			If newConfigGroup
+				'first group is the header / sprite filename
+				If spriteFileName = "" 
+					spriteFileName = configName
+				'other groups are entries
+				Else					
+					entryName = configName
+
+					'reset previously set values
+					entryRotate = False
+					entryXY[0] = 0; entryXY[1] = 0
+					entrySize[0] = 0; entrySize[1] = 0
+					entryOrig[0] = 0; entryOrig[1] = 0
+					entryOffset[0] = 0; entryOffset[1] = 0
+					entryIndex = -1
+				End
+				
+			'2) other fields
+			Else
+				'header
+				If Not headerLoaded
+					Select configName.ToLower()
+						Case "size"
+							If configValues.Length() > 1 
+								spriteSize[0] = Int(configValues[0])
+								spriteSize[1] = Int(configValues[1])
+							End
+						Case "format"
+							spriteFormat = configValues[0]
+						Case "filter"
+							spriteFilter = configValues[0]
+						Case "repeat"
+							spriteRepeat = configValues[0]
+					End
+				'entries
+				Else
+					Select configName.ToLower()
+						Case "rotate"
+							entryRotate = (configValues[0].ToLower() = "false")
+						Case "xy"
+							entryXY[0] = Int(configValues[0])
+							entryXY[1] = Int(configValues[1])
+						Case "size"
+							entrySize[0] = Int(configValues[0])
+							entrySize[1] = Int(configValues[1])
+						Case "orig"
+							entryOrig[0] = Int(configValues[0])
+							entryOrig[1] = Int(configValues[1])
+						Case "offset"
+							entryOffset[0] = Int(configValues[0])
+							entryOffset[1] = Int(configValues[1])
+						Case "index"
+							entryIndex = Int(configValues[0])
+					End
+				End
+			End	
 			
-			gi.atlasName = atlasGameImageName
-			gi.subX = x
-			gi.subY = y
-			gi.readPixels = readPixels
-			gi.SetMaskColor(maskRed, maskGreen, maskBlue)
 			
-			Self.Set(gi.name, gi)
-		Wend
+			'=== ACTUALLY LOAD/GENERATE THINGS ===
+			If nextLineEndsConfigGroup
+				'load atlas first
+				If Not headerLoaded
+					If debug Then Print "load atlas: "+spriteFileName
+					Assert(spriteFileName <> "", "Error loading atlas: no atlas sprite file defined.")
 		
-	End
-	
+					atlasImage = LoadImage(path + spriteFileName)
+					AssertNotNull(atlasImage, "Error loading bitmap atlas ~q"+ path + spriteFileName+"~q.")
+
+					atlasGameImageName = SaveAtlasToBank(atlasImage, fileName)
+
+					headerLoaded = True
+				'load entries
+				Else			
+					Assert(entryName <> "", "Error loading atlas entry: no entry name defined.")
+
+					'append index to name as soon as it got defined
+					'Detail:
+					'  With the libgdx-spritepacker also single sprites
+					'  get an index of "0" so all get at least an "0"
+					'  appended. To avoid this, would have to check _in_
+					'  _advance_ if there are other sprites configured
+					'  for this entry.
+					'  As we cannot do that (multiple sprite sets) it is
+					'  the best bet to just start with "0"
+					If entryIndex > - 1 Then entryName += entryIndex
+
+					If debug
+						Print "load entry"
+						Print "	name    = " + entryName
+						Print "	x       = " + entryXY[0]
+						Print "	y       = " + entryXY[1]
+						Print "	width   = " + entrySize[0]
+						Print "	height  = " + entrySize[1]
+						Print "	origX   = " + entryOrig[0]
+						Print "	origY   = " + entryOrig[1]
+						Print "	offsetX = " + entryOffset[0]
+						Print "	offsetY = " + entryOffset[1]
+						Print "	index   = " + entryIndex
+					End
+
+
+					Local gi:GameImage = New GameImage
+					gi.name = entryName.ToUpper()
+					gi.image = atlasImage.GrabImage(entryXY[0], entryXY[1], entrySize[0], entrySize[1])
+					gi.CalcSize()
+					gi.MidHandle(midHandle)
+
+
+					'Detail:
+					'  LibGDX values differ to others (because in LibGDX
+					'  "0,0" is "bottom,left")
+					'  -> "offsetX" is what was cut from "left"
+					'  -> "offsetY" is what was cut from "bottom"
+					'  LibGDX encodes the "left"/"top" portions in origY
+					'  and height.
+					'  -> offsetTop: (origY - height) + "bottom"
+					gi.offSetX = entryOffset[0]
+					gi.offSetY = (entryOrig[1] - entrySize[1]) - entryOffset[1]
+
+					gi.atlasName = atlasGameImageName
+					gi.subX = entryXY[0]
+					gi.subY = entryXY[1]
+					gi.readPixels = readPixels
+					gi.SetMaskColor(maskRed, maskGreen, maskBlue)
+					
+					Self.Set(gi.name, gi)
+				End
+			End
+		Next
+	End	
 	Method LoadJsonAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		Local str:String = LoadAtlasString(fileName)
 		' parse the json
