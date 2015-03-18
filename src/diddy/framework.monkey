@@ -1096,15 +1096,15 @@ Class ImageBank Extends StringMap<GameImage>
 	End
 	
 	Method LoadLibGdxAtlas:Void(fileName:String, midHandle:Bool=True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
-		'Ronny:
-		'Instead of going straight line by line and assuming a specific order we
-		'need to loop through every entry and store all values we are interested
-		'in. If a new entry starts (or file ends) the current entry is tried to 
-		'get loaded.
+		'Detail:
+		'Instead of going straight line by line and assuming a specific
+		'order we need to loop through every entry and store all values
+		'we are interested in.
+		'If a new entry starts (or file ends) the current entry is tried
+		'to get loaded.
 		'
 		'Header is processed before entries.
-		'
-		'To avoid problems with empty lines, they get stripped before
+		'To avoid problems with empty lines, they get stripped before.
 
 
 		Local str:String = LoadAtlasString(fileName)
@@ -1115,7 +1115,8 @@ Class ImageBank Extends StringMap<GameImage>
 		'=== PREPARE FILE CONTENT ===
 		'remove empty lines
 		'doing it this way saves array modifications on a per-line-base
-		'We also trim the cleaned lines (although properties are "  "-intended...)
+		'We also trim the cleaned lines (although properties are
+		'intended by double space "  ")
 		Local emptyLines:Int = 0
 		For Local s:String = Eachin raw
 			If s.Trim() = "" Then emptyLines += 1
@@ -1254,11 +1255,14 @@ Class ImageBank Extends StringMap<GameImage>
 					Assert(entryName <> "", "Error loading atlas entry: no entry name defined.")
 
 					'append index to name as soon as it got defined
-					'Ronny: With the libgdx-spritepacker also single sprites get an index of "0"
-					'       so all get at least an "0" appended. To avoid this, would have to
-					'       check _in advance_ if there are other sprites configured for this entry
-					'       As we cannot do that (multiple sprite sets) it is the best bet to
-					'       just start with "0"
+					'Detail:
+					'  With the libgdx-spritepacker also single sprites
+					'  get an index of "0" so all get at least an "0"
+					'  appended. To avoid this, would have to check _in_
+					'  _advance_ if there are other sprites configured
+					'  for this entry.
+					'  As we cannot do that (multiple sprite sets) it is
+					'  the best bet to just start with "0"
 					If entryIndex > - 1 Then entryName += entryIndex
 
 					If debug
@@ -1282,11 +1286,15 @@ Class ImageBank Extends StringMap<GameImage>
 					gi.CalcSize()
 					gi.MidHandle(midHandle)
 
-					'Ronny: libgdx values differ to others (because in libgdx "0,0" is "bottom,left")
-					'       "offsetX" is what was cut from "left"
-					'       "offsetY" is what was cut from "bottom"
-					'       libgdx encodes the "left"/"top" portions in origY and height
-					'       -> so offset for top is: offsetTop: (origY - height) + "bottom"
+
+					'Detail:
+					'  LibGDX values differ to others (because in LibGDX
+					'  "0,0" is "bottom,left")
+					'  -> "offsetX" is what was cut from "left"
+					'  -> "offsetY" is what was cut from "bottom"
+					'  LibGDX encodes the "left"/"top" portions in origY
+					'  and height.
+					'  -> offsetTop: (origY - height) + "bottom"
 					gi.offSetX = entryOffset[0]
 					gi.offSetY = (entryOrig[1] - entrySize[1]) - entryOffset[1]
 
