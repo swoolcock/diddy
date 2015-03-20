@@ -74,6 +74,15 @@ Throws IllegalArgumentException if src is Null.
 	End
 	
 #Rem
+Summary: Constructor to create a DiddyStack with the contents of the passed Deque.
+Throws IllegalArgumentException if src is Null.
+#End
+	Method New(src:Deque<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.New: Source Deque must not be null")
+		AddAll(src)
+	End
+	
+#Rem
 Summary: Adds the entire contents of the passed Stack to the DiddyStack.
 Throws IllegalArgumentException if src is Null.
 #End
@@ -102,6 +111,17 @@ Throws IllegalArgumentException if src is Null.
 	Method AddAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddAll: Source Set must not be null")
 		For Local val := EachIn src
+			Self.Push(val)
+		Next
+	End
+	
+#Rem
+Summary: Adds the entire contents of the passed Deque to the DiddyStack.
+Throws IllegalArgumentException if src is Null.
+#End
+	Method AddAll:Void(src:Deque<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.AddAll: Source Deque must not be null")
+		For Local val := Eachin src
 			Self.Push(val)
 		Next
 	End
@@ -146,6 +166,17 @@ Throws IllegalArgumentException if src is Null.
 	Method RemoveAll:Void(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source Set must not be null")
 		For Local val := EachIn src
+			Self.RemoveEach(val)
+		Next
+	End
+	
+#Rem
+Summary: Removes from this DiddyStack anything that also exists in the passed Deque.
+Throws IllegalArgumentException if src is Null.
+#End
+	Method RemoveAll:Void(src:Deque<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RemoveAll: Source Deque must not be null")
+		For Local val := Eachin src
 			Self.RemoveEach(val)
 		Next
 	End
@@ -204,6 +235,20 @@ Throws IllegalArgumentException if src is Null.
 	End
 	
 #Rem
+Summary: Removes from this DiddyStack anything that does NOT exist in the passed Deque.
+Throws IllegalArgumentException if src is Null.
+#End
+	Method RetainAll:Void(src:Deque<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.RetainAll: Source Deque must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If Not ContainerUtil<T>.DequeContains(src, val) Then
+				Self.RemoveEach(val)
+			End
+		Next
+	End
+	
+#Rem
 Summary: Removes from this DiddyStack anything that does NOT exist in the passed container.
 Throws IllegalArgumentException if src is Null.
 #End
@@ -248,6 +293,18 @@ Throws IllegalArgumentException if src is Null.
 	Method ContainsAll:Bool(src:Set<T>)
 		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Set must not be null")
 		For Local val := EachIn src
+			If Not Self.Contains(val) Return False
+		Next
+		Return True
+	End
+	
+#Rem
+Summary: Returns True if this DiddyStack contains ALL of the items in the passed Deque.
+Throws IllegalArgumentException if src is Null.
+#End
+	Method ContainsAll:Bool(src:Deque<T>)
+		If Not src Then Throw New IllegalArgumentException("DiddyStack.ContainsAll: Source Deque must not be null")
+		For Local val := Eachin src
 			If Not Self.Contains(val) Return False
 		Next
 		Return True

@@ -8,23 +8,26 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #Rem
 Header: Monkey Containers Framework
 The Containers framework supersedes the old Collections framework and allows cross-compatibility
-with the official Monkey data structures (Stack, List, and Set).
+with the official Monkey data structures (Stack, List, Set, and Deque).
 #End
 
 Strict
 Public
 
-' Need to alias some of the official classes since Enumerator exists in both the monkey.stack and monkey.list modules
+' Need to alias some of the official classes since Enumerator exists in the monkey.stack, monkey.list, and monkey.deque modules
 Alias MapValueEnumerator = monkey.map.ValueEnumerator
 Alias MapKeyEnumerator = monkey.map.KeyEnumerator
 Alias StackEnumerator = monkey.stack.Enumerator
 Alias ListEnumerator = monkey.list.Enumerator
+Alias DequeEnumerator = monkey.deque.Enumerator
 
 ' Importing containers will give you all the container classes
 Import diddystack
 Import diddyset
 Import diddylist
+Import diddydeque
 Import diddypool
+Import diddymap
 Import exception
 
 #Rem
@@ -145,6 +148,12 @@ AddAll should throw an IllegalArgumentException if src is Null.
 	Method AddAll:Void(src:Set<T>)
 	
 #Rem
+Summary: Adds the entire contents of the passed Deque to the container.
+AddAll should throw an IllegalArgumentException if src is Null.
+#End
+	Method AddAll:Void(src:Deque<T>)
+	
+#Rem
 Summary: Adds the entire contents of another container to this container.
 AddContainer should throw an IllegalArgumentException if src is Null.
 #End
@@ -167,6 +176,12 @@ Summary: Removes from this container any objects that also appear in the passed 
 RemoveAll should throw an IllegalArgumentException if src is Null.
 #End
 	Method RemoveAll:Void(src:Set<T>)
+	
+#Rem
+Summary: Removes from this container any objects that also appear in the passed Deque.
+RemoveAll should throw an IllegalArgumentException if src is Null.
+#End
+	Method RemoveAll:Void(src:Deque<T>)
 	
 #Rem
 Summary: Removes from this container any objects that also appear in the passed container.
@@ -193,6 +208,12 @@ RetainAll should throw an IllegalArgumentException if src is Null.
 	Method RetainAll:Void(src:Set<T>)
 	
 #Rem
+Summary: Removes from this container any objects that DON'T appear in the passed Deque.
+RetainAll should throw an IllegalArgumentException if src is Null.
+#End
+	Method RetainAll:Void(src:Deque<T>)
+	
+#Rem
 Summary: Removes from this container any objects that DON'T appear in the passed container.
 RetainContainer should throw an IllegalArgumentException if src is Null.
 #End
@@ -215,6 +236,12 @@ Summary: Returns True if this container contains ALL of the elements in the pass
 ContainsAll should throw an IllegalArgumentException if src is Null.
 #End
 	Method ContainsAll:Bool(src:Set<T>)
+	
+#Rem
+Summary: Returns True if this container contains ALL of the elements in the passed Deque.
+ContainsAll should throw an IllegalArgumentException if src is Null.
+#End
+	Method ContainsAll:Bool(src:Deque<T>)
 	
 #Rem
 Summary: Returns True if this container contains ALL of the elements in the passed container.
@@ -743,6 +770,62 @@ Summary: Returns a WrappedSetEnumerator with the optional predicate.
 	End
 End
 
+#Rem
+Summary: Extends PredicateEnumerator<T> to wrap DequeEnumerator<T> as an IEnumerator<T>.
+#End
+Class WrappedDequeEnumerator<T> Extends PredicateEnumerator<T>
+Private
+	Field en:DequeEnumerator<T>
+	
+Public
+#Rem
+Summary: Constructor to wrap a DequeEnumerator<T> with an optional IPredicate<T>.
+#End
+	Method New(en:DequeEnumerator<T>, pred:IPredicate<T>=Null)
+		Super.New(pred)
+		Self.en = en
+	End
+	
+#Rem
+Summary: Delegates to DequeEnumerator.NextObject().
+#End
+	Method CallNextObject:T()
+		Return en.NextObject()
+	End
+	
+#Rem
+Summary: Delegates to DequeEnumerator.HasNext().
+#End
+	Method CallHasNext:Bool()
+		Return en.HasNext()
+	End
+End
+
+#Rem
+Summary: Wraps Deque and the ObjectEnumerator() method to provide access to a PredicateEnumerator<T>.
+#End
+Class WrappedDequeEnumerable<T> Implements IEnumerable<T>
+Private
+	Field d:Deque<T>
+	Field pred:IPredicate<T>
+	
+Public
+#Rem
+Summary: Constructor to wrap a Deque<T> enumerator as an IEnumerable<T> with an optional IPredicate<T>.
+#End
+	Method New(d:Deque<T>, pred:IPredicate<T>=Null)
+		Self.d = d
+		Self.pred = pred
+	End
+
+#Rem
+Summary: Returns a WrappedDequeEnumerator with the optional predicate.
+#End
+	Method ObjectEnumerator:IEnumerator<T>()
+		Return New WrappedDequeEnumerator<T>(d.ObjectEnumerator(), pred)
+	End
+End
+
 Class ReadOnlyContainer<T> Implements IContainer<T> Final
 Private
 	Global NIL:T
@@ -761,7 +844,7 @@ Public
 	
 	Method Comparator:IComparator<T>() Property
 		Return source.Comparator
-	end
+	End
 	
 	Method Comparator:Void(comparator:IComparator<T>) Property
 		ThrowReadOnly()
@@ -776,6 +859,10 @@ Public
 	End
 	
 	Method AddAll:Void(src:Set<T>)
+		ThrowReadOnly()
+	End
+	
+	Method AddAll:Void(src:Deque<T>)
 		ThrowReadOnly()
 	End
 	
@@ -795,6 +882,10 @@ Public
 		ThrowReadOnly()
 	End
 	
+	Method RemoveAll:Void(src:Deque<T>)
+		ThrowReadOnly()
+	End
+	
 	Method RemoveContainer:Void(src:IContainer<T>)
 		ThrowReadOnly()
 	End
@@ -811,6 +902,10 @@ Public
 		ThrowReadOnly()
 	End
 	
+	Method RetainAll:Void(src:Deque<T>)
+		ThrowReadOnly()
+	End
+	
 	Method RetainContainer:Void(src:IContainer<T>)
 		ThrowReadOnly()
 	End
@@ -824,6 +919,10 @@ Public
 	End
 		
 	Method ContainsAll:Bool(src:Set<T>)
+		Return source.ContainsAll(src)
+	End
+	
+	Method ContainsAll:Bool(src:Deque<T>)
 		Return source.ContainsAll(src)
 	End
 	
@@ -918,5 +1017,17 @@ Public
 	
 	Method ReadOnly:ReadOnlyContainer<T>()
 		Return New ReadOnlyContainer<T>(Self)
+	End
+End
+
+Class ContainerUtil<T> Final
+#Rem
+Summary: Searches a deque to see if a value exists.
+#End
+	Function DequeContains:Bool(deq:Deque<T>, item:T)
+		For Local val:T = Eachin deq
+			If val = item Then Return True
+		Next
+		Return False
 	End
 End

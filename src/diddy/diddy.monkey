@@ -37,7 +37,9 @@ Import diddy.collections
 Import diddy.constants
 Import diddy.containers
 Import diddy.diddydata
+Import diddy.diddydeque
 Import diddy.diddylist
+Import diddy.diddymap
 Import diddy.diddypool
 Import diddy.diddyset
 Import diddy.diddystack
