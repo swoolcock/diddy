@@ -17,13 +17,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 extern gxtkAudio *bb_audio_device;
 extern gxtkGraphics *bb_graphics_device;
 
+#ifdef _glfw3_h_
+void diddy_mouseScroll(GLFWwindow *window, double xoffset, double yoffset) {
+}
+#else
 float diddy_mouseWheel = 0.0f;
-
-
+#endif
 
 float diddy_mouseZ() {
-	float ret = glfwGetMouseWheel() - diddy_mouseWheel;
+	float ret = 0.0f;
+#ifdef _glfw3_h_
+	// TODO: GLFW3 uses a callback for the scrollwheel, so it can't be directly queried
+	//glfwSetScrollCallback(BBGlfwGame::GlfwGame()->GetGLFWwindow(), diddy_mouseScroll);
+#else
+	ret = glfwGetMouseWheel() - diddy_mouseWheel;
 	diddy_mouseWheel = glfwGetMouseWheel();
+#endif
 	return ret;
 }
 
@@ -34,7 +43,7 @@ class diddy
 	// Returns an empty string if dialog is cancelled
 	static String openfilename() {
 		#ifdef _WIN32
-		char *filter = "All Files (*.*)\0*.*\0";
+		const char *filter = "All Files (*.*)\0*.*\0";
 		HWND owner = NULL;
 		OPENFILENAME ofn;
 		char fileName[MAX_PATH] = "";
@@ -62,7 +71,7 @@ class diddy
 	
 	static String savefilename() {
 		#ifdef _WIN32
-		char *filter = "All Files (*.*)\0*.*\0";
+		const char *filter = "All Files (*.*)\0*.*\0";
 		HWND owner = NULL;
 		OPENFILENAME ofn;
 		char fileName[MAX_PATH] = "";
@@ -107,15 +116,29 @@ class diddy
 	
 	static void setGraphics(int w, int h)
 	{
+#ifdef _glfw3_h_
+		GLFWwindow *window = BBGlfwGame::GlfwGame()->GetGLFWwindow();
+		glfwSetWindowSize(window, w, h);
+		
+		GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode *desktopMode = glfwGetVideoMode(monitor);
+		
+		glfwSetWindowPos(window, (desktopMode->width-w)/2,(desktopMode->height-h)/2 );
+#else
 		glfwSetWindowSize(w, h);
 		GLFWvidmode desktopMode;
 		glfwGetDesktopMode( &desktopMode );
 		glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );
+#endif
 	}
 	
 	static void setMouse(int x, int y)
 	{
+#ifdef _glfw3_h_
+		glfwSetCursorPos(BBGlfwGame::GlfwGame()->GetGLFWwindow(), x, y);
+#else
 		glfwSetMousePos(x, y);
+#endif
 	}
 	
 	static void showKeyboard()
