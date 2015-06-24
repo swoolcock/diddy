@@ -10,18 +10,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 extern gxtkAudio *bb_audio_device;
 extern gxtkGraphics *bb_graphics_device;
 
+float diddy_mouseWheel = 0.0f;
+
 #ifdef _glfw3_h_
 void diddy_mouseScroll(GLFWwindow *window, double xoffset, double yoffset) {
+	diddy_mouseWheel = yoffset;
 }
-#else
-float diddy_mouseWheel = 0.0f;
 #endif
 
 float diddy_mouseZ() {
 	float ret = 0.0f;
 #ifdef _glfw3_h_
-	// TODO: GLFW3 uses a callback for the scrollwheel, so it can't be directly queried
-	//glfwSetScrollCallback(BBGlfwGame::GlfwGame()->GetGLFWwindow(), diddy_mouseScroll);
+	ret = diddy_mouseWheel;
+	diddy_mouseWheel = 0;
 #else
 	ret = glfwGetMouseWheel() - diddy_mouseWheel;
 	diddy_mouseWheel = glfwGetMouseWheel();
@@ -40,7 +41,9 @@ class diddy
 	
 	static void mouseZInit()
 	{
-		return;
+#ifdef _glfw3_h_
+		glfwSetScrollCallback(BBGlfwGame::GlfwGame()->GetGLFWwindow(), diddy_mouseScroll);
+#endif
 	}
 	
 	// only accurate to 1 second 
