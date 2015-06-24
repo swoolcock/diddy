@@ -168,20 +168,15 @@ class diddy
 		#endif
 	}
 
-	static void startVibrate(int millisecs)
-	{
-	}
-	static void stopVibrate()
-	{
-	}
+	static void startVibrate(int millisecs) { }
+	static void stopVibrate() { }
+	static void startGps() { }
 	
-	static void startGps()
-	{
-	}
-	static String getLatitiude()
+	static String getLatitude()
 	{
 		return "";
 	}
+	
 	static String getLongitude()
 	{
 		return "";

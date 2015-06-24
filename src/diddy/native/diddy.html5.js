@@ -59,7 +59,7 @@ diddy.stopVibrate=function()
 diddy.startGps=function(){
 }
 
-diddy.getLatitiude=function(){
+diddy.getLatitude=function(){
 	return ""
 }
 diddy.getLongitude=function(){

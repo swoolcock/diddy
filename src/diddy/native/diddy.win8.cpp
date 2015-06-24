@@ -65,7 +65,7 @@ class diddy
 	static void startGps()
 	{
 	}
-	static String getLatitiude()
+	static String getLatitude()
 	{
 		return "";
 	}

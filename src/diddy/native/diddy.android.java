@@ -165,7 +165,7 @@ class diddy
 			android.util.Log.e("[Monkey]", "SecurityException: " + android.util.Log.getStackTraceString(e));
 		}
 	}
-	static String getLatitiude() {
+	static String getLatitude() {
 		return latitude;
 	}
 	static String getLongitude() {

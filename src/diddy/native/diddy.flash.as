@@ -50,7 +50,7 @@ class diddy
 	static public function startGps():void
 	{
 	}
-	static public function getLatitiude():String
+	static public function getLatitude():String
 	{
 		return "";
 	}
