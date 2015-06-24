@@ -9,9 +9,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <windows.h>
 #include <Shellapi.h>
 #include <iostream>
+#include <string.h>
 #endif
 
+#ifdef __linux__
 #include <string.h>
+#endif
+
+#ifdef __APPLE__
+#include <math.h>
+#endif
+
 #include <time.h>
 
 extern gxtkAudio *bb_audio_device;
@@ -39,65 +47,64 @@ float diddy_mouseZ() {
 
 class diddy
 {
-	public:
-	
+public:
+#ifdef _WIN32
 	// Returns an empty string if dialog is cancelled
 	static String openfilename() {
 		#ifdef _WIN32
-		const char *filter = "All Files (*.*)\0*.*\0";
-		HWND owner = NULL;
-		OPENFILENAME ofn;
-		char fileName[MAX_PATH] = "";
-		ZeroMemory(&ofn, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = owner;
-		ofn.lpstrFilter = filter;
-		ofn.lpstrFile = fileName;
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt = "";
-
-		String fileNameStr;
-
-		if ( GetOpenFileName(&ofn) )
-			fileNameStr = fileName;
-
-		return fileNameStr;
-		#endif
-		#ifdef linux
-		return "";
+			const char *filter = "All Files (*.*)\0*.*\0";
+			HWND owner = NULL;
+			OPENFILENAME ofn;
+			char fileName[MAX_PATH] = "";
+			ZeroMemory(&ofn, sizeof(ofn));
+	
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.hwndOwner = owner;
+			ofn.lpstrFilter = filter;
+			ofn.lpstrFile = fileName;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			ofn.lpstrDefExt = "";
+	
+			String fileNameStr;
+	
+			if ( GetOpenFileName(&ofn) )
+				fileNameStr = fileName;
+	
+			return fileNameStr;
+		#else
+			return "";
 		#endif
 	}
 	
 	static String savefilename() {
 		#ifdef _WIN32
-		const char *filter = "All Files (*.*)\0*.*\0";
-		HWND owner = NULL;
-		OPENFILENAME ofn;
-		char fileName[MAX_PATH] = "";
-		ZeroMemory(&ofn, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = owner;
-		ofn.lpstrFilter = filter;
-		ofn.lpstrFile = fileName;
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt = "";
-
-		String fileNameStr;
-
-		if ( GetSaveFileNameA(&ofn) )
-			fileNameStr = fileName;
-
-		return fileNameStr;
-		#endif
-		#ifdef linux
-		return "";
+			const char *filter = "All Files (*.*)\0*.*\0";
+			HWND owner = NULL;
+			OPENFILENAME ofn;
+			char fileName[MAX_PATH] = "";
+			ZeroMemory(&ofn, sizeof(ofn));
+	
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.hwndOwner = owner;
+			ofn.lpstrFilter = filter;
+			ofn.lpstrFile = fileName;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			ofn.lpstrDefExt = "";
+	
+			String fileNameStr;
+	
+			if ( GetSaveFileNameA(&ofn) )
+				fileNameStr = fileName;
+	
+			return fileNameStr;
+		#else
+			return "";
 		#endif
 	}
-	
+#endif
+
 	static float mouseZ()
 	{
 		return diddy_mouseZ();
@@ -149,14 +156,14 @@ class diddy
 	}
 	static void launchBrowser(String address, String windowName)
 	{
-		#ifdef _WIN32
+#ifdef _WIN32
 		LPCSTR addressStr = address.ToCString<char>();
 		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
-		#endif
+#endif
 	}
 	static void launchEmail(String email, String subject, String text)
 	{
-		#ifdef _WIN32
+#ifdef _WIN32
 		String tmp = "mailto:";
 		tmp+=email;
 		tmp+="&subject=";
@@ -165,7 +172,7 @@ class diddy
 		tmp+=text;
 		LPCSTR addressStr = tmp.ToCString<char>();
 		ShellExecute(HWND_DESKTOP, "open", addressStr, NULL, NULL, SW_SHOWNORMAL);
-		#endif
+#endif
 	}
 
 	static void startVibrate(int millisecs) { }
