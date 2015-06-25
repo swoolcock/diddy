@@ -192,6 +192,9 @@ Public
 			SetScreenSize(DEVICE_WIDTH, DEVICE_HEIGHT)
 			deviceChanged = True
 			
+			' initialize MouseZ
+			MouseZInit()
+			
 			' set the mouse x,y
 			mouseX = MouseX() / SCREENX_RATIO
 			mouseY = MouseY() / SCREENY_RATIO
@@ -2439,10 +2442,6 @@ Class DiddyMouse
 	Field lastX:Int
 	Field lastY:Int
 
-	Method New()
-		MouseZInit()
-	End
-	
 	'summary: Returns the MouseX speed
 	Method MouseXSpeed:Int()
 		Return diddyGame.mouseX - lastX
