@@ -400,12 +400,7 @@ Summary: Returns True if there are no elements in the container, otherwise False
 #Rem
 Summary: Returns a read-only wrapper on this container.
 #End
-	Method ReadOnly:ReadOnlyContainer<T>()
-End
-
-Interface ISnapshotContainer<T> Extends IContainer<T>
-	Method BeginSnapshot:Void()
-	Method EndSnapshot:Void()
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
 End
 
 Interface IPredicateContainer<T> Extends IContainer<T>
@@ -865,15 +860,20 @@ Private
 	Global NIL:T
 	
 	Field source:IContainer<T>
-
+	
 	Method ThrowReadOnly:Void()
 		Throw New UnsupportedOperationException("The container is read only.")
 	End
 	
 Public
-	Method New(source:IContainer<T>)
+	Method New(source:IContainer<T>, snapshot:Bool=False)
 		If Not source Then Throw New IllegalArgumentException("ReadOnlyContainer.New: Source container must not be null")
-		Self.source = source
+		If snapshot Then
+			Self.source = New DiddyStack<T>
+			Self.source.AddContainer(source)
+		Else
+			Self.source = source
+		End
 	End
 	
 	Method Comparator:IComparator<T>() Property
@@ -1050,8 +1050,8 @@ Public
 		Return source.IsEmpty()
 	End
 	
-	Method ReadOnly:ReadOnlyContainer<T>()
-		Return New ReadOnlyContainer<T>(Self)
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
+		Return New ReadOnlyContainer<T>(Self, snapshot)
 	End
 End
 

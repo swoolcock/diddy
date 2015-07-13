@@ -21,7 +21,7 @@ As with the other Diddy container classes, it simplifies mixing and matching of 
 common method names.
 Note that since Set is unordered, many of the IContainer methods are non-applicable or have undefined results.
 #End
-Class DiddySet<T> Extends Set<T> Implements IContainer<T>, IPredicateContainer<T>, ISnapshotContainer<T>
+Class DiddySet<T> Extends Set<T> Implements IContainer<T>, IPredicateContainer<T>
 Private
 	Global NIL:T
 	
@@ -716,8 +716,8 @@ Summary: Throws an UnsupportedOperationException, since Set is unordered and it 
 #Rem
 Summary: Returns a read-only wrapper on this container.
 #End
-	Method ReadOnly:ReadOnlyContainer<T>()
-		Return New ReadOnlyContainer<T>(Self)
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
+		Return New ReadOnlyContainer<T>(Self, snapshot)
 	End
 End
 
