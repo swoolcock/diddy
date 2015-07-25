@@ -20,7 +20,8 @@ Global gameScreen:GameScreen
 Class MyGame Extends DiddyApp
 	Method Create:Void()
 		titleScreen = New TitleScreen
-		gameScreen = new GameScreen
+		gameScreen = New GameScreen
+		'SetScreenSize(800,600)
 		Start(titleScreen)
 	End
 End
@@ -51,6 +52,8 @@ Class GameScreen Extends Screen
 	Field tilemap:MyTileMap
 	Field offsetX:Int, offsetY:Int
 	Field str$
+	Field scl# = 1
+	Field bx:Int = 100, by:Int = 100, bw:Int = SCREEN_WIDTH-200, bh:Int = SCREEN_HEIGHT-200
 	
 	Method New()
 		name = "Game"
@@ -59,28 +62,39 @@ Class GameScreen Extends Screen
 	Method Start:Void()
 		diddyGame.images.LoadAnim("tileslostgarden.png", 20, 20, 21, Null, True, False)	
 		Local reader:MyTiledTileMapReader = New MyTiledTileMapReader
-		Local tm:TileMap = reader.LoadMap("maps/map.xml")
+		Local tm:TileMap = reader.LoadMap("maps/WrapMap.xml")
 		tilemap = MyTileMap(tm)
 	End
 	
 	Method Render:Void()
 		Cls
-		tilemap.RenderMap(offsetX, offsetY, SCREEN_WIDTH, SCREEN_HEIGHT)
-		
+		tilemap.RenderMap(bx, by, bw, bh, scl, scl, offsetX, offsetY)
+		DrawLine(bx,by,bx+bw,by)
+		DrawLine(bx,by,bx,by+bh)
+		DrawLine(bx+bw,by,bx+bw,by+bh)
+		DrawLine(bx,by+bh,bx+bw,by+bh)
 		FPSCounter.Draw(0,0)
 	End
 	
 	Method Update:Void()
-		If KeyHit(KEY_ESCAPE)
-			FadeToScreen(diddyGame.exitScreen)
+		If KeyHit(KEY_SPACE) Then
+			offsetX = 0
+			offsetY = 0
+			scl = 1
 		End
 		If KeyDown(KEY_UP) Then offsetY -= 4
 		If KeyDown(KEY_DOWN) Then offsetY += 4
 		If KeyDown(KEY_LEFT) Then offsetX -= 4
 		If KeyDown(KEY_RIGHT) Then offsetX += 4
+		If KeyHit(KEY_Z) Then scl *= 0.5
+		If KeyHit(KEY_X) Then scl *= 2
 		
 		If MouseDown(0)
-			tilemap.ChangeTile(diddyGame.mouseX + offsetX, diddyGame.mouseY + offsetY, 4, "Tile Layer 1")
+			Local x# = diddyGame.mouseX - bx
+			Local y# = diddyGame.mouseY - by
+			If x >= 0 And y >= 0 And x < bw * SCREENX_RATIO And y < bh * SCREENY_RATIO Then
+				tilemap.ChangeTile(x + offsetX, y + offsetY, 4, "Tile Layer 1", scl, scl)
+			End
 		Endif
 		
 		tilemap.UpdateAnimation(dt.frametime)
