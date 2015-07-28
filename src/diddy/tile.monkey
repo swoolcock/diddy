@@ -619,7 +619,8 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 			If diddyGame Then
 				SetScissor(bx*SCREENX_RATIO, by*SCREENY_RATIO, bw*SCREENX_RATIO, bh*SCREENY_RATIO)
 			Else
-				SetScissor(bx, by, bw, bh)
+				Local matrix:Float[] = GetMatrix()
+				SetScissor(bx * matrix[0] + matrix[4], by * matrix[3] + matrix[5], bw * matrix[0], bh * matrix[3])
 			End
 		End
 		
