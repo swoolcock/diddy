@@ -20,7 +20,7 @@ Summary: The DiddyDeque class extends the official Monkey Deque class and implem
 As with the other Diddy container classes, it simplifies mixing and matching of container types by sharing
 common method names.  It also adds some missing functionality, such as sorting and element removal.
 #End
-Class DiddyDeque<T> Extends Deque<T> Implements IContainer<T>
+Class DiddyDeque<T> Extends Deque<T> Implements IContainer<T>, IPredicateContainer<T>
 Private
 	Global NIL:T
 	
@@ -50,46 +50,54 @@ Summary: Constructor to create a DiddyDeque with the contents of the passed arra
 Summary: Constructor to create a DiddyDeque with the contents of the passed Stack.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method New(src:Stack<T>)
+	Method New(src:Stack<T>, pred:IPredicate<T>=Null)
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.New: Source Stack must not be null")
-		AddAll(src)
+		AddAll(src, pred)
 	End
 	
 #Rem
 Summary: Constructor to create a DiddyDeque with the contents of the passed List.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method New(src:List<T>)
+	Method New(src:List<T>, pred:IPredicate<T>=Null)
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.New: Source List must not be null")
-		AddAll(src)
+		AddAll(src, pred)
 	End
 	
 #Rem
 Summary: Constructor to create a DiddyDeque with the contents of the passed Set.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method New(src:Set<T>)
+	Method New(src:Set<T>, pred:IPredicate<T>=Null)
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.New: Source Set must not be null")
-		AddAll(src)
+		AddAll(src, pred)
 	End
 	
 #Rem
 Summary: Constructor to create a DiddyDeque with the contents of the passed Deque.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method New(src:Deque<T>)
+	Method New(src:Deque<T>, pred:IPredicate<T>=Null)
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.New: Source Deque must not be null")
-		AddAll(src)
+		AddAll(src, pred)
 	End
 	
 #Rem
 Summary: Adds the entire contents of the passed Stack to the DiddyDeque.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method AddAll:Void(src:Stack<T>)
+	Method AddAll:Void(src:Stack<T>) ' Implements IContainer
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source Stack must not be null")
 		For Local val := EachIn src
 			Self.PushLast(val)
+		Next
+	End
+
+	Method AddAll:Void(src:Stack<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source Stack must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Predicate must not be null")
+		For Local val := EachIn src
+			If pred.Evaluate(val) Then Self.PushLast(val)
 		Next
 	End
 
@@ -97,10 +105,18 @@ Throws IllegalArgumentException if src is Null.
 Summary: Adds the entire contents of the passed List to the DiddyDeque.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method AddAll:Void(src:List<T>)
+	Method AddAll:Void(src:List<T>) ' Implements IContainer
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source List must not be null")
 		For Local val := EachIn src
 			Self.PushLast(val)
+		Next
+	End
+	
+	Method AddAll:Void(src:List<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source List must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Predicate must not be null")
+		For Local val := EachIn src
+			If pred.Evaluate(val) Then Self.PushLast(val)
 		Next
 	End
 	
@@ -108,10 +124,18 @@ Throws IllegalArgumentException if src is Null.
 Summary: Adds the entire contents of the passed Set to the DiddyDeque.
 Throws IllegalArgumentException if src is Null.
 #End
-	Method AddAll:Void(src:Set<T>)
+	Method AddAll:Void(src:Set<T>) ' Implements IContainer
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source Set must not be null")
 		For Local val := Eachin src
 			Self.PushLast(val)
+		Next
+	End
+	
+	Method AddAll:Void(src:Set<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source Set must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self.PushLast(val)
 		Next
 	End
 	
@@ -126,6 +150,14 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method AddAll:Void(src:Deque<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Source Deque must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.AddAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self.PushLast(val)
+		Next
+	End
+	
 #Rem
 Summary: Adds the entire contents of another container to this DiddyDeque.
 Throws IllegalArgumentException if src is Null.
@@ -134,6 +166,14 @@ Throws IllegalArgumentException if src is Null.
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddContainer: Source IContainer must not be null")
 		For Local val := EachIn src.Items()
 			Self.PushLast(val)
+		Next
+	End
+	
+	Method AddContainer:Void(src:IContainer<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.AddContainer: Source IContainer must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.AddContainer: Predicate must not be null")
+		For Local val := EachIn src.Items()
+			If pred.Evaluate(val) Then Self.PushLast(val)
 		Next
 	End
 	
@@ -148,6 +188,14 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method RemoveAll:Void(src:Stack<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source Stack must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self._RemoveEach(val)
+		Next
+	End
+	
 #Rem
 Summary: Removes from this DiddyDeque anything that also exists in the passed List.
 Throws IllegalArgumentException if src is Null.
@@ -156,6 +204,14 @@ Throws IllegalArgumentException if src is Null.
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source List must not be null")
 		For Local val := Eachin src
 			Self._RemoveEach(val)
+		Next
+	End
+	
+	Method RemoveAll:Void(src:List<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source List must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self._RemoveEach(val)
 		Next
 	End
 	
@@ -170,6 +226,14 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method RemoveAll:Void(src:Set<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source Set must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self._RemoveEach(val)
+		Next
+	End
+	
 #Rem
 Summary: Removes from this DiddyDeque anything that also exists in the passed Deque.
 Throws IllegalArgumentException if src is Null.
@@ -178,6 +242,14 @@ Throws IllegalArgumentException if src is Null.
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source Deque must not be null")
 		For Local val := Eachin src
 			Self._RemoveEach(val)
+		Next
+	End
+	
+	Method RemoveAll:Void(src:Deque<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Source Deque must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RemoveAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) Then Self._RemoveEach(val)
 		Next
 	End
 	
@@ -192,6 +264,14 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method RemoveContainer:Void(src:IContainer<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RemoveContainer: Source IContainer must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RemoveContainer: Predicate must not be null")
+		For Local val := Eachin src.Items()
+			If pred.Evaluate(val) Then Self._RemoveEach(val)
+		Next
+	End
+	
 #Rem
 Summary: Removes from this DiddyDeque anything that does NOT exist in the passed Stack.
 Throws IllegalArgumentException if src is Null.
@@ -201,6 +281,17 @@ Throws IllegalArgumentException if src is Null.
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
 			If Not src.Contains(val) Then
+				Self._RemoveEach(val)
+			End
+		Next
+	End
+	
+	Method RetainAll:Void(src:Stack<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Source Stack must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Predicate must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If pred.Evaluate(val) And Not src.Contains(val) Then
 				Self._RemoveEach(val)
 			End
 		Next
@@ -220,6 +311,17 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method RetainAll:Void(src:List<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Source List must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Predicate must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If pred.Evaluate(val) And Not src.Contains(val) Then
+				Self._RemoveEach(val)
+			End
+		Next
+	End
+	
 #Rem
 Summary: Removes from this DiddyDeque anything that does NOT exist in the passed Set.
 Throws IllegalArgumentException if src is Null.
@@ -229,6 +331,17 @@ Throws IllegalArgumentException if src is Null.
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
 			If Not src.Contains(val) Then
+				Self._RemoveEach(val)
+			End
+		Next
+	End
+	
+	Method RetainAll:Void(src:Set<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Source Set must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Predicate must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If pred.Evaluate(val) And Not src.Contains(val) Then
 				Self._RemoveEach(val)
 			End
 		Next
@@ -248,6 +361,17 @@ Throws IllegalArgumentException if src is Null.
 		Next
 	End
 	
+	Method RetainAll:Void(src:Deque<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Source Deque must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RetainAll: Predicate must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If pred.Evaluate(val) And Not ContainerUtil<T>.DequeContains(src, val) Then
+				Self._RemoveEach(val)
+			End
+		Next
+	End
+	
 #Rem
 Summary: Removes from this DiddyDeque anything that does NOT exist in the passed container.
 Throws IllegalArgumentException if src is Null.
@@ -257,6 +381,17 @@ Throws IllegalArgumentException if src is Null.
 		Local arr:T[] = Self.ToArray()
 		For Local val := Eachin arr
 			If Not src.ContainsItem(val) Then
+				Self._RemoveEach(val)
+			End
+		Next
+	End
+	
+	Method RetainContainer:Void(src:IContainer<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.RetainContainer: Source IContainer must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.RetainContainer: Predicate must not be null")
+		Local arr:T[] = Self.ToArray()
+		For Local val := Eachin arr
+			If pred.Evaluate(val) And Not src.ContainsItem(val) Then
 				Self._RemoveEach(val)
 			End
 		Next
@@ -274,6 +409,15 @@ Throws IllegalArgumentException if src is Null.
 		Return True
 	End
 	
+	Method ContainsAll:Bool(src:Stack<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source Stack must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) And Not Self.ContainsItem(val) Return False
+		Next
+		Return True
+	End
+	
 #Rem
 Summary: Returns True if this DiddyDeque contains ALL of the items in the passed List.
 Throws IllegalArgumentException if src is Null.
@@ -282,6 +426,15 @@ Throws IllegalArgumentException if src is Null.
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source List must not be null")
 		For Local val := Eachin src
 			If Not Self.ContainsItem(val) Return False
+		Next
+		Return True
+	End
+	
+	Method ContainsAll:Bool(src:List<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source List must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) And Not Self.ContainsItem(val) Return False
 		Next
 		Return True
 	End
@@ -298,6 +451,15 @@ Throws IllegalArgumentException if src is Null.
 		Return True
 	End
 	
+	Method ContainsAll:Bool(src:Set<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source Set must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) And Not Self.ContainsItem(val) Return False
+		Next
+		Return True
+	End
+	
 #Rem
 Summary: Returns True if this DiddyDeque contains ALL of the items in the passed Deque.
 Throws IllegalArgumentException if src is Null.
@@ -306,6 +468,15 @@ Throws IllegalArgumentException if src is Null.
 		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source Deque must not be null")
 		For Local val := Eachin src
 			If Not Self.ContainsItem(val) Return False
+		Next
+		Return True
+	End
+	
+	Method ContainsAll:Bool(src:Deque<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Source Deque must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ContainsAll: Predicate must not be null")
+		For Local val := Eachin src
+			If pred.Evaluate(val) And Not Self.ContainsItem(val) Return False
 		Next
 		Return True
 	End
@@ -322,6 +493,15 @@ Throws IllegalArgumentException if src is Null.
 		Return True
 	End
 	
+	Method ContainsContainer:Bool(src:IContainer<T>, pred:IPredicate<T>) ' Implements IPredicateContainer
+		If Not src Then Throw New IllegalArgumentException("DiddyDeque.ContainsContainer: Source IContainer must not be null")
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ContainsContainer: Predicate must not be null")
+		For Local val := Eachin src.Items()
+			If pred.Evaluate(val) And Not Self.ContainsItem(val) Return False
+		Next
+		Return True
+	End
+	
 #Rem
 Summary: Adds the passed value to the DiddyDeque.
 #End
@@ -332,8 +512,10 @@ Summary: Adds the passed value to the DiddyDeque.
 #Rem
 Summary: Removes the passed value from the DiddyDeque if it exists.
 #End
-	Method RemoveItem:Void(val:T)
+	Method RemoveItem:Bool(val:T)
+		Local cnt:Int = Count()
 		Self._RemoveEach(val)
+		Return cnt <> Count()
 	End
 	
 #Rem
@@ -366,6 +548,16 @@ Summary: Removes all items from the DiddyDeque.
 #End
 	Method ClearAll:Void()
 		Self.Clear()
+	End
+	
+	Method ClearFiltered:Void(pred:IPredicate<T>)
+		If Not pred Then Throw New IllegalArgumentException("DiddyDeque.ClearFiltered: Predicate must not be null")
+		Local tmp:Stack<T> = New Stack<T>
+		For Local val := Eachin Self
+			If Not pred.Evaluate(val) Then tmp.Push(val)
+		End
+		Self.Clear()
+		Self.AddAll(tmp)
 	End
 	
 #Rem
@@ -431,6 +623,10 @@ Summary: Returns the number items in the DiddyDeque.
 		Return Self.Length
 	End
 	
+	Method FilteredCount:Int(pred:IPredicate<T>)
+		Return ToFilteredArray(pred).Length
+	End
+	
 #Rem
 Summary: Compares two values of the generic type T, for sorting.
 Called automatically by Monkey's sorting algorithm, it first attempts to use an IComparator if it exists.
@@ -457,6 +653,11 @@ Summary: Returns a new T[] array of length Count(), containing all the items in 
 		Return Super.ToArray()
 	End
 	
+	Method ToFilteredArray:T[](pred:IPredicate<T>)
+		Local tmp:IContainer<T> = New DiddyDeque<T>(Self, pred)
+		Return tmp.ToArray()
+	End
+	
 #Rem
 Summary: Populates the passed T[] array with all the elements in the DiddyDeque.
 If the array is too small to fit the entire stack, an IllegalArgumentException is thrown.
@@ -469,6 +670,13 @@ The number of values successfully filled is returned.
 			arr[i] = Get(i)
 		Next
 		Return cnt
+	End
+	
+	Method FillFilteredArray:Int(arr:T[], pred:IPredicate<T>)
+		Local tmp:IContainer<T> = New DiddyDeque<T>(Self, pred)
+		Local cnt:Int = tmp.Count()
+		If arr.Length < cnt Then Throw New IllegalArgumentException("DiddyDeque.FillArray: Array length too small ("+arr.Length+"<"+cnt+")")
+		Return tmp.FillArray(arr)
 	End
 	
 #Rem
@@ -524,7 +732,11 @@ If building with debug, an IllegalArgumentException is thrown if the requested s
 #Rem
 Summary: Returns a custom IEnumerable that optionally supports a predicate.
 #End
-	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+	Method Items:IEnumerable<T>()
+		Return New WrappedDequeEnumerable<T>(Self)
+	End
+	
+	Method FilteredItems:IEnumerable<T>(pred:IPredicate<T>)
 		Return New WrappedDequeEnumerable<T>(Self, pred)
 	End
 	
@@ -547,8 +759,8 @@ Allows sorting without implementing IComparable.
 #Rem
 Summary: Returns a read-only wrapper on this container.
 #End
-	Method ReadOnly:ReadOnlyContainer<T>()
-		Return New ReadOnlyContainer<T>(Self)
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
+		Return New ReadOnlyContainer<T>(Self, snapshot)
 	End
 	
 Private

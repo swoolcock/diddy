@@ -259,10 +259,11 @@ A passed value of Null is implementation-dependent.
 	
 #Rem
 Summary: Removes the passed item from the container, if it exists.
-No error should be thrown if the item does not exist.
+No error should be thrown if the item does not exist.  Instead, False should be returned.
+Returns True if the item was successfully removed.
 A passed value of Null is implementation-dependent.
 #End
-	Method RemoveItem:Void(val:T)
+	Method RemoveItem:Bool(val:T)
 	
 #Rem
 Summary: Adds the passed item to the container at the requested index.
@@ -334,9 +335,9 @@ Sets are unordered and should throw an UnsupportedOperationException.
 	Method Shuffle:Void()
 	
 #Rem
-Summary: Returns a custom IEnumerable that optionally supports a predicate.
+Summary: Returns a custom IEnumerable.
 #End
-	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
+	Method Items:IEnumerable<T>()
 	
 #Rem
 Summary: Swaps the values of two given indices.
@@ -399,7 +400,35 @@ Summary: Returns True if there are no elements in the container, otherwise False
 #Rem
 Summary: Returns a read-only wrapper on this container.
 #End
-	Method ReadOnly:ReadOnlyContainer<T>()
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
+End
+
+Interface IPredicateContainer<T> Extends IContainer<T>
+	Method AddAll:Void(src:Stack<T>, pred:IPredicate<T>)
+	Method AddAll:Void(src:List<T>, pred:IPredicate<T>)
+	Method AddAll:Void(src:Set<T>, pred:IPredicate<T>)
+	Method AddAll:Void(src:Deque<T>, pred:IPredicate<T>)
+	Method AddContainer:Void(src:IContainer<T>, pred:IPredicate<T>)
+	Method RemoveAll:Void(src:Stack<T>, pred:IPredicate<T>)
+	Method RemoveAll:Void(src:List<T>, pred:IPredicate<T>)
+	Method RemoveAll:Void(src:Set<T>, pred:IPredicate<T>)
+	Method RemoveAll:Void(src:Deque<T>, pred:IPredicate<T>)
+	Method RemoveContainer:Void(src:IContainer<T>, pred:IPredicate<T>)
+	Method RetainAll:Void(src:Stack<T>, pred:IPredicate<T>)
+	Method RetainAll:Void(src:List<T>, pred:IPredicate<T>)
+	Method RetainAll:Void(src:Set<T>, pred:IPredicate<T>)
+	Method RetainAll:Void(src:Deque<T>, pred:IPredicate<T>)
+	Method RetainContainer:Void(src:IContainer<T>, pred:IPredicate<T>)
+	Method ContainsAll:Bool(src:Stack<T>, pred:IPredicate<T>)
+	Method ContainsAll:Bool(src:List<T>, pred:IPredicate<T>)
+	Method ContainsAll:Bool(src:Set<T>, pred:IPredicate<T>)
+	Method ContainsAll:Bool(src:Deque<T>, pred:IPredicate<T>)
+	Method ContainsContainer:Bool(src:IContainer<T>, pred:IPredicate<T>)
+	Method ClearFiltered:Void(pred:IPredicate<T>)
+	Method FilteredItems:IEnumerable<T>(pred:IPredicate<T>)
+	Method FilteredCount:Int(pred:IPredicate<T>)
+	Method ToFilteredArray:T[](pred:IPredicate<T>)
+	Method FillFilteredArray:Int(arr:T[], pred:IPredicate<T>) ' undefined order in Set
 End
 
 #Rem
@@ -831,15 +860,20 @@ Private
 	Global NIL:T
 	
 	Field source:IContainer<T>
-
+	
 	Method ThrowReadOnly:Void()
 		Throw New UnsupportedOperationException("The container is read only.")
 	End
 	
 Public
-	Method New(source:IContainer<T>)
+	Method New(source:IContainer<T>, snapshot:Bool=False)
 		If Not source Then Throw New IllegalArgumentException("ReadOnlyContainer.New: Source container must not be null")
-		Self.source = source
+		If snapshot Then
+			Self.source = New DiddyStack<T>
+			Self.source.AddContainer(source)
+		Else
+			Self.source = source
+		End
 	End
 	
 	Method Comparator:IComparator<T>() Property
@@ -934,8 +968,9 @@ Public
 		ThrowReadOnly()
 	End
 	
-	Method RemoveItem:Void(val:T)
+	Method RemoveItem:Bool(val:T)
 		ThrowReadOnly()
+		Return False
 	End
 	
 	Method InsertItem:Void(index:Int, val:T)
@@ -979,8 +1014,8 @@ Public
 		ThrowReadOnly()
 	End
 	
-	Method Items:IEnumerable<T>(pred:IPredicate<T>=Null)
-		Return source.Items(pred)
+	Method Items:IEnumerable<T>()
+		Return source.Items()
 	End
 	
 	Method SwapItems:Void(index1:Int, index2:Int)
@@ -1015,8 +1050,8 @@ Public
 		Return source.IsEmpty()
 	End
 	
-	Method ReadOnly:ReadOnlyContainer<T>()
-		Return New ReadOnlyContainer<T>(Self)
+	Method ReadOnly:ReadOnlyContainer<T>(snapshot:Bool=False)
+		Return New ReadOnlyContainer<T>(Self, snapshot)
 	End
 End
 
