@@ -194,6 +194,8 @@ Class TiledTileMapReader Extends TileMapReader
 		If rv.properties.Has(PROP_LAYER_PARALLAX_OFFSET_Y) Then rv.parallaxOffsetY = rv.properties.Get(PROP_LAYER_PARALLAX_OFFSET_Y).GetFloat()
 		If rv.properties.Has(PROP_LAYER_PARALLAX_SCALE_X) Then rv.parallaxScaleX = rv.properties.Get(PROP_LAYER_PARALLAX_SCALE_X).GetFloat()
 		If rv.properties.Has(PROP_LAYER_PARALLAX_SCALE_Y) Then rv.parallaxScaleY = rv.properties.Get(PROP_LAYER_PARALLAX_SCALE_Y).GetFloat()
+		If rv.properties.Has(PROP_MAP_WRAP_X) Then rv.wrapX = rv.properties.Get(PROP_MAP_WRAP_X).GetBool()
+		If rv.properties.Has(PROP_MAP_WRAP_Y) Then rv.wrapY = rv.properties.Get(PROP_MAP_WRAP_Y).GetBool()
 		
 		For Local child:XMLElement = Eachin node.Children
 			If child.Name = NODE_DATA Then
@@ -553,7 +555,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				For Local my:Int = startMapY To endMapY
 					Local my2:Int = my
 					' wrap y direction if necessary
-					If wrapY Then
+					If wrapY Or tl.wrapY Then
 						While my2 < 0; my2 += height; End
 						While my2 >= height; my2 -= height; End
 					End
@@ -561,7 +563,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 					For Local mx:Int = startMapX To endMapX
 						Local mx2:Int = mx
 						' wrap x direction if necessary
-						If wrapX Then
+						If wrapX Or tl.wrapX Then
 							While mx2 < 0; mx2 += width; End
 							While mx2 >= width; mx2 -= width; End
 						End
@@ -989,6 +991,8 @@ Class TileMapTileLayer Extends TileMapLayer
 	Field parallaxOffsetY# = 0
 	Field parallaxScaleX# = 1
 	Field parallaxScaleY# = 1
+
+	Field wrapX:Bool, wrapY:Bool
 End
 
 
