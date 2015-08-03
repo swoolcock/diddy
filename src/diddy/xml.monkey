@@ -15,11 +15,20 @@ For now, exported indentation is hardcoded to 2 spaces.
 Written from scratch, using as little string manipulation as possible.
 #End
 
-Import diddy.assert
-Import diddy.functions
-Import diddy.containers
+Private
 Import diddy.stringbuilder
 Import diddy.exception
+Import diddy.constants
+
+' only import os or mojo if LoadString is enabled
+#If XML_USE_LOADSTRING
+	' import os if LoadString is implemented there, otherwise import mojo
+	#If TARGET="stdcpp" Or TARGET="glfw"
+		Import os
+	#Else
+		Import mojo
+	#End
+#End
 
 Public
 #Rem
@@ -387,11 +396,15 @@ Local doc:XMLDocument = New XMLParser().ParseFile("foo.xml")
 [/code]
 #End
 	Method ParseFile:XMLDocument(filename:String)
+#If Not XML_USE_LOADSTRING
+		Throw New UnsupportedOperationException("ParseFile has been temporarily disabled due to LoadString() on HTML5 and other targets requiring Mojo to be imported.  To continue using it, set #XML_USE_LOADSTRING=True")
+#Else
 		Local xmlString:String = LoadString(filename)
 		If Not xmlString Then
 			Throw New XMLParseException("XMLParser.ParseFile: Error: Cannot load " + filename)
 		End
 		Return ParseString(xmlString)
+#End
 	End
 
 #Rem
@@ -405,7 +418,7 @@ Local doc:XMLDocument = New XMLParser().ParseString("<foo></foo>")
 		Self.str = str
 		
 		Local doc:XMLDocument = New XMLDocument
-		Local elements:DiddyStack<XMLElement> = New DiddyStack<XMLElement>
+		Local elements:Stack<XMLElement> = New Stack<XMLElement>
 		Local thisE:XMLElement = Null, newE:XMLElement = Null
 		Local index:Int = 0, a:Int, b:Int, c:Int, nextIndex:Int
 		Local trimmed:Int[] = New Int[2]
@@ -560,8 +573,8 @@ Private
 	Field xmlVersion:String = "1.0"
 	Field xmlEncoding:String = "UTF-8"
 	Field root:XMLElement
-	Field pi:DiddyStack<XMLElement> = New DiddyStack<XMLElement>
-	Field prologs:DiddyStack<XMLElement> = New DiddyStack<XMLElement>
+	Field pi:Stack<XMLElement> = New Stack<XMLElement>
+	Field prologs:Stack<XMLElement> = New Stack<XMLElement>
 	
 Public
 	
@@ -692,8 +705,8 @@ Private
 	Field closeTagEnd:String = ">"
 	
 	Field name:String
-	Field attributes:DiddyStack<XMLAttribute> = New DiddyStack<XMLAttribute>
-	Field children:DiddyStack<XMLElement> = New DiddyStack<XMLElement>
+	Field attributes:Stack<XMLAttribute> = New Stack<XMLAttribute>
+	Field children:Stack<XMLElement> = New Stack<XMLElement>
 	Field value:String
 	Field parent:XMLElement
 
@@ -734,7 +747,7 @@ Public
 	
 	Method HasAttribute:Bool(name:String)
 		If Not name Then Return False ' checking for an empty name, will always return false
-		For Local i% = 0 Until attributes.Count()
+		For Local i% = 0 Until attributes.Length()
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then Return True
 		Next
@@ -743,7 +756,7 @@ Public
 	
 	Method GetAttribute:String(name:String, defaultValue:String = "")
 		If Not name Then Return "" ' reading an empty name will always return ""
-		For Local i% = 0 Until attributes.Count()
+		For Local i% = 0 Until attributes.Length()
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then Return att.value
 		Next
@@ -753,7 +766,7 @@ Public
 	Method SetAttribute:String(name:String, value:String)
 		' we'll prevent the developer from setting an attribute with an empty name, as it makes no sense
 		If Not name Then Throw New IllegalArgumentException("XMLElement.SetAttribute: name must not be empty")
-		For Local i% = 0 Until attributes.Count()
+		For Local i% = 0 Until attributes.Length()
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then
 				Local old:String = att.value
@@ -892,7 +905,7 @@ Public
 	End
 	
 ' Properties
-	Method Children:DiddyStack<XMLElement>() Property
+	Method Children:Stack<XMLElement>() Property
 		Return children
 	End
 	
