@@ -15,17 +15,11 @@ Class Skn3TiledTileMapReader Extends TileMapReader
 	Field doc:XMLDoc
 	
 	' Overrides TileMapReader
-	Method LoadMap:TileMap(filename:String)
-		' open file and get root node
-		Local xmlString:String = LoadString(filename)
-		' error if we couldnt load the file
-		If Not xmlString
-			AssertError("Cannot load tile map file " + filename + ". Ensure you have TMX in the allowed #TEXT_FILES")
-		End
+	Method LoadMap:TileMap(xmlString:String)
 		' look for the data encoding, if we cant find it assume its RAW XML and thats just too slow!
 		Local findData:Int = xmlString.Find("<data encoding")
 		If findData = -1
-			AssertError("Tiled Raw XML is not supported!")
+			Error("Tiled Raw XML is not supported!")
 		End
 		
 		doc = ParseXML(xmlString)

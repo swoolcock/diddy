@@ -37,7 +37,7 @@ Class TileMapReader Abstract
 	Field tileMap:TileMap
 	Field graphicsPath:String
 	
-	Method LoadMap:TileMap(filename:String) Abstract
+	Method LoadMap:TileMap(xmlString:String) Abstract
 	
 	' override this to create a custom tilemap class
 	Method CreateMap:TileMap()
