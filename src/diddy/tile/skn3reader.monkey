@@ -179,7 +179,7 @@ Class Skn3TiledTileMapReader Extends TileMapReader
 		Local rv:TileMapImage = tileMap.CreateImage()
 		ReadProperties(node, rv)
 		
-		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then rv.source = graphicsPath + StripDir(node.GetAttribute(ATTR_IMAGE_SOURCE))
+		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then rv.source = graphicsPath + _StripDir(node.GetAttribute(ATTR_IMAGE_SOURCE))
 		If node.HasAttribute(ATTR_IMAGE_WIDTH) Then rv.width = Int(node.GetAttribute(ATTR_IMAGE_WIDTH))
 		If node.HasAttribute(ATTR_IMAGE_HEIGHT) Then rv.height = Int(node.GetAttribute(ATTR_IMAGE_HEIGHT))
 		If node.HasAttribute(ATTR_IMAGE_TRANS) Then rv.trans = node.GetAttribute(ATTR_IMAGE_TRANS)
@@ -221,7 +221,7 @@ Class Skn3TiledTileMapReader Extends TileMapReader
 		Local encoding$ = node.GetAttribute(ATTR_DATA_ENCODING, DATA_ENCODING_RAW)
 		If encoding = DATA_ENCODING_RAW Then
 			' TODO: raw xml
-			AssertError("Raw xml is currently not supported")
+			Print("Raw xml is currently not supported")
 		Elseif encoding = DATA_ENCODING_CSV Then
 			Local csv:String[] = node.value.Split(",")
 			For Local i% = 0 Until csv.Length
@@ -233,7 +233,7 @@ Class Skn3TiledTileMapReader Extends TileMapReader
 			Local bytes:Int[] = DecodeBase64Bytes(node.value)
 			If node.HasAttribute(ATTR_DATA_COMPRESSION) Then
 				' TODO: compression
-				AssertError("Compression is currently not supported")
+				Print("Compression is currently not supported")
 			End
 			For Local i% = 0 Until bytes.Length Step 4
 				' little endian
@@ -247,4 +247,13 @@ Class Skn3TiledTileMapReader Extends TileMapReader
 		End
 		Return rv
 	End
+End
+
+Private
+' taken from os.monkey to avoid the import
+Function _StripDir$( path$ )
+	Local i%=path.FindLast( "/" )
+	If i=-1 i=path.FindLast( "\" )
+	If i<>-1 Return path[i+1..]
+	Return path
 End
