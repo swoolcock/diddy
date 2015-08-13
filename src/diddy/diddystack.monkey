@@ -20,7 +20,7 @@ Summary: The DiddyStack class extends the official Monkey Stack class and implem
 As with the other Diddy container classes, it simplifies mixing and matching of container types by sharing
 common method names.
 #End
-Class DiddyStack<T> Extends Stack<T> Implements IContainer<T>, IPredicateContainer<T>
+Class DiddyStack<T> Extends Stack<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	

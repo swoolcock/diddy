@@ -22,7 +22,7 @@ Summary: The DiddyList class extends the official Monkey List class and implemen
 As with the other Diddy container classes, it simplifies mixing and matching of container types by sharing
 common method names.
 #End
-Class DiddyList<T> Extends List<T> Implements IContainer<T>, IPredicateContainer<T>
+Class DiddyList<T> Extends List<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	

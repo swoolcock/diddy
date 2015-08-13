@@ -21,7 +21,7 @@ As with the other Diddy container classes, it simplifies mixing and matching of 
 common method names.
 Note that since Set is unordered, many of the IContainer methods are non-applicable or have undefined results.
 #End
-Class DiddySet<T> Extends Set<T> Implements IContainer<T>, IPredicateContainer<T>
+Class DiddySet<T> Extends Set<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	

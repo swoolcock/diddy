@@ -20,7 +20,7 @@ Summary: The DiddyDeque class extends the official Monkey Deque class and implem
 As with the other Diddy container classes, it simplifies mixing and matching of container types by sharing
 common method names.  It also adds some missing functionality, such as sorting and element removal.
 #End
-Class DiddyDeque<T> Extends Deque<T> Implements IContainer<T>, IPredicateContainer<T>
+Class DiddyDeque<T> Extends Deque<T> Implements IContainer<T>
 Private
 	Global NIL:T
 	
