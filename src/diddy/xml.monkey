@@ -623,16 +623,16 @@ Summary: Returns the DOM root element.
 	End
 	
 #Rem
-Summary: Returns a DiddyStack of prologs.
+Summary: Returns a Stack of prologs.
 #End
-	Method Prologs:DiddyStack<XMLElement>() Property
+	Method Prologs:Stack<XMLElement>() Property
 		Return prologs
 	End
 	
 #Rem
-Summary: Returns a DiddyStack of processing instructions.
+Summary: Returns a Stack of processing instructions.
 #End
-	Method ProcessingInstructions:DiddyStack<XMLElement>() Property
+	Method ProcessingInstructions:Stack<XMLElement>() Property
 		Return pi
 	End
 	
@@ -780,10 +780,10 @@ Public
 	
 	Method ClearAttribute:String(name:String)
 		If Not name Then Return "" ' clearing an attribute with an empty name just returns ""
-		For Local i% = 0 Until attributes.Count()
+		For Local i% = 0 Until attributes.Length()
 			Local att:XMLAttribute = attributes.Get(i)
 			If att.name = name Then
-				attributes.RemoveItem(att)
+				attributes.RemoveEach(att)
 				Return att.value
 			End
 		Next
@@ -801,7 +801,7 @@ Public
 		End
 		#End
 		' remove self from parent if this is not recursing
-		If removeSelf And parent <> Null Then parent.children.RemoveItem(Self)
+		If removeSelf And parent <> Null Then parent.children.RemoveEach(Self)
 		' clear out the parent
 		parent = Null
 	End
@@ -815,7 +815,7 @@ Public
 		End
 		rv += openTagStart + name
 		If Not attributes.IsEmpty() Then
-			For Local i% = 0 Until attributes.Count()
+			For Local i% = 0 Until attributes.Length()
 				Local att:XMLAttribute = attributes.Get(i)
 				rv += " " + att.name + "=~q" + EscapeXMLString(att.value) + "~q"
 			Next
@@ -832,7 +832,7 @@ Public
 			If formatXML Then
 				rv += "~n"
 			End
-			For Local i% = 0 Until children.Count()
+			For Local i% = 0 Until children.Length()
 				rv += children.Get(i).ToString(formatXML, indentation + 1)
 			End
 			Local esc:String = EscapeXMLString(value.Trim())
@@ -856,9 +856,9 @@ Public
 		Return rv
 	End
 	
-	Method GetChildrenByName:DiddyStack<XMLElement>(findName$, att1$="", att2$="", att3$="", att4$="", att5$="", att6$="", att7$="", att8$="", att9$="", att10$="")
+	Method GetChildrenByName:Stack<XMLElement>(findName$, att1$="", att2$="", att3$="", att4$="", att5$="", att6$="", att7$="", att8$="", att9$="", att10$="")
 		If Not findName Then Throw New IllegalArgumentException("XMLElement.GetChildrenByName: findName must not be empty")
-		Local rv:DiddyStack<XMLElement> = New DiddyStack<XMLElement>
+		Local rv:Stack<XMLElement> = New Stack<XMLElement>
 		For Local element:XMLElement = Eachin children
 			If element.name = findName Then
 				If att1 And Not element.MatchesAttribute(att1) Then Continue
@@ -930,7 +930,7 @@ Public
 		Self.value = value
 	End
 	
-	Method Attributes:DiddyStack<XMLAttribute>() Property
+	Method Attributes:Stack<XMLAttribute>() Property
 		Return attributes
 	End
 End

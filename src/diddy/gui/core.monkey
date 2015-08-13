@@ -536,7 +536,7 @@ Public
 		If skinDoc = Null Then Return Null
 		If nodeName = "" Then Return Null
 		Local node:XMLElement = Null
-		For Local i:Int = 0 Until skinDoc.Root.Children.Count()
+		For Local i:Int = 0 Until skinDoc.Root.Children.Length()
 			node = skinDoc.Root.Children.Get(i)
 			If node.Name = nodeName Then Return node
 		Next

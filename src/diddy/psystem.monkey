@@ -80,12 +80,12 @@ Public
 	
 	Method ReadXML:Void(node:XMLElement)
 		' read from a <psystem> node
-		Local children:DiddyStack<XMLElement> = node.Children
-		For Local i:Int = 0 Until children.Count()
+		Local children:Stack<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Length()
 			If children.Get(i).Name = "groups" Then
 				' parse groups
-				Local groupNodes:DiddyStack<XMLElement> = children.Get(i).Children
-				For Local j:Int = 0 Until groupNodes.Count()
+				Local groupNodes:Stack<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until groupNodes.Length()
 					Local groupNode:XMLElement = groupNodes.Get(j)
 					If groupNode.Name = "group" Then
 						Local group:ParticleGroup = New ParticleGroup(groupNode)
@@ -94,8 +94,8 @@ Public
 				Next
 			ElseIf children.Get(i).Name = "emitters" Then
 				' parse emitters
-				Local emitterNodes:DiddyStack<XMLElement> = children.Get(i).Children
-				For Local j:Int = 0 Until emitterNodes.Count()
+				Local emitterNodes:Stack<XMLElement> = children.Get(i).Children
+				For Local j:Int = 0 Until emitterNodes.Length()
 					Local emitterNode:XMLElement = emitterNodes.Get(j)
 					If emitterNode.Name = "emitter" Then
 						Local emitter:Emitter = New Emitter(emitterNode)
@@ -1764,7 +1764,7 @@ Public
 		If node.HasAttribute("RotationSpeedSpreadRadians") Then RotationSpeedSpreadRadians = Float(node.GetAttribute("RotationSpeedSpreadRadians"))
 		
 		' death emitters
-		For Local i:Int = 0 Until node.Children.Count()
+		For Local i:Int = 0 Until node.Children.Length()
 			Local childNode:XMLElement = node.Children.Get(i)
 			If childNode.Name = "deathemitter" Then
 				Local del:DeathEmitterLink = New DeathEmitterLink(childNode)
@@ -2225,8 +2225,8 @@ Public
 		' read the rest of the properties
 		If node.HasAttribute("Name") Then Name = node.GetAttribute("Name")
 		' read the forces
-		Local children:DiddyStack<XMLElement> = node.Children
-		For Local i:Int = 0 Until children.Count()
+		Local children:Stack<XMLElement> = node.Children
+		For Local i:Int = 0 Until children.Length()
 			Local forceNode:XMLElement = children.Get(i)
 			If forceNode.Name = "constantforce" Then
 				' constant

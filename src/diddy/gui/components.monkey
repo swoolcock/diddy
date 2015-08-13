@@ -100,7 +100,7 @@ Private
 	Method LoadStyles:Void(node:XMLElement)
 		If node = Null Then Return
 		' copy styles
-		For Local i:Int = 0 Until node.Children.Count()
+		For Local i:Int = 0 Until node.Children.Length()
 			Local styleNode:XMLElement = node.Children.Get(i)
 			Local style:ComponentStyle = GetStyle(styleNode.GetAttribute("name"))
 			If style = Null Then style = New ComponentStyle

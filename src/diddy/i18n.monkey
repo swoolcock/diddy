@@ -1,4 +1,4 @@
-﻿#Rem
+#Rem
 Copyright (c) 2011 Steve Revill and Shane Woolcock
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -76,14 +76,14 @@ Summary: Loads all the strings for the game from the given XML file (default is 
 Function LoadI18N:Void(filename:String="i18n.xml")
 	Local parser:XMLParser = New XMLParser
 	Local doc:XMLDocument = parser.ParseFile(filename)
-	Local languages:DiddyStack<XMLElement> = doc.Root.GetChildrenByName("language")
+	Local languages:Stack<XMLElement> = doc.Root.GetChildrenByName("language")
 	For Local languageNode:XMLElement = EachIn languages
 		Local l:I18NLanguage = New I18NLanguage
 		l.name = languageNode.GetAttribute("name")
-		Local stringNodes:DiddyStack<XMLElement> = languageNode.GetChildrenByName("string")
+		Local stringNodes:Stack<XMLElement> = languageNode.GetChildrenByName("string")
 		For Local stringNode:XMLElement = EachIn stringNodes
 			Local key:String, value:String
-			For Local i:Int = 0 Until stringNode.Children.Count()
+			For Local i:Int = 0 Until stringNode.Children.Length()
 				Local child:XMLElement = stringNode.Children.Get(i)
 				If child.Name = "key" Then
 					key = child.Value
