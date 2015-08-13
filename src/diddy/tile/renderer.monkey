@@ -7,9 +7,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 
-Import diddy.base64
 Import monkey.map
+Import diddy.tile.source
+Import mojo
+
+#If DIDDY_FRAMEWORK
 Import diddy.framework
+#End
 
 ' TileMapPropertyContainer
 ' Classes that extend this will automatically instantiate a property container and expose it.
@@ -172,12 +176,12 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local alltiles:Stack<TileMapTile> = New Stack<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' try to load the image from the image bank if we're using the framework
-			If diddyGame Then ts.image = diddyGame.images.LoadTileset(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
+			If tilesetSource Then ts.image = tilesetSource.LoadTilesetImage(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
 			If ts.image Then
 				' get the cell count
-				ts.tileCount = ts.image.tileCount
-				ts.tileCountX = ts.image.tileCountX
-				ts.tileCountY = ts.image.tileCountY
+				ts.tileCount = ts.image.TileCount
+				ts.tileCountX = ts.image.TileCountX
+				ts.tileCountY = ts.image.TileCountY
 			Else
 				' if we couldn't get the image, load it with LoadImage
 				ts.rawImage = LoadImage(ts.imageNode.source)
@@ -550,7 +554,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				If tl.name = layerName Then layer = TileMapTileLayer(tl); Exit
 			End
 		Next
-		AssertNotNull(layer, "Cannot find layer " + layerName)
+		If Not layer Then Print("Cannot find layer " + layerName)
 		Return layer
 	End
 	
@@ -594,6 +598,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Scrolls the map based on the changeX and changeY
 	Method Scroll:Void(changeX:Float, changeY:Float)
+#If TILEMAP_USE_DIDDYGAME
 		If diddyGame Then
 			diddyGame.scrollX += changeX
 			diddyGame.scrollY += changeY
@@ -612,6 +617,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				If diddyGame.scrollY > maxY Then diddyGame.scrollY = maxY
 			End
 		End
+#End
 	End
 End
 
@@ -646,7 +652,7 @@ Class TileMapTileset Implements ITileMapPostLoad
 	
 	' post load
 	Field tiles:TileMapTile[]
-	Field image:GameImage
+	Field image:ITilesetImage
 	Field rawImage:Image
 	Field tileCount:Int
 	Field tileCountX:Int
@@ -825,7 +831,7 @@ Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Field animated:Bool
 	
 	' assigned from the tileset
-	Field image:GameImage
+	Field image:ITilesetImage
 	Field rawImage:Image
 	Field srcX:Int
 	Field srcY:Int
@@ -836,11 +842,15 @@ Class TileMapTile Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	Method PostLoad:Void()
 		If properties.Has(PROP_TILE_ANIM_DELAY) Then
+#If TILEMAP_USE_DIDDYGAME
 			If diddyGame Then
 				animDelay = diddyGame.CalcAnimLength(properties.Get(PROP_TILE_ANIM_DELAY).GetInt())
 			Else
 				animDelay = properties.Get(PROP_TILE_ANIM_DELAY).GetInt()
 			End
+#Else
+			animDelay = properties.Get(PROP_TILE_ANIM_DELAY).GetInt()
+#End
 			animated = True
 		End
 		If properties.Has(PROP_TILE_ANIM_NEXT) Then animNext = properties.Get(PROP_TILE_ANIM_NEXT).GetInt()

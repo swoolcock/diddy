@@ -9,6 +9,7 @@ Strict
 Private
 Import diddy.tile.renderer
 Import diddy.xml
+Import diddy.base64
 
 Public
 Class DiddyTiledTileMapReader Extends TileMapReader

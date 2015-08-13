@@ -9,6 +9,7 @@ Strict
 Private
 Import diddy.tile.renderer
 Import xml ' skn3's xml parser has no parent module
+Import diddy.base64
 
 Public
 Class Skn3TiledTileMapReader Extends TileMapReader

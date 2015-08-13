@@ -55,6 +55,8 @@ End
 #End
 Strict
 
+#DIDDY_FRAMEWORK=True
+
 Import brl.json
 Import mojo
 Import diddy.functions
@@ -64,6 +66,7 @@ Import diddy.xml
 Import diddy.diddydata
 Import diddy.math
 Import diddy.tween
+Import diddy.tile.source
 
 'Device width and height
 Global DEVICE_WIDTH:Float
@@ -180,6 +183,7 @@ Public
 		Self.images = New ImageBank
 		Self.sounds = New SoundBank
 		Self.inputCache = New InputCache
+		tilesetSource = Self.images
 		diddyMouse = New DiddyMouse
 	End
 			
@@ -1061,7 +1065,7 @@ End
 
 'summary: Image resource bank
 'Images must be stored in graphics folder
-Class ImageBank Extends StringMap<GameImage>
+Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	Const ATLAS_PREFIX:String = "_diddyAtlas_"
 	Const SPARROW_ATLAS:Int = 0
 	Const LIBGDX_ATLAS:Int = 1
@@ -1323,6 +1327,10 @@ Class ImageBank Extends StringMap<GameImage>
 		Return i
 	End
 	
+	Method LoadTilesetImage:ITilesetImage(name:String, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, nameoverride:String = "", midhandle:Bool=False, ignoreCache:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
+		Return LoadTileset(name, tileWidth, tileHeight, tileMargin, tileSpacing, nameoverride, midhandle, ignoreCache, readPixels, maskRed, maskGreen, maskBlue)
+	End
+	
 	Method Find:GameImage(name:String)
 		name = name.ToUpper()
 
@@ -1486,7 +1494,7 @@ Class SpriteAnimation
 End
 
 'summary: GameImage Class
-Class GameImage
+Class GameImage Implements ITilesetImage
 
 Private
 	Field pixels:Int[]
@@ -1529,6 +1537,21 @@ Public
 	Field offSetX:Int
 	Field offSetY:Int
 
+	Method TileWidth:Int() Property; Return tileWidth; End
+	Method TileWidth:Void(value:Int) Property; tileWidth = value; End
+	Method TileHeight:Int() Property; Return tileHeight; End
+	Method TileHeight:Void(value:Int) Property; tileHeight = value; End
+	Method TileCountX:Int() Property; Return tileCountX; End
+	Method TileCountX:Void(value:Int) Property; tileCountX = value; End
+	Method TileCountY:Int() Property; Return tileCountY; End
+	Method TileCountY:Void(value:Int) Property; tileCountY = value; End
+	Method TileCount:Int() Property; Return tileCount; End
+	Method TileCount:Void(value:Int) Property; tileCount = value; End
+	Method TileSpacing:Int() Property; Return tileSpacing; End
+	Method TileSpacing:Void(value:Int) Property; tileSpacing = value; End
+	Method TileMargin:Int() Property; Return tileMargin; End
+	Method TileMargin:Void(value:Int) Property; tileMargin = value; End
+	
 	Method Pixels:Int[]() Property
 		If readPixels Then
 			If Not readPixelsComplete Then
