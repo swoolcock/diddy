@@ -17,38 +17,71 @@ Class SnapFlingStack Extends DiddyStack<SnapFlingObject>
 	Field selected:SnapFlingObject
 	Field endPositionX:Int = SCREEN_WIDTH2
 	Field timerSpeed:Float = 0.04
-	
+	Field maxX:Int = SCREEN_WIDTH
+	Field minX:Int = 0
+	Field farLeftItem:SnapFlingObject
+	Field farLeftX:Int = SCREEN_WIDTH
+	Field farRightItem:SnapFlingObject
+	Field farRightX:Int = 0
+
+		
 	Method Update:Void()
+		If farLeftItem = Null
+			For Local i:SnapFlingObject = EachIn Self
+				If i.GetX() < farLeftX
+					farLeftX = i.GetX()
+					farLeftItem = i
+				End
+			Next			
+		End
+		If farRightItem = Null
+			For Local i:SnapFlingObject = EachIn Self
+				If i.GetX() > farRightX
+					farRightX = i.GetX()
+					farRightItem = i
+				End
+			Next
+		End
+		
+					
+		If farRightItem.GetX() < minX Or farLeftItem.GetX() > maxX
+			For Local i:SnapFlingObject = EachIn Self
+				i.SetDx(i.GetDx() * 0.5)
+			Next					
+		End
+		
 		For Local i:SnapFlingObject = EachIn Self
 			i.Update()
 			If i <> selected
 				' slow down the objects
-				i.SetDx(i.GetDx() * 0.95)
+				i.SetDx(i.GetDx() * 0.8)
 				' stop run away floats
 				If (i.GetDx() <> 0 and Abs(i.GetDx()) < 0.3) Then
 					i.SetDx(0)
 					GetSelectedObject()
 				End
+
 				i.MoveByXY(i.GetDx() * dt.delta, 0)
 			End
 		Next
 		If selected
 			If selected.GetTimer() <> 1
-				Local mx:Float = BackEaseOutTween(selected.GetOx(), selected.GetEx(), selected.GetTimer())
-				
-				Local selectedDiff:Float = mx - selected.GetX()
-	
-				For Local i:SnapFlingObject = EachIn Self
-					If i <> selected
-						i.MoveByXY(selectedDiff, 0)
-					End
-				Next
-				selected.MoveToXY(mx, selected.GetY())
-				
+
 				If selected.GetTimer() < 1
 					Local t:Float = selected.GetTimer()
 					t += selected.GetTimerSpeed() * dt.delta
 					selected.SetTimer(t)
+					
+					Local mx:Float = BackEaseOutTween(selected.GetOx(), selected.GetEx(), selected.GetTimer())
+				
+					Local selectedDiff:Float = mx - selected.GetX()
+	
+					For Local i:SnapFlingObject = EachIn Self
+						If i <> selected
+							i.MoveByXY(selectedDiff, 0)
+						End
+					Next
+					selected.MoveToXY(mx, selected.GetY())
 				Else
 					selected.SetTimer(1)
 				End
