@@ -1,6 +1,0 @@
-syntax: glob
-.svn
-*.build*
-*conflicted copy*
-*.orig
-*.rej
