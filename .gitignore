@@ -2,3 +2,6 @@
 src/*.data*
 *conflicted copy*
 *.orig
+*.JIPO
+*.jungle*
+*.JiProj
