@@ -1610,8 +1610,8 @@ Public
 		Self.tileHeight = tileHeight
 		Self.tileMargin = tileMargin
 		Self.tileSpacing = tileSpacing
-		tileCountX = (w - tileMargin) / (tileWidth + tileSpacing)
-		tileCountY = (h - tileMargin) / (tileHeight + tileSpacing)
+		tileCountX = (w - 2*tileMargin + tileSpacing) / (tileWidth + tileSpacing)
+		tileCountY = (h - 2*tileMargin + tileSpacing) / (tileHeight + tileSpacing)
 		tileCount = tileCountX * tileCountY
 		pixels = New Int[image.Width() * image.Height()]
 		Self.readPixels = readPixels

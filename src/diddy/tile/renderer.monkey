@@ -186,8 +186,8 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 				' if we couldn't get the image, load it with LoadImage
 				ts.rawImage = LoadImage(ts.imageNode.source)
 				If ts.rawImage Then
-					ts.tileCountX = (ts.rawImage.Width() - ts.margin) / (ts.tileWidth + ts.spacing)
-					ts.tileCountY = (ts.rawImage.Height() - ts.margin) / (ts.tileHeight + ts.spacing)
+					ts.tileCountX = (ts.rawImage.Width() - 2*ts.margin + ts.spacing) / (ts.tileWidth + ts.spacing)
+					ts.tileCountY = (ts.rawImage.Height() - 2*ts.margin + ts.spacing) / (ts.tileHeight + ts.spacing)
 					ts.tileCount = ts.tileCountX * ts.tileCountY
 				Else
 					Print "Couldn't find tileset image: "+ts.imageNode.source
