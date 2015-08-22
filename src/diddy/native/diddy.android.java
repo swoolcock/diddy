@@ -51,11 +51,15 @@ class diddy
 		alert = new AlertDialog.Builder(BBAndroidGame._androidGame._activity);
 		alert.setTitle(title);
 		alert.setMessage(message);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
+		alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {}
+		});
+	
+		BBAndroidGame._androidGame._activity.runOnUiThread(new Runnable() {
+			public void run() {
+				alert.show();
 			}
 		});
-		alert.show();
 	}
 	
 	static void showInputDialog(String title, String message)
@@ -78,7 +82,11 @@ class diddy
 			}
 		});
 		
-		alert.show();
+		BBAndroidGame._androidGame._activity.runOnUiThread(new Runnable() {
+			public void run() {
+				alert.show();
+			}
+		});
 	}
 	
 	static String getInputString()
