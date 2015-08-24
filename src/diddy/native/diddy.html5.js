@@ -67,6 +67,7 @@ diddy.getLongitude=function(){
 }
 diddy.showAlertDialog=function(title, message)
 {
+	alert(title + "\n\n" + message);
 }
 diddy.getInputString=function()
 {
