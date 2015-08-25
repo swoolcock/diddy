@@ -586,6 +586,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Method ChangeTile:Void(x:Float, y:Float, tile:Int, layerName:String, sx:Float=1, sy:Float=1)
 		Local layer:TileMapTileLayer = FindLayerByName(layerName)
 
+		If layer = Null then Return
 		If layer.name <> layerName Then Return
 		x /= sx; y /= sy
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return
