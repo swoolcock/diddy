@@ -182,7 +182,28 @@ Class DiddyTiledTileMapReader Extends TileMapReader
 		Local rv:TileMapImage = tileMap.CreateImage()
 		ReadProperties(node, rv)
 		
-		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then rv.source = graphicsPath + _StripDir(node.GetAttribute(ATTR_IMAGE_SOURCE))
+		If node.HasAttribute(ATTR_IMAGE_SOURCE) Then  'Try to find a valid graphics resource.
+			Local src:= node.GetAttribute(ATTR_IMAGE_SOURCE)
+			If src[0 .. 7].Contains(":/") Or src[0 .. 7].Contains(":\") 'Hardcoded path or URL.
+				rv.source = src
+			#If TARGET="html5"
+			ElseIf src.StartsWith(".")  'Directory traversal attempt. Expand
+				Local path:String = graphicsPath
+				'Choppety chop.
+				While src.StartsWith("../")
+					path = path[path.FindLast("/") ..]
+					src = src[3 ..]
+				Wend
+				While src.StartsWith("..\")
+					path = path[path.FindLast("\") ..]
+					src = src[3 ..]
+				Wend
+				rv.source = path[1 ..] + src
+			#EndIf 	
+			Else  'Relative path. Use graphicsPath from loaded mapfile.
+				rv.source = graphicsPath + src		
+			End If	
+		End If
 		If node.HasAttribute(ATTR_IMAGE_WIDTH) Then rv.width = Int(node.GetAttribute(ATTR_IMAGE_WIDTH))
 		If node.HasAttribute(ATTR_IMAGE_HEIGHT) Then rv.height = Int(node.GetAttribute(ATTR_IMAGE_HEIGHT))
 		If node.HasAttribute(ATTR_IMAGE_TRANS) Then rv.trans = node.GetAttribute(ATTR_IMAGE_TRANS)
