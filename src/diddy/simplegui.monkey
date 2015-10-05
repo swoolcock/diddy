@@ -34,10 +34,6 @@ Class SimpleMenu Extends List<SimpleButton>
 	Field useVirtualRes:Bool = False
 	Field orientation:Int = VERTICAL
 	
-	Method New()
-		Error "Please use a different constructor"
-	End
-	
 #Rem
 Summary: Creates a new SimpleMenu with the specified configuration.
 #End
@@ -390,7 +386,70 @@ Summary: Delegates to [[SimpleButton.Draw]] on each of the buttons.
 			b.Draw()
 		Next
 	End
+	
+#Rem
+Summary: Loads in a simple menu via JSON
+#End
+	Function LoadMenuJson:SimpleMenu(path:String)
+		Local str:String = LoadString("json/" + path)
+		If str = "" Then Error("Error loading json file: json/" + path)
+		
+		Local sm:SimpleMenu = New SimpleMenu()
+		
+		Local menuX:Float
+		Local menuY:Float
+		Local gap:Int = 30
+		Local useVirtualRes:Bool = True
+		Local orientation:Int = VERTICAL
+		
+		Try
+			Local jo:JsonObject = New JsonObject(str)
+			Local menuJo:JsonObject = JsonObject(jo.Get("menu"))
+			menuY = menuJo.GetFloat("y")
+			gap = menuJo.GetInt("gap", gap)			
+			sm.Init("", "", menuX, menuY, gap, useVirtualRes, orientation)
+			
+			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
+				Print " menuMap.Key = " + menuMap.Key
+				Select menuMap.Key
+					Case "buttons"
+						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
+						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
+							Print "buttonsMap.Key = " + buttonsMap.Key
+							Select buttonsMap.Key
+								Case "button"
+									Print "extracting button data..."
+									
+									Local buttonJa:JsonArray = JsonArray(buttonsMap.Value)
+									
+									For Local d:Int = 0 Until buttonJa.Length()
+										Local o:JsonObject = JsonObject(buttonJa.Get(d))
+										Local name:String = o.GetString("name")
+										Local image:String = o.GetString("image")
+										Local offsetY:Float = o.GetFloat("offsetY")
+										Local moveByX:Float = o.GetFloat("moveByX")
+										Local moveByY:Float = o.GetFloat("moveByY")
+										
+										Local menuPath:String = "menu/"
+										Local b:SimpleButton = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, True)
+										b.offsetY = offsetY
+										b.MoveBy(moveByX, moveByY)
+									Next
+							End
+						Next
+
+				End
+			Next
+			
+		Catch t:JsonError
+			Error "JsonError"
+		End
+		
+	
+		Return sm
+	End
 End
+
 
 #Rem
 Summary: A Delegate so that the developer can override the drawing of text on widgets
@@ -419,6 +478,7 @@ Class SimpleButton Extends Sprite
 	Field drawText:Bool
 	Field text:String
 	Field textDrawDelegate:SimpleTextDrawDelegate
+	Field offsetY:Float
 	
 #Rem
 Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
@@ -450,7 +510,7 @@ Developers do not need to call this.
 		EndIf
 		If drawText
 			If textDrawDelegate <> Null
-				textDrawDelegate.Draw(text, x + Self.image.w2, y)
+				textDrawDelegate.Draw(text, x + Self.image.w2, y + offsetY)
 			Else
 				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
 			End
