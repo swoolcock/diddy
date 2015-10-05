@@ -1975,6 +1975,7 @@ Class Sprite
 	Field ox:Float, oy:Float
 	Field ex:Float, ey:Float
 	Field dx:Float, dy:Float
+	Field oldRotation:Float, newRotation:Float
 	Field speedX:Float, speedY:Float, speed:Float
 	Field maxXSpeed:Float, maxYSpeed:Float
 	Field image:GameImage
@@ -2247,6 +2248,15 @@ Class Sprite
 		
 	Method SetHitBox:Void(hitX:Int, hitY:Int, hitWidth:Int, hitHeight:Int)
 		hitBox = New HitBox(hitX, hitY, hitWidth, hitHeight)
+	End
+	
+	Method SetXY:Void(x:Float, y:Float, setO:Int = False)
+		Self.x = x
+		Self.y = y
+		If setO
+			Self.ox = x
+			Self.oy = y
+		End If
 	End
 End
 
