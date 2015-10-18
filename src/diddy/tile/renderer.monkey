@@ -176,7 +176,14 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Local alltiles:Stack<TileMapTile> = New Stack<TileMapTile>
 		For Local ts:TileMapTileset = Eachin tilesets.Values()
 			' try to load the image from the image bank if we're using the framework
-			If tilesetSource Then ts.image = tilesetSource.LoadTilesetImage(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
+			If tilesetSource Then
+				' if the image doesn't exist it will throw an AssertException
+				Try
+					ts.image = tilesetSource.LoadTilesetImage(ts.imageNode.source, ts.tileWidth, ts.tileHeight, ts.margin, ts.spacing, "", False, True)
+				Catch t:Throwable
+					ts.image = Null
+				End
+			End
 			If ts.image Then
 				' get the cell count
 				ts.tileCount = ts.image.TileCount
