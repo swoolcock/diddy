@@ -15,11 +15,18 @@ Import diddy
 Const VERTICAL:Int = 0
 Const HORIZONTAL:Int = 1
 	
+
+Interface SimpleMenuObject
+	Method Update:Int()
+	Method Draw:Void()
+	Method SetAlpha:Void(alpha:Float)
+End
+
 #Rem
 Summary: Provides a group of buttons that automatically handle mouseover images and sounds.
 The buttons are automatically layed out horizontally or vertically, so only the menu itself needs to be positioned.
 #End
-Class SimpleMenu Extends List<SimpleButton>
+Class SimpleMenu Extends List<SimpleMenuObject>
 	Field x:Float, y:Float
 	Field buttonGap:Int = 0
 	Field mouseOverName:String = ""
@@ -191,11 +198,11 @@ Summary: Sets the x and y coordinates of the menu to be centred both horizontall
 Summary: Sets the alpha for each button to the passed value.
 #End
 	Method SetMenuAlpha:Void(alpha:Float)
-		Local b:SimpleButton
+		Local b:SimpleMenuObject
 		If alpha < 0 Then alpha = 0
 		if alpha > 1 Then alpha = 1
 		For b = EachIn Self
-			b.alpha = alpha
+			b.SetAlpha(alpha)
 		Next
 	End
 
@@ -360,11 +367,14 @@ This should be called only once, towards the start of your [[Screen.Update]] imp
 			Return 0
 		EndIf
 		clickedName = ""
-		Local b:SimpleButton
+		Local b:SimpleMenuObject
 		For b = EachIn Self
 			b.Update()
-			If b.mouseOver Then mouseOverName = b.name
-			If b.clicked Then clickedName = b.name	
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.mouseOver Then mouseOverName = sb.name
+				If sb.clicked Then clickedName = sb.name
+			End
 		Next
 		Return 1
 	End
@@ -382,7 +392,7 @@ Summary: Delegates to [[Sprite.Precache]] on each of the buttons.
 Summary: Delegates to [[SimpleButton.Draw]] on each of the buttons.
 #End
 	Method Draw:Void()
-		For Local b:SimpleButton = EachIn Self
+		For Local b:SimpleMenuObject = EachIn Self
 			b.Draw()
 		Next
 	End
@@ -401,6 +411,7 @@ Summary: Loads in a simple menu via JSON
 		Local gap:Int = 30
 		Local useVirtualRes:Bool = True
 		Local orientation:Int = VERTICAL
+		Local menuPath:String = "menu/"
 		
 		Try
 			Local jo:JsonObject = New JsonObject(str)
@@ -411,7 +422,7 @@ Summary: Loads in a simple menu via JSON
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
 				Print " menuMap.Key = " + menuMap.Key
-				Select menuMap.Key
+				Select menuMap.Key.ToLower()
 					Case "buttons"
 						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
 						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
@@ -429,15 +440,53 @@ Summary: Loads in a simple menu via JSON
 										Local offsetY:Float = o.GetFloat("offsetY")
 										Local moveByX:Float = o.GetFloat("moveByX")
 										Local moveByY:Float = o.GetFloat("moveByY")
+										Local redText:Int = o.GetInt("redText")
+										Local greenText:Int = o.GetInt("greenText")
+										Local blueText:Int = o.GetInt("blueText")
+										Local x:Int = o.GetInt("x")
+										Local y:Int = o.GetInt("y")
+										Local displayText:Bool = o.GetBool("displayText", True)
 										
-										Local menuPath:String = "menu/"
-										Local b:SimpleButton = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, True)
+										
+										Local b:SimpleButton = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText)
 										b.offsetY = offsetY
+										b.textRed = redText
+										b.textGreen = greenText
+										b.textBlue = blueText
+										If x <> 0 And y <> 0 Then
+											b.MoveTo(x, y)
+										End
+										
 										b.MoveBy(moveByX, moveByY)
 									Next
 							End
 						Next
-
+					Case "sliders"
+						Local slidersJo:JsonObject = JsonObject(menuMap.Value)
+						For Local slidersMap:map.Node<String, JsonValue> = EachIn slidersJo.GetData()
+							Print "slidersMap.Key = " + slidersMap.Key
+							Select slidersMap.Key
+								Case "slider"
+									Print "extracting slider data..."
+									
+									Local sliderJa:JsonArray = JsonArray(slidersMap.Value)
+									
+									For Local d:Int = 0 Until sliderJa.Length()
+										Local o:JsonObject = JsonObject(sliderJa.Get(d))
+										Local name:String = o.GetString("name")
+										Local image:String = o.GetString("image")
+										Local x:Int = o.GetInt("x")
+										Local y:Int = o.GetInt("y")
+										Local borderX:Int = o.GetInt("borderX")
+										Local borderY:Int = o.GetInt("borderY")
+																				
+										Local b:SimpleSlider = New SimpleSlider(menuPath + image + "_bar.png", menuPath + image + ".png", x, y, borderX, name, borderY, True)
+										sm.AddLast(b)
+										
+										
+									Next
+							End
+						Next
 				End
 			Next
 			
@@ -457,12 +506,14 @@ Summary: A Delegate so that the developer can override the drawing of text on wi
 Class SimpleTextDrawDelegate Abstract
 	Method Draw:Void(text:String, x:Float, y:Float)
 	End
+	Method Draw:Void(button:SimpleButton)
+	End
 End
 
 #Rem
 Summary: Represents a button in a [[SimpleMenu]].
 #End
-Class SimpleButton Extends Sprite
+Class SimpleButton Extends Sprite Implements SimpleMenuObject
 	Field active:Int = 1
 	Field clicked:Int = 0
 	Field selected:Int = 0
@@ -479,6 +530,11 @@ Class SimpleButton Extends Sprite
 	Field text:String
 	Field textDrawDelegate:SimpleTextDrawDelegate
 	Field offsetY:Float
+	Field textRed:Int
+	Field textGreen:Int
+	Field textBlue:Int
+	Field drawShadow:Bool
+	Field alignment:Int = 0
 	
 #Rem
 Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
@@ -488,6 +544,10 @@ Developers do not need to call this.
 		If image<>null
 			Super.Precache()
 		End
+	End
+	
+	Method SetAlpha:Void(alpha:Float)
+		Self.alpha = alpha
 	End
 	
 #Rem
@@ -511,6 +571,7 @@ Developers do not need to call this.
 		If drawText
 			If textDrawDelegate <> Null
 				textDrawDelegate.Draw(text, x + Self.image.w2, y + offsetY)
+				textDrawDelegate.Draw(Self)
 			Else
 				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
 			End
@@ -612,8 +673,8 @@ Summary: Sets additional images so that the button can be used as a toggle butto
 Summary: Updates the clicked status of the button, and plays mouseover sounds.
 Developers only need to call this if they are using the button outside of a [[SimpleMenu]].
 #End
-	Method Update:Void()
-		If active = 0 or disabled Then Return
+	Method Update:Int()
+		If active = 0 or disabled Then Return 0
 		Local mx:Int = diddyGame.mouseX
 		Local my:Int = diddyGame.mouseY
 		If not useVirtualRes
@@ -641,13 +702,14 @@ Developers only need to call this if they are using the button outside of a [[Si
 			mouseOver = 0	
 			clicked = 0
 		End
+		Return 1
 	End
 End
 
 #Rem
 Summary: Represents a slider control, often used for volume levels.
 #End
-Class SimpleSlider Extends Sprite
+Class SimpleSlider Extends Sprite Implements SimpleMenuObject
 	Field active:Int
 	Field dotImage:GameImage
 	Field dotX:Int, dotY:Int
@@ -690,7 +752,7 @@ Summary: Sets the value of the slider (between 0 and 100 inclusive) and updates 
 		Local percent:Float = value/100.0		
 		dotX = x + border + (percent * (image.w - (border * 2))) - dotImage.w2
 	End
-
+	
 #Rem
 Summary: Updates the value of the slider if the user has dragged somewhere on it.
 This should be called only once per slider, towards the start of your [[Screen.Update]] implementation, or [[App.OnUpdate]].
@@ -734,6 +796,10 @@ Summary: Renders the slider.
 			DrawImage(image.image,x,y)
 			DrawImage(dotImage.image,dotX,dotY)		
 		End
+	End
+	
+	Method SetAlpha:Void(alpha:Float)
+		Self.alpha = alpha
 	End
 End
 

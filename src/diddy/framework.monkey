@@ -1983,6 +1983,8 @@ Class Sprite
 
 	Field red:Int = 255, green:Int = 255, blue:Int = 255, alpha:Float = 1
 	Field hitBox:HitBox
+	Field glow:Bool
+	Field glowAmount:Float = 0.1
 
 	' Animation
 	Field frame:Int
@@ -2199,17 +2201,42 @@ Class Sprite
 		
 		SetAlpha(Self.alpha)
 		SetColor(red, green, blue)
+
 		If rounded
 			If useSpriteAnimation
 				DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, Floor(x - offsetx + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
 			Else
 				DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y - offsety + 0.5), rotation, scaleX, scaleY, frame)
 			End
+			If glow
+			
+				SetBlend(AdditiveBlend)
+				SetAlpha(glowAmount)
+				If useSpriteAnimation
+					DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, Floor(x - offsetx + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, Floor(y - offsety + 0.5) + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+				Else
+					DrawImage(image.image, Floor(x - offsetx + 0.5), Floor(y - offsety + 0.5), rotation, scaleX, scaleY, frame)
+				End
+				SetAlpha(1)
+				SetBlend(AlphaBlend)
+			End
 		Else
 			If useSpriteAnimation
 				DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, x - offsetx + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, y - offsety + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
 			Else
 				DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+			End
+
+			If glow
+				SetBlend(AdditiveBlend)
+				SetAlpha(glowAmount)
+				If useSpriteAnimation
+					DrawImage(currentSpriteAnimation.frames[currentSpriteAnimation.frame].image, x - offsetx + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetX, y - offsety + currentSpriteAnimation.frames[currentSpriteAnimation.frame].offSetY, rotation, scaleX, scaleY)
+				Else
+					DrawImage(image.image, x - offsetx, y - offsety, rotation, scaleX, scaleY, frame)
+				End
+				SetAlpha(1)
+				SetBlend(AlphaBlend)
 			End
 		End
 		
