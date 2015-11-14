@@ -481,7 +481,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Check a collision using ray casting
 	Method CheckCollision:TileCollisionData(startX:Float, startY:Float, endX:Float, endY:Float, layerName:String)
-		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		Local layer:TileMapTileLayer = FindTileLayerByName(layerName)
 		Local x1:Int = startX
 		Local y1:Int = startY
 		Local x2:Int = endX
@@ -553,8 +553,8 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Return New TileCollisionData(cx, cy, tile, xx, yy)
 	End
 		
-	'summary:Return the layer for a set name
-	Method FindLayerByName:TileMapTileLayer(layerName:String)
+	'summary: Return the tile layer for a set name
+	Method FindTileLayerByName:TileMapTileLayer(layerName:String)
 		Local layer:TileMapTileLayer
 		For Local tl:TileMapLayer = Eachin layers
 			If TileMapTileLayer(tl)
@@ -565,9 +565,21 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Return layer
 	End
 	
+	'summary: Return the object layer for a set name
+	Method FindObjectLayerByName:TileMapObjectLayer(layerName:String)
+		Local layer:TileMapObjectLayer
+		For Local tl:TileMapLayer = Eachin layers
+			If TileMapObjectLayer(tl)
+				If tl.name = layerName Then layer = TileMapObjectLayer(tl); Exit
+			End
+		Next
+		If Not layer Then Print("Cannot find layer " + layerName)
+		Return layer
+	End
+	
 	'summary: Check to see if a tile is under x and y on layername
 	Method CollisionTile:Int(x:Float, y:Float, layerName:String, sx:Float=1, sy:Float=1)
-		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		Local layer:TileMapTileLayer = FindTileLayerByName(layerName)
 		If layer.name <> layerName Then Return 0
 		x /= sx; y /= sy
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return 0
@@ -580,7 +592,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Set a tile cell
 	Method SetTile:Void(x:Float, y:Float, tile:Int, layerName:String, sx:Float=1, sy:Float=1)
-		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		Local layer:TileMapTileLayer = FindTileLayerByName(layerName)
 		If layer.name <> layerName Then Return
 		x /= sx; y /= sy
 		If x < 0 Or x >= layer.width * tileWidth Or y < 0 Or y >= layer.height * tileHeight Then Return
@@ -591,7 +603,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	
 	'summary: Change a tile cell and its frame image
 	Method ChangeTile:Void(x:Float, y:Float, tile:Int, layerName:String, sx:Float=1, sy:Float=1)
-		Local layer:TileMapTileLayer = FindLayerByName(layerName)
+		Local layer:TileMapTileLayer = FindTileLayerByName(layerName)
 
 		If layer = Null then Return
 		If layer.name <> layerName Then Return
