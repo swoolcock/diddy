@@ -84,10 +84,13 @@ Developers do not need to call this.
 	Method CalcWidth:Int()
 		Local left:Int=10000
 		Local right:Int=-10000
-		Local b:SimpleButton
-		For b = EachIn Self
-			If b.x < left Then left = b.x
-			If b.x+b.image.w > right Then right = b.x + b.image.w
+
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.x < left Then left = sb.x
+				If sb.x + sb.image.w > right Then right = sb.x + sb.image.w
+			End
 		Next				
 		w = right - left
 		Return w
@@ -101,10 +104,13 @@ Developers do not need to call this.
 	Method CalcHeight:Int()
 		Local top:Int=10000
 		Local bot:Int=-10000
-		Local b:SimpleButton
-		For b = EachIn Self
-			If b.y < top Then top = b.y
-			If b.y+b.image.h > bot Then bot = b.y + b.image.h
+
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.y < top Then top = sb.y
+				If sb.y + sb.image.h > bot Then bot = sb.y + sb.image.h
+			End
 		Next				
 		h = bot - top
 		Return h
@@ -118,9 +124,12 @@ Summary: Sets the X coordinate of the menu, moving all the buttons with it.
 		Local oldx# = x	
 		x = thex
 		Local diff# = x - oldx
-		Local b:SimpleButton
-		For b = EachIn Self
-			b.MoveBy(diff,0)
+
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				sb.MoveBy(diff, 0)
+			End
 		Next	
 	End
 		
@@ -132,9 +141,12 @@ Summary: Sets the Y coordinate of the menu, moving all the buttons with it.
 		Local oldy# = y	
 		y = they
 		Local diff# = y-oldy
-		Local b:SimpleButton
-		For b = EachIn Self
-			b.MoveBy(0,diff)
+
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				sb.MoveBy(0, diff)
+			End
 		Next		
 	End
 	
@@ -144,9 +156,12 @@ Developers do not need to call this.
 #End
 	Method CalcLeft:Void()
 		x = 10000
-		Local b:SimpleButton
-		For b = EachIn Self
-			If b.x <x Then x = b.x
+		
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.x < x Then x = sb.x
+			End
 		Next						
 	End
 		
@@ -156,10 +171,13 @@ Developers do not need to call this.
 #End	
 	Method CalcTop:Void()
 		y = 10000
-		Local b:SimpleButton
-		For b = EachIn Self
-			If b.y < y Then y = b.y
-		Next						
+
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.y < y Then y = sb.y
+			End
+		Next
 	End
 	
 #Rem
@@ -213,8 +231,8 @@ The button is added to the end of the menu and is positioned to fit the current 
 Local sb:SimpleButton = menu.AddButton(diddyGame.images.Find("newgame"), diddyGame.images.Find("newgameMO"), "New Game")
 [/code]
 #End
-	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False)
-		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name, drawText)
+	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False, disableImageFile:GameImage, disableImageMOFile:GameImage)
+		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name, drawText, disableImageFile, disableImageMOFile)
 		If orientation = VERTICAL
 			IncreaseHeight(b)
 		Else
@@ -230,8 +248,8 @@ The button is added to the end of the menu and is positioned to fit the current 
 Local sb:SimpleButton = menu.AddButton("newgame", "newgameMO", "New Game")
 [/code]
 #End
-	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String = "", drawText:Bool = False)
-		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name, drawText)
+	Method AddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String = "", drawText:Bool = False, disableImageFile:String = "", disableImageMOFile:String = "")
+		Local b:SimpleButton = ProcessAddButton(buttonImageFile, mouseOverFile, name, drawText, disableImageFile, disableImageMOFile)
 		If orientation = VERTICAL
 			IncreaseHeight(b)
 		Else
@@ -274,7 +292,7 @@ Developers do not need to call this.
 Summary: Internal method to add a button to the menu.
 Developers do not need to call this.
 #End
-	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String, drawText:Bool = False)
+	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String, drawText:Bool = False, disabledImage:GameImage = Null, disableMOImage:GameImage = Null)
 		Local b:SimpleButton = New SimpleButton
 		b.drawText = drawText
 		b.name = StripAll(buttonImage.name.ToUpper())
@@ -284,6 +302,14 @@ Developers do not need to call this.
 			b.imageMouseOver = mouseOver
 			b.imageMouseOver.SetHandle(0, 0)
 		End
+		If disabledImage <> Null
+			b.imageDisabled = disabledImage
+			b.imageDisabled.SetHandle(0, 0)
+		End
+		If disableMOImage <> Null
+			b.imageDisabledMO = disableMOImage
+			b.imageDisabledMO.SetHandle(0, 0)
+		End
 		b = ProcessButton(b, name)
 		Return b		
 	End
@@ -292,10 +318,10 @@ Developers do not need to call this.
 Summary: Internal method to add a button to the menu.
 Developers do not need to call this.
 #End
-	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String, drawText:Bool = False)
+	Method ProcessAddButton:SimpleButton(buttonImageFile:String, mouseOverFile:String, name:String, drawText:Bool = False, disableImageFile:String = "", disableImageMOFile:String = "")
 		Local b:SimpleButton = New SimpleButton
 		b.drawText = drawText
-		b.Load(buttonImageFile, mouseOverFile)
+		b.Load(buttonImageFile, mouseOverFile, "", "", disableImageFile, disableImageMOFile)
 		b = ProcessButton(b, name)
 		Return b
 	End
@@ -329,9 +355,11 @@ Local sb:SimpleButton = menu.Find("New Game")
 #End
 	Method FindButton:SimpleButton(name:String)
 		name = name.ToUpper()
-		Local b:SimpleButton
-		For b = EachIn Self
-			If b.name = name Then Return b
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				If sb.name = name Then Return sb
+			End
 		Next	
 		Return Null
 	End
@@ -367,16 +395,16 @@ This should be called only once, towards the start of your [[Screen.Update]] imp
 			Return 0
 		EndIf
 		clickedName = ""
-		Local b:SimpleMenuObject
-		For b = EachIn Self
-			b.Update()
+		Local change:Int
+		For Local b:SimpleMenuObject = EachIn Self
+			change = b.Update()
 			If SimpleButton(b)
 				Local sb:SimpleButton = SimpleButton(b)
 				If sb.mouseOver Then mouseOverName = sb.name
 				If sb.clicked Then clickedName = sb.name
 			End
 		Next
-		Return 1
+		Return change
 	End
 	
 #Rem
@@ -408,6 +436,7 @@ Summary: Loads in a simple menu via JSON
 		
 		Local menuX:Float
 		Local menuY:Float
+		Local menuOffsetX:Float
 		Local gap:Int = 30
 		Local useVirtualRes:Bool = True
 		Local orientation:Int = VERTICAL
@@ -417,7 +446,12 @@ Summary: Loads in a simple menu via JSON
 			Local jo:JsonObject = New JsonObject(str)
 			Local menuJo:JsonObject = JsonObject(jo.Get("menu"))
 			menuY = menuJo.GetFloat("y")
-			gap = menuJo.GetInt("gap", gap)			
+			menuX = menuJo.GetFloat("x")
+			menuOffsetX = menuJo.GetFloat("offsetX")
+			
+			orientation = menuJo.GetInt("orientation")
+			
+			gap = menuJo.GetInt("gap", gap)		
 			sm.Init("", "", menuX, menuY, gap, useVirtualRes, orientation)
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
@@ -437,7 +471,9 @@ Summary: Loads in a simple menu via JSON
 										Local o:JsonObject = JsonObject(buttonJa.Get(d))
 										Local name:String = o.GetString("name")
 										Local image:String = o.GetString("image")
+										Local useDisabled:Bool = o.GetBool("useDisabled")
 										Local offsetY:Float = o.GetFloat("offsetY")
+										Local offsetX:Float = o.GetFloat("offsetX")
 										Local moveByX:Float = o.GetFloat("moveByX")
 										Local moveByY:Float = o.GetFloat("moveByY")
 										Local redText:Int = o.GetInt("redText")
@@ -446,10 +482,19 @@ Summary: Loads in a simple menu via JSON
 										Local x:Int = o.GetInt("x")
 										Local y:Int = o.GetInt("y")
 										Local displayText:Bool = o.GetBool("displayText", True)
+										Local disabledClick:Bool = o.GetBool("disabledClick")
 										
+										Local b:SimpleButton
+										If useDisabled
+											b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText, menuPath + image + "_disabled.png", menuPath + image + "_disabledMO.png")
+										Else
+											b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText)
+										End
 										
-										Local b:SimpleButton = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText)
+										b.disabledClick = disabledClick
+										
 										b.offsetY = offsetY
+										b.offsetX = offsetX
 										b.textRed = redText
 										b.textGreen = greenText
 										b.textBlue = blueText
@@ -494,7 +539,18 @@ Summary: Loads in a simple menu via JSON
 			Error "JsonError"
 		End
 		
-	
+		Print "menuOffsetX  = " + menuOffsetX
+		If menuOffsetX <> 0
+			Local xx:Float
+			If orientation = VERTICAL
+				xx = SCREEN_WIDTH / 2
+			Else
+				xx = sm.x
+			End
+			
+			sm.SetX(xx + menuOffsetX)
+		End
+		
 		Return sm
 	End
 End
@@ -519,17 +575,22 @@ Class SimpleButton Extends Sprite Implements SimpleMenuObject
 	Field selected:Int = 0
 	Field mouseOver:Int = 0
 	Field disabled:Bool = False
+	Field disabledClick:Bool = False
+	
 	Field soundMouseOver:GameSound
 	Field soundClick:GameSound
 	Field imageMouseOver:GameImage
 	Field imageSelected:GameImage
 	Field imageSelectedMO:GameImage
+	Field imageDisabled:GameImage
+	Field imageDisabledMO:GameImage
 	Field useVirtualRes:Bool = False
 	Field orientation:Int = VERTICAL
 	Field drawText:Bool
 	Field text:String
 	Field textDrawDelegate:SimpleTextDrawDelegate
 	Field offsetY:Float
+	Field offsetX:Float
 	Field textRed:Int
 	Field textGreen:Int
 	Field textBlue:Int
@@ -558,19 +619,23 @@ Developers do not need to call this.
 		If active = 0 Then Return
 		SetAlpha Self.alpha
 		if mouseOver
-			if selected And imageSelectedMO <> null Then
+			If disabled And imageDisabledMO <> Null Then
+				DrawImage Self.imageDisabledMO.image, x, y
+			ElseIf selected And imageSelectedMO <> Null Then
 				DrawImage Self.imageSelectedMO.image, x, y
 			Else
 				DrawImage Self.imageMouseOver.image, x, y
 			End
 		ElseIf selected And imageSelected <> null Then
 			DrawImage Self.imageSelected.image, x, y
+		ElseIf disabled And imageDisabled <> Null Then
+			DrawImage Self.imageDisabled.image, x, y
 		Else
 			DrawImage Self.image.image, x, y
 		EndIf
 		If drawText
 			If textDrawDelegate <> Null
-				textDrawDelegate.Draw(text, x + Self.image.w2, y + offsetY)
+				textDrawDelegate.Draw(text, x + Self.image.w2 + offsetX, y + offsetY)
 				textDrawDelegate.Draw(Self)
 			Else
 				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
@@ -635,7 +700,7 @@ Summary: Moves the button to the exact specified location.
 Summary: Loads the required images and sounds for the button.
 Developers do not need to call this.
 #End
-	Method Load:Void(buttonImage:String, mouseOverImage:String = "", soundMouseOverFile:String="", soundClickFile:String="")
+	Method Load:Void(buttonImage:String, mouseOverImage:String = "", soundMouseOverFile:String = "", soundClickFile:String = "", disableImageFile:String = "", disableMOImageFile:String = "")
 		Self.image = New GameImage
 		image.Load(diddyGame.images.path + buttonImage, False)
 		
@@ -643,7 +708,19 @@ Developers do not need to call this.
 			imageMouseOver = New GameImage
 			imageMouseOver.Load(diddyGame.images.path + mouseOverImage, False)
 		End
+
+		If disableImageFile <> ""
+			imageDisabled = New GameImage
+			imageDisabled.Load(diddyGame.images.path + disableImageFile, False)
+		End
+
+		If disableMOImageFile <> ""
+			imageDisabledMO = New GameImage
+			imageDisabledMO.Load(diddyGame.images.path + disableMOImageFile, False)
+		End
 		
+		
+				
 		name = StripAll(buttonImage.ToUpper())
 		
 		If soundMouseOverFile<>"" Then
@@ -674,7 +751,7 @@ Summary: Updates the clicked status of the button, and plays mouseover sounds.
 Developers only need to call this if they are using the button outside of a [[SimpleMenu]].
 #End
 	Method Update:Int()
-		If active = 0 or disabled Then Return 0
+		If active = 0 or (disabled And not disabledClick) Then Return 0
 		Local mx:Int = diddyGame.mouseX
 		Local my:Int = diddyGame.mouseY
 		If not useVirtualRes
@@ -726,7 +803,7 @@ Summary: Creates a new [[SimpleSlider]] with the specified configuration.
 		Self.useVirtualRes = useVirtualRes
 		
 		image.Load(diddyGame.images.path + barFile, False)
-		name = StripAll(barFile.ToUpper())	
+		Self.name = name'StripAll(barFile.ToUpper())	
 		
 		dotImage = New GameImage
 		dotImage.Load(diddyGame.images.path + dotFile, False)
@@ -742,6 +819,13 @@ Summary: Creates a new [[SimpleSlider]] with the specified configuration.
 		Self.active = 1
 	End
 	
+	Method SetSliderXY:Void(x:Float, y:Float)
+		Self.x = x
+		Self.y = y
+		SetValue(value)
+		Self.dotY = y - 3
+	End
+	
 #Rem
 Summary: Sets the value of the slider (between 0 and 100 inclusive) and updates the position of the bar.
 #End
@@ -751,6 +835,14 @@ Summary: Sets the value of the slider (between 0 and 100 inclusive) and updates 
 		If toSet > 100 Then value = 100
 		Local percent:Float = value/100.0		
 		dotX = x + border + (percent * (image.w - (border * 2))) - dotImage.w2
+	End
+	
+	Method GetValue:Int()
+		Local rv:Int
+		Local d:Float = dotX - x - border
+		Local p:Float = d / (image.w - (border * 2))
+		rv = p * 100
+		Return rv
 	End
 	
 #Rem

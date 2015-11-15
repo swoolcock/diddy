@@ -829,6 +829,7 @@ Public
 	Field name:String = ""
 	Field backScreenName:String = ""
 	Field layers:DiddyDataLayers
+	Field destinationScreen:Screen
 	
 	Method New(name:String="")
 		Self.name = name
