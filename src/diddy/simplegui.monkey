@@ -553,6 +553,15 @@ Summary: Loads in a simple menu via JSON
 		
 		Return sm
 	End
+	
+	Method SetButtonDrawDelegate:Void(stdd:SimpleTextDrawDelegate)
+		For Local b:SimpleMenuObject = EachIn Self
+			If SimpleButton(b)
+				Local sb:SimpleButton = SimpleButton(b)
+				sb.textDrawDelegate = stdd
+			End
+		Next
+	End
 End
 
 
@@ -926,6 +935,11 @@ Class SimpleDialog
 	Field ex:Float
 	Field ey:Float
 	
+	Field dimAmount:Float
+	Field maxDimAmount:Float = 0.5
+	Field dimInSpeed:Float
+	Field dimOutSpeed:Float
+	
 	' timer
 	Field timer:Float
 	Field timerSpeed:Float = 0.01
@@ -943,6 +957,9 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		titleY = 40
 		fadeInSpeed = 0.05
 		fadeOutSpeed = 0.08
+		dimInSpeed = 0.05
+		dimOutSpeed = 0.08
+		
 		alphaControl = 0.4
 		textX = SCREEN_WIDTH2
 		textY = titleY + 50
@@ -951,11 +968,34 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		SetImageColor(255, 255, 255)
 	End
 	
+	Method SetText:Void(text:String, textX:Float, textY:Float, r:Int = 255, g:Int = 255, b:Int = 255, textDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.text = text
+		Self.textX = textX
+		Self.textY = textY
+		Self.textDrawDelegate = textDrawDelegate
+		SetTextColor(r, g, b)
+	End
+	
+	Method SetTitle:Void(titleText:String, titleX:Float, titleY:Float, r:Int = 255, g:Int = 255, b:Int = 255, titleDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.title = titleText
+		Self.titleX = titleX
+		Self.titleY = titleY
+		Self.titleDrawDelegate = titleDrawDelegate
+		SetTextColor(r, g, b)
+	End
+	
 #Rem
 Summary: Updates the dialog, controls the alpha and menu (menu is only usable if alpha is greater than alphaControl
 #End	
 	Method Update:Void()
 		If show
+			If dimAmount < maxDimAmount
+				dimAmount += dimInSpeed * dt.delta
+			Else
+				dimAmount = maxDimAmount
+			End
+		
+		
 			If alpha < 1
 				alpha += fadeInSpeed * dt.delta
 			Else
@@ -968,6 +1008,12 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 				End
 			End
 		Else
+			If dimAmount > 0
+				dimAmount -= dimOutSpeed * dt.delta
+			Else
+				dimAmount = 0
+			End
+		
 			If alpha > 0
 				alpha -= fadeOutSpeed * dt.delta
 				If alpha < 0 Then alpha = 0
@@ -977,6 +1023,9 @@ Summary: Updates the dialog, controls the alpha and menu (menu is only usable if
 				show = False
 			End
 		End
+		If dimAmount < 0 Then dimAmount = 0
+		If dimAmount > maxDimAmount Then dimAmount = maxDimAmount
+		
 		If alpha < 0 Then alpha = 0
 		If alpha > 1 Then alpha = 1
 	End
@@ -1029,6 +1078,14 @@ Summary: Controls the timer
 Summary: Renders the dialog.
 #End	
 	Method Draw:Void()
+		If dimAmount > 0
+			SetAlpha dimAmount
+			SetColor 0, 0, 0
+			DrawRect 0, 0, SCREEN_WIDTH, SCREEN_WIDTH
+			SetColor 255, 255, 255
+			SetAlpha alpha
+		End
+	
 		If alpha > 0
 			SetAlpha alpha
 			SetColor(color[0], color[1], color[2])
