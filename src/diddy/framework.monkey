@@ -2188,14 +2188,16 @@ Class Sprite
 		Draw(0,0, rounded)
 	End
 	
-	Method Draw:Void(offsetx:Float, offsety:Float, rounded:Bool = False)
+	Method Draw:Void(offsetx:Float, offsety:Float, rounded:Bool = False, drawOffScreen:Bool = False)
 		If Not visible Then Return
-		
-		Local lensq:Int = image.w * image.w * scaleX * scaleX + image.h * image.h * scaleY * scaleY
-		If x - offsetx < 0 And (x - offsetx) * (x - offsetx) > lensq Then Return
-		If x - offsetx > SCREEN_WIDTH And (x - offsetx - SCREEN_WIDTH) * (x - offsetx - SCREEN_WIDTH) > lensq Then Return
-		If y - offsety < 0 And (y - offsety) * (y - offsety) > lensq Then Return
-		If y - offsety > SCREEN_HEIGHT And (y - offsety - SCREEN_HEIGHT) * (y - offsety - SCREEN_HEIGHT) > lensq Then Return
+
+		If Not drawOffScreen
+			Local lensq:Int = image.w * image.w * scaleX * scaleX + image.h * image.h * scaleY * scaleY
+			If x - offsetx < 0 And (x - offsetx) * (x - offsetx) > lensq Then Return
+			If x - offsetx > SCREEN_WIDTH And (x - offsetx - SCREEN_WIDTH) * (x - offsetx - SCREEN_WIDTH) > lensq Then Return
+			If y - offsety < 0 And (y - offsety) * (y - offsety) > lensq Then Return
+			If y - offsety > SCREEN_HEIGHT And (y - offsety - SCREEN_HEIGHT) * (y - offsety - SCREEN_HEIGHT) > lensq Then Return
+		End
 		
 		If Self.alpha > 1 Then Self.alpha = 1
 		If Self.alpha < 0 Then Self.alpha = 0
