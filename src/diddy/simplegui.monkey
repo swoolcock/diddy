@@ -479,8 +479,8 @@ Summary: Loads in a simple menu via JSON
 										Local redText:Int = o.GetInt("redText")
 										Local greenText:Int = o.GetInt("greenText")
 										Local blueText:Int = o.GetInt("blueText")
-										Local x:Int = o.GetInt("x")
-										Local y:Int = o.GetInt("y")
+										Local x:Int = o.GetInt("x", -1000)
+										Local y:Int = o.GetInt("y", -1000)
 										Local displayText:Bool = o.GetBool("displayText", True)
 										Local disabledClick:Bool = o.GetBool("disabledClick")
 										
@@ -498,8 +498,12 @@ Summary: Loads in a simple menu via JSON
 										b.textRed = redText
 										b.textGreen = greenText
 										b.textBlue = blueText
-										If x <> 0 And y <> 0 Then
+										If x <> - 1000 And y <> - 1000 Then
 											b.MoveTo(x, y)
+										ElseIf x <> - 1000
+											b.MoveTo(x, b.y)
+										ElseIf y <> - 1000
+											b.MoveTo(b.x, y)
 										End
 										
 										b.MoveBy(moveByX, moveByY)
@@ -564,6 +568,25 @@ Summary: Loads in a simple menu via JSON
 	End
 End
 
+Class SimpleImagesDrawDelegate Abstract
+	Field spriteList:List<Sprite>
+	Field offsetX:Float, offsetY:Float
+	Field rounded:Bool = False
+	
+	Method New()
+		spriteList = New List<Sprite>
+	End
+	
+	Method Draw:Void(alpha:Float)
+		Local oldAlpha:Float = GetAlpha()
+		SetAlpha(alpha)
+		For Local s:Sprite = EachIn spriteList
+			s.alpha = alpha
+			s.Draw(offsetX, offsetY, rounded)
+		Next
+		SetAlpha(oldAlpha)
+	End
+End
 
 #Rem
 Summary: A Delegate so that the developer can override the drawing of text on widgets
@@ -919,6 +942,7 @@ Class SimpleDialog
 	Field y:Float
 	Field fadeInSpeed:Float
 	Field fadeOutSpeed:Float
+	Field imagesDrawDelegate:SimpleImagesDrawDelegate
 	Field titleDrawDelegate:SimpleTextDrawDelegate
 	Field alphaControl:Float
 	Field text:String
@@ -1090,6 +1114,10 @@ Summary: Renders the dialog.
 			SetAlpha alpha
 			SetColor(color[0], color[1], color[2])
 			image.Draw(x, y)
+			
+			If imagesDrawDelegate <> Null
+				imagesDrawDelegate.Draw(alpha)
+			End
 			
 			SetColor(titleColor[0], titleColor[1], titleColor[2])
 			If titleDrawDelegate <> Null Then
