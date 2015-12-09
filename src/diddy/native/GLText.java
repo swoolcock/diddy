@@ -91,6 +91,9 @@ class GLText{
 		return Load(file, text, size, 0, 0);
 	}
 	
+	public int CalcWidth(String text){
+	}
+	
 	public boolean Load(String file, int size, int padX, int padY){
 		return Load(file, "", size, padX, padY);
 	}

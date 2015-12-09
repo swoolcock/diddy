@@ -3,6 +3,7 @@ function GLText(){
 	this.font = "";
 	this.size = 0;
 	this.text = "";
+	this.textWidth = 0;
 	return this;
 }
 
@@ -42,13 +43,24 @@ GLText.prototype.Draw=function(text, x, y)
 {
 	var canvas = document.getElementById( "GameCanvas" );
 	var ctx = canvas.getContext('2d');
-
+	bb_graphics_context.p_Validate();
+	
 	ctx.font = this.size + 'px "'+this.font+'"';
 	ctx.textBaseline = 'top';
-	ctx.fillText(text, x, y);	
+	ctx.fillText(text, x, y);
 }
 
 GLText.prototype.DrawTexture=function(x, y)
 {
 	this.Draw(this.text, x, y);
+}
+
+GLText.prototype.CalcWidth=function(text)
+{
+	var canvas = document.getElementById( "GameCanvas" );
+	var ctx = canvas.getContext('2d');
+	ctx.font = this.size + 'px "'+this.font+'"';
+	this.textWidth = ctx.measureText(text).width;
+
+	return this.textWidth;
 }
