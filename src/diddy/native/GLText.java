@@ -94,6 +94,11 @@ class GLText{
 	public int CalcWidth(String text){
 	}
 	
+	public void SetSize(int size)
+	{
+		//TODO: 
+	}
+
 	public boolean Load(String file, int size, int padX, int padY){
 		return Load(file, "", size, padX, padY);
 	}

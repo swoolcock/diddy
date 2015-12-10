@@ -12,6 +12,11 @@ GLText.GetNewInstance=function()
 	return new GLText();
 }
 
+GLText.prototype.SetSize=function(size)
+{
+	this.size = size;
+}
+
 GLText.prototype.Load=function(font, size, xpad, ypad)
 {
 	this.font = font;
