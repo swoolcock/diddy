@@ -22,4 +22,5 @@ Class GLText Extends Null = "GLText"
 	Method DrawTexture:Void(x:Float, y:Float)
 	Method CalcWidth:Int(text:String)
 	Method SetSize:Void(size:Int)
+	Method GetSize:Int()
 End

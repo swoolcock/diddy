@@ -98,7 +98,12 @@ class GLText{
 	{
 		//TODO: 
 	}
-
+	
+	public int GetSize()
+	{
+		//TODO: 
+	}
+	
 	public boolean Load(String file, int size, int padX, int padY){
 		return Load(file, "", size, padX, padY);
 	}
