@@ -2391,7 +2391,7 @@ Class Particle Extends Sprite
 	Global minIndex:Int = -1
 	Global particleCount:Int = 0
 	Field lifeCounter:Float = 0
-	Field fadeIn:Float = 0
+	Field fadeIn:Int = 0
 	Field fadeCounter:Float
 	Field fadeInLength:Float = 0
 	Field fadeLength:Float = 0
@@ -2482,6 +2482,9 @@ Class Particle Extends Sprite
 	Method Update:Void()
 		Super.Move()
 
+		ManageRotation()
+		ManageScale()
+		
 		If fadeIn Then
 			fadeCounter+=dt.delta
 
