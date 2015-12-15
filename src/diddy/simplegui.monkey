@@ -19,7 +19,7 @@ Const HORIZONTAL:Int = 1
 Interface SimpleMenuObject
 	Method Update:Int()
 	Method Draw:Void()
-	Method SetAlpha:Void(alpha:Float)
+	Method SetObjectAlpha:Void(alpha:Float)
 End
 
 #Rem
@@ -220,7 +220,7 @@ Summary: Sets the alpha for each button to the passed value.
 		If alpha < 0 Then alpha = 0
 		if alpha > 1 Then alpha = 1
 		For b = EachIn Self
-			b.SetAlpha(alpha)
+			b.SetObjectAlpha(alpha)
 		Next
 	End
 
@@ -629,6 +629,8 @@ Class SimpleButton Extends Sprite Implements SimpleMenuObject
 	Field drawShadow:Bool
 	Field alignment:Int = 0
 	
+	Field sprite:Sprite
+	
 #Rem
 Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
 Developers do not need to call this.
@@ -639,8 +641,11 @@ Developers do not need to call this.
 		End
 	End
 	
-	Method SetAlpha:Void(alpha:Float)
+	Method SetObjectAlpha:Void(alpha:Float)
 		Self.alpha = alpha
+		If sprite
+			sprite.alpha = alpha
+		End
 	End
 	
 #Rem
@@ -669,9 +674,14 @@ Developers do not need to call this.
 			If textDrawDelegate <> Null
 				textDrawDelegate.Draw(text, x + Self.image.w2 + offsetX, y + offsetY)
 				textDrawDelegate.Draw(Self)
+				SetAlpha Self.alpha
 			Else
 				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
 			End
+		End
+		If sprite
+			sprite.Draw()
+			SetAlpha Self.alpha
 		End
 		SetAlpha 1
 	End
@@ -917,12 +927,14 @@ Summary: Renders the slider.
 #End
 	Method Draw:Void()
 		If active
-			DrawImage(image.image,x,y)
-			DrawImage(dotImage.image,dotX,dotY)		
+			SetAlpha alpha
+			DrawImage(image.image, x, y)
+			DrawImage(dotImage.image, dotX, dotY)
+			SetAlpha 1
 		End
 	End
 	
-	Method SetAlpha:Void(alpha:Float)
+	Method SetObjectAlpha:Void(alpha:Float)
 		Self.alpha = alpha
 	End
 End
