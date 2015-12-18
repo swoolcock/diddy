@@ -961,7 +961,13 @@ Class SimpleDialog
 	Field textX:Float
 	Field textY:Float
 	Field textDrawDelegate:SimpleTextDrawDelegate
+	Field text1:String
+	Field textX1:Float
+	Field textY1:Float
+	Field textDrawDelegate1:SimpleTextDrawDelegate
+	
 	Field textColor:Int[3]
+	Field textColor1:Int[3]
 	Field titleColor:Int[3]
 	Field color:Int[3]
 	Field dx:Float
@@ -1012,12 +1018,20 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		SetTextColor(r, g, b)
 	End
 	
+	Method SetText1:Void(text:String, textX:Float, textY:Float, r:Int = 255, g:Int = 255, b:Int = 255, textDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.text1 = text
+		Self.textX1 = textX
+		Self.textY1 = textY
+		Self.textDrawDelegate1 = textDrawDelegate
+		SetTextColor(r, g, b)
+	End
+	
 	Method SetTitle:Void(titleText:String, titleX:Float, titleY:Float, r:Int = 255, g:Int = 255, b:Int = 255, titleDrawDelegate:SimpleTextDrawDelegate = Null)
 		Self.title = titleText
 		Self.titleX = titleX
 		Self.titleY = titleY
 		Self.titleDrawDelegate = titleDrawDelegate
-		SetTextColor(r, g, b)
+		SetTitleColor(r, g, b)
 	End
 	
 #Rem
@@ -1143,6 +1157,13 @@ Summary: Renders the dialog.
 				textDrawDelegate.Draw(text, textX, textY)
 			Else
 				DrawText(text, textX, textY, 0.5, 0.5)
+			End
+			
+			SetColor(textColor1[0], textColor1[1], textColor1[2])
+			If textDrawDelegate1 <> Null Then
+				textDrawDelegate1.Draw(text1, textX1, textY1)
+			Else
+				DrawText(text1, textX1, textY1, 0.5, 0.5)
 			End
 			
 			SetColor(255, 255, 255)
