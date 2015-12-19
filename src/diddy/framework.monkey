@@ -2438,6 +2438,8 @@ Class Particle Extends Sprite
 			particles[i].rotationCounter = 0
 			particles[i].scaleCounter = 0
 			particles[i].rotationLoop = False
+			particles[i].rotation = 0
+			particles[i].SetScaleXY(1, 1)
 		Next
 		minIndex = -1
 		maxIndex = -1
