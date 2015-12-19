@@ -2413,7 +2413,14 @@ Class Particle Extends Sprite
 				particles[i].y = y
 				particles[i].dx = dx
 				particles[i].dy = dy
-
+				
+				particles[i].frame = 0
+				particles[i].rotationCounter = 0
+				particles[i].scaleCounter = 0
+				particles[i].rotationLoop = False
+				particles[i].rotation = 0
+				particles[i].SetScaleXY(1, 1)
+				
 				particles[i].ygravity = gravity
 				particles[i].fadeLength = fadeLength / 10
 				particles[i].fadeCounter = particles[i].fadeLength
