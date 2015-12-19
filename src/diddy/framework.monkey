@@ -2434,6 +2434,10 @@ Class Particle Extends Sprite
 		For Local i:Int = 0 To MAX_PARTICLES - 1
 			particles[i].alpha = 0
 			particles[i].active = False
+			particles[i].frame = 0
+			particles[i].rotationCounter = 0
+			particles[i].scaleCounter = 0
+			particles[i].rotationLoop = False
 		Next
 		minIndex = -1
 		maxIndex = -1
