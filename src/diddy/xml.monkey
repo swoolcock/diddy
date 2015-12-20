@@ -23,7 +23,8 @@ Import diddy.constants
 ' only import os or mojo if LoadString is enabled
 #If XML_USE_LOADSTRING
 	' import os if LoadString is implemented there, otherwise import mojo
-	#If TARGET="stdcpp" Or TARGET="glfw"
+	#If TARGET="stdcpp" 
+	' Or TARGET="glfw"
 		Import os
 	#Else
 		Import mojo
