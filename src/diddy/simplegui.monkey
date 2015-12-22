@@ -661,8 +661,10 @@ Developers do not need to call this.
 				DrawImage Self.imageDisabledMO.image, x, y
 			ElseIf selected And imageSelectedMO <> Null Then
 				DrawImage Self.imageSelectedMO.image, x, y
-			Else
+			ElseIf imageMouseOver.image <> Null
 				DrawImage Self.imageMouseOver.image, x, y
+			Else
+				DrawImage Self.image.image, x, y
 			End
 		ElseIf selected And imageSelected <> null Then
 			DrawImage Self.imageSelected.image, x, y
@@ -749,7 +751,7 @@ Developers do not need to call this.
 		
 		If mouseOverImage <> ""
 			imageMouseOver = New GameImage
-			imageMouseOver.Load(diddyGame.images.path + mouseOverImage, False)
+			imageMouseOver.Load(diddyGame.images.path + mouseOverImage, False, False, 0, 0, 0, False, "", True)
 		End
 
 		If disableImageFile <> ""

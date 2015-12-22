@@ -1570,18 +1570,20 @@ Public
 		maskBlue = b
 	End
 	
-	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
+	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "", failOkay:Bool = False)
 		name = StripAll(file.ToUpper())
 		path = file
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
 		Self.screenName = screenName.ToUpper()
 		If Not preLoad Then
-			image = LoadBitmap(file)
-			CalcSize()
-			MidHandle(midhandle)
-			pixels = New Int[image.Width() * image.Height()]
-			Self.readPixels = readPixels
+			image = LoadBitmap(file, 0, failOkay)
+			If image <> Null Then
+				CalcSize()
+				MidHandle(midhandle)
+				pixels = New Int[image.Width() * image.Height()]
+				Self.readPixels = readPixels
+			End
 		End
 		SetMaskColor(maskRed, maskGreen, maskBlue)
 	End

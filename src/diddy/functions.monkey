@@ -169,10 +169,12 @@ Function CircleRectsOverlap:Bool(x1:Float, y1:Float, w1:Float, h1:Float, cx:Floa
 	Return ( (cx - testX) * (cx - testX) + (cy - testY) * (cy - testY)) < r * r
 End
 
-Function LoadBitmap:Image(path$, flags%=0)
+Function LoadBitmap:Image(path:String, flags:Int = 0, failOkay:Bool = False)
 	Local pointer:Image = LoadImage(path, 1, flags)
 
-	AssertNotNull(pointer, "Error loading bitmap "+path)
+	If not failOkay
+		AssertNotNull(pointer, "Error loading bitmap " + path)
+	End
 	
    	Return pointer
 End
