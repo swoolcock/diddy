@@ -628,6 +628,7 @@ Class SimpleButton Extends Sprite Implements SimpleMenuObject
 	Field textBlue:Int
 	Field drawShadow:Bool
 	Field alignment:Int = 0
+	Field data:Int
 	
 	Field sprite:Sprite
 	

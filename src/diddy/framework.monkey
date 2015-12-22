@@ -2056,6 +2056,12 @@ Class Sprite
 		Self.blue = b
 	End
 	
+	Method SetupScale:Void(scaleSpeedX:Float, scaleSpeedY:Float, time:Float)
+		Self.scaleCounter = time
+		Self.scaleXSpeed = scaleSpeedX
+		Self.scaleYSpeed = scaleSpeedY
+	End
+	
 	Method SetScaleXY:Void(sx:Float, sy:Float)
 		Self.scaleX = sx
 		Self.scaleY = sy
