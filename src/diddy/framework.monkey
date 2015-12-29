@@ -2173,7 +2173,7 @@ Class Sprite
 			If pingPong
 				reverse = Not reverse
 				frame = frameEnd
-				Local ts% = frameStart
+				Local ts:Int = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
 			Else
@@ -2183,7 +2183,7 @@ Class Sprite
 			If pingPong And ping <1
 				reverse = Not reverse
 				frame = frameEnd
-				Local ts% = frameStart
+				Local ts:Int = frameStart
 				frameStart = frameEnd
 				frameEnd = ts
 				ping+=1
@@ -2620,5 +2620,191 @@ Class SplashScreen Extends Screen
 	Method Render:Void()
 		Cls(clsColor[0], clsColor[1], clsColor[2])
 		DrawImage(img, x, y)
+	End
+End
+
+#Rem
+Summary: AnimationTimer
+#End
+Class AnimationTimer
+	Const FORWARD:Int = 1
+	Const BACKWARD:Int = 0
+
+	Field maxPhases:Int = 50
+	Field active:Bool = False
+	Field loopTotal:Int = 0
+	Field counter:Int = 0
+	Field currentPhase:Int = 0
+	Field finished:Bool = False
+	Field totalPhases:Int = 1
+	
+	Field cycle:Int = 0
+	Field direction:Int = FORWARD
+	Field length:Float[]
+	Field leaveActive:Bool = False
+	Field pingPong:Bool = False
+	Field reverse:Bool = False
+	Field originalReverse:Bool = False
+	Field loopCount:Int = 0
+	
+	Method New(timeAmount:Int, leaveActive:Bool = False, reverse:Bool = False, cycle:Bool = False, pingPong:Bool = False)
+		Init(timeAmount, leaveActive, reverse, cycle, pingPong)
+	End
+	
+	Method Init:Void(timeAmount:Int, leaveActive:Bool = False, reverse:Bool = False, cycle:Bool = False, pingPong:Bool = False)
+		Self.length = New Float[maxPhases]
+		Self.length[0] = diddyGame.CalcAnimLength(timeAmount)
+		Self.currentPhase = 0
+		Self.finished = False
+		Self.totalPhases = 1
+		Self.cycle = cycle
+		Self.direction = FORWARD
+		Self.leaveActive = leaveActive
+		Self.pingPong = pingPong
+		Self.reverse = reverse
+		Self.originalReverse = reverse
+		Self.loopCount = 0
+	End
+	
+	Method Clear:Void()
+		active = False
+		loopTotal = 0
+		counter = 0
+		currentPhase = 0
+		finished = False
+		totalPhases = 1
+		cycle = 0
+		direction = FORWARD
+		leaveActive = False
+		pingPong = False
+		reverse = False
+		originalReverse = False
+		loopCount = 0
+	End
+
+	Method Update:Int()
+		If active
+			If not reverse
+				counter -= dt.delta
+				If counter <= 0
+					EndAnim()
+					Return 1
+				End
+			Else
+				counter += dt.delta
+				If counter > length[currentPhase]
+					EndAnim()
+					Return 1
+				End
+			End
+		End
+		Return 0
+	End
+	
+	Method Reset:Void()
+		counter = 0
+		Start()
+	End
+	
+	Method Start:Void()
+		If pingPong Then reverse = originalReverse
+		If not reverse
+			If counter <= 0
+				counter = length[currentPhase]
+			End
+		Else
+			counter = 0
+		End
+		active = True
+		currentPhase = 0
+		finished = False
+		direction = FORWARD
+		loopCount = 0
+	End
+	
+	Method Stop:Void()
+		If direction = FORWARD
+			currentPhase = totalPhases - 1
+		Else
+			currentPhase = 0
+		End
+		EndAnim()
+	End
+	
+	Method EndAnim:Int()
+		If direction = FORWARD
+			currentPhase += 1
+		Else
+			currentPhase -= 1
+		End
+
+		If (direction = FORWARD And currentPhase = totalPhases) Or (direction = BACKWARD And currentPhase = -1)
+			Local doCycle:Int = cycle
+			loopCount += 1
+			If loopTotal > 0 And loopCount = loopTotal Then doCycle = 0
+			
+			If doCycle
+				If pingPong
+					If direction = FORWARD
+						counter = 0 - counter
+						reverse = True
+						direction = BACKWARD
+						currentPhase = totalPhases - 1
+					Else
+						counter = length[0] - (counter - length[0])
+						reverse = False
+						direction = FORWARD
+						currentPhase = 0
+					End
+					Return 0
+				Else
+					currentPhase = 0
+				End
+			Else
+				finished = True
+				If leaveActive
+					currentPhase = totalPhases - 1
+					If Not reverse
+						counter = 0
+					Else
+						counter = length[currentPhase]
+					End
+					Return 1
+				Else
+					counter = 0
+					currentPhase = 0
+					active = False
+					Return 1
+				End
+			End
+		End
+		If Not reverse
+			counter = length[currentPhase]
+		Else
+			counter = 0
+		End
+		
+		Return 0
+	End
+
+	Method GetRatio:Float()
+		Return counter / length[currentPhase]
+	End
+	
+	Method GetRatioSine:Float()
+		Return Sin(GetRatio() * 90)
+	End
+	
+	Method GetRatioInv:Float()
+		Return 1 - (counter / length[currentPhase])
+	End
+	
+	Method GetRatioInvSine:Float()
+		Return Sin( (1 - GetRatio()) * 90)
+	End
+	
+	Method AddPhase:Void(timeAmount:Int)
+		length[totalPhases] = diddyGame.CalcAnimLength(timeAmount)
+		totalPhases += 1
 	End
 End
