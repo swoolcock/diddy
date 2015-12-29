@@ -186,7 +186,14 @@ Public
 		tilesetSource = Self.images
 		diddyMouse = New DiddyMouse
 	End
-			
+	
+	Method SetFPS:Void(amount:Int)
+		FPS = amount
+		dt.targetfps = FPS
+		dt.lastticks = Millisecs()
+		SetUpdateRate(FPS)
+	End
+		
 	Method OnCreate:Int()
 		Try
 			' Store the device width and height
