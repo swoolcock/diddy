@@ -682,3 +682,9 @@ Function InterpolateWithEase:Float(startValue:Float, endValue:Float, progress:Fl
 			Return Lerp(startValue, endValue, progress);
 	End
 End
+
+Function DebugPrint(msg:String)
+	#if CONFIG="debug"
+		Print("DebugPrint - " + msg)
+	#end
+End

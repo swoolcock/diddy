@@ -455,15 +455,15 @@ Summary: Loads in a simple menu via JSON
 			sm.Init("", "", menuX, menuY, gap, useVirtualRes, orientation)
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
-				Print " menuMap.Key = " + menuMap.Key
+				DebugPrint " menuMap.Key = " + menuMap.Key
 				Select menuMap.Key.ToLower()
 					Case "buttons"
 						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
 						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
-							Print "buttonsMap.Key = " + buttonsMap.Key
+							DebugPrint "buttonsMap.Key = " + buttonsMap.Key
 							Select buttonsMap.Key
 								Case "button"
-									Print "extracting button data..."
+									DebugPrint "extracting button data..."
 									
 									Local buttonJa:JsonArray = JsonArray(buttonsMap.Value)
 									
@@ -513,10 +513,10 @@ Summary: Loads in a simple menu via JSON
 					Case "sliders"
 						Local slidersJo:JsonObject = JsonObject(menuMap.Value)
 						For Local slidersMap:map.Node<String, JsonValue> = EachIn slidersJo.GetData()
-							Print "slidersMap.Key = " + slidersMap.Key
+							DebugPrint "slidersMap.Key = " + slidersMap.Key
 							Select slidersMap.Key
 								Case "slider"
-									Print "extracting slider data..."
+									DebugPrint "extracting slider data..."
 									
 									Local sliderJa:JsonArray = JsonArray(slidersMap.Value)
 									
@@ -543,7 +543,7 @@ Summary: Loads in a simple menu via JSON
 			Error "JsonError"
 		End
 		
-		Print "menuOffsetX  = " + menuOffsetX
+		DebugPrint "menuOffsetX  = " + menuOffsetX
 		If menuOffsetX <> 0
 			Local xx:Float
 			If orientation = VERTICAL

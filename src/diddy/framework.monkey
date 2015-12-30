@@ -724,9 +724,7 @@ Class LoadingBar
 	
 	Method MoveBar:Void()
 		currentStep = currentStep + 1
-		#If CONFIG="debug"
-			Print "Loadingbar currentStep = " + currentStep
-		#End 
+		DebugPrint "Loadingbar currentStep = " + currentStep
 		position = currentStep * stepSize
 		If position > fullImage.Width() Then position = fullImage.Width()
 		If currentStep = steps Then finished = True
@@ -1063,7 +1061,7 @@ Class DeltaTimer
 		delta = frametime / (1000.0 / targetfps)
 		If delta > 5 Then
 			If diddyGame.debugOn
-				Print "WARNING DELTA GREATER THAN 5!!! Reseting it to 1"
+				DebugPrint "WARNING DELTA GREATER THAN 5!!! Reseting it to 1"
 			End
 			delta = 1
 		End
@@ -1125,18 +1123,18 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 		While True
 			' name of the image
 			line = all[i].Trim()
-			If debug Then Print "name = "+line
+			If debug Then DebugPrint "name = "+line
 			If line = "" Then Exit
 			Local name:String = line
 			'rotate
 			i+=1
 			line = all[i].Trim()
-			If debug Then Print "rotate = "+line
+			If debug Then DebugPrint "rotate = "+line
 			Local rotate:String = line
 			' x and y
 			i+=1
 			line = all[i].Trim()
-			If debug Then Print "x and y = "+line
+			If debug Then DebugPrint "x and y = "+line
 			xy = line[ (line.FindLast(":")+1)..].Split(",")
 			Local x:Int = Int(xy[0].Trim())
 			Local y:Int = Int(xy[1].Trim())
@@ -1172,16 +1170,16 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 				name += index
 			End
 			If debug
-				Print "name    = " + name
-				Print "x       = " + x
-				Print "y       = " + y
-				Print "width   = " + width
-				Print "height  = " + height
-				Print "origX   = " + origX
-				Print "origY   = " + origY
-				Print "offsetX = " + offsetX
-				Print "offsetY = " + offsetY
-				Print "index   = " + index
+				DebugPrint "name    = " + name
+				DebugPrint "x       = " + x
+				DebugPrint "y       = " + y
+				DebugPrint "width   = " + width
+				DebugPrint "height  = " + height
+				DebugPrint "origX   = " + origX
+				DebugPrint "origY   = " + origY
+				DebugPrint "offsetX = " + offsetX
+				DebugPrint "offsetY = " + offsetY
+				DebugPrint "index   = " + index
 			End
 			
 			gi.name = name.ToUpper()
