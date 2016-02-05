@@ -2026,6 +2026,9 @@ Class Sprite
 	' timer
 	Field timer:Float
 	Field timerSpeed:Float = 0.01
+	Field tweenType:Int = TweenType.LINEAR
+	Field doTween:Int = 0
+	Field stopWhenFinished:Bool
 	
 	Method New(img:GameImage, x:Float, y:Float)
 		Self.image = img
@@ -2081,19 +2084,68 @@ Class Sprite
 		If ygravity > 0 Then dy += ygravity * dt.delta
 	End
 	
-	Method UpdateTimer:Void(loop:Bool, stopWhenFinished:Bool)
+	Method UpdateTimer:Bool(loop:Bool, stopWhenFinished:Bool)
 		timer += timerSpeed * dt.delta
 		
 		If stopWhenFinished
 			If timer >= 1 Then
 				timer = 1
+				Return True
 			End
 		ElseIf loop
 			If timer >= 1 Then
 				timer = 0
+				Return True
 			End
 		End
-		
+		Return False
+	End
+	
+	Method SetTweenXYR:Void(ox:Float, oy:Float, ex:Float, ey:Float, oldR:Float, newR:Float, tweenType:Int = TweenType.LINEAR, loop:Bool = False, stopWhenFinished:Bool = True)
+		Self.ox = ox
+		Self.oy = oy
+		Self.ex = ex
+		Self.ey = ey
+		Self.oldRotation = oldR
+		Self.newRotation = newR
+		Self.doTween = True
+		Self.loop = loop
+		Self.tweenType = tweenType
+		Self.stopWhenFinished = stopWhenFinished
+	End
+
+	Method ManageTween:Bool()
+		Local finished:Bool = False
+		If doTween
+			finished = UpdateTimer(loop, stopWhenFinished)
+			Select tweenType
+				Case TweenType.LINEAR
+					x = LinearTween(ox, ex, timer)
+					y = LinearTween(oy, ey, timer)
+					rotation = LinearTween(oldRotation, newRotation, timer)
+				Case TweenType.DOWN
+					x = TweenDown(ox, ex, timer)
+					y = TweenDown(oy, ey, timer)
+					rotation = TweenDown(oldRotation, newRotation, timer)
+				Case TweenType.UP
+					x = TweenUp(ox, ex, timer)
+					y = TweenUp(oy, ey, timer)
+					rotation = TweenUp(oldRotation, newRotation, timer)
+				Case TweenType.QUAD
+					x = QuadTween(ox, ex, timer)
+					y = QuadTween(oy, ey, timer)
+					rotation = QuadTween(oldRotation, newRotation, timer)
+				Case TweenType.QUINTIC
+					x = QuinticTween(ox, ex, timer)
+					y = QuinticTween(oy, ey, timer)
+					rotation = QuinticTween(oldRotation, newRotation, timer)
+				Case TweenType.SMOOTH
+					x = TweenSmooth(ox, ex, timer)
+					y = TweenSmooth(oy, ey, timer)
+					rotation = TweenSmooth(oldRotation, newRotation, timer)
+			End
+		End
+		Return finished
 	End
 	
 	Method ManageScale:Void()
@@ -2395,6 +2447,27 @@ Class HitBox
 	
 End
 
+Class TweenType
+	Const LINEAR:Int = 0
+	Const QUAD:Int = 1
+	Const QUINTIC:Int = 2
+	Const SMOOTH:Int = 3
+	Const UP:Int = 4
+	Const DOWN:Int = 5
+End
+
+Class ExtrasParticle
+	Field particle:Particle
+	
+	Method New(p:Particle)
+		Self.particle = p
+	End
+	
+	Method PostTween:Void()
+		
+	End
+End
+
 'summary: Particle Class
 Class Particle Extends Sprite
 	Global MAX_PARTICLES:Int = 800
@@ -2409,11 +2482,18 @@ Class Particle Extends Sprite
 	Field fadeInLength:Float = 0
 	Field fadeLength:Float = 0
 	Field active:Int = 0
+	Field doFade:Int = 0
+	Field tweenFinished:Bool
+	Field extras:ExtrasParticle
 	
 	Function Cache:Void()
 		For Local i:Int = 0 To MAX_PARTICLES - 1
 			particles[i] = New Particle()
 		Next
+	End
+	
+	Method SetExtras:Void(extras:ExtrasParticle)
+		Self.extras = extras
 	End
 	
 	Function Create:Particle(gi:GameImage, x:Float, y:Float, dx:Float = 0, dy:Float = 0, gravity:Float = 0, fadeLength:Float = 0, lifeCounter:Int = 0)
@@ -2437,6 +2517,13 @@ Class Particle Extends Sprite
 				particles[i].ygravity = gravity
 				particles[i].fadeLength = fadeLength / 10
 				particles[i].fadeCounter = particles[i].fadeLength
+				
+				If particles[i].fadeLength > 0
+					particles[i].doFade = 1
+				Else
+					particles[i].alpha = 1
+				End
+				
 				If lifeCounter>0 Then particles[i].lifeCounter = lifeCounter / 10
 				particles[i].active = 1
 				If maxIndex < 0 Or i > maxIndex Then maxIndex = i
@@ -2459,7 +2546,12 @@ Class Particle Extends Sprite
 			particles[i].scaleCounter = 0
 			particles[i].rotationLoop = False
 			particles[i].rotation = 0
+			particles[i].timer = 0
+			particles[i].tweenFinished = False
 			particles[i].SetScaleXY(1, 1)
+			If particles[i].extras
+				particles[i].extras = Null
+			End
 		Next
 		minIndex = -1
 		maxIndex = -1
@@ -2510,22 +2602,27 @@ Class Particle Extends Sprite
 
 		ManageRotation()
 		ManageScale()
-		
-		If fadeIn Then
-			fadeCounter+=dt.delta
-
-			If fadeCounter >= fadeInLength Then
-				fadeCounter = fadeLength
-				fadeIn = 0
-				alpha = 1
-			End
-		Elseif fadeCounter>0 Then
-			fadeCounter-=dt.delta
-			If fadeCounter <= 0 Then
-				alpha = 0
-				active = 0
-			End 
+		tweenFinished = ManageTween()
+		If tweenFinished
+			If extras Then extras.PostTween()
 		End
+		If doFade
+			If fadeIn Then
+				fadeCounter+=dt.delta
+	
+				If fadeCounter >= fadeInLength Then
+					fadeCounter = fadeLength
+					fadeIn = 0
+					alpha = 1
+				End
+			Elseif fadeCounter>0 Then
+				fadeCounter-=dt.delta
+				If fadeCounter <= 0 Then
+					alpha = 0
+					active = 0
+				End 
+			End
+		End		
 	End
 End
 
