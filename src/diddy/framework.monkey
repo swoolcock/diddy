@@ -2496,6 +2496,13 @@ Class Particle Extends Sprite
 		Self.extras = extras
 	End
 	
+	Method SetFade:Void(fadeIn:Bool, fadeInLength:Float, fadeLength:Float)
+		Self.fadeIn = fadeIn'True
+		Self.fadeInLength = fadeInLength'diddyGame.CalcAnimLength(500)
+		Self.fadeLength = fadeLength'diddyGame.CalcAnimLength(1000)
+		Self.doFade = 1
+	End
+	
 	Function Create:Particle(gi:GameImage, x:Float, y:Float, dx:Float = 0, dy:Float = 0, gravity:Float = 0, fadeLength:Float = 0, lifeCounter:Int = 0)
 		Local i%=lastDeath
 		Repeat
@@ -2517,6 +2524,10 @@ Class Particle Extends Sprite
 				particles[i].ygravity = gravity
 				particles[i].fadeLength = fadeLength / 10
 				particles[i].fadeCounter = particles[i].fadeLength
+				particles[i].tweenFinished = False
+				particles[i].timerSpeed = 0.01
+				particles[i].tweenType = TweenType.LINEAR
+				particles[i].doTween = 0
 				
 				If particles[i].fadeLength > 0
 					particles[i].doFade = 1
@@ -2548,6 +2559,9 @@ Class Particle Extends Sprite
 			particles[i].rotation = 0
 			particles[i].timer = 0
 			particles[i].tweenFinished = False
+			particles[i].timerSpeed = 0.01
+			particles[i].tweenType = TweenType.LINEAR
+			particles[i].doTween = 0
 			particles[i].SetScaleXY(1, 1)
 			If particles[i].extras
 				particles[i].extras = Null
