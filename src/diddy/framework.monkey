@@ -835,6 +835,13 @@ Public
 	Field backScreenName:String = ""
 	Field layers:DiddyDataLayers
 	Field destinationScreen:Screen
+	Field active:Bool = False
+	Field hiding:Bool = False
+	' timer
+	Field timer:Float
+	Field timerSpeed:Float = 0.08
+	Field alpha:Float = 0
+	Field alphaText:Float = 0
 	
 	Method New(name:String="")
 		Self.name = name
