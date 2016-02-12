@@ -231,7 +231,7 @@ The button is added to the end of the menu and is positioned to fit the current 
 Local sb:SimpleButton = menu.AddButton(diddyGame.images.Find("newgame"), diddyGame.images.Find("newgameMO"), "New Game")
 [/code]
 #End
-	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False, disableImageFile:GameImage, disableImageMOFile:GameImage)
+	Method AddButton:SimpleButton(buttonImage:GameImage, mouseOverFile:GameImage, name:String = "", drawText:Bool = False, disableImageFile:GameImage = Null, disableImageMOFile:GameImage = Null)
 		Local b:SimpleButton = ProcessAddButton(buttonImage, mouseOverFile, name, drawText, disableImageFile, disableImageMOFile)
 		If orientation = VERTICAL
 			IncreaseHeight(b)
