@@ -1036,6 +1036,10 @@ Public
 		Return isPaused
 	End
 	
+	Method UserData:Object() Property
+		Return userData
+	End
+	
 '''''''''''''''''''''''''''''''
 ' Update engine
 '''''''''''''''''''''''''''''''
