@@ -2504,7 +2504,10 @@ Class Particle Extends Sprite
 	End
 	
 	Method SetFade:Void(fadeIn:Bool, fadeInLength:Float, fadeLength:Float)
-		Self.fadeIn = fadeIn'True
+		Self.fadeIn = fadeIn
+		If fadeIn
+			alpha = 0
+		End
 		Self.fadeInLength = fadeInLength'diddyGame.CalcAnimLength(500)
 		Self.fadeLength = fadeLength'diddyGame.CalcAnimLength(1000)
 		Self.doFade = 1

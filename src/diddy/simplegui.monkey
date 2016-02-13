@@ -631,7 +631,7 @@ Class SimpleButton Extends Sprite Implements SimpleMenuObject
 	Field data:Int
 	
 	Field sprite:Sprite
-	
+	Field sprite2:Sprite
 #Rem
 Summary: Delegates to [[Sprite.Precache]] if the button has a valid image.
 Developers do not need to call this.
@@ -646,6 +646,9 @@ Developers do not need to call this.
 		Self.alpha = alpha
 		If sprite
 			sprite.alpha = alpha
+		End
+		if sprite2
+			sprite2.alpha = alpha
 		End
 	End
 	
@@ -684,6 +687,10 @@ Developers do not need to call this.
 		End
 		If sprite
 			sprite.Draw()
+			SetAlpha Self.alpha
+		End
+		If sprite2
+			sprite2.Draw()
 			SetAlpha Self.alpha
 		End
 		SetAlpha 1
