@@ -1344,7 +1344,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 		Return LoadTileset(name, tileWidth, tileHeight, tileMargin, tileSpacing, nameoverride, midhandle, ignoreCache, readPixels, maskRed, maskGreen, maskBlue)
 	End
 	
-	Method Find:GameImage(name:String)
+	Method Find:GameImage(name:String, ignoreError:Bool = False)
 		name = name.ToUpper()
 
 		' debug: print all keys in the map
@@ -1357,8 +1357,10 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 			Next
 		End
 		Local i:GameImage = Self.Get(name)
-		AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
-		If i.preLoad and i.image = null Then AssertError("Image '" + name + "' not found in the ImageBank")
+		If Not ignoreError
+			AssertNotNull(i, "Image '" + name + "' not found in the ImageBank")
+			If i.preLoad and i.image = Null Then AssertError("Image '" + name + "' not found in the ImageBank")
+		End
 		Return i
 	End
 	

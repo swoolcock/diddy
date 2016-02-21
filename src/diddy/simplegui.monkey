@@ -484,11 +484,23 @@ Summary: Loads in a simple menu via JSON
 										Local displayText:Bool = o.GetBool("displayText", True)
 										Local disabledClick:Bool = o.GetBool("disabledClick")
 										
+										DebugPrint "name = " + name
+										
+										'check image bank...
 										Local b:SimpleButton
-										If useDisabled
-											b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText, menuPath + image + "_disabled.png", menuPath + image + "_disabledMO.png")
+										If diddyGame.images.Find(image, True) <> Null
+											If useDisabled
+												b = sm.AddButton(diddyGame.images.Find(image), diddyGame.images.Find(image + "MO", True), name, displayText, diddyGame.images.Find(image + "_disabled", True), diddyGame.images.Find(image + "_disabledMO", True))
+											Else
+												b = sm.AddButton(diddyGame.images.Find(image), diddyGame.images.Find(image + "MO", True), name, displayText)
+											End
 										Else
-											b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText)
+											If useDisabled
+												b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText, menuPath + image + "_disabled.png", menuPath + image + "_disabledMO.png")
+											Else
+												b = sm.AddButton(menuPath + image + ".png", menuPath + image + "MO" + ".png", name, displayText)
+											End
+
 										End
 										
 										b.disabledClick = disabledClick
@@ -659,20 +671,21 @@ Developers do not need to call this.
 	Method Draw:Void()
 		If active = 0 Then Return
 		SetAlpha Self.alpha
+		SetColor(255,255,255)
 		if mouseOver
 			If disabled And imageDisabledMO <> Null Then
-				DrawImage Self.imageDisabledMO.image, x, y
+				If imageDisabledMO.image <> Null Then DrawImage Self.imageDisabledMO.image, x, y
 			ElseIf selected And imageSelectedMO <> Null Then
-				DrawImage Self.imageSelectedMO.image, x, y
-			ElseIf imageMouseOver.image <> Null
-				DrawImage Self.imageMouseOver.image, x, y
+				If imageSelectedMO.image <> Null Then DrawImage Self.imageSelectedMO.image, x, y
+			ElseIf imageMouseOver <> Null
+				If imageMouseOver.image Then DrawImage Self.imageMouseOver.image, x, y
 			Else
 				DrawImage Self.image.image, x, y
 			End
-		ElseIf selected And imageSelected <> null Then
-			DrawImage Self.imageSelected.image, x, y
+		ElseIf selected And imageSelected <> Null Then
+			If imageSelected.image <> Null Then DrawImage Self.imageSelected.image, x, y
 		ElseIf disabled And imageDisabled <> Null Then
-			DrawImage Self.imageDisabled.image, x, y
+			If imageDisabled.image <> Null Then DrawImage Self.imageDisabled.image, x, y
 		Else
 			DrawImage Self.image.image, x, y
 		EndIf
