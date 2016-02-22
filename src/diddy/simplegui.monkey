@@ -540,10 +540,14 @@ Summary: Loads in a simple menu via JSON
 										Local y:Int = o.GetInt("y")
 										Local borderX:Int = o.GetInt("borderX")
 										Local borderY:Int = o.GetInt("borderY")
-																				
-										Local b:SimpleSlider = New SimpleSlider(menuPath + image + "_bar.png", menuPath + image + ".png", x, y, borderX, name, borderY, True)
-										sm.AddLast(b)
 										
+										Local b:SimpleSlider
+										If diddyGame.images.Find(image + "_bar", True) <> Null
+											b = New SimpleSlider(diddyGame.images.Find(image + "_bar"), diddyGame.images.Find(image), x, y, borderX, name, borderY, True)
+										Else
+											b = New SimpleSlider(menuPath + image + "_bar.png", menuPath + image + ".png", x, y, borderX, name, borderY, True)
+										End
+										sm.AddLast(b)
 										
 									Next
 							End
@@ -864,15 +868,25 @@ Class SimpleSlider Extends Sprite Implements SimpleMenuObject
 Summary: Creates a new [[SimpleSlider]] with the specified configuration.
 #End
 	Method New(barFile:String, dotFile:String, x:Int, y:int, border:int = 0, name:String="", borderY:int=5, useVirtualRes:Bool = True)
-		Self.image = New GameImage
-		Self.useVirtualRes = useVirtualRes
+		Local barImage:GameImage = New GameImage
+		barImage.Load(diddyGame.images.path + barFile, False)
 		
-		image.Load(diddyGame.images.path + barFile, False)
-		Self.name = name'StripAll(barFile.ToUpper())	
-		
-		dotImage = New GameImage
+		Local dotImage:GameImage = New GameImage
 		dotImage.Load(diddyGame.images.path + dotFile, False)
-		dotImage.name = StripAll(dotFile.ToUpper())
+
+		Init(barImage, dotImage, x, y, border, name, borderY, useVirtualRes)
+	End
+	
+	Method New(barImage:GameImage, dotImage:GameImage, x:Int, y:int, border:int = 0, name:String = "", borderY:int = 5, useVirtualRes:Bool = True)
+		Init(barImage, dotImage, x, y, border, name, borderY, useVirtualRes)
+	End
+	
+	Method Init:Void(barImage:GameImage, dotImage:GameImage, x:Int, y:int, border:int = 0, name:String = "", borderY:int = 5, useVirtualRes:Bool = True)
+		Self.image = barImage
+		Self.useVirtualRes = useVirtualRes
+		Self.name = name
+		
+		Self.dotImage = dotImage
 		
 		Self.x = x
 		Self.y = y
@@ -883,6 +897,8 @@ Summary: Creates a new [[SimpleSlider]] with the specified configuration.
 		Self.dotY = y-3
 		Self.active = 1
 	End
+	
+	
 	
 	Method SetSliderXY:Void(x:Float, y:Float)
 		Self.x = x
