@@ -677,8 +677,12 @@ Developers do not need to call this.
 		SetAlpha Self.alpha
 		SetColor(255,255,255)
 		if mouseOver
-			If disabled And imageDisabledMO <> Null Then
-				If imageDisabledMO.image <> Null Then DrawImage Self.imageDisabledMO.image, x, y
+			If disabled
+				If imageDisabledMO <> Null Then
+					If imageDisabledMO.image <> Null Then DrawImage Self.imageDisabledMO.image, x, y
+				Else If imageDisabled <> Null Then
+					If imageDisabled.image <> Null Then DrawImage Self.imageDisabled.image, x, y
+				End
 			ElseIf selected And imageSelectedMO <> Null Then
 				If imageSelectedMO.image <> Null Then DrawImage Self.imageSelectedMO.image, x, y
 			ElseIf imageMouseOver <> Null
