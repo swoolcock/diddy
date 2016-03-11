@@ -52,7 +52,7 @@ Summary: Creates a new SimpleMenu with the specified configuration.
 Summary: Initialises the menu (internal method).
 Developers do not need to call this.
 #End
-	Method Init:Void(soundMouseOverFile:String="", soundClickFile:String="", x:Float, y:Float, gap:Int, useVirtualRes:Bool, orientation:Int)
+	Method Init:Void(soundMouseOverFile:String = "", soundClickFile:String = "", x:Float, y:Float, gap:Int, useVirtualRes:Bool, orientation:Int, soundMouseOverGS:String = "", soundMouseClickGS:String = "")
 		Self.Clear()
 		Self.useVirtualRes = useVirtualRes
 		Self.orientation = orientation
@@ -66,13 +66,19 @@ Developers do not need to call this.
 		mouseOverName = ""
 		clickedName = ""
 		addGap = 0
-		If soundMouseOverFile<>"" Then
+		If soundMouseOverFile <> "" Then
 			soundMouseOver = New GameSound
 			soundMouseOver.Load(soundMouseOverFile)
 		End
 		If soundClickFile<>"" Then
 			soundClick = New GameSound
 			soundClick.Load(soundClickFile)		
+		End
+		If soundMouseOverGS
+			soundMouseOver = diddyGame.sounds.Find(soundMouseOverGS)
+		End
+		If soundMouseClickGS
+			soundClick = diddyGame.sounds.Find(soundMouseClickGS)
 		End
 	End
 
@@ -451,8 +457,13 @@ Summary: Loads in a simple menu via JSON
 			
 			orientation = menuJo.GetInt("orientation")
 			
+			Local soundMouseOverFile:String = menuJo.GetString("soundMouseOverFile")
+			Local soundMouseClickFile:String = menuJo.GetString("soundMouseClickFile")
+			Local soundMouseOver:String = menuJo.GetString("soundMouseOver")
+			Local soundMouseClick:String = menuJo.GetString("soundMouseClick")
+			
 			gap = menuJo.GetInt("gap", gap)		
-			sm.Init("", "", menuX, menuY, gap, useVirtualRes, orientation)
+			sm.Init(soundMouseOverFile, soundMouseClickFile, menuX, menuY, gap, useVirtualRes, orientation, soundMouseOver, soundMouseClick)
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
 				DebugPrint " menuMap.Key = " + menuMap.Key
@@ -483,9 +494,12 @@ Summary: Loads in a simple menu via JSON
 										Local y:Int = o.GetInt("y", -1000)
 										Local displayText:Bool = o.GetBool("displayText", True)
 										Local disabledClick:Bool = o.GetBool("disabledClick")
-										
-										DebugPrint "name = " + name
-										
+										Local spriteName:String = o.GetString("spriteName")
+										Local spriteMoveByX:Float = o.GetFloat("spriteMoveByX")
+										Local spriteMoveByY:Float = o.GetFloat("spriteMoveByY")
+										Local spriteScaleX:Float = o.GetFloat("spriteScaleX", 1)
+										Local spriteScaleY:Float = o.GetFloat("spriteScaleY", 1)
+	
 										'check image bank...
 										Local b:SimpleButton
 										If diddyGame.images.Find(image, True) <> Null
@@ -519,6 +533,12 @@ Summary: Loads in a simple menu via JSON
 										End
 										
 										b.MoveBy(moveByX, moveByY)
+										
+										If spriteName <> ""
+											b.sprite = New Sprite(diddyGame.images.Find(spriteName), b.x + spriteMoveByX, b.y + spriteMoveByY)
+											b.sprite.name = spriteName
+											b.sprite.SetScaleXY(spriteScaleX, spriteScaleY)
+										End
 									Next
 							End
 						Next
