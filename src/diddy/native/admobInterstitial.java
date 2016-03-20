@@ -9,21 +9,24 @@ import com.google.android.gms.ads.*;
 
 /**
  * Simple Admob Interstitial support for Monkey
- *
+ * Note: Only works on Monkey < v84d due to changes in androidgame.java
+ *       See bug report http://www.monkey-x.com/Community/posts.php?topic=10440
 */
 class AdmobInterstitial implements Runnable{
 
-	// the kind of "singleton"
+	// kind of "singleton"
 	static AdmobInterstitial _admob;
 	// the ad
 	InterstitialAd interstitialAd;
 	// ad Unit ID
 	String adUnitId;
+	// test device ID
+	String testDeviceId;
 	
 	// creates an instance of the object and start the thread
-	static public AdmobInterstitial GetAdmobInterstitial(String adUnitId){
+	static public AdmobInterstitial GetAdmobInterstitial(String adUnitId, String testDeviceId){
 		if( _admob==null ) _admob=new AdmobInterstitial();
-		_admob.startAd(adUnitId);
+		_admob.startAd(adUnitId, testDeviceId);
 		return _admob;
 	}
 
@@ -37,16 +40,22 @@ class AdmobInterstitial implements Runnable{
 	}
 	
 	// start the thread 
-	private void startAd(String adUnitId){
+	private void startAd(String adUnitId, String testDeviceId){
 		this.adUnitId = adUnitId;
+		this.testDeviceId = testDeviceId;
 		BBAndroidGame.AndroidGame().GetGameView().post(this);
 	}
 	
 	// loads an ad
 	private void loadAd(){
 		if (interstitialAd != null ) {
-			AdRequest.Builder adRequest = new AdRequest.Builder();
-			interstitialAd.loadAd(adRequest.build());
+			AdRequest adRequest = null;
+			if (testDeviceId.length()>0) {
+				adRequest = new AdRequest.Builder().addTestDevice(testDeviceId).build();
+			} else {
+				adRequest = new AdRequest.Builder().build();
+			}
+			interstitialAd.loadAd(adRequest);
 		}
 	}
 	

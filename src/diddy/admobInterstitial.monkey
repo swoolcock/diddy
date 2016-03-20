@@ -17,6 +17,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Extern
 
 Class AdmobInterstitial Extends Null = "AdmobInterstitial"
-	Function GetAdmobInterstitial:AdmobInterstitial(adUnitId:String)
+	Function GetAdmobInterstitial:AdmobInterstitial(adUnitId:String, testDeviceId:String)
 	Method ShowAd:Void()
 End
