@@ -466,16 +466,12 @@ Summary: Loads in a simple menu via JSON
 			sm.Init(soundMouseOverFile, soundMouseClickFile, menuX, menuY, gap, useVirtualRes, orientation, soundMouseOver, soundMouseClick)
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
-				DebugPrint " menuMap.Key = " + menuMap.Key
 				Select menuMap.Key.ToLower()
 					Case "buttons"
 						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
 						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
-							DebugPrint "buttonsMap.Key = " + buttonsMap.Key
 							Select buttonsMap.Key
 								Case "button"
-									DebugPrint "extracting button data..."
-									
 									Local buttonJa:JsonArray = JsonArray(buttonsMap.Value)
 									
 									For Local d:Int = 0 Until buttonJa.Length()
@@ -545,11 +541,9 @@ Summary: Loads in a simple menu via JSON
 					Case "sliders"
 						Local slidersJo:JsonObject = JsonObject(menuMap.Value)
 						For Local slidersMap:map.Node<String, JsonValue> = EachIn slidersJo.GetData()
-							DebugPrint "slidersMap.Key = " + slidersMap.Key
 							Select slidersMap.Key
 								Case "slider"
-									DebugPrint "extracting slider data..."
-									
+								
 									Local sliderJa:JsonArray = JsonArray(slidersMap.Value)
 									
 									For Local d:Int = 0 Until sliderJa.Length()
@@ -578,8 +572,7 @@ Summary: Loads in a simple menu via JSON
 		Catch t:JsonError
 			Error "JsonError"
 		End
-		
-		DebugPrint "menuOffsetX  = " + menuOffsetX
+
 		If menuOffsetX <> 0
 			Local xx:Float
 			If orientation = VERTICAL
