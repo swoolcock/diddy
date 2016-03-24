@@ -2465,8 +2465,24 @@ Class TweenType
 	Const DOWN:Int = 5
 End
 
+Class ExtrasParticleObject
+	Field particle:ParticleObject
+	Field userObject1:Object
+	Field userObject2:Object
+	
+	Method New(p:ParticleObject)
+		Self.particle = p
+	End
+	
+	Method PostTween:Void()
+		
+	End
+End
+
 Class ExtrasParticle
 	Field particle:Particle
+	Field userObject1:Object
+	Field userObject2:Object
 	
 	Method New(p:Particle)
 		Self.particle = p
@@ -2474,6 +2490,141 @@ Class ExtrasParticle
 	
 	Method PostTween:Void()
 		
+	End
+End
+
+
+Class ParticleObject Extends Sprite
+	Global ParticlesList:List<ParticleObject> = New List<ParticleObject>()
+	Field lifeCounter:Float = 0
+	Field fadeIn:Int = 0
+	Field fadeCounter:Float
+	Field fadeInLength:Float = 0
+	Field fadeLength:Float = 0
+	Field active:Int = 0
+	Field doFade:Int = 0
+	Field tweenFinished:Bool
+	Field extras:ExtrasParticleObject
+		
+	Method SetExtras:Void(extras:ExtrasParticleObject)
+		Self.extras = extras
+	End
+	
+	Method SetFade:Void(fadeIn:Bool, fadeInLength:Float, fadeLength:Float)
+		Self.fadeIn = fadeIn
+		If fadeIn
+			alpha = 0
+		End
+		Self.fadeInLength = fadeInLength'diddyGame.CalcAnimLength(500)
+		Self.fadeLength = fadeLength'diddyGame.CalcAnimLength(1000)
+		Self.doFade = 1
+	End
+	
+	Function Create:ParticleObject(gi:GameImage, x:Float, y:Float, dx:Float = 0, dy:Float = 0, gravity:Float = 0, fadeLength:Float = 0, lifeCounter:Int = 0)
+
+		Local particle:ParticleObject = New ParticleObject()
+		particle.SetImage(gi)
+		particle.x = x
+		particle.y = y
+		particle.dx = dx
+		particle.dy = dy
+		
+		particle.frame = 0
+		particle.rotationCounter = 0
+		particle.scaleCounter = 0
+		particle.rotationLoop = False
+		particle.rotation = 0
+		particle.SetScaleXY(1, 1)
+		
+		particle.ygravity = gravity
+		particle.fadeLength = fadeLength / 10
+		particle.fadeCounter = particle.fadeLength
+		particle.tweenFinished = False
+		particle.timerSpeed = 0.01
+		particle.tweenType = TweenType.LINEAR
+		particle.doTween = 0
+		
+		If particle.fadeLength > 0
+			particle.doFade = 1
+			particle.alpha = 0
+		Else
+			particle.doFade = 0
+			particle.alpha = 1
+		End
+		
+		If lifeCounter>0 Then particle.lifeCounter = lifeCounter / 10
+		particle.active = 1
+
+		ParticlesList.AddLast(particle)
+		
+		Return particle
+
+	End
+	
+	Function Clear:Void()
+		ParticlesList.Clear()
+	End
+	
+	Function DrawAll:Void(offsetx:Float = 0, offsety:Float = 0)
+		For Local particle:ParticleObject = EachIn ParticlesList
+			If particle.doFade = 1
+				If particle.fadeCounter > 0 And particle.active Then
+					If particle.fadeIn Then
+						particle.alpha = particle.fadeCounter / particle.fadeInLength
+					Else
+						particle.alpha = particle.fadeCounter / particle.fadeLength
+					End
+				End
+			End
+			particle.Draw(offsetx, offsety)
+		Next
+	End
+	
+	Function UpdateAll:Void()
+		For Local particle:ParticleObject = EachIn ParticlesList
+			If particle.active
+				particle.Update()
+			End
+		Next
+	End
+	
+	Method Update:Void()
+		Super.Move()
+
+		ManageRotation()
+		ManageScale()
+		tweenFinished = ManageTween()
+		If tweenFinished
+			If extras Then extras.PostTween()
+		End
+		If doFade
+			If fadeIn Then
+				fadeCounter+=dt.delta
+	
+				If fadeCounter >= fadeInLength Then
+					fadeCounter = fadeLength
+					fadeIn = 0
+					alpha = 1
+				End
+			Elseif fadeCounter>0 Then
+				fadeCounter-=dt.delta
+				If fadeCounter <= 0 Then
+					alpha = 0
+					active = 0
+					Kill()
+				End
+			End
+		End
+	End
+	
+	Method Kill:Void()
+		ParticlesList.Remove(Self)
+	End
+
+	Function KillAll:Void()
+		For Local p:ParticleObject = EachIn ParticlesList
+			p.Kill()
+		Next
 	End
 End
 
@@ -2543,7 +2694,9 @@ Class Particle Extends Sprite
 				
 				If particles[i].fadeLength > 0
 					particles[i].doFade = 1
+					particles[i].alpha = 0
 				Else
+					particles[i].doFade = 0
 					particles[i].alpha = 1
 				End
 				
@@ -2574,6 +2727,7 @@ Class Particle Extends Sprite
 			particles[i].timerSpeed = 0.01
 			particles[i].tweenType = TweenType.LINEAR
 			particles[i].doTween = 0
+			particles[i].doFade = 0
 			particles[i].SetScaleXY(1, 1)
 			If particles[i].extras
 				particles[i].extras = Null
@@ -2589,11 +2743,13 @@ Class Particle Extends Sprite
 		If minIndex < 0 Or maxIndex < 0 Then Return
 		For Local i% = minIndex To maxIndex
 			If particles[i] <> Null And particles[i].image <> Null
-				If particles[i].fadeCounter > 0 And particles[i].active Then
-					If particles[i].fadeIn Then
-						particles[i].alpha = particles[i].fadeCounter/particles[i].fadeInLength
-					Else
-						particles[i].alpha = particles[i].fadeCounter/particles[i].fadeLength
+				If particles[i].doFade = 1
+					If particles[i].fadeCounter > 0 And particles[i].active Then
+						If particles[i].fadeIn Then
+							particles[i].alpha = particles[i].fadeCounter/particles[i].fadeInLength
+						Else
+							particles[i].alpha = particles[i].fadeCounter/particles[i].fadeLength
+						End
 					End
 				End
 				particles[i].Draw(offsetx, offsety)
