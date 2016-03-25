@@ -488,6 +488,8 @@ Summary: Loads in a simple menu via JSON
 										Local blueText:Int = o.GetInt("blueText")
 										Local x:Int = o.GetInt("x", -1000)
 										Local y:Int = o.GetInt("y", -1000)
+										Local scaleX:Int = o.GetFloat("scaleX", 1)
+										Local scaleY:Int = o.GetFloat("scaleY", 1)
 										Local displayText:Bool = o.GetBool("displayText", True)
 										Local disabledClick:Bool = o.GetBool("disabledClick")
 										Local spriteName:String = o.GetString("spriteName")
@@ -513,6 +515,7 @@ Summary: Loads in a simple menu via JSON
 
 										End
 										
+										b.SetScaleXY(scaleX, scaleY)
 										b.disabledClick = disabledClick
 										
 										b.offsetY = offsetY
@@ -688,35 +691,46 @@ Developers do not need to call this.
 	Method Draw:Void()
 		If active = 0 Then Return
 		SetAlpha Self.alpha
-		SetColor(255,255,255)
-		if mouseOver
+		SetColor(255, 255, 255)
+		Local tmpX:Float = x
+		Local tmpY:Float = y
+		
+		' offset the scale
+		If scaleX <> 1
+			tmpX = x - (Self.image.w * scaleX)
+		End
+		If scaleY <> 1
+			tmpY = y - (Self.image.h * scaleY)
+		End
+		
+		If mouseOver
 			If disabled
 				If imageDisabledMO <> Null Then
-					If imageDisabledMO.image <> Null Then DrawImage Self.imageDisabledMO.image, x, y
+					If imageDisabledMO.image <> Null Then DrawImage(Self.imageDisabledMO.image, tmpX, tmpY, rotation, scaleX, scaleY)
 				Else If imageDisabled <> Null Then
-					If imageDisabled.image <> Null Then DrawImage Self.imageDisabled.image, x, y
+					If imageDisabled.image <> Null Then DrawImage(Self.imageDisabled.image, tmpX, tmpY, rotation, scaleX, scaleY)
 				End
 			ElseIf selected And imageSelectedMO <> Null Then
-				If imageSelectedMO.image <> Null Then DrawImage Self.imageSelectedMO.image, x, y
+				If imageSelectedMO.image <> Null Then DrawImage(Self.imageSelectedMO.image, tmpX, tmpY, rotation, scaleX, scaleY)
 			ElseIf imageMouseOver <> Null
-				If imageMouseOver.image Then DrawImage Self.imageMouseOver.image, x, y
+				If imageMouseOver.image Then DrawImage(Self.imageMouseOver.image, tmpX, tmpY, rotation, scaleX, scaleY)
 			Else
-				DrawImage Self.image.image, x, y
+				DrawImage(Self.image.image, tmpX, tmpY, rotation, scaleX, scaleY)
 			End
 		ElseIf selected And imageSelected <> Null Then
-			If imageSelected.image <> Null Then DrawImage Self.imageSelected.image, x, y
+			If imageSelected.image <> Null Then DrawImage(Self.imageSelected.image, tmpX, tmpY, rotation, scaleX, scaleY)
 		ElseIf disabled And imageDisabled <> Null Then
-			If imageDisabled.image <> Null Then DrawImage Self.imageDisabled.image, x, y
+			If imageDisabled.image <> Null Then DrawImage(Self.imageDisabled.image, tmpX, tmpY, rotation, scaleX, scaleY)
 		Else
-			DrawImage Self.image.image, x, y
+			DrawImage(Self.image.image, tmpX, tmpY, rotation, scaleX, scaleY)
 		EndIf
 		If drawText
 			If textDrawDelegate <> Null
-				textDrawDelegate.Draw(text, x + Self.image.w2 + offsetX, y + offsetY)
+				textDrawDelegate.Draw(text, tmpX + Self.image.w2 + offsetX, tmpY + offsetY)
 				textDrawDelegate.Draw(Self)
 				SetAlpha Self.alpha
 			Else
-				DrawText(text, x + Self.image.w2, y + Self.image.h2, 0.5, 0.5)
+				DrawText(text, tmpX + Self.image.w2, tmpY + Self.image.h2, 0.5, 0.5)
 			End
 		End
 		If sprite
