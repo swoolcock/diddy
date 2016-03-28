@@ -786,6 +786,15 @@ Summary: Moves the button by the passed number of pixels.
 	Method MoveBy:Void(dx:Float,dy:Float)
 		x += dx
 		y += dy
+		
+		If sprite
+			sprite.x += dx
+			sprite.y += dy
+		End
+		if sprite2
+			sprite2.x += dx
+			sprite2.y += dy
+		End
 	End
 
 #Rem
@@ -1246,18 +1255,34 @@ Summary: Renders the dialog.
 #Rem
 Summary: Moves the dialog by the set amounts along with text and menus
 #End
-	Method MoveBy:Void(x:Float, y:Float, moveButtons:Bool = True)
-		Self.x += x
-		Self.y += y
-		Self.textX += x
-		Self.textY += y
-		Self.titleX += x
-		Self.titleY += y
+	Method MoveBy:Void(dx:Float, dy:Float, moveButtons:Bool = True)
+		Print "dx =" + dx + "," + dy
+		Self.x += dx
+		Self.y += dy
+		Self.textX += dx
+		Self.textY += dy
+		Self.titleX += dx
+		Self.titleY += dy
+		
+		Self.textX1 += dx
+		Self.textY1 += dy
+		
+		If imagesDrawDelegate <> Null
+			For Local s:Sprite = EachIn imagesDrawDelegate.spriteList
+				Print "s " + s.x + "," + s.y + " gi=" + s.image.name
+				s.x += dx
+				s.y += dy
+				Print "s " + s.x + "," + s.y + " gi=" + s.image.name
+			Next
+		End
 		
 		If moveButtons
 			If menu
-				For Local b:SimpleButton = EachIn Self.menu
-					b.MoveBy(x, y)
+				For Local b:SimpleMenuObject = EachIn menu
+					If SimpleButton(b)
+						Local sb:SimpleButton = SimpleButton(b)
+						sb.MoveBy(dx, dy)
+					End
 				Next
 			End
 		End
