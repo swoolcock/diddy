@@ -1256,7 +1256,6 @@ Summary: Renders the dialog.
 Summary: Moves the dialog by the set amounts along with text and menus
 #End
 	Method MoveBy:Void(dx:Float, dy:Float, moveButtons:Bool = True)
-		Print "dx =" + dx + "," + dy
 		Self.x += dx
 		Self.y += dy
 		Self.textX += dx
@@ -1269,10 +1268,8 @@ Summary: Moves the dialog by the set amounts along with text and menus
 		
 		If imagesDrawDelegate <> Null
 			For Local s:Sprite = EachIn imagesDrawDelegate.spriteList
-				Print "s " + s.x + "," + s.y + " gi=" + s.image.name
 				s.x += dx
 				s.y += dy
-				Print "s " + s.x + "," + s.y + " gi=" + s.image.name
 			Next
 		End
 		
