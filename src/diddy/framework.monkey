@@ -362,8 +362,13 @@ Public
 			mouseX = MouseX() / SCREENX_RATIO
 			mouseY = MouseY() / SCREENY_RATIO
 		End
-		mouseHit = MouseHit()
-		inputCache.ReadInput()
+		
+		If inputCache.monitorTouch
+			inputCache.ReadInput()
+		Else
+			mouseHit = MouseHit()
+		End
+		
 		inputCache.HandleEvents(currentScreen)
 		
 		If debugKeyOn

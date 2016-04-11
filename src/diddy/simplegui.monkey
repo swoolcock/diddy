@@ -879,7 +879,7 @@ Developers only need to call this if they are using the button outside of a [[Si
 			#End
 			
 
-			If MouseHit() Then
+			If diddyGame.mouseHit Then
 				Click()
 			Else
 				clicked = 0

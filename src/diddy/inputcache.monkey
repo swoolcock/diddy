@@ -304,6 +304,7 @@ Public
 			For Local i:Int = 0 Until TOUCH_COUNT
 				' get the touch hit
 				newval = TouchHit(i)
+				If i = 0 Then diddyGame.mouseHit = newval
 				If Not touchHit[i] And newval Then
 					touchHitTime[i] = now
 				End
