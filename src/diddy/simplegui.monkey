@@ -1044,9 +1044,25 @@ Class SimpleDialog
 	Field textX1:Float
 	Field textY1:Float
 	Field textDrawDelegate1:SimpleTextDrawDelegate
-	
+	Field text2:String
+	Field textX2:Float
+	Field textY2:Float
+	Field textDrawDelegate2:SimpleTextDrawDelegate
+	Field text3:String
+	Field textX3:Float
+	Field textY3:Float
+	Field textDrawDelegate3:SimpleTextDrawDelegate
+	Field text4:String
+	Field textX4:Float
+	Field textY4:Float
+	Field textDrawDelegate4:SimpleTextDrawDelegate
+			
 	Field textColor:Int[3]
 	Field textColor1:Int[3]
+	Field textColor2:Int[3]
+	Field textColor3:Int[3]
+	Field textColor4:Int[3]
+	
 	Field titleColor:Int[3]
 	Field color:Int[3]
 	Field dx:Float
@@ -1102,7 +1118,31 @@ Summary: Creates a new [[SimpleDialog]] with the specified configuration.
 		Self.textX1 = textX
 		Self.textY1 = textY
 		Self.textDrawDelegate1 = textDrawDelegate
-		SetTextColor(r, g, b)
+		SetTextColor1(r, g, b)
+	End
+	
+	Method SetText2:Void(text:String, textX:Float, textY:Float, r:Int = 255, g:Int = 255, b:Int = 255, textDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.text2 = text
+		Self.textX2 = textX
+		Self.textY2 = textY
+		Self.textDrawDelegate2 = textDrawDelegate
+		SetTextColor2(r, g, b)
+	End
+
+	Method SetText3:Void(text:String, textX:Float, textY:Float, r:Int = 255, g:Int = 255, b:Int = 255, textDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.text3 = text
+		Self.textX3 = textX
+		Self.textY3 = textY
+		Self.textDrawDelegate3 = textDrawDelegate
+		SetTextColor3(r, g, b)
+	End
+
+	Method SetText4:Void(text:String, textX:Float, textY:Float, r:Int = 255, g:Int = 255, b:Int = 255, textDrawDelegate:SimpleTextDrawDelegate = Null)
+		Self.text4 = text
+		Self.textX4 = textX
+		Self.textY4 = textY
+		Self.textDrawDelegate4 = textDrawDelegate
+		SetTextColor4(r, g, b)
 	End
 	
 	Method SetTitle:Void(titleText:String, titleX:Float, titleY:Float, r:Int = 255, g:Int = 255, b:Int = 255, titleDrawDelegate:SimpleTextDrawDelegate = Null)
@@ -1177,6 +1217,29 @@ Summary: Set the colour of the text
 		textColor[2] = b
 	End
 
+	Method SetTextColor1:Void(r:Int, g:Int, b:Int)
+		textColor1[0] = r
+		textColor1[1] = g
+		textColor1[2] = b
+	End
+	
+	Method SetTextColor2:Void(r:Int, g:Int, b:Int)
+		textColor2[0] = r
+		textColor2[1] = g
+		textColor2[2] = b
+	End
+	
+	Method SetTextColor3:Void(r:Int, g:Int, b:Int)
+		textColor3[0] = r
+		textColor3[1] = g
+		textColor3[2] = b
+	End
+	
+	Method SetTextColor4:Void(r:Int, g:Int, b:Int)
+		textColor4[0] = r
+		textColor4[1] = g
+		textColor4[2] = b
+	End
 #Rem
 Summary: Set the colour of the title
 #END
@@ -1243,6 +1306,27 @@ Summary: Renders the dialog.
 				textDrawDelegate1.Draw(text1, textX1, textY1)
 			Else
 				DrawText(text1, textX1, textY1, 0.5, 0.5)
+			End
+			
+			SetColor(textColor2[0], textColor2[1], textColor2[2])
+			If textDrawDelegate2 <> Null Then
+				textDrawDelegate2.Draw(text2, textX2, textY2)
+			Else
+				DrawText(text2, textX2, textY2, 0.5, 0.5)
+			End
+			
+			SetColor(textColor3[0], textColor3[1], textColor3[2])
+			If textDrawDelegate3 <> Null Then
+				textDrawDelegate3.Draw(text3, textX3, textY3)
+			Else
+				DrawText(text3, textX3, textY3, 0.5, 0.5)
+			End
+			
+			SetColor(textColor4[0], textColor4[1], textColor4[2])
+			If textDrawDelegate4 <> Null Then
+				textDrawDelegate4.Draw(text4, textX4, textY4)
+			Else
+				DrawText(text4, textX4, textY4, 0.5, 0.5)
 			End
 			
 			SetColor(255, 255, 255)
