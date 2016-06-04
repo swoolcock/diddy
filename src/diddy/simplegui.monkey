@@ -470,7 +470,7 @@ Summary: Loads in a simple menu via JSON
 					Case "buttons"
 						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
 						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
-							Select buttonsMap.Key
+							Select buttonsMap.Key.ToLower()
 								Case "button"
 									Local buttonJa:JsonArray = JsonArray(buttonsMap.Value)
 									
@@ -544,7 +544,7 @@ Summary: Loads in a simple menu via JSON
 					Case "sliders"
 						Local slidersJo:JsonObject = JsonObject(menuMap.Value)
 						For Local slidersMap:map.Node<String, JsonValue> = EachIn slidersJo.GetData()
-							Select slidersMap.Key
+							Select slidersMap.Key.ToLower()
 								Case "slider"
 								
 									Local sliderJa:JsonArray = JsonArray(slidersMap.Value)

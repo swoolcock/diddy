@@ -277,7 +277,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 	Method RenderLayer:Void(layerName:String, bx:Int, by:Int, bw:Int, bh:Int, sx:Float = 1, sy:Float = 1, offsetX:Float=0, offsetY:Float=0)
 		Local layer:TileMapLayer
 		For Local l:TileMapLayer = Eachin layers
-			If l.name.ToUpper() = layerName.ToUpper()
+			If EqualIgnoreCase(l.name, layerName)
 				layer = l
 				Exit
 			End
@@ -387,7 +387,7 @@ Class TileMap Extends TileMapPropertyContainer Implements ITileMapPostLoad
 		Else
 			Local layer:TileMapLayer
 			For Local l:TileMapLayer = Eachin layers
-				If l.name.ToUpper() = layerName.ToUpper()
+				If EqualIgnoreCase(l.name, layerName)
 					layer = l
 					Exit
 				End

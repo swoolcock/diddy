@@ -859,7 +859,7 @@ Public
 		' load screens graphics
 		For Local key:String = EachIn diddyGame.images.Keys()
 			Local i:GameImage = diddyGame.images.Get(key)
-			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
+			If i.preLoad And EqualIgnoreCase(i.screenName, name)
 				If i.frames > 1
 					i.LoadAnim(i.path, i.w, i.h, i.frames, Null, i.midhandle, i.readPixels, i.maskRed, i.maskGreen, i.maskBlue, False, i.screenName)
 				Else
@@ -871,7 +871,7 @@ Public
 		' load screens sounds
 		For Local key:String = EachIn diddyGame.sounds.Keys()
 			Local i:GameSound = diddyGame.sounds.Get(key)
-			If i.preLoad And i.screenName.ToUpper() = name.ToUpper()
+			If i.preLoad And EqualIgnoreCase(i.screenName, name)
 				i.Load(i.path, False, i.screenName)
 			End
 		Next

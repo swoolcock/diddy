@@ -68,11 +68,18 @@ Extern
 	
 	#If TARGET="android" Then
 		Function ShowInputDialog:Void(title:String, message:String) = "diddy.showInputDialog"		
+		Function EqualIgnoreCase:Bool(lhs:String, rhs:String) = "diddy.equalIgnoreCase"
 	#Else
 		Public
 			Function ShowInputDialog:Void(title:String, message:String)
 				Print "Stub for ShowInputDialog"
-			End		
+			End
+			Function EqualIgnoreCase:Bool(lhs:String, rhs:String)
+				If lhs.ToUpper() = rhs.ToUpper()
+					Return True
+				End
+				Return False
+			End
 	#End
 	
 Extern
