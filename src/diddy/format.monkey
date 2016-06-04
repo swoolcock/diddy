@@ -166,7 +166,7 @@ Function Format:String(fmt:String, arg1:String="", arg2:String="", arg3:String="
 			ElseIf formatType = "s" Or formatType = "S" Then
 				If foundPadding Then Throw New FormatException("Error parsing format string!")
 				Local ds:String = args[argnum]
-				If formatType = "S" Then ds = ds.ToUpper()
+				If formatType = "S" Then ds = DiddyToUpper(ds)
 				While ds.Length() < formatLength
 					If foundMinus Then
 						ds += " "
@@ -177,7 +177,7 @@ Function Format:String(fmt:String, arg1:String="", arg2:String="", arg3:String="
 				rv += ds
 			ElseIf formatType = "x" Or formatType = "X" Then
 				Local ds:String = DecToHex(Int(args[argnum])).ToLower()
-				If formatType = "X" Then ds = ds.ToUpper()
+				If formatType = "X" Then ds = DiddyToUpper(ds)
 				While ds.Length() < formatLength
 					If foundPadding Then
 						ds = "0"+ds

@@ -7,6 +7,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Strict
 Import mojo
+Import diddy.externfunctions
 
 Class VirtualFileSystem Extends DataConversion
 'Private
@@ -25,15 +26,15 @@ Class VirtualFileSystem Extends DataConversion
 	
 	Method WriteFile:VirtualFileStream(filename:String)
 		Local f:VirtualFileStream = new VirtualFileStream
-		f.filename = filename.ToLower()
+		f.filename = DiddyToLower(filename)
 		f.ptr = 0
 		f.delimiter = Self.delimiter
-		Self.index.Insert(f.filename.ToLower(),f)
+		Self.index.Insert(DiddyToLower(f.filename),f)
 		Return f	
 	End
 	
 	Method ReadFile:VirtualFileStream(filename:String)
-		filename = filename.ToLower()
+		filename = DiddyToLower(filename)
 		
 		' Check existence
 		if Not Self.index.Contains(filename) Then Return Null
@@ -46,7 +47,7 @@ Class VirtualFileSystem Extends DataConversion
 	End
 	
 	Method FileExists:Bool(filename:String)
-		filename = filename.ToLower()
+		filename = DiddyToLower(filename)
 		if Self.index.Contains(filename)
 			Return True
 		Else
@@ -66,7 +67,7 @@ Class VirtualFileSystem Extends DataConversion
 	End
 	
 	Method DeleteFile:Void(filename:String)
-		filename = filename.ToLower()
+		filename = DiddyToLower(filename)
 		if Self.index.Contains(filename)
 			Self.index.Remove(filename)
 		End

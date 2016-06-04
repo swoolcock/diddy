@@ -486,7 +486,7 @@ End
 Function HexToDec:Int(hx:String)
 	Local rv:Int = 0
 	Local lookup:String = "0123456789abcdef"
-	hx = hx.ToLower()
+	hx = DiddyToLower(hx)
 	For Local i:Int = 0 Until hx.Length()
 		rv *= 16
 		Local idx:Int = lookup.Find(hx[i..i+1])

@@ -600,15 +600,20 @@ Public
 	End
 End
 
+Class DiddyStringMap<V> Extends Map<String,V>
+	Method Compare:Int( lhs$,rhs$ )
+		Return CompareWithLocale(lhs, rhs)
+	End
+End
 
 'summary: Map to store the Screens
-Class Screens Extends StringMap<Screen>
+Class Screens Extends DiddyStringMap<Screen>
 	Method Set:Bool(key:String, value:Screen)
-		Return Super.Set(key.ToUpper(), value)
+		Return Super.Set(DiddyToUpper(key), value)
 	End
 	
 	Method Find:Screen(name:String)
-		name = name.ToUpper()
+		name = DiddyToUpper(name)
 
 		' debug: print all keys in the map
 		If diddyGame.debugOn
@@ -1083,7 +1088,7 @@ End
 
 'summary: Image resource bank
 'Images must be stored in graphics folder
-Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
+Class ImageBank Extends DiddyStringMap<GameImage> Implements ITilesetSource
 	Const ATLAS_PREFIX:String = "_diddyAtlas_"
 	Const SPARROW_ATLAS:Int = 0
 	Const LIBGDX_ATLAS:Int = 1
@@ -1113,7 +1118,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	Method SaveAtlasToBank:String(pointer:Image, fileName:String)
 		' save the whole atlas with prefix
 		Local atlasGameImage:GameImage = New GameImage
-		atlasGameImage.name = ATLAS_PREFIX + StripAll(fileName).ToUpper()
+		atlasGameImage.name = ATLAS_PREFIX + DiddyToUpper(StripAll(fileName))
 		atlasGameImage.image = pointer
 		atlasGameImage.CalcSize()
 		Self.Set(atlasGameImage.name, atlasGameImage)
@@ -1194,7 +1199,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 				DebugPrint "index   = " + index
 			End
 			
-			gi.name = name.ToUpper()
+			gi.name = DiddyToUpper(name)
 			gi.image = pointer.GrabImage(x, y, width, height)
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
@@ -1248,7 +1253,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 			'TODO
 			
 			Local gi:GameImage = New GameImage
-			gi.name = name.ToUpper()
+			gi.name = DiddyToUpper(name)
 			gi.image = pointer.GrabImage(x, y, w, h)
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
@@ -1283,7 +1288,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 			Local name:String = node.GetAttribute("name").Trim()
 
 			Local gi:GameImage = New GameImage
-			gi.name = name.ToUpper()
+			gi.name = DiddyToUpper(name)
 			gi.image = pointer.GrabImage(x, y, width, height)
 			gi.CalcSize()
 			gi.MidHandle(midHandle)
@@ -1299,8 +1304,8 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	
 	Method Load:GameImage(name:String, nameoverride:String = "", midhandle:Bool = True, ignoreCache:Bool = False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the image in the bank!
-		Local storeKey:String = nameoverride.ToUpper()
-		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		Local storeKey:String = DiddyToUpper(nameoverride)
+		If storeKey = "" Then storeKey = StripAll(DiddyToUpper(name))
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
@@ -1314,8 +1319,8 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	
 	Method LoadAnim:GameImage(name:String, w:Int, h:Int, total:Int, tmpImage:Image=Null, midhandle:Bool = True, ignoreCache:Bool = False, nameoverride:String = "", readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the image in the bank!
-		Local storeKey:String = nameoverride.ToUpper()
-		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		Local storeKey:String = DiddyToUpper(nameoverride)
+		If storeKey = "" Then storeKey = StripAll(DiddyToUpper(name))
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
@@ -1330,8 +1335,8 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
    
 	Method LoadTileset:GameImage(name:String, tileWidth%, tileHeight%, tileMargin% = 0, tileSpacing% = 0, nameoverride:String = "", midhandle:Bool=False, ignoreCache:Bool=False, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0)
 		' check if we already have the image in the bank!
-		Local storeKey:String = nameoverride.ToUpper()
-		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		Local storeKey:String = DiddyToUpper(nameoverride)
+		If storeKey = "" Then storeKey = StripAll(DiddyToUpper(name))
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old image if it's there
@@ -1350,11 +1355,11 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	End
 	
 	Method Find:GameImage(name:String, ignoreError:Bool = False)
-		name = name.ToUpper()
+		name = DiddyToUpper(name)
 
 		' debug: print all keys in the map
 		If diddyGame.debugOn
-			For Local key:String = Eachin Self.Keys()
+			For Local key:String = EachIn Self.Keys()
 				Local i:GameImage = Self.Get(key)
 				if Not i.preLoad Then
 					Print key + " is stored in the image map."
@@ -1377,7 +1382,7 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	'midhandle: Sets the midhandle of the image
 	'nameoverride: If supplied, changes the stored name in the image bank
 	Method FindSet:GameImage(name:String, w:Int, h:Int, frames:Int=0, midhandle:Bool = True, nameoverride:String = "")
-		name = name.ToUpper()
+		name = DiddyToUpper(name)
 		Local subImage:GameImage = Self.Get(name)
 		AssertNotNull(subImage, "Image '" + name + "' not found in the ImageBank")
 		Local atlasGameImage:GameImage = Self.Get(subImage.atlasName)
@@ -1385,8 +1390,8 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 		Local image:Image = atlasGameImage.image.GrabImage(subImage.subX, subImage.subY, w, h, frames)
 		
 		Local gi:GameImage = New GameImage
-		Local storeKey:String = nameoverride.ToUpper()
-		If storeKey = "" Then storeKey = name.ToUpper()
+		Local storeKey:String = DiddyToUpper(nameoverride)
+		If storeKey = "" Then storeKey = DiddyToUpper(name)
 		gi.name = storeKey
 		gi.image = image
 		gi.CalcSize()
@@ -1411,10 +1416,10 @@ Class ImageBank Extends StringMap<GameImage> Implements ITilesetSource
 	End
 End
 
-Class SpriteAnimationsMap Extends StringMap<SpriteAnimation>
+Class SpriteAnimationsMap Extends DiddyStringMap<SpriteAnimation>
 		
 	Method Find:SpriteAnimation(name:String)
-		name = name.ToUpper()
+		name = DiddyToUpper(name)
 		Local i:SpriteAnimation = Self.Get(name)
 		AssertNotNull(i, "SpriteAnimation '" + name + "' not found in the SpriteAnimationsMap")
 		Return i
@@ -1590,11 +1595,11 @@ Public
 	End
 	
 	Method Load:Void(file:String, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "", failOkay:Bool = False)
-		name = StripAll(file.ToUpper())
+		name = StripAll(DiddyToUpper(file))
 		path = file
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
-		Self.screenName = screenName.ToUpper()
+		Self.screenName = DiddyToUpper(screenName)
 		If Not preLoad Then
 			image = LoadBitmap(file, 0, failOkay)
 			If image <> Null Then
@@ -1608,11 +1613,11 @@ Public
 	End
 	
 	Method LoadAnim:Void(file:String, w:Int, h:Int, total:Int, tmpImage:Image=Null, midhandle:Bool = True, readPixels:Bool = False, maskRed:Int = 0, maskGreen:Int = 0, maskBlue:Int = 0, preLoad:Bool = False, screenName:String = "")
-		name = StripAll(file.ToUpper())
+		name = StripAll(DiddyToUpper(file))
 		path = file
 		Self.midhandle = midhandle
 		Self.preLoad = preLoad
-		Self.screenName = screenName.ToUpper()
+		Self.screenName = DiddyToUpper(screenName)
 		Self.w = w
 		Self.h = h
 		Self.frames = total
@@ -1820,14 +1825,14 @@ End
 
 'summary: Sound resource bank
 'Images must be stored in sounds folder
-Class SoundBank Extends StringMap<GameSound>
+Class SoundBank Extends DiddyStringMap<GameSound>
 	
 	Global path$ = "sounds/"
 	
 	Method Load:GameSound(name:String, nameoverride:String = "", ignoreCache:Bool = False, soundDelay:Int = 0, preLoad:Bool = False, screenName:String = "")
 		' check if we already have the sound in the bank!
-		Local storeKey:String = nameoverride.ToUpper()
-		If storeKey = "" Then storeKey = StripAll(name.ToUpper())
+		Local storeKey:String = DiddyToUpper(nameoverride)
+		If storeKey = "" Then storeKey = StripAll(DiddyToUpper(name))
 		If Not ignoreCache And Self.Contains(storeKey) Then Return Self.Get(storeKey)
 		
 		' discard the old sound if it's there
@@ -1842,7 +1847,7 @@ Class SoundBank Extends StringMap<GameSound>
 	End
 	   
 	Method Find:GameSound(name:String)
-		name = name.ToUpper()
+		name = DiddyToUpper(name)
 
 		' debug: print all keys in the map
 		If  diddyGame.debugOn
@@ -1894,7 +1899,7 @@ Class GameSound
 				#endif
 			End
 		End
-		name = StripAll(file.ToUpper())
+		name = StripAll(DiddyToUpper(file))
 	End
 	
 	Method Play:Bool(playChannel:Int = -1, force:Bool=False)

@@ -209,4 +209,21 @@ class diddy
 		}
 		return false;
 	}
+	
+	static String toUpper(String lhs)
+	{
+		return lhs.toUpperCase(Locale.ENGLISH);
+	}
+	
+	static String toLower(String lhs)
+	{
+		return lhs.toLowerCase(Locale.ENGLISH);
+	}
+	
+	static int compareWithLocale(String lhs, String rhs)
+	{
+		String newLhs = lhs.toLowerCase(Locale.ENGLISH);
+		String newRhs = rhs.toLowerCase(Locale.ENGLISH);
+		return (newLhs.compareTo(newRhs));
+	}
 }

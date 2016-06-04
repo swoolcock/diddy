@@ -826,7 +826,7 @@ Public
 	End
 	
 	Method GetBool:Bool()
-		Local val:String = rawValue.ToLower()
+		Local val:String = DiddyToLower(rawValue)
 		If val = "true" Or val = "t" Or val = "y" Then Return True
 		Return False
 	End
@@ -918,7 +918,7 @@ End
 Function _HexToDec%(hexstr$)
 	Local chars$ = "0123456789abcdef"
 	Local rv% = 0
-	hexstr = hexstr.ToLower()
+	hexstr = DiddyToLower(hexstr)
 	For Local i% = 0 To hexstr.Length - 1
 		rv = rv Shl 4
 		Local idx% = chars.Find(hexstr[i])

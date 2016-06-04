@@ -107,7 +107,7 @@ Public
 					Local file:String = resourceNode.GetAttribute("file","")
 					If name And file Then
 						If resourceNode.Name = "image" Then
-							Local midHandle:Bool = resourceNode.GetAttribute("midHandle","true").ToLower() = "true"
+							Local midHandle:Bool = DiddyToLower(resourceNode.GetAttribute("midHandle","true")) = "true"
 							sb.imageResources.Add(name, New StoryboardImageResource(name, file, midHandle))
 						ElseIf resourceNode.Name = "sound" Then
 							sb.soundResources.Add(name, New StoryboardSoundResource(name, file))
@@ -546,7 +546,7 @@ Public
 		musicName = node.GetAttribute("musicName","")
 		time = Int(node.GetAttribute("time","0"))
 		name = node.GetAttribute("name","")
-		loop = node.GetAttribute("loop","true").ToLower() = "true"
+		loop = DiddyToLower(node.GetAttribute("loop","true")) = "true"
 	End
 	
 	Method Update:Void(sb:Storyboard, currentTime:Int)
@@ -790,12 +790,12 @@ Public
 	' Constructor for reading from xml
 	Method New(node:XMLElement, timeOffset:Int=0)
 		Local name:String = node.Name
-		Self.tween = node.GetAttribute("tween","false").ToLower() = "true"
+		Self.tween = DiddyToLower(node.GetAttribute("tween","false")) = "true"
 		Self.time = Int(node.GetAttribute("time","0"))+timeOffset
 		
 		Local easeStr:String = node.GetAttribute("ease","")
 		Local easeType:Int = EASE_NONE
-		Select easeStr.ToLower()
+		Select DiddyToLower(easeStr)
 			Case "in", ""+EASE_IN
 				Self.ease = EASE_IN
 			Case "inhalf", ""+EASE_IN_HALF
