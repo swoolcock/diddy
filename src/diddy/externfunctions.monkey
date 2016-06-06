@@ -67,12 +67,16 @@ Extern
 	#End
 	
 	#If TARGET="android" Then
-		Function ShowInputDialog:Void(title:String, message:String) = "diddy.showInputDialog"		
+		Function ShowInputDialog:Void(title:String, message:String) = "diddy.showInputDialog"	
+		Function SetLocale:Void(language:String, country:String) = "diddy.setLocale"	
 	#Else
 		Public
 			Function ShowInputDialog:Void(title:String, message:String)
 				Print "Stub for ShowInputDialog"
 			End		
+			Function SetLocale:Void(language:String, country:String)
+				Print "Stub for SetLocale"
+			End
 	#End
 	
 Extern

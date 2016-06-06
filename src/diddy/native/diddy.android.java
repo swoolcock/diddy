@@ -201,4 +201,17 @@ class diddy
 		// TODO: check it worked
 		return 1;
 	}
+	
+	static void setLocale(String language, String country)
+	{
+		System.out.println("setLocale = " + language + " " + country);
+		Activity activity = BBAndroidGame.AndroidGame().GetActivity();
+		Context context = activity.getApplicationContext();
+		
+		Configuration config = context.getResources().getConfiguration();
+		Locale locale = new Locale(language, country);
+		Locale.setDefault(locale);
+		config.locale = locale;
+		context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
+	}
 }

@@ -166,7 +166,8 @@ Class DiddyApp Extends App
 	Field lastTime:Float
 	
 	Field diddyData:DiddyData
-	
+	Field localeLanguage:String = "en"
+	Field localeCountry:String = "US"
 Private
 	Field useFixedRateLogic:Bool = False
 	Field vsx:Float, vsy:Float, vsw:Float, vsh:Float
@@ -224,7 +225,7 @@ Public
 			If useFixedRateLogic
 				ResetFixedRateLogic()
 			End
-			
+			SetLocale(localeLanguage, localeCountry)
 			'call Create
 			Create()
 		Catch e:DiddyException
@@ -568,6 +569,7 @@ Public
 
 	Method OnResume:Int()
 		Try
+			SetLocale(localeLanguage, localeCountry)
 			dt.currentticks = Millisecs()
 			dt.lastticks = dt.currentticks
 			If currentScreen Then currentScreen.Resume()
