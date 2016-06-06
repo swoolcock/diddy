@@ -69,9 +69,6 @@ Extern
 	#If TARGET="android" Then
 		Function ShowInputDialog:Void(title:String, message:String) = "diddy.showInputDialog"		
 		Function EqualIgnoreCase:Bool(lhs:String, rhs:String) = "diddy.equalIgnoreCase"
-		Function CompareWithLocale:Int(lhs:String, rhs:String) = "diddy.compareWithLocale"
-		Function DiddyToUpper:String(lhs:String) = "diddy.toUpper"
-		Function DiddyToLower:String(lhs:String) = "diddy.toLower"
 	#Else
 		Public
 			Function ShowInputDialog:Void(title:String, message:String)
@@ -82,15 +79,6 @@ Extern
 					Return True
 				End
 				Return False
-			End
-			Function CompareWithLocale:Int(lhs:String, rhs:String)
-				Return lhs.Compare(rhs)
-			End
-			Function DiddyToUpper:String(lhs:String)
-				Return lhs.ToUpper()
-			End
-			Function DiddyToLower:String(lhs:String)
-				Return lhs.ToLower()
 			End
 	#End
 	

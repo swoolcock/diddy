@@ -30,7 +30,7 @@ Class DiddyData
 		If not sh Then sh = 480
 
 		Local useAspect:String = rootElement.GetAttribute("useAspectRatio").Trim()
-		Local useAspectBool:Bool = useAspect And DiddyToLower(useAspect) = "true"
+		Local useAspectBool:Bool = useAspect And useAspect.ToLower() = "true"
 		
 		If diddyGame.debugOn
 			Print "screenWidth    = " + sw
@@ -87,7 +87,7 @@ Class DiddyData
 				
 				If scr.layers Then scr.layers.Sort()
 				
-				diddyGame.screens.Add(DiddyToUpper(name), scr)
+				diddyGame.screens.Add(name.ToUpper(), scr)
 			Next
 		End
 	End
@@ -180,10 +180,10 @@ End
 
 Class DiddyDataLayers Extends DiddyStack<DiddyDataLayer>
 	Method FindLayer:DiddyDataLayer(name:String)
-		name = DiddyToLower(name)
+		name = name.ToLower()
 		For Local i:Int = 0 Until Count()
 			Local layer:DiddyDataLayer = Get(i)
-			If DiddyToLower(layer.name) = name Then Return layer
+			If layer.name.ToLower() = name Then Return layer
 		Next
 		Return Null
 	End
@@ -197,7 +197,7 @@ Class DiddyDataLayers Extends DiddyStack<DiddyDataLayer>
 	End
 	
 	Method FindObject:DiddyDataObject(name:String)
-		name = DiddyToLower(name)
+		name = name.ToLower()
 		For Local i:Int = 0 Until Count()
 			Local layer:DiddyDataLayer = Get(i)
 			Local obj:DiddyDataObject = layer.objects.FindObject(name)
@@ -240,10 +240,10 @@ End
 
 Class DiddyDataObjects Extends DiddyStack<DiddyDataObject>
 	Method FindObject:DiddyDataObject(name:String)
-		name = DiddyToLower(name)
+		name = name.ToLower()
 		For Local i:Int = 0 Until Count()
 			Local obj:DiddyDataObject = Get(i)
-			If DiddyToLower(obj.name) = name Then Return obj
+			If obj.name.ToLower() = name Then Return obj
 		Next
 		Return Null
 	End
@@ -282,7 +282,7 @@ Class DiddyDataObject
 		scaleY = Float(node.GetAttribute("scaleY","1").Trim())
 		rotation = Float(node.GetAttribute("rotation","0").Trim())
 		
-		visible = (DiddyToLower(node.GetAttribute("visible","true").Trim()) = "true")
+		visible = (node.GetAttribute("visible","true").Trim().ToLower() = "true")
 		alpha = Float(node.GetAttribute("alpha","1").Trim())
 		
 		If node.HasAttribute("hue") Or node.HasAttribute("saturation") Or node.HasAttribute("luminance") Then

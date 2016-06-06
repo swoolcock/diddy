@@ -693,7 +693,7 @@ Public
 	
 	Method BoolValue:Bool(def:Bool)
 		If Not value Then Return def
-		Return DiddyToLower(value) = "true" Or value = "1"
+		Return value.ToLower() = "true" Or value = "1"
 	End
 End
 

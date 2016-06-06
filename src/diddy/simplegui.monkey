@@ -301,7 +301,7 @@ Developers do not need to call this.
 	Method ProcessAddButton:SimpleButton(buttonImage:GameImage, mouseOver:GameImage, name:String, drawText:Bool = False, disabledImage:GameImage = Null, disableMOImage:GameImage = Null)
 		Local b:SimpleButton = New SimpleButton
 		b.drawText = drawText
-		b.name = StripAll(DiddyToUpper(buttonImage.name))
+		b.name = StripAll(buttonImage.name.ToUpper())
 		b.image = buttonImage
 		b.image.SetHandle(0, 0)
 		If mouseOver <> Null
@@ -340,7 +340,7 @@ Developers do not need to call this.
 		b.useVirtualRes = Self.useVirtualRes
 		b.orientation = Self.orientation
 		b.text = name
-		If name <> "" Then b.name = DiddyToUpper(name)
+		If name <> "" Then b.name = name.ToUpper()
 		If orientation = VERTICAL
 			b.CentreX(nextY)
 		Else
@@ -360,7 +360,7 @@ Local sb:SimpleButton = menu.Find("New Game")
 [/code]
 #End
 	Method FindButton:SimpleButton(name:String)
-		name = DiddyToUpper(name)
+		name = name.ToUpper()
 		For Local b:SimpleMenuObject = EachIn Self
 			If SimpleButton(b)
 				Local sb:SimpleButton = SimpleButton(b)
@@ -383,7 +383,7 @@ End
 [/code]
 #End
 	Method Clicked:Int(name:String)
-		name = DiddyToUpper(name)
+		name = name.ToUpper()
 		If name = clickedName
 			If clearClickedName Then clickedName = ""
 			Return 1		
@@ -466,11 +466,11 @@ Summary: Loads in a simple menu via JSON
 			sm.Init(soundMouseOverFile, soundMouseClickFile, menuX, menuY, gap, useVirtualRes, orientation, soundMouseOver, soundMouseClick)
 			
 			For Local menuMap:map.Node<String, JsonValue> = EachIn menuJo.GetData()
-				Select DiddyToLower(menuMap.Key)
+				Select menuMap.Key.ToLower()
 					Case "buttons"
 						Local buttonsJo:JsonObject = JsonObject(menuMap.Value)
 						For Local buttonsMap:map.Node<String, JsonValue> = EachIn buttonsJo.GetData()
-							Select DiddyToLower(buttonsMap.Key)
+							Select buttonsMap.Key.ToLower()
 								Case "button"
 									Local buttonJa:JsonArray = JsonArray(buttonsMap.Value)
 									
@@ -544,7 +544,7 @@ Summary: Loads in a simple menu via JSON
 					Case "sliders"
 						Local slidersJo:JsonObject = JsonObject(menuMap.Value)
 						For Local slidersMap:map.Node<String, JsonValue> = EachIn slidersJo.GetData()
-							Select DiddyToLower(slidersMap.Key)
+							Select slidersMap.Key.ToLower()
 								Case "slider"
 								
 									Local sliderJa:JsonArray = JsonArray(slidersMap.Value)
@@ -830,7 +830,7 @@ Developers do not need to call this.
 		
 		
 				
-		name = StripAll(DiddyToUpper(buttonImage))
+		name = StripAll(buttonImage.ToUpper())
 		
 		If soundMouseOverFile<>"" Then
 			soundMouseOver = New GameSound

@@ -97,7 +97,7 @@ AssertEqualsIgnoreCase("hello", "Hello") ' nothing happens ("hello" = "Hello", c
 #End
 Function AssertEqualsIgnoreCase:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	' TODO: optimise this (does it create new objects?)
-	If DiddyToLower(val) <> DiddyToLower(expected) Then AssertError(msg + " " + val + "<>"+expected)
+	If val.ToLower() <> expected.ToLower() Then AssertError(msg + " " + val + "<>"+expected)
 End
 
 #Rem
@@ -144,7 +144,7 @@ AssertNotEqualIgnoreCase("hello", "Hello") ' AssertException is thrown ("hello" 
 #End
 Function AssertNotEqualIgnoreCase:Void(val$, expected$, msg$=ASSERT_MESSAGE)
 	' TODO: optimise this (does it create new objects?)
-	If DiddyToLower(val) = DiddyToLower(expected) Then AssertError(msg + " " + val + "<>"+expected)
+	If val.ToLower() = expected.ToLower() Then AssertError(msg + " " + val + "<>"+expected)
 End
 
 #Rem
