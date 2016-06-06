@@ -110,21 +110,21 @@ Class DiddyData
 				
 				Local midhandleBool:Bool
 				If midhandle
-					If EqualIgnoreCase(midhandle, "TRUE") Then midhandleBool = True Else midhandleBool = False
+					If midhandle.ToUpper() = "TRUE" Then midhandleBool = True Else midhandleBool = False
 				Else
 					midhandleBool = True
 				End
 				
 				Local ignoreCacheBool:Bool
 				If ignoreCache
-					If EqualIgnoreCase(ignoreCache, "TRUE") Then ignoreCacheBool = True Else ignoreCacheBool = False
+					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
 				Else
 					ignoreCacheBool = False
 				End
 				
 				Local readPixelsBool:Bool
 				If readPixels
-					If EqualIgnoreCase(readPixels, "TRUE") Then readPixelsBool = True Else readPixelsBool = False
+					If readPixels.ToUpper() = "TRUE" Then readPixelsBool = True Else readPixelsBool = False
 				Else
 					readPixelsBool = False
 				End
@@ -167,7 +167,7 @@ Class DiddyData
 				
 				Local ignoreCacheBool:Bool
 				If ignoreCache
-					If EqualIgnoreCase(ignoreCache, "TRUE") Then ignoreCacheBool = True Else ignoreCacheBool = False
+					If ignoreCache.ToUpper() = "TRUE" Then ignoreCacheBool = True Else ignoreCacheBool = False
 				Else
 					ignoreCacheBool = False
 				End

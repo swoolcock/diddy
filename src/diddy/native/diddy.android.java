@@ -201,12 +201,4 @@ class diddy
 		// TODO: check it worked
 		return 1;
 	}
-	
-	static boolean equalIgnoreCase(String lhs, String rhs)
-	{
-		if (lhs.equalsIgnoreCase(rhs)) {
-			return true;
-		}
-		return false;
-	}
 }
