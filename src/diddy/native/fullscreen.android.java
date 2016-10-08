@@ -39,6 +39,9 @@ class NativeFullScreen extends ActivityDelegate {
     };
 
     public NativeFullScreen() {
+		if (Build.VERSION.SDK_INT < 11) {
+			return;
+		}
         BBAndroidGame.AndroidGame().AddActivityDelegate(this);
         BBAndroidGame.AndroidGame().GetActivity().runOnUiThread(new Runnable() {
             public void run() {
