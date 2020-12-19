@@ -26,6 +26,10 @@ Class DiddyTiledTileMapReader Extends TileMapReader
 		' create parser and get root node
 		Local parser:XMLParser = New XMLParser
 		doc = parser.ParseString(xmlString)
+
+		'Set the root graphics path relative to this file's location.
+		graphicsPath = _ExtractDir(filename) + "/"
+		
 		Return ReadMap(doc.Root)
 	End
 	
@@ -283,3 +287,9 @@ Function _StripDir$( path$ )
 	Return path
 End
 
+' taken from brl.filepath
+Function _ExtractDir:String( path:String )
+	Local i=path.FindLast( "/" )
+	If i=-1 i=path.FindLast( "\" )
+	If i<>-1 Return path[..i]
+End
